@@ -39,8 +39,6 @@ powerful layout tools, they don't provide visual guides during development. Padd
 3. **Typography Alignment**: Ensure text follows your baseline grid
 4. **Development Efficiency**: Quickly spot alignment issues
 
-[Rest of README content...]
-
 ## Installation
 
 ```bash
@@ -55,28 +53,11 @@ import { PaddedGrid, XGrid, YGrid } from 'padded-grid';
 import 'padded-grid/styles.css';
 
 function App() {
-  return (
-    <PaddedGrid config={{ maxWidth: "1200px" }}>
-      <XGrid columns={12} gap={16} />
-      <YGrid base={8} />
-      <main> Content</main>
-    </PaddedGrid>
-  );
-}
-```
-
-## Development Usage
-
-```tsx
-import { PaddedGrid, XGrid, YGrid } from 'padded-grid';
-import 'padded-grid/styles.css';
-
-function App() {
   // Toggle grid visibility during development
   const showGrid = process.env.NODE_ENV === 'development';
 
   return (
-    <PaddedGrid>
+    <PaddedGrid config={{ maxWidth: "1200px" }}>
       {/* Column grid overlay */}
       <XGrid columns={12} gap={16} show={showGrid} />
 
@@ -89,8 +70,8 @@ function App() {
 }
 ```
 
-The grid overlays help you visualize and maintain consistent spacing during development. See
-our [Development Usage Guide](./docs/DEVELOPMENT_USAGE.md) for detailed examples and best practices.
+The grid overlays help you visualize and maintain consistent spacing during development.
+See [Development Usage Guide](./docs/DEVELOPMENT_USAGE.md) for detailed examples and best practices.
 
 ## Documentation
 
