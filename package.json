@@ -4,7 +4,7 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A development tool for visualizing and maintaining consistent grid systems in React applications. Similar to design tools like Figma, it provides toggleable grid overlays that help ensure precise spacing, alignment, and layout consistency during development.",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
@@ -12,7 +12,9 @@
   "style": "dist/styles.css",
   "files": [
     "dist",
-    "dist/styles.css"
+    "dist/styles.css",
+    "LICENSE",
+    "README.md"
   ],
   "exports": {
     ".": {
@@ -29,8 +31,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:type": "tsc -p tsconfig.build.json",
-    "prepare": "npm run build && npm run build:type",
-    "prepublishOnly": "npm run build && npm run build:type",
+    "prepare": "bun run build && bun run build:type",
+    "prepublishOnly": "bun run build && bun run build:type",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "changeset publish",
