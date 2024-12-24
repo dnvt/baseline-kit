@@ -1,76 +1,68 @@
-import { useCallback, useMemo } from 'react'
-import type { CSSProperties, Dispatch } from 'react'
+import { type CSSProperties, type Dispatch, type HTMLAttributes, useCallback } from 'react'
+import { GRID_ALIGNMENTS } from '@types'
+import { GRID } from '@utils'
+import type { PGActions, PGConfig, PGCustomProperties, PGState } from '@components'
 
-import type { PGActions, PGConfig } from '@components'
-import type {
-  GridControlState,
-  GridControlsResult,
-  GridPropsResult,
-} from '@types'
-import { clamp, GRID } from '@utils'
-
-const VALID_ALIGNMENTS = ['start', 'center', 'end'] as const
+// Define a type for grid props
+type GridProps<T> = T & {
+  style?: Partial<CSSProperties & PGCustomProperties>
+  [key: string]: unknown
+}
 
 export function useGridControls(
-  state: GridControlState,
+  _state: PGState,
   dispatch: Dispatch<PGActions>,
-): GridControlsResult {
-  const updateConfig = useCallback(
-    (config: Partial<PGConfig>) => {
-      dispatch({ type: 'UPDATE_CONFIG', payload: config })
-    },
-    [dispatch],
-  )
+): {
+  getValidatedConfig: (config: Partial<PGConfig>) => Partial<PGConfig>
+  updateConfig: (config: Partial<PGConfig>) => void
+  updateStyles: (styles: Partial<PGCustomProperties>) => void
+} {
+  const updateConfig = useCallback((config: Partial<PGConfig>) => {
+    dispatch({ type: 'UPDATE_CONFIG', payload: config })
+  }, [dispatch])
 
-  const updateStyles = useCallback(
-    (styles: CSSProperties) => {
-      dispatch({ type: 'UPDATE_STYLES', payload: styles })
-    },
-    [dispatch],
-  )
+  const updateStyles = useCallback((styles: Partial<PGCustomProperties>) => {
+    dispatch({ type: 'UPDATE_STYLES', payload: styles })
+  }, [dispatch])
 
   const getValidatedConfig = useCallback((config: Partial<PGConfig>): Partial<PGConfig> => {
-    const candidateAlign =
-      config.align && VALID_ALIGNMENTS.includes(config.align)
-        ? config.align
-        : GRID.DEFAULTS.ALIGN
-
     return {
       ...config,
-      base: clamp(
-        config.base ?? GRID.DEFAULTS.BASE,
-        GRID.LIMITS.BASE.MIN,
-        GRID.LIMITS.BASE.MAX,
-      ),
-      align: candidateAlign,
+      base: config.base !== undefined
+        ? Math.max(GRID.LIMITS.BASE.MIN, Math.min(config.base, GRID.LIMITS.BASE.MAX))
+        : undefined,
+      align: config.align && GRID_ALIGNMENTS.includes(config.align)
+        ? config.align
+        : undefined,
+      zIndex: config.zIndex,
     }
   }, [])
 
-
   return {
+    getValidatedConfig,
     updateConfig,
     updateStyles,
-    getValidatedConfig,
-    currentState: state,
   }
 }
 
-export function useGridProps(state: GridControlState): GridPropsResult {
-  return useMemo(
-    () => ({
-      getGridProps: (props = {}) => ({
+export function useGridProps(state: PGState) {
+  return {
+    getGridProps: useCallback(<T extends HTMLAttributes<HTMLElement>>(
+      props: T,
+    ): GridProps<T> => {
+      const gridStyle = {
+        ...props.style,
+        '--grid-base': `${state.base}px`,
+        '--grid-max-width': typeof state.maxWidth === 'number'
+          ? `${state.maxWidth}px`
+          : state.maxWidth,
+        '--grid-z-index': state.zIndex,
+      }
+
+      return {
         ...props,
-        style: {
-          ...props.style,
-          '--grid-base': `${state.base}px`,
-          '--grid-max-width':
-            typeof state.maxWidth === 'number'
-              ? `${state.maxWidth}px`
-              : state.maxWidth,
-          '--grid-z-index': state.zIndex,
-        } as CSSProperties,
-      }),
-    }),
-    [state],
-  )
+        style: gridStyle,
+      } as GridProps<T>
+    }, [state.base, state.maxWidth, state.zIndex]),
+  }
 }

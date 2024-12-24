@@ -6,8 +6,8 @@
   top: 0;
   bottom: 0;
   height: 100%;
-  width: var(--grid-max-width, 100%);
-  padding: var(--grid-padding, 0);
+  width: var(--grid-max-width);
+  padding: var(--grid-padding);
 }
 
 .columnsContainer {
@@ -16,7 +16,7 @@
   display: grid;
   grid-template-columns: var(--grid-template-columns);
   gap: var(--grid-gap, 16px);
-  justify-content: var(--grid-justify, start);
+  justify-content: var(--grid-justify);
 }
 
 .column {

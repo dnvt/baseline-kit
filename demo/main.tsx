@@ -8,7 +8,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
   <React.StrictMode>
     <GridSetups>
-      <div className="demo-content">
+      <>
         <h1 className="demo-title">Grid Playground</h1>
         <p className="demo-description">
           This is a comprehensive demo showcasing the grid system capabilities.
@@ -20,7 +20,7 @@ root.render(
             Content Block {i + 1}
           </div>
         ))}
-      </div>
+      </>
     </GridSetups>
-  </React.StrictMode>
+  </React.StrictMode>,
 )

@@ -1,12 +1,13 @@
 import type { CSSProperties } from 'react'
 import type {
-  BaseComponentProps,
   GridAlignment,
   CSSValue,
   ResponsiveValue,
   GridVariant,
   BaseGridStyles,
   GridLineStyles,
+  GridColumnsPattern,
+  BaseGridConfig, BaseComponentProps,
 } from '@types'
 
 export interface XGStyles extends BaseGridStyles {
@@ -15,50 +16,54 @@ export interface XGStyles extends BaseGridStyles {
   '--grid-padding': CSSProperties['padding']
   '--grid-columns': number
   '--column-color': CSSProperties['color'] | CSSProperties['backgroundColor']
-  '--column-width': GridVariant extends GridVariant.Line
+  '--column-width': GridVariant extends 'line'
     ? GridLineStyles['--column-width']
     : CSSValue
 }
 
-export interface XGBaseProps extends BaseComponentProps {
+export interface XGridBaseConfig extends BaseGridConfig {
   align?: GridAlignment
   color?: CSSProperties['color'] | CSSProperties['backgroundColor']
   maxWidth?: ResponsiveValue<CSSValue>
   padding?: CSSProperties['padding']
-  show?: boolean
-  style?: CSSProperties & Partial<XGStyles>
 }
 
-export type XGColumnPattern = XGBaseProps & {
+export interface XGridPatternConfig extends XGridBaseConfig {
   variant?: never
-  columns: Array<CSSValue | ResponsiveValue<CSSValue>>
+  columns: GridColumnsPattern
   gap: ResponsiveValue<CSSValue | 'auto'>
   columnWidth?: never
 }
 
-export type XGAutoCalculated = XGBaseProps & {
+export interface XGridAutoConfig extends XGridBaseConfig {
   variant?: never
   columnWidth: ResponsiveValue<CSSValue | 'auto'>
   columns?: never
   gap: ResponsiveValue<CSSValue | 'auto'>
 }
 
-export type XGFixedColumns = XGBaseProps & {
+export interface XGridFixedConfig extends XGridBaseConfig {
   variant?: never
   columns: number
   columnWidth?: ResponsiveValue<CSSValue | 'auto'>
   gap?: ResponsiveValue<CSSValue | 'auto'>
 }
 
-export type XGLine = XGBaseProps & {
+export interface XGridLineConfig extends XGridBaseConfig {
   variant: GridVariant
   columns?: never
   columnWidth?: never
   gap?: ResponsiveValue<CSSValue>
 }
 
-export type XGProps =
-  | XGColumnPattern
-  | XGAutoCalculated
-  | XGFixedColumns
-  | XGLine
+export type XGridConfig =
+  | XGridPatternConfig
+  | XGridAutoConfig
+  | XGridFixedConfig
+  | XGridLineConfig
+
+
+export interface XGProps extends BaseComponentProps {
+  config: XGridConfig
+  style?: Partial<XGStyles>
+}

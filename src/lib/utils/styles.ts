@@ -1,17 +1,19 @@
+import type { BreakpointKey, CSSCustomProperties, CSSValue, ResponsiveValue } from '@types'
+import { isResponsiveValue } from '@/utils/validation.ts'
+import { GRID } from '@/utils/constants.ts'
 import type { CSSProperties } from 'react'
-import type { CSSValue, ResponsiveValue } from '@types'
-import { isResponsiveValue } from './validation'
 
 export const combineClassNames = (
   ...classes: Array<string | boolean | undefined | null>
 ): string => classes.filter(Boolean).join(' ').trim()
 
-export const combineStyles = <T extends CSSProperties>(
+export const combineStyles = <T extends Partial<CSSProperties & CSSCustomProperties>>(
   ...styles: Array<T | undefined>
 ): T =>
     styles
       .filter((style): style is T => style !== undefined)
       .reduce((acc, style) => ({ ...acc, ...style }), {} as T)
+
 
 export const parseGridValue = (value: CSSValue | 'auto'): string => {
   if (value === 'auto') return value
@@ -20,7 +22,7 @@ export const parseGridValue = (value: CSSValue | 'auto'): string => {
 
 export const parseResponsiveGridValue = (
   value: ResponsiveValue<CSSValue> | undefined,
-  defaultValue = '1200px'
+  defaultValue = GRID.DEFAULTS.MAX_WIDTH,
 ): string => {
   if (value === undefined) return defaultValue
 
@@ -30,7 +32,7 @@ export const parseResponsiveGridValue = (
         if (val === undefined) return null
         return bp === 'base'
           ? parseGridValue(val)
-          : `@container (min-width: ${bp}) { ${parseGridValue(val)} }`
+          : `@container (min-width: ${GRID.BREAKPOINTS[bp as BreakpointKey]}) { ${parseGridValue(val)} }`
       })
       .filter((v): v is string => v !== null)
       .join('; ')

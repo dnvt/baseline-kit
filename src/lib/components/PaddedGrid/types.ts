@@ -4,36 +4,47 @@ import type {
   GridAlignment,
   CSSValue,
   ResponsiveValue,
-  BaseGridStyles,
+  BaseGridConfig,
 } from '@types'
 
 export interface PGConfig {
   /** Base unit for baseline spacing calculations (in pixels) */
   base: number
   /** Maximum width for containers */
-  maxWidth: CSSValue | ResponsiveValue<CSSValue>
+  maxWidth: ResponsiveValue<CSSValue>
   /** Horizontal alignment for grid containers */
   align: GridAlignment
   /** z-index for grid containers and overlays */
   zIndex: number
 }
 
-export interface PGStates extends PGConfig {
-  styles: CSSProperties & Partial<PGStyles>
-}
+export interface PGCustomProperties {
+  [key: `--${string}`]: string | number | undefined
 
-export interface PGStyles extends BaseGridStyles {
   '--grid-base': `${number}px`
   '--grid-max-width': string
   '--grid-z-index': number
 }
 
-export interface PGProps extends BaseComponentProps {
-  config?: Partial<PGConfig>
-  reducer?: (state: PGStates, action: PGActions) => PGStates
-  style?: CSSProperties & Partial<PGStyles>
+export type PGStyles = CSSProperties & PGCustomProperties
+
+export interface PGState extends PGConfig {
+  styles: Partial<PGStyles>
 }
 
 export type PGActions =
   | { type: 'UPDATE_CONFIG'; payload: Partial<PGConfig> }
-  | { type: 'UPDATE_STYLES'; payload: Partial<PGStyles> }
+  | { type: 'UPDATE_STYLES'; payload: Partial<PGCustomProperties> }
+
+
+export interface PaddedGridConfig extends BaseGridConfig {
+  align?: GridAlignment
+  maxWidth?: ResponsiveValue<CSSValue>
+  zIndex?: number
+}
+
+export interface PGProps extends BaseComponentProps {
+  config?: PaddedGridConfig
+  reducer?: (state: PGState, action: PGActions) => PGState
+  style?: Partial<PGStyles>
+}

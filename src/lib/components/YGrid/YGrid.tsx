@@ -1,58 +1,64 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, RefObject } from 'react'
 import { memo, useMemo, useRef, useCallback } from 'react'
 
 import { useGridDimensions, useVisibleGridLines } from '@hooks'
 import { clamp, combineClassNames, combineStyles, GRID } from '@utils'
-import { GridVariant } from '@types'
-
-import type { YGProps } from './types'
 import styles from '@styles/YGrid.module.css'
 
+import type { YGProps, YGContainerStyles, YGStyles } from './types'
+
 export const YGrid = memo(function YGrid({
-  base = GRID.DEFAULTS.BASE,
-  color = GRID.DEFAULTS.COLORS.Y_GRID,
-  show = false,
-  height = '100%',
-  variant = GRID.VARIANTS.LINE,
-  className,
-  style,
+  config,
+  className = '',
+  style = {},
 }: YGProps) {
+  const {
+    show = false,
+    color = GRID.DEFAULTS.COLORS.Y_GRID,
+    height = '100%',
+    variant = GRID.VARIANTS.LINE,
+    baseUnit = GRID.DEFAULTS.BASE,
+  } = config
+
   const containerRef = useRef<HTMLDivElement>(null)
   const { height: containerHeight } = useGridDimensions(containerRef)
 
   const rowCount = useMemo(() => {
     const totalHeight = typeof height === 'number' ? height : containerHeight
-    return clamp(Math.ceil(totalHeight / base), 1, 1000)
-  }, [height, containerHeight, base])
+    return clamp(Math.ceil(totalHeight / baseUnit), 1, 1000)
+  }, [height, containerHeight, baseUnit])
 
   const visibleRange = useVisibleGridLines({
     totalLines: rowCount,
-    lineHeight: base,
-    containerRef,
+    lineHeight: baseUnit,
+    containerRef: containerRef as RefObject<HTMLDivElement>,
   })
 
   const containerStyles = useMemo(
     () =>
-      combineStyles(
-        {
-          '--grid-height': typeof height === 'number' ? `${height}px` : height,
-          opacity: show ? 1 : 0,
-          visibility: show ? 'visible' : 'hidden',
-        },
-        style ?? {},
+      combineStyles<YGContainerStyles>({
+        '--grid-height': typeof height === 'number' ? `${height}px` : height,
+        opacity: show ? 1 : 0,
+        visibility: show ? 'visible' : 'hidden',
+      },
+      style ? {
+        ...style,
+        '--grid-height': typeof style['--grid-height'] === 'number'
+          ? `${style['--grid-height']}px`
+          : style['--grid-height'],
+      } as YGContainerStyles : undefined,
       ),
     [height, style, show],
   )
 
   const getRowStyles = useCallback(
-    (idx: number) => ({
-      '--row-top': `${idx * base}px`,
+    (idx: number): Partial<CSSProperties & YGStyles> => ({
+      '--row-top': `${idx * baseUnit}px`,
       '--row-color': color,
-      '--row-height': variant === GridVariant.Line ? '1px' : `${base}px`,
-      '--row-opacity':
-        variant === GridVariant.Flat && idx % 2 === 0 ? '0' : '1',
+      '--row-height': variant === 'line' ? '1px' : `${baseUnit}px`,
+      '--row-opacity': variant === 'flat' && idx % 2 === 0 ? '0' : '1',
     }),
-    [base, color, variant],
+    [baseUnit, color, variant],
   )
 
   const visibleRows = useMemo(() => {
@@ -65,7 +71,7 @@ export const YGrid = memo(function YGrid({
             styles.row,
             variant === 'flat' && styles.flatRow,
           )}
-          style={getRowStyles(i) as CSSProperties}
+          style={getRowStyles(i)}
           data-row-index={i}
         />,
       )

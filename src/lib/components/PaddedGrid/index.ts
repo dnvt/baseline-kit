@@ -5,4 +5,4 @@
  */
 
 export { PaddedGrid } from './PaddedGrid'
-export type { PGConfig, PGProps, PGStates, PGActions } from './types'
+export type { PGConfig, PGProps, PGState, PGActions } from './types'

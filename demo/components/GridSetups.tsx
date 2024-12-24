@@ -2,7 +2,7 @@ import { useReducer, useLayoutEffect, type PropsWithChildren } from 'react'
 
 import { GRID } from '@utils'
 import { PaddedGrid, type PGConfig, XGrid, YGrid } from '@components'
-import { GridAlignment, GridVariant, type GridColumnsPattern } from '@types'
+import { type GridColumnsPattern } from '@types'
 import { GridControls } from './GridControls'
 
 export interface GridState {
@@ -19,11 +19,13 @@ export interface GridState {
   pageHeight: number
 }
 
+const WIDTH = '1200px'
+
 const initialState: GridState = {
   config: {
     base: GRID.DEFAULTS.BASE,
-    maxWidth: GRID.DEFAULTS.MAX_WIDTH,
-    align: GridAlignment.Center,
+    maxWidth: '100%',
+    align: 'center',
     zIndex: GRID.DEFAULTS.Z_INDEX,
   },
   showGuides: {
@@ -115,32 +117,60 @@ export function GridSetups({ children }: PropsWithChildren) {
 
   return (
     <div className="grid-playground">
-      <PaddedGrid config={state.config}>
+      <PaddedGrid
+        config={{
+          ...state.config,
+          baseUnit: state.config.base,
+        }}
+      >
         <YGrid
-          base={state.config.base}
-          show={state.showGuides.baseline}
-          height={state.pageHeight}
+          config={{
+            show: state.showGuides.baseline,
+            height: state.pageHeight,
+            baseUnit: state.config.base,
+          }}
         />
-        <XGrid
-          columns={state.columnConfig.count}
-          gap={state.columnConfig.gap}
-          show={state.showGuides.columns}
-        />
-        <XGrid
-          columns={state.columnConfig.pattern}
-          gap={8}
-          show={state.showGuides.columns}
-          color="#0000ff25"
-        />
-        <XGrid
-          variant={GridVariant.Line}
-          gap={8}
-          show={state.showGuides.columns}
-          color="#00000020"
-        />
-        {children}
+        <div
+          className="demo-wrapper"
+          style={{ '--max-width': WIDTH }}
+        >
+          <XGrid
+            config={{
+              show: state.showGuides.columns,
+              maxWidth: WIDTH,
+              columns: state.columnConfig.count,
+              gap: state.columnConfig.gap,
+              baseUnit: state.config.base,
+            }}
+          />
+          <XGrid
+            config={{
+              show: state.showGuides.columns,
+              maxWidth: WIDTH,
+              columns: state.columnConfig.pattern,
+              gap: 8,
+              color: '#0000ff25',
+              baseUnit: state.config.base,
+            }}
+          />
+          <XGrid
+            config={{
+              show: state.showGuides.columns,
+              maxWidth: WIDTH,
+              variant: 'line',
+              gap: 8,
+              color: '#00000020',
+              baseUnit: state.config.base,
+            }}
+          />
+          <div className="demo-content">
+
+            {children}
+          </div>
+        </div>
       </PaddedGrid>
       <GridControls state={state} dispatch={dispatch} />
     </div>
   )
 }
+

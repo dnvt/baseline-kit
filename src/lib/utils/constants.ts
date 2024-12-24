@@ -1,13 +1,14 @@
-import { GridAlignment, GridVariant } from '@types'
+import type { GridAlignment } from '@types'
 
 export const CSS_UNITS = ['px', 'rem', 'em', 'vh', 'vw', '%', 'fr'] as const
+export type CSSUnit = typeof CSS_UNITS[number]
 
 export const GRID = {
   DEFAULTS: {
     ALIGN: 'center' as GridAlignment,
     Z_INDEX: -1,
     BASE: 8,
-    MAX_WIDTH: '1216px',
+    MAX_WIDTH: '100%',
     COLUMN_WIDTH: '1fr',
     COLORS: {
       X_GRID: '#00baff26',
@@ -23,9 +24,9 @@ export const GRID = {
     },
   },
   VARIANTS: {
-    LINE: GridVariant.Line,
-    FLAT: GridVariant.Flat,
-  },
+    LINE: 'line',
+    FLAT: 'flat',
+  } as const,
   BREAKPOINTS: {
     base: '1280px',
     sm: '640px',
@@ -33,5 +34,5 @@ export const GRID = {
     lg: '1024px',
     xl: '1280px',
     xxl: '1536px',
-  },
+  } as const,
 } as const

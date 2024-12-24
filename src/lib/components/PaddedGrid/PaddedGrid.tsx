@@ -1,6 +1,6 @@
-import { memo, useReducer, useEffect, type CSSProperties, useRef } from 'react'
+import { memo, useReducer, useEffect, type CSSProperties, useRef, useCallback } from 'react'
 
-import type { PGProps, PGStates, PGActions } from '@components'
+import type { PGProps, PGState, PGActions } from '@components'
 import { useGridControls, useGridProps } from '@hooks'
 import type { CSSValue, ResponsiveValue } from '@types'
 import {
@@ -13,15 +13,15 @@ import {
 
 import styles from '@styles/PaddedGrid.module.css'
 
-const initialState: Readonly<PGStates> = {
+const initialState: Readonly<PGState> = {
   base: GRID.DEFAULTS.BASE,
-  maxWidth: GRID.DEFAULTS.MAX_WIDTH,
+  maxWidth: '100%',
   align: GRID.DEFAULTS.ALIGN,
   zIndex: GRID.DEFAULTS.Z_INDEX,
   styles: {},
 }
 
-function defaultGridReducer(state: PGStates, action: PGActions): PGStates {
+function defaultGridReducer(state: PGState, action: PGActions): PGState {
   switch (action.type) {
   case 'UPDATE_CONFIG':
     return {
@@ -52,13 +52,10 @@ export const PaddedGrid = memo(function PaddedGrid({
   style = {},
 }: PGProps) {
   const [state, dispatch] = useReducer(reducer, initialState)
-
-  // Get stable callbacks from controls
-  const controls = useGridControls(state, dispatch)
-  const { getValidatedConfig, updateConfig } = controls
+  const { getValidatedConfig, updateConfig } = useGridControls(state, dispatch)
   const { getGridProps } = useGridProps(state)
 
-  const getMaxWidthValue = (
+  const getMaxWidthValue = useCallback((
     maxWidth: CSSValue | ResponsiveValue<CSSValue>,
   ): CSSProperties['maxWidth'] => {
     if (typeof maxWidth === 'number') {
@@ -71,9 +68,9 @@ export const PaddedGrid = memo(function PaddedGrid({
       return parseResponsiveGridValue(maxWidth) || 'none'
     }
     return 'none'
-  }
+  }, [])
 
-  const prevConfigRef = useRef(state)
+  const prevConfigRef = useRef<PGState>(state)
 
   useEffect(() => {
     if (config && isValidConfig(config)) {
@@ -89,7 +86,6 @@ export const PaddedGrid = memo(function PaddedGrid({
         prevConfigRef.current = { ...prevConfigRef.current, ...validConfig }
       }
     }
-    // Dependencies are now just config, getValidatedConfig, and updateConfig
   }, [config, getValidatedConfig, updateConfig])
 
   const containerProps = getGridProps({
@@ -109,5 +105,6 @@ export const PaddedGrid = memo(function PaddedGrid({
 
   return <div {...containerProps}>{children}</div>
 })
+
 
 PaddedGrid.displayName = 'PaddedGrid'

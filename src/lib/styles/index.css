@@ -12,6 +12,9 @@
   --grid-base: 8px;
   --grid-max-width: 1200px;
   --grid-z-index: 0;
+  --grid-padding: 0;
+  --grid-justify: start;
+  --grid-template-columns: 1fr;
 
   /* Colors */
   --grid-color-x: rgba(232, 19, 56, 0.063);
