@@ -1,32 +1,19 @@
 import type {
   BaseComponentProps,
-  BaseGridStyles,
-  CSSCustomProperties,
-  GridFlatStyles,
-  GridLineStyles,
+  CSSValue,
   GridVariant,
 } from '@types'
 import type { CSSProperties } from 'react'
 
-export interface YGStyles extends Partial<BaseGridStyles> {
-  '--grid-height'?: string
-  '--grid-row-top'?: string
-  '--grid-row-color'?: string
-  '--grid-row-height'?: GridVariant extends 'line'
-    ? GridLineStyles['--grid-row-height']
-    : string
-  '--grid-row-opacity'?: GridVariant extends 'flat'
-    ? GridFlatStyles['--grid-row-opacity']
-    : string
-  visibility?: 'visible' | 'hidden'
-
+export interface GridLineStyles {
+  '--grid-column-width': '1px';
+  '--grid-row-height': '1px';
 }
 
-export interface YGContainerStyles
-  extends Partial<CSSProperties & CSSCustomProperties> {
-  '--grid-height'?: string;
-  '--grid-z-index'?: string | number;
-  '--grid-row-color'?: string;
+export interface GridFlatStyles {
+  '--grid-column-width': CSSValue;
+  '--grid-row-height': CSSValue;
+  '--grid-row-opacity': '0' | '1';
 }
 
 export interface YGConfig {
@@ -39,6 +26,4 @@ export interface YGConfig {
 
 export interface YGProps extends BaseComponentProps {
   config: YGConfig
-  visibility?: 'hidden' | 'visible';
-  style?: Partial<YGStyles>
 }

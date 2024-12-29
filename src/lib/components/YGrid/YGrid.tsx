@@ -1,9 +1,9 @@
 import type { CSSProperties, RefObject } from 'react'
 import { memo, useMemo, useRef, useCallback } from 'react'
 import { useGridDimensions, useVisibleGridLines } from '@hooks'
+import { CSSCustomProperties } from '@types'
 import { clamp, combineClassNames, combineStyles, GRID } from '@utils'
-import type { YGProps, YGContainerStyles, YGStyles } from './types'
-
+import type { YGProps, GridLineStyles, GridFlatStyles } from './types'
 import styles from '@styles/YGrid.module.css'
 
 export const YGrid = memo(function YGrid({
@@ -36,19 +36,19 @@ export const YGrid = memo(function YGrid({
 
   const containerStyles = useMemo(
     () => {
-      const baseStyles: YGContainerStyles = {
+      const baseStyles = {
         '--grid-height': typeof height === 'number' ? `${height}px` : height,
         '--grid-z-index': zIndex,
         '--grid-row-color': color,
-      }
+      } as Partial<CSSCustomProperties>
 
-      return combineStyles<YGContainerStyles>(baseStyles, style)
+      return combineStyles(baseStyles, style)
     },
     [height, zIndex, color, style],
   )
 
   const getRowStyles = useCallback(
-    (idx: number): Partial<CSSProperties & YGStyles> => ({
+    (idx: number): Partial<CSSProperties & (GridLineStyles | GridFlatStyles)> => ({
       '--grid-row-top': `${idx * baseUnit}px`,
       '--grid-row-color': color,
       '--grid-row-height': variant === 'line' ? '1px' : `${baseUnit}px`,
@@ -56,6 +56,7 @@ export const YGrid = memo(function YGrid({
     }),
     [baseUnit, color, variant],
   )
+
 
   const visibleRows = useMemo(() => {
     const rows = []

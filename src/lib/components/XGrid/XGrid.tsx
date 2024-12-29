@@ -1,8 +1,8 @@
 import { memo, useMemo, useRef } from 'react'
 import { useGridCalculations, useGridDimensions } from '@hooks'
 import { combineClassNames, combineStyles, GRID } from '@utils'
-import type { XGProps, XGStyles } from './types'
-import type { GridVariant } from '@types'
+import type { XGProps } from './types'
+import type { CSSCustomProperties, GridVariant } from '@types'
 
 import styles from '@styles/XGrid.module.css'
 
@@ -87,7 +87,7 @@ export const XGrid = memo(function XGrid({
   })
 
   const containerStyles = useMemo(() =>
-    combineStyles<Partial<XGStyles>>({
+    combineStyles({
       '--grid-template-columns': gridTemplateColumns,
       '--grid-gap': calculatedGap,
       '--grid-max-width': maxWidth,
@@ -97,22 +97,10 @@ export const XGrid = memo(function XGrid({
       '--grid-column-color': color,
       '--grid-z-index': zIndex,
       '--grid-column-width': variant === 'line' ? '1px' : undefined,
-      visibility,
-    }, style),
-  [
-    gridTemplateColumns,
-    calculatedGap,
-    maxWidth,
-    columnsCount,
-    align,
-    padding,
-    color,
-    zIndex,
-    variant,
-    visibility,
-    style,
-  ],
+    } as Partial<CSSCustomProperties>, style),
+  [gridTemplateColumns, calculatedGap, maxWidth, columnsCount, align, padding, color, zIndex, variant, style],
   )
+
 
   return (
     <div

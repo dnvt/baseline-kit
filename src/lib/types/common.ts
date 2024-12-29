@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { CSSCustomProperties } from '@/types/styles'
 
 // CSS Types
 export type CSSUnit = 'px' | 'rem' | 'em' | '%' | 'fr' | 'vh' | 'vw';
@@ -19,8 +20,11 @@ export type GridVariant = typeof GRID_VARIANTS[number];
 
 // Base Component Types
 export interface BaseComponentProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
   'data-testid'?: string;
+  className?: string;
+  children?: ReactNode;
+  style?: CSSProperties & CSSCustomProperties;
+  visibility?: Visibility
 }
+
+export type Visibility = 'none' | 'hidden' | 'visible'

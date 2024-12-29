@@ -1,8 +1,5 @@
-import type {
-  CSSCustomProperties,
-  CSSValue,
-} from '@types'
-import type { CSSProperties } from 'react'
+import type { CSSCustomProperties, CSSValue } from '@types'
+import { CSSProperties } from 'react'
 
 export const combineClassNames = (
   ...classes: Array<string | boolean | undefined | null>

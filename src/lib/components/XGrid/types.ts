@@ -3,22 +3,9 @@ import type {
   GridAlignment,
   CSSValue,
   GridVariant,
-  BaseGridStyles,
-  GridLineStyles,
   GridColumnsPattern,
   BaseComponentProps,
 } from '@types'
-
-export interface XGStyles extends BaseGridStyles {
-  '--grid-template-columns': CSSProperties['gridTemplateColumns'];
-  '--grid-gap': string | number;
-  '--grid-padding': CSSProperties['padding'];
-  '--grid-columns': number;
-  '--grid-column-color': CSSProperties['color'] | CSSProperties['backgroundColor'];
-  '--grid-column-width': GridVariant extends 'line'
-    ? GridLineStyles['--grid-column-width']
-    : CSSValue;
-}
 
 interface XGBaseConfig {
   align?: GridAlignment;
@@ -61,6 +48,4 @@ export type XGConfig =
 
 export interface XGProps extends BaseComponentProps {
   config: XGConfig;
-  visibility?: 'hidden' | 'visible';
-  style?: Partial<XGStyles>;
 }
