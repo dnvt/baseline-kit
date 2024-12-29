@@ -27,8 +27,7 @@
     "dist",
     "dist/styles.css",
     "LICENSE",
-    "README.md",
-    "docs"
+    "README.md"
   ],
   "engines": {
     "node": ">=18"

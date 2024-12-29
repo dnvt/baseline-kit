@@ -17,6 +17,7 @@ tsup.config.tsbuildinfo
 # Testing
 coverage/
 .nyc_output/
+vitest.d.ts
 
 # Editor directories and files
 .vscode/*
@@ -28,12 +29,16 @@ coverage/
 
 # Debug
 npm-debug.log*
+*.log
 
 # Environment variables
 .npmrc
 .env
 .env.*
 !.env.example
+
+# Changeset
+.changeset/
 
 # Temporary files
 *.tmp

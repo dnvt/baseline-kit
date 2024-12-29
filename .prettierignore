@@ -1,4 +1,7 @@
-node_modules
-dist
-coverage
+# Reference .gitignore
+# Exclude the same files as in .gitignore for Prettier formatting
+
+node_modules/
+dist/
+coverage/
 *.d.ts

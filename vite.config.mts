@@ -14,10 +14,6 @@ export default defineConfig(({ command }) => ({
           src: resolvePath('README.md'), // Use an absolute path
           dest: '.', // Copy to root of `dist`
         },
-        {
-          src: resolvePath('docs/**/*'), // Use an absolute path
-          dest: 'docs', // Copy to `dist/docs`
-        },
       ],
     }),
   ],
