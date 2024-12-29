@@ -38,15 +38,3 @@ jobs:
 
       - name: Debug Environment
         run: uname -a
-
-      - name: Upload Coverage Reports
-        if: always()
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./coverage/
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: true
-          verbose: true
-          uploader-version: 'latest'
