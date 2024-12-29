@@ -2,28 +2,43 @@
 @import 'src/lib/styles/base.css';
 
 /* Component styles */
-@import 'src/lib/styles/modules/PaddedGrid.module.css';
 @import 'src/lib/styles/modules/XGrid.module.css';
 @import 'src/lib/styles/modules/YGrid.module.css';
 
 /* CSS Custom Properties */
 :root {
+  /* Colors */
+  --cyan: 190;
+  --blue: 220;
+  --purple: 255;
+  --sat: 70%;
+  --light: 50%;
+
   /* Grid System */
   --grid-base: 8px;
-  --grid-max-width: 1200px;
-  --grid-z-index: 0;
-  --grid-padding: 0;
+  --grid-gap: 8px;
+  --grid-height: 100%;
   --grid-justify: start;
+  --grid-max-width: 100%;
+  --grid-padding: 0;
   --grid-template-columns: 1fr;
+  --grid-z-index: 0;
 
-  /* Colors */
-  --grid-color-x: rgba(232, 19, 56, 0.063);
-  --grid-color-y: rgba(232, 19, 56, 0.376);
+  /* Row */
+  --grid-row-color: hsla(var(--blue), var(--sat), var(--light), 0.15);
+  --grid-row-height: 1px;
+  --grid-row-opacity: 1;
+  --grid-row-top: 0;
 
-  /* Breakpoints */
-  --grid-bp-sm: 640px;
-  --grid-bp-md: 768px;
-  --grid-bp-lg: 1024px;
-  --grid-bp-xl: 1280px;
-  --grid-bp-2xl: 1536px;
+  /* Column */
+  --grid-column-color: hsla(var(--cyan), var(--sat), var(--light), 0.2);
+  --grid-column-width: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark theme colors */
+    --sat: 100%;
+    --light: 70%;
+  }
 }

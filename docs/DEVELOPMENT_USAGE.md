@@ -2,24 +2,37 @@
 
 ## Overview
 
-Padded Grid is designed to help developers visualize and maintain consistent grid systems during development, similar to
-design tools like Figma. This guide explains how to effectively use the grid system for development purposes.
+The grid system helps developers visualize and maintain consistent layouts during development, similar to design tools
+like Figma.
 
 ## Basic Setup
 
 ```tsx
-import { PaddedGrid, XGrid, YGrid } from '@dnvt/padded-grid';
-import '@dnvt/padded-grid/styles.css';
+import { XGrid, YGrid } from 'padded-grid';
+import 'padded-grid/styles.css';
 
 function App() {
   const showGrid = process.env.NODE_ENV === 'development';
 
   return (
-    <PaddedGrid>
-      <XGrid columns={12} gap={16} show={showGrid} />
-      <YGrid base={8} show={showGrid} />
+    <div className="layout">
+      <XGrid
+        config={{
+          columns: 12,
+          gap: 16,
+          maxWidth: "1200px"
+        }}
+        visibility={showGrid ? 'visible' : 'hidden'}
+      />
+      <YGrid
+        config={{
+          baseUnit: 8,
+          height: "100%"
+        }}
+        visibility={showGrid ? 'visible' : 'hidden'}
+      />
       <main>Content</main>
-    </PaddedGrid>
+    </div>
   );
 }
 ```
@@ -28,163 +41,110 @@ function App() {
 
 ### Column Grid (XGrid)
 
-Helps visualize and maintain consistent horizontal spacing and column alignment.
-
 ```tsx
-// Standard 12-column grid
+// Fixed columns
 <XGrid
-  columns={12}
-  gap={16}
-  show={showColumns}
-  color="#ff00001a"
+  config={{
+    columns: 12,
+    gap: 16,
+    color: "#ff00001a"
+  }}
+  visibility="visible"
 />
 
-// Custom column pattern
+// Custom pattern
 <XGrid
-  columns={['1fr', '2fr', '1fr']}
-  gap={24}
-  show={showCustomGrid}
-  color="#0000ff1a"
+  config={{
+    columns: ['64px', '1fr', '2fr', '1fr', '64px'],
+    gap: 24,
+    color: "#0000ff1a"
+  }}
+  visibility="visible"
 />
 
-// Auto-calculated columns
+// Line variant
 <XGrid
-  columnWidth={240}
-  gap={16}
-  show={showAutoGrid}
+  config={{
+    variant: 'line',
+    gap: 8,
+    color: "#00000020"
+  }}
+  visibility="visible"
 />
 ```
 
 ### Baseline Grid (YGrid)
 
-Helps maintain consistent vertical rhythm and typography alignment.
-
 ```tsx
 <YGrid
-  base={8}
-  show={showBaseline}
-  color="#00ff001a"
-  variant="line"
+  config={{
+    baseUnit: 8,
+    color: "#00ff001a",
+    variant: "line"
+  }}
+  visibility="visible"
 />
 ```
 
 ## Development Controls
 
-### Toggle Implementation
-
 ```tsx
 function DevelopmentGrid() {
-  const [showColumns, setShowColumns] = useState(true);
-  const [showBaseline, setShowBaseline] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
 
   return (
-    <PaddedGrid>
-      <XGrid show={showColumns} columns={12} gap={16} />
-      <YGrid show={showBaseline} base={8} />
+    <div className="layout">
+      <XGrid
+        config={{
+          columns: 12,
+          gap: 16,
+          maxWidth: "1200px"
+        }}
+        visibility={showGrid ? 'visible' : 'hidden'}
+      />
 
       <div className="grid-controls">
         <label>
           <input
             type="checkbox"
-            checked={showColumns}
-            onChange={(e) => setShowColumns(e.target.checked)}
+            checked={showGrid}
+            onChange={(e) => setShowGrid(e.target.checked)}
           />
-          Show Columns
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={showBaseline}
-            onChange={(e) => setShowBaseline(e.target.checked)}
-          />
-          Show Baseline
+          Show Grid
         </label>
       </div>
 
       <main>Content</main>
-    </PaddedGrid>
+    </div>
   );
 }
 ```
 
-### Environment-Based Toggling
-
-```tsx
-// In your component
-const showGrid = process.env.NODE_ENV === 'development';
-
-// Or using a feature flag
-const showGrid = process.env.NEXT_PUBLIC_SHOW_GRID === 'true';
-```
-
-## Common Use Cases
-
-### Design Implementation
-
-1. Set up grids to match your design tool specifications:
-
-```tsx
-<PaddedGrid config={{ maxWidth: "1440px" }}>
-  <XGrid
-    columns={['64px', '1fr', '1fr', '1fr', '64px']}
-    gap={24}
-    show={showGrid}
-  />
-</PaddedGrid>
-```
-
-### Typography Alignment
-
-1. Use the baseline grid to maintain consistent vertical rhythm:
-
-```tsx
-<PaddedGrid>
-  <YGrid base={8} show={showGrid} />
-  <h1 style={{ marginBottom: '24px' }}>Heading</h1>
-  <p style={{ marginBottom: '16px' }}>Content</p>
-</PaddedGrid>
-```
-
-### Responsive Layout Verification
-
-```tsx
-<PaddedGrid>
-  <XGrid
-    columns={{
-      base: 4,    // Mobile
-      sm: 8,      // Tablet
-      md: 12      // Desktop
-    }}
-    gap={{
-      base: 16,
-      md: 24
-    }}
-    show={showGrid}
-  />
-</PaddedGrid>
-```
-
 ## Tips & Best Practices
 
-1. **Color Customization**
+1. **Color Usage**
 
-- Use low-opacity colors for grids (e.g., `rgba(255,0,0,0.1)`)
-- Use different colors for different grid types
-  
+- Use low-opacity colors (e.g., rgba(255,0,0,0.1))
+- Different colors for different grid purposes
+- Consider contrast with content
+
 2. **Performance**
 
-- Grids are automatically hidden in production
-- Use the `show` prop to conditionally render grids
+- Toggle visibility when not needed
+- Use appropriate column counts
+- Consider virtualization for long pages
 
 3. **Multiple Grids**
 
-- Layer different grids for different purposes
-- Use different colors to distinguish between grids
+- Layer grids for different purposes
+- Use distinct colors for clarity
+- Consider z-index ordering
 
 4. **Debugging**
 
-- Toggle grids individually to debug specific alignment issues
-- Use with browser dev tools for precise measurements
+- Toggle grids individually
+- Use with browser dev tools
+- Check alignment at different widths
 
 ## Related Documentation
 

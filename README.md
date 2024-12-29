@@ -1,77 +1,55 @@
 # Padded Grid
 
 A development tool for visualizing and maintaining consistent grid systems in React applications. Similar to design
-tools like Figma, it provides toggleable grid overlays that help ensure precise spacing, alignment, and layout
-consistency during development.
-
-## What is it?
-
-Padded Grid helps you:
-
-- Visualize column grids and baseline grids while building your layouts
-- Maintain consistent spacing and alignment across your application
-- Toggle different grid systems on/off during development
-- Ensure your designs match their specifications
-
-↓ Demo in construction...
-
-![Grid Visualization Example](docs/assets/demo_in_progress.jpg)
+tools like Figma, it provides toggleable grid overlays that help ensure precise spacing and alignment during
+development.
 
 ## Features
 
 - 🎯 Interactive grid overlays for development
 - 📏 Column grid visualization (like Figma's layout grid)
 - 📐 Baseline grid for typography alignment
-- 🎚️ Toggleable grid guides
-- 📱 Responsive grid visualization
+- 🎚️ Toggleable grid visibility
 - 🎨 Customizable grid colors and opacity
 - 🔧 TypeScript-first with comprehensive types
 - ⚡️ Zero runtime dependencies
 - 🪶 Tree-shakeable & optimized bundle
 
-## Why Use It?
-
-When building complex layouts, it's crucial to maintain consistent spacing and alignment. While CSS Grid and Flexbox are
-powerful layout tools, they don't provide visual guides during development. Padded Grid bridges this gap by offering:
-
-1. **Visual Feedback**: See your grid system while you build
-2. **Design Consistency**: Match your implementation to design specs
-3. **Typography Alignment**: Ensure text follows your baseline grid
-4. **Development Efficiency**: Quickly spot alignment issues
-
-## Installation
-
-```bash
-# npm
-npm install padded-grid
-```
-
 ## Quick Start
 
 ```tsx
-import { PaddedGrid, XGrid, YGrid } from 'padded-grid';
+import { XGrid, YGrid } from 'padded-grid';
 import 'padded-grid/styles.css';
 
 function App() {
-  // Toggle grid visibility during development
   const showGrid = process.env.NODE_ENV === 'development';
 
   return (
-    <PaddedGrid config={{ maxWidth: "1200px" }}>
-      {/* Column grid overlay */}
-      <XGrid columns={12} gap={16} show={showGrid} />
-
+    <div>
       {/* Baseline grid for typography alignment */}
-      <YGrid base={8} show={showGrid} />
+      <YGrid
+        config={{
+          baseUnit: 8,
+          height: "100%",
+        }}
+        visibility={showGrid ? 'visible' : 'hidden'}
+      />
+
+      {/* Column grid overlay */}
+      <XGrid
+        config={{
+          columns: 12,
+          gap: 16,
+          maxWidth: "1200px",
+        }}
+        visibility={showGrid ? 'visible' : 'hidden'}
+      />
 
       <main>Your content...</main>
-    </PaddedGrid>
+    </div>
   );
 }
 ```
-
-The grid overlays help you visualize and maintain consistent spacing during development.
-See [Development Usage Guide](./docs/DEVELOPMENT_USAGE.md) for detailed examples and best practices.
 
 ## Documentation
 
@@ -83,7 +61,7 @@ See [Development Usage Guide](./docs/DEVELOPMENT_USAGE.md) for detailed examples
 
 - Modern browsers (Chrome, Firefox, Safari, Edge)
 - CSS Grid Layout support required
-- No IE11 support
+- CSS Custom Properties (CSS Variables) support required
 
 ## Contributing
 

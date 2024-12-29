@@ -1,58 +1,69 @@
 import { memo, useMemo, useRef } from 'react'
 import { useGridCalculations, useGridDimensions } from '@hooks'
-import {
-  combineClassNames,
-  combineStyles,
-  parseResponsiveGridValue,
-  GRID,
-} from '@utils'
-
+import { combineClassNames, combineStyles, GRID } from '@utils'
 import type { XGProps, XGStyles } from './types'
+import type { GridVariant } from '@types'
+
 import styles from '@styles/XGrid.module.css'
 
+const GridColumns = memo(function GridColumns({
+  count,
+  variant,
+}: {
+  count: number;
+  variant?: GridVariant;
+}) {
+  return (
+    <div className={styles.columnsContainer}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className={combineClassNames(
+            styles.column,
+            variant === 'line' && styles.lineColumn,
+          )}
+          data-column-index={i}
+        />
+      ))}
+    </div>
+  )
+})
+
 export const XGrid = memo(function XGrid({
+  visibility = 'hidden',
   config,
   className = '',
   style = {},
 }: XGProps) {
+
   const {
-    show = false,
     align = GRID.DEFAULTS.ALIGN,
     color = GRID.DEFAULTS.COLORS.X_GRID,
     columns = GRID.DEFAULTS.COLUMNS,
     columnWidth = GRID.DEFAULTS.COLUMN_WIDTH,
     gap,
-    maxWidth = GRID.DEFAULTS.MAX_WIDTH,
+    maxWidth,
     padding,
     variant,
-    baseUnit = GRID.DEFAULTS.BASE,
+    zIndex = GRID.DEFAULTS.Z_INDEX,
   } = config
 
   const containerRef = useRef<HTMLDivElement>(null)
   const { width } = useGridDimensions(containerRef)
 
-  const adjustedGap = useMemo(() => {
-    if (variant === 'line') {
-      const baseGap = typeof gap === 'number' ? gap : baseUnit
-      return Math.max(0, baseGap - 1)
-    }
-    return gap
-  }, [variant, gap, baseUnit])
-
   const gridConfig = useMemo(() => {
     if (variant === 'line') {
       return {
         variant: 'line' as const,
-        gap: adjustedGap,
-        baseUnit,
+        gap: Math.max(0, (typeof gap === 'number' ? gap : 8) - 1),
       }
     }
 
     if (Array.isArray(columns)) {
       return {
         columns,
-        gap: adjustedGap,
-        baseUnit,
+        gap,
+        columnWidth: undefined,
       }
     }
 
@@ -60,42 +71,35 @@ export const XGrid = memo(function XGrid({
       return {
         columns,
         columnWidth,
-        gap: adjustedGap,
-        baseUnit,
+        gap,
       }
     }
 
     return {
-      columnWidth: columnWidth,
-      gap: adjustedGap,
-      baseUnit,
+      columnWidth,
+      gap,
     }
-  }, [variant, columns, columnWidth, adjustedGap, baseUnit])
+  }, [variant, columns, columnWidth, gap])
 
+  const { gridTemplateColumns, columnsCount, calculatedGap } = useGridCalculations({
+    containerWidth: width,
+    config: gridConfig,
+  })
 
-  const { gridTemplateColumns, columnsCount, calculatedGap } =
-    useGridCalculations({
-      containerWidth: width,
-      config: gridConfig,
-    })
-
-  const containerStyles = useMemo(() => {
-    const styles: Partial<XGStyles> = {
+  const containerStyles = useMemo(() =>
+    combineStyles<Partial<XGStyles>>({
       '--grid-template-columns': gridTemplateColumns,
       '--grid-gap': calculatedGap,
-      '--grid-max-width': parseResponsiveGridValue(maxWidth),
+      '--grid-max-width': maxWidth,
       '--grid-columns': columnsCount,
       '--grid-justify': align,
       '--grid-padding': padding,
-      '--column-color': color,
-    }
-
-    if (variant === 'line') {
-      styles['--column-width'] = '1px'
-    }
-
-    return combineStyles(styles, style)
-  }, [
+      '--grid-column-color': color,
+      '--grid-z-index': zIndex,
+      '--grid-column-width': variant === 'line' ? '1px' : undefined,
+      visibility,
+    }, style),
+  [
     gridTemplateColumns,
     calculatedGap,
     maxWidth,
@@ -103,32 +107,26 @@ export const XGrid = memo(function XGrid({
     align,
     padding,
     color,
-    style,
+    zIndex,
     variant,
-  ])
-
-  if (!show) return null
+    visibility,
+    style,
+  ],
+  )
 
   return (
     <div
       ref={containerRef}
-      className={combineClassNames(styles.container, className)}
+      className={combineClassNames(
+        styles.container,
+        className,
+        visibility === 'visible' ? styles.visible : styles.hidden,
+      )}
       style={containerStyles}
       data-testid="xgrid-container"
       data-variant={variant}
     >
-      <div className={styles.columnsContainer}>
-        {Array.from({ length: columnsCount }).map((_, i) => (
-          <div
-            key={i}
-            className={combineClassNames(
-              styles.column,
-              variant === 'line' && styles.lineColumn,
-            )}
-            data-column-index={i}
-          />
-        ))}
-      </div>
+      <GridColumns count={columnsCount} variant={variant} />
     </div>
   )
 })

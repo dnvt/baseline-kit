@@ -2,68 +2,65 @@ import type { CSSProperties } from 'react'
 import type {
   GridAlignment,
   CSSValue,
-  ResponsiveValue,
   GridVariant,
   BaseGridStyles,
   GridLineStyles,
   GridColumnsPattern,
-  BaseGridConfig, BaseComponentProps,
+  BaseComponentProps,
 } from '@types'
 
 export interface XGStyles extends BaseGridStyles {
-  '--grid-template-columns': CSSProperties['gridTemplateColumns']
-  '--grid-gap': string | number
-  '--grid-padding': CSSProperties['padding']
-  '--grid-columns': number
-  '--column-color': CSSProperties['color'] | CSSProperties['backgroundColor']
-  '--column-width': GridVariant extends 'line'
-    ? GridLineStyles['--column-width']
-    : CSSValue
+  '--grid-template-columns': CSSProperties['gridTemplateColumns'];
+  '--grid-gap': string | number;
+  '--grid-padding': CSSProperties['padding'];
+  '--grid-columns': number;
+  '--grid-column-color': CSSProperties['color'] | CSSProperties['backgroundColor'];
+  '--grid-column-width': GridVariant extends 'line'
+    ? GridLineStyles['--grid-column-width']
+    : CSSValue;
 }
 
-export interface XGridBaseConfig extends BaseGridConfig {
-  align?: GridAlignment
-  color?: CSSProperties['color'] | CSSProperties['backgroundColor']
-  maxWidth?: ResponsiveValue<CSSValue>
-  padding?: CSSProperties['padding']
+interface XGBaseConfig {
+  align?: GridAlignment;
+  color?: CSSProperties['color'] | CSSProperties['backgroundColor'];
+  gap?: CSSValue;
+  maxWidth?: CSSValue;
+  padding?: CSSProperties['padding'];
+  zIndex?: CSSProperties['zIndex'];
 }
 
-export interface XGridPatternConfig extends XGridBaseConfig {
-  variant?: never
-  columns: GridColumnsPattern
-  gap: ResponsiveValue<CSSValue | 'auto'>
-  columnWidth?: never
+export interface XGPatternConfig extends XGBaseConfig {
+  variant?: never;
+  columns: GridColumnsPattern;
+  columnWidth?: never;
 }
 
-export interface XGridAutoConfig extends XGridBaseConfig {
-  variant?: never
-  columnWidth: ResponsiveValue<CSSValue | 'auto'>
-  columns?: never
-  gap: ResponsiveValue<CSSValue | 'auto'>
+export interface XGAutoConfig extends XGBaseConfig {
+  variant?: never;
+  columnWidth: CSSValue;
+  columns?: never;
 }
 
-export interface XGridFixedConfig extends XGridBaseConfig {
-  variant?: never
-  columns: number
-  columnWidth?: ResponsiveValue<CSSValue | 'auto'>
-  gap?: ResponsiveValue<CSSValue | 'auto'>
+export interface XGFixedConfig extends XGBaseConfig {
+  variant?: never;
+  columns: number;
+  columnWidth?: CSSValue;
 }
 
-export interface XGridLineConfig extends XGridBaseConfig {
-  variant: GridVariant
-  columns?: never
-  columnWidth?: never
-  gap?: ResponsiveValue<CSSValue>
+export interface XGLineConfig extends XGBaseConfig {
+  variant: GridVariant;
+  columns?: never;
+  columnWidth?: never;
 }
 
-export type XGridConfig =
-  | XGridPatternConfig
-  | XGridAutoConfig
-  | XGridFixedConfig
-  | XGridLineConfig
-
+export type XGConfig =
+  | XGPatternConfig
+  | XGAutoConfig
+  | XGFixedConfig
+  | XGLineConfig;
 
 export interface XGProps extends BaseComponentProps {
-  config: XGridConfig
-  style?: Partial<XGStyles>
+  config: XGConfig;
+  visibility?: 'hidden' | 'visible';
+  style?: Partial<XGStyles>;
 }

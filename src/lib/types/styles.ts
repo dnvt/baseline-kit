@@ -1,25 +1,28 @@
+import type { CSSValue } from './common'
 import type { CSSProperties } from 'react'
 
-import type { CSSValue } from './common'
-
+// CSS Custom Properties
 export type CSSCustomProperties = {
-  [key: `--grid-${string}`]: CSSValue
+  [key: `--grid-${string}`]: CSSValue;
+};
+
+// Base Grid Styles
+export interface BaseGridStyles
+  extends Partial<CSSProperties & CSSCustomProperties> {
+  '--grid-base'?: `${number}px`;
+  '--grid-max-width'?: CSSValue;
+  '--grid-z-index'?: CSSProperties['zIndex'];
+  '--grid-justify'?: string;
 }
 
-export interface BaseGridStyles extends Partial<CSSProperties & CSSCustomProperties> {
-  '--grid-base'?: `${number}px`
-  '--grid-max-width'?: CSSValue
-  '--grid-z-index'?: number
-  '--grid-justify'?: string
-}
-
+// Grid Variant Styles
 export interface GridLineStyles {
-  '--column-width': '1px'
-  '--row-height': '1px'
+  '--grid-column-width': '1px';
+  '--grid-row-height': '1px';
 }
 
 export interface GridFlatStyles {
-  '--column-width': CSSValue
-  '--row-height': CSSValue
-  '--row-opacity': '0' | '1'
+  '--grid-column-width': CSSValue;
+  '--grid-row-height': CSSValue;
+  '--grid-row-opacity': '0' | '1';
 }

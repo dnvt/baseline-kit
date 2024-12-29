@@ -1,5 +1,70 @@
 {
   "prettier.mode": "Enabled",
   "nodejs.editor.formatOnSave.eslint.mode": "Auto",
-  "prettier.specificBinary": "/.prettierrc.json"
+  "prettier.specificBinary": "/.prettierrc.json",
+  "configurations": [
+    {
+      "name": "dev",
+      "type": "command",
+      "program": "bun",
+      "args": [
+        "run",
+        "dev"
+      ]
+    },
+    {
+      "name": "build",
+      "type": "command",
+      "program": "bun",
+      "args": [
+        "run",
+        "build"
+      ]
+    },
+    {
+      "name": "test",
+      "type": "command",
+      "program": "bun",
+      "args": [
+        "run",
+        "test"
+      ]
+    },
+    {
+      "name": "test:watch",
+      "type": "command",
+      "program": "bun",
+      "args": [
+        "run",
+        "test:watch"
+      ]
+    },
+    {
+      "name": "lint",
+      "type": "command",
+      "program": "bun",
+      "args": [
+        "run",
+        "lint"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "type": "command",
+      "program": "bun",
+      "args": [
+        "run",
+        "typecheck"
+      ]
+    },
+    {
+      "name": "format",
+      "type": "command",
+      "program": "bun",
+      "args": [
+        "run",
+        "format"
+      ]
+    }
+  ]
 }

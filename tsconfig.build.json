@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    // Add this line
     "declaration": true,
     "declarationDir": "dist",
     "emitDeclarationOnly": true,
@@ -8,13 +10,18 @@
     "stripInternal": true,
     "moduleResolution": "Node",
     "module": "ESNext",
-    // If you used `bundler` before and run into issues resolving imports,
-    // switching to "Node" or "NodeNext" can help.
-
-    // Ensure we don't accidentally turn off emissions:
     "noEmit": false
   },
   "include": [
     "src/lib"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "src/lib/test",
+    "vitest.config.ts",
+    "vitest.d.ts"
   ]
 }

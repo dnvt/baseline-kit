@@ -1,28 +1,21 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "types": [
+      "vitest/globals",
+      "node"
+    ],
+    "jsx": "react-jsx",
+    "moduleResolution": "Node",
+    "module": "ESNext",
+    "skipLibCheck": true,
     "target": "ES2020",
     "lib": [
       "ES2020",
       "DOM",
       "DOM.Iterable"
     ],
-    "module": "ESNext",
-    "useDefineForClassFields": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    "allowSyntheticDefaultImports": true,
-    "jsx": "react-jsx",
     "strict": true,
-    "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noEmit": false,
-    "baseUrl": ".",
     "paths": {
       "@/*": [
         "src/lib/*"
@@ -42,21 +35,15 @@
       "@styles/*": [
         "src/lib/styles/modules/*"
       ]
-    },
-    "typeRoots": [
-      "./node_modules/@types",
-      "./src/lib/types"
-    ]
+    }
   },
   "include": [
     "src/lib/**/*",
-    "src/lib/types/*.d.ts",
-    "demo/**/*"
+    "demo/**/*",
+    "vitest.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.test.tsx"
+    "dist"
   ]
 }

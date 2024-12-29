@@ -1,41 +1,5 @@
 # Component API Reference
 
-## PaddedGrid
-
-Main container component that provides the grid structure and spacing control.
-
-### Props
-
-```typescript
-interface PGProps {
-  // Core configuration
-  config: {
-    base?: number;              // Base unit for spacing (default: 8)
-    maxWidth?: string | number; // Container max width (default: '100%')
-    align?: 'start' | 'center' | 'end'; // Alignment (default: 'center')
-  };
-  // Optional styling
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
-}
-```
-
-### Usage
-
-```tsx
-<PaddedGrid
-  config={{
-    base: 8,
-    maxWidth: "1200px",
-    align: "center"
-  }}
-  className="custom-grid"
->
-  {/* Grid content */}
-</PaddedGrid>
-```
-
 ## XGrid
 
 Horizontal grid component for column-based layouts.
@@ -43,21 +7,26 @@ Horizontal grid component for column-based layouts.
 ### Props
 
 ```typescript
-interface XGProps {
+interface XGConfig {
   // Column configuration (one of these required)
-  columns?: number;                    // Fixed number of columns
-  columns?: Array<string | number>;    // Custom pattern
-  columnWidth?: string | number;       // Auto-calculated columns
+  columns?: number | GridColumnsPattern;    // Fixed number or pattern of columns
+  columnWidth?: CSSValue;                   // For auto-calculated columns
 
-  // Spacing and styling
-  gap?: number;                        // Gap between columns
-  variant?: 'default' | 'line';        // Grid style variant
-  show?: boolean;                      // Toggle visibility
-  color?: string;                      // Guide color
+  // Common properties
+  gap?: CSSValue;                          // Gap between columns
+  align?: 'start' | 'center' | 'end';      // Grid alignment
+  color?: CSSProperties['color'];          // Guide color
+  maxWidth?: CSSValue;                     // Maximum grid width
+  padding?: CSSProperties['padding'];      // Grid padding
+  variant?: 'line';                        // Optional line variant
+  zIndex?: number;                         // Z-index for grid
+}
 
-  // Optional
+interface XGProps {
+  config: XGConfig;
+  visibility?: 'hidden' | 'visible';
   className?: string;
-  style?: CSSProperties;
+  style?: Partial<XGStyles>;
 }
 ```
 
@@ -65,16 +34,43 @@ interface XGProps {
 
 ```tsx
 // Fixed columns
-<XGrid columns={12} gap={16} />
+<XGrid
+  config={{
+    columns: 12,
+    gap: 16,
+    maxWidth: "1200px"
+  }}
+  visibility="visible"
+/>
 
 // Custom pattern
-<XGrid columns={['24px', '1fr', '2fr']} gap={16} />
-
-// Auto-calculated
-<XGrid columnWidth={240} gap={24} />
+<XGrid
+  config={{
+    columns: ['24px', '1fr', '2fr'],
+    gap: 16,
+    color: '#0000ff25'
+  }}
+  visibility="visible"
+/>
 
 // Line variant
-<XGrid variant="line" gap={8} show color="#0000ff25" />
+<XGrid
+  config={{
+    variant: 'line',
+    gap: 8,
+    color: '#00000020'
+  }}
+  visibility="visible"
+/>
+
+// Auto-calculated columns
+<XGrid
+  config={{
+    columnWidth: 240,
+    gap: 24
+  }}
+  visibility="visible"
+/>
 ```
 
 ## YGrid
@@ -84,19 +80,19 @@ Vertical grid component for baseline alignment.
 ### Props
 
 ```typescript
+interface YGConfig {
+  baseUnit?: number;                   // Base unit for spacing (default: 8)
+  height?: CSSValue;                   // Grid height (default: '100%')
+  variant?: 'line' | 'flat';           // Grid style variant (default: "line")
+  color?: CSSProperties['color'];      // Guide color
+  zIndex?: number;                     // Z-index for layering
+}
+
 interface YGProps {
-  // Core configuration
-  base?: number;                // Base unit for spacing
-  height?: string | number;     // Grid height
-
-  // Display options
-  show?: boolean;              // Toggle visibility
-  variant?: 'line' | 'flat';   // Grid style variant
-  color?: string;              // Guide color
-
-  // Optional
+  config: YGConfig;
+  visibility?: 'hidden' | 'visible';
   className?: string;
-  style?: CSSProperties;
+  style?: Partial<YGStyles>;
 }
 ```
 
@@ -104,61 +100,66 @@ interface YGProps {
 
 ```tsx
 // Basic baseline grid
-<YGrid base={8} show />
+<YGrid
+  config={{
+    baseUnit: 8,
+    height: "100%"
+  }}
+  visibility="visible"
+/>
 
-// Full-height guide
-<YGrid base={8} height="100vh" variant="line" />
-
-// Custom colored guides
-<YGrid base={4} color="rgba(255,0,0,0.1)" />
+// Custom variant and color
+<YGrid
+  config={{
+    baseUnit: 8,
+    variant: "flat",
+    color: "rgba(255,0,0,0.1)"
+  }}
+  visibility="visible"
+/>
 ```
 
 ## Common Patterns
 
-### Responsive Grid
-
-```tsx
-<PaddedGrid config={{ base: 8 }}>
-  <XGrid
-    columns={{
-      base: 1,  // Mobile
-      sm: 2,    // Tablet
-      md: 3,    // Laptop
-      lg: 4     // Desktop
-    }}
-    gap={{
-      base: 16,
-      md: 24,
-      lg: 32
-    }}
-  />
-</PaddedGrid>
-```
-
 ### Grid with Guides
 
 ```tsx
-<PaddedGrid config={{ base: 8 }}>
-  {/* Column guides */}
-  <XGrid columns={12} gap={16} show color="#0000ff15" />
+<div>
+  <XGrid
+    config={{
+      columns: 12,
+      gap: 16,
+      color: "#0000ff15",
+    }}
+    visibility="visible"
+  />
 
-  {/* Baseline guides */}
-  <YGrid base={8} show color="#ff000015" />
+  <YGrid
+    config={{
+      baseUnit: 8,
+      color: "#ff000015",
+    }}
+    visibility="visible"
+  />
 
-  {/* Content */}
+  {/* Content */
+  }
   <main>Your content here</main>
-</PaddedGrid>
+</div>
 ```
 
 ### Mixed Column Patterns
 
 ```tsx
 <XGrid
-  columns={[
-    '64px',     // Fixed sidebar
-    '1fr',      // Flexible content
-    '300px'     // Fixed sidebar
-  ]}
-  gap={24}
+  config={{
+    columns: [
+      '64px',     // Fixed sidebar
+      '1fr',      // Flexible content
+      '300px',    // Fixed sidebar
+    ],
+    gap: 24,
+  }}
+  visibility="visible"
 />
 ```

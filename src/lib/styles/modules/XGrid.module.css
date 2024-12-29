@@ -2,11 +2,13 @@
   position: absolute;
   pointer-events: none;
   user-select: none;
-  z-index: var(--grid-z-index, -1);
+  z-index: var(--grid-z-index);
   top: 0;
-  bottom: 0;
+  left: 0;
+  right: 0;
   height: 100%;
-  width: var(--grid-max-width);
+  width: 100%;
+  max-width: var(--grid-max-width);
   padding: var(--grid-padding);
 }
 
@@ -15,53 +17,17 @@
   width: 100%;
   display: grid;
   grid-template-columns: var(--grid-template-columns);
-  gap: var(--grid-gap, 16px);
+  gap: var(--grid-gap);
   justify-content: var(--grid-justify);
 }
 
 .column {
   height: 100%;
-  background-color: var(--column-color, #00baff26);
+  background-color: var(--grid-column-color);
   width: 100%;
   min-width: 0;
 }
 
 .lineColumn {
-  width: var(--column-width, 1px);
-}
-
-/* Responsive breakpoints using CSS variables */
-@container (min-width: var(--breakpoint-sm, 640px)) {
-  .container {
-    --grid-columns: var(--grid-columns-sm, var(--grid-columns-base));
-    --grid-gap: var(--grid-gap-sm, var(--grid-gap-base));
-  }
-}
-
-@container (min-width: var(--breakpoint-md, 768px)) {
-  .container {
-    --grid-columns: var(--grid-columns-md, var(--grid-columns-sm, var(--grid-columns-base)));
-    --grid-gap: var(--grid-gap-md, var(--grid-gap-sm, var(--grid-gap-base)));
-  }
-}
-
-@container (min-width: var(--breakpoint-lg, 1024px)) {
-  .container {
-    --grid-columns: var(--grid-columns-lg, var(--grid-columns-md, var(--grid-columns-sm, var(--grid-columns-base))));
-    --grid-gap: var(--grid-gap-lg, var(--grid-gap-md, var(--grid-gap-sm, var(--grid-gap-base))));
-  }
-}
-
-@container (min-width: var(--breakpoint-xl, 1280px)) {
-  .container {
-    --grid-columns: var(--grid-columns-xl, var(--grid-columns-lg, var(--grid-columns-md, var(--grid-columns-sm, var(--grid-columns-base)))));
-    --grid-gap: var(--grid-gap-xl, var(--grid-gap-lg, var(--grid-gap-md, var(--grid-gap-sm, var(--grid-gap-base)))));
-  }
-}
-
-@container (min-width: var(--breakpoint-xxl, 1536px)) {
-  .container {
-    --grid-columns: var(--grid-columns-xxl, var(--grid-columns-xl, var(--grid-columns-lg, var(--grid-columns-md, var(--grid-columns-sm, var(--grid-columns-base))))));
-    --grid-gap: var(--grid-gap-xxl, var(--grid-gap-xl, var(--grid-gap-lg, var(--grid-gap-md, var(--grid-gap-sm, var(--grid-gap-base))))));
-  }
+  width: var(--grid-column-width, 1px);
 }

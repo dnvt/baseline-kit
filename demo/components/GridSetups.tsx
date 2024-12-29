@@ -1,68 +1,17 @@
-import { useReducer, useLayoutEffect, type PropsWithChildren } from 'react'
-
-import { GRID } from '@utils'
-import { PaddedGrid, type PGConfig, XGrid, YGrid } from '@components'
+import { useReducer, type PropsWithChildren, useCallback, Children, isValidElement, cloneElement } from 'react'
+import { XGrid, YGrid } from '@components'
 import { type GridColumnsPattern } from '@types'
+import { GRID } from '@utils'
 import { GridControls } from './GridControls'
+import type { DemoGridAction, DemoGridState } from './types.ts'
+import { usePageHeight } from '../hooks/usePageHeight'
+import type { ContentProps } from '../main.tsx'
 
-export interface GridState {
-  config: Partial<PGConfig>
-  showGuides: {
-    columns: boolean
-    baseline: boolean
-  }
-  columnConfig: {
-    count: number
-    gap: number
-    pattern: GridColumnsPattern
-  }
-  pageHeight: number
-}
+// Custom reducer for the demo -------------------------------------------------
 
-const WIDTH = '1200px'
-
-const initialState: GridState = {
-  config: {
-    base: GRID.DEFAULTS.BASE,
-    maxWidth: '100%',
-    align: 'center',
-    zIndex: GRID.DEFAULTS.Z_INDEX,
-  },
-  showGuides: {
-    columns: true,
-    baseline: true,
-  },
-  columnConfig: {
-    count: GRID.DEFAULTS.COLUMNS,
-    gap: GRID.DEFAULTS.BASE,
-    pattern: [
-      '24px',
-      '24px',
-      '64px',
-      '1fr',
-      '2fr',
-      '1fr',
-      '64px',
-      '24px',
-      '24px',
-    ] as GridColumnsPattern,
-  },
-  pageHeight: 0,
-}
-
-export type GridAction =
-  | { type: 'UPDATE_CONFIG'; payload: Partial<PGConfig> }
-  | { type: 'SET_PAGE_HEIGHT'; payload: number }
-  | {
-  type: 'TOGGLE_GUIDE'
-  payload: { type: 'columns' | 'baseline'; value: boolean }
-}
-  | {
-  type: 'UPDATE_COLUMN_CONFIG'
-  payload: Partial<GridState['columnConfig']>
-}
-
-function gridReducer(state: GridState, action: GridAction): GridState {
+// Handles all grid state changes in one place
+// to prevent prop drilling and state conflicts
+function demoGridReducer(state: DemoGridState, action: DemoGridAction): DemoGridState {
   switch (action.type) {
   case 'UPDATE_CONFIG':
     return {
@@ -92,83 +41,108 @@ function gridReducer(state: GridState, action: GridAction): GridState {
   }
 }
 
+// Init data -------------------------------------------------------------------
+
+const DEMO_WIDTH = '1216px'
+
+const initialState: DemoGridState = {
+  config: {
+    baseUnit: GRID.DEFAULTS.BASE,
+    zIndex: GRID.DEFAULTS.Z_INDEX,
+  },
+  showGuides: {
+    columns: true,
+    baseline: true,
+  },
+  columnConfig: {
+    count: GRID.DEFAULTS.COLUMNS,
+    gap: GRID.DEFAULTS.BASE,
+    pattern: [
+      '24px',
+      '24px',
+      '48px',
+      '128px',
+      '1fr',
+      '128px',
+      '48px',
+      '24px',
+      '24px',
+    ] as GridColumnsPattern,
+  },
+  pageHeight: 0,
+}
+
+// Grid demo setup -------------------------------------------------------------
+
 export function GridSetups({ children }: PropsWithChildren) {
-  const [state, dispatch] = useReducer(gridReducer, initialState)
+  const [state, dispatch] = useReducer(demoGridReducer, initialState)
 
-  useLayoutEffect(() => {
-    const updatePageHeight = () => {
-      const height = document.documentElement.scrollHeight
-      if (height !== state.pageHeight) {
-        dispatch({ type: 'SET_PAGE_HEIGHT', payload: height })
-      }
-    }
-
-    updatePageHeight()
-    window.addEventListener('resize', updatePageHeight)
-
-    const observer = new MutationObserver(updatePageHeight)
-    observer.observe(document.body, { childList: true, subtree: true })
-
-    return () => {
-      window.removeEventListener('resize', updatePageHeight)
-      observer.disconnect()
+  // Tracks document height changes to adjust grid overlay dynamically
+  const handleHeightChange = useCallback((height: number) => {
+    if (height !== state.pageHeight) {
+      dispatch({ type: 'SET_PAGE_HEIGHT', payload: height })
     }
   }, [state.pageHeight])
 
+  usePageHeight(handleHeightChange)
+
   return (
     <div className="grid-playground">
-      <PaddedGrid
+      <YGrid
+        visibility={state.showGuides.baseline ? 'visible' : 'hidden'}
         config={{
-          ...state.config,
-          baseUnit: state.config.base,
+          height: state.pageHeight,
+          baseUnit: state.config.baseUnit,
+          zIndex: state.config.zIndex,
         }}
+      />
+      <div
+        className="demo-wrapper"
+        style={{ '--max-width': DEMO_WIDTH }}
       >
-        <YGrid
+        <XGrid
+          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+          data-testid="main-grid"
           config={{
-            show: state.showGuides.baseline,
-            height: state.pageHeight,
-            baseUnit: state.config.base,
+            columns: state.columnConfig.count,
+            gap: state.columnConfig.gap,
+            zIndex: state.config.zIndex,
           }}
         />
-        <div
-          className="demo-wrapper"
-          style={{ '--max-width': WIDTH }}
-        >
-          <XGrid
-            config={{
-              show: state.showGuides.columns,
-              maxWidth: WIDTH,
-              columns: state.columnConfig.count,
-              gap: state.columnConfig.gap,
-              baseUnit: state.config.base,
-            }}
-          />
-          <XGrid
-            config={{
-              show: state.showGuides.columns,
-              maxWidth: WIDTH,
-              columns: state.columnConfig.pattern,
-              gap: 8,
-              color: '#0000ff25',
-              baseUnit: state.config.base,
-            }}
-          />
-          <XGrid
-            config={{
-              show: state.showGuides.columns,
-              maxWidth: WIDTH,
-              variant: 'line',
-              gap: 8,
-              color: '#00000020',
-              baseUnit: state.config.base,
-            }}
-          />
-          <div className="demo-content">
 
-            {children}
-          </div>
+        {/* Pattern */}
+
+        {/*<XGrid*/}
+        {/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/}
+        {/*  config={{*/}
+        {/*    padding: '0 16px',*/}
+        {/*    color: 'var(--grid-color-line)',*/}
+        {/*    columns: state.columnConfig.pattern,*/}
+        {/*    gap: 8,*/}
+        {/*    zIndex: state.config.zIndex,*/}
+        {/*  }}*/}
+        {/*/>*/}
+
+        <XGrid
+          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+          data-testid="line-grid"
+          config={{
+            color: 'var(--grid-color-line)',
+            variant: 'line',
+            zIndex: state.config.zIndex,
+          }}
+        />
+        <div className="demo-content">
+          {Children.map(children, (child) => {
+            if (isValidElement<PropsWithChildren<ContentProps>>(child)) {
+              return cloneElement(child, {
+                showBaseline: state.showGuides.baseline,
+              })
+            }
+            return child
+          })}
         </div>
-      </PaddedGrid>
+      </div>
       <GridControls state={state} dispatch={dispatch} />
     </div>
   )

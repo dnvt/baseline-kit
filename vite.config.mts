@@ -1,30 +1,26 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { resolve } from 'path'
-import autoprefixer from 'autoprefixer'
-import cssnano from 'cssnano'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 const resolvePath = (...paths: string[]) => resolve(__dirname, ...paths)
 
 export default defineConfig(({ command }) => ({
-  plugins: [react()],
-  css: {
-    modules: {
-      generateScopedName:
-        process.env.NODE_ENV === 'production'
-          ? '[hash:base64:8]'
-          : '[name]__[local]__[hash:base64:5]',
-      localsConvention: 'camelCase',
-    },
-    postcss: {
-      plugins: [
-        autoprefixer(),
-        ...(process.env.NODE_ENV === 'production'
-          ? [cssnano({ preset: 'default' })]
-          : []),
+  plugins: [
+    react(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: resolvePath('README.md'), // Use an absolute path
+          dest: '.', // Copy to root of `dist`
+        },
+        {
+          src: resolvePath('docs/**/*'), // Use an absolute path
+          dest: 'docs', // Copy to `dist/docs`
+        },
       ],
-    },
-  },
+    }),
+  ],
   resolve: {
     alias: {
       '@': resolvePath('src/lib'),
@@ -49,20 +45,12 @@ export default defineConfig(({ command }) => ({
           react: 'React',
           'react-dom': 'ReactDOM',
         },
-        // Place all extracted CSS in a single file
-        assetFileNames: (assetInfo) => {
-          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
-            return 'styles.css'
-          }
-          return '[name][extname]'
-        },
       },
     },
     sourcemap: true,
-    cssCodeSplit: false, // Ensures one CSS file output
   },
   ...(command === 'serve' && {
-    root: 'demo',
+    root: 'demo', // Set the root to the `demo/` directory for development
     base: '/',
   }),
 }))

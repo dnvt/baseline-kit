@@ -1,7 +1,6 @@
 declare module '*.module.css' {
 
   // CSS Module type definitions with commonly used class names
-
   const styles: {
     readonly [key: string]: string;
     readonly columnsContainer: string;

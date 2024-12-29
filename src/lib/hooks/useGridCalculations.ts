@@ -1,7 +1,6 @@
 import { useMemo, useCallback } from 'react'
 import type {
   CSSValue,
-  ResponsiveValue,
   GridColumnsPattern,
   GridConfig,
   UseGridCalculationsProps,
@@ -13,162 +12,158 @@ import {
   isAutoVariant,
   isFixedVariant,
 } from '@types'
-import {
+import { GRID, isValidGridPattern } from '@utils'
 
-  parseResponsiveGridValue,
-  GRID,
-  isResponsiveValue,
-  isValidGridPattern,
-} from '@utils'
+const DEFAULT_GAP = 8
 
-export function useGridCalculations
-({
+/**
+ * Hook for calculating grid layout dimensions and properties.
+ * Handles different grid variants (line, pattern, fixed, auto) and their specific calculations.
+ */
+export function useGridCalculations({
   containerWidth,
   config,
 }: UseGridCalculationsProps): UseGridCalculationsResult {
-  const parseGapValue = useCallback((
-    gap: ResponsiveValue<CSSValue | 'auto'> | undefined,
-    defaultValue: number = config.baseUnit || 8,
-  ): string => {
-    if (!gap) return `${defaultValue}px`
-    if (gap === 'auto') return 'auto'
-    return parseResponsiveGridValue(gap)
-  }, [config.baseUnit])
-
-  const parseColumnWidth = useCallback((
-    width: ResponsiveValue<CSSValue | 'auto'>,
-  ): string => {
-    if (width === 'auto') return 'auto'
-    return parseResponsiveGridValue(width)
+  /**
+   * Unified parser for CSS values that handles both direct values and defaults.
+   * Consolidates gap and column width parsing to ensure consistent CSS value generation.
+   */
+  const parseCSSValue = useCallback((value: CSSValue | undefined, defaultValue?: number): string => {
+    if (!value && defaultValue !== undefined) return `${defaultValue}px`
+    return typeof value === 'number' ? `${value}px` : value || '0'
   }, [])
 
-  const calculateLineVariant = useCallback((
-    gridConfig: GridConfig & { variant: 'line' },
-    width: number,
-  ): UseGridCalculationsResult => {
-    const gap = parseGapValue(gridConfig.gap)
-    const numericGap = parseInt(gap, 10)
-    const columns = Math.max(1, Math.floor(width / (numericGap + 1)) + 1)
+  /**
+   * Calculates layout for line variant (single pixel columns).
+   * Uses container width and gap to determine optimal number of 1px columns.
+   */
+  const calculateLineVariant = useCallback(
+    (config: GridConfig & { variant: 'line' }, width: number): UseGridCalculationsResult => {
+      const gap = parseCSSValue(config.gap, DEFAULT_GAP)
+      // Add 1 to ensure we cover the entire width with columns
+      const numericGap = parseInt(gap, 10)
+      const columns = Math.max(1, Math.floor(width / (numericGap + 1)) + 1)
 
-    return {
-      gridTemplateColumns: `repeat(${columns}, 1px)`,
-      columnsCount: columns,
-      calculatedGap: gap,
-      isValid: true,
-    }
-  }, [parseGapValue])
-
-  const calculateColumnPattern = useCallback((
-    gridConfig: GridConfig & { columns: GridColumnsPattern },
-  ): UseGridCalculationsResult => {
-    if (!isValidGridPattern(gridConfig.columns)) {
-      throw new Error('Invalid grid column pattern')
-    }
-
-    const columns = gridConfig.columns.map(col => {
-      if (typeof col === 'string') {
-        if (/^\d+fr$/.test(col)) return col
-        return col
-      }
-      if (isResponsiveValue(col)) {
-        return parseResponsiveGridValue(col)
-      }
-      return parseResponsiveGridValue(String(col))
-    })
-    const gap = parseGapValue(gridConfig.gap)
-
-    return {
-      gridTemplateColumns: columns.join(' '),
-      columnsCount: columns.length,
-      calculatedGap: gap,
-      isValid: columns.every(Boolean),
-    }
-  }, [parseGapValue])
-
-  const calculateFixedColumns = useCallback((
-    gridConfig: GridConfig & { columns: number },
-  ): UseGridCalculationsResult => {
-    const gap = parseGapValue(gridConfig.gap)
-    const columnWidth = gridConfig.columnWidth
-      ? parseColumnWidth(gridConfig.columnWidth)
-      : '1fr'
-
-    return {
-      gridTemplateColumns: `repeat(${gridConfig.columns}, ${columnWidth})`,
-      columnsCount: gridConfig.columns,
-      calculatedGap: gap,
-      isValid: true,
-    }
-  }, [parseGapValue, parseColumnWidth])
-
-
-  const calculateAutoGrid = useCallback((
-    gridConfig: GridConfig & { columnWidth: ResponsiveValue<CSSValue | 'auto'> },
-    width: number,
-  ): UseGridCalculationsResult => {
-    const gap = parseGapValue(gridConfig.gap)
-    const columnWidth = parseColumnWidth(gridConfig.columnWidth)
-
-    if (columnWidth === 'auto') {
       return {
-        gridTemplateColumns: 'auto',
-        columnsCount: 1,
+        gridTemplateColumns: `repeat(${columns}, 1px)`,
+        columnsCount: columns,
         calculatedGap: gap,
         isValid: true,
       }
-    }
+    },
+    [parseCSSValue],
+  )
 
-    const numericGap = gap === 'auto' ? 0 : parseInt(gap, 10)
-    const numericWidth = parseInt(columnWidth, 10)
-
-    if (isNaN(numericWidth)) {
-      return {
-        gridTemplateColumns: columnWidth,
-        columnsCount: 1,
-        calculatedGap: gap,
-        isValid: true,
+  /**
+   * Handles custom column patterns with mixed units (px, fr, etc.).
+   * Preserves fr units while converting other values to appropriate CSS.
+   */
+  const calculateColumnPattern = useCallback(
+    (config: GridConfig & { columns: GridColumnsPattern }): UseGridCalculationsResult => {
+      if (!isValidGridPattern(config.columns)) {
+        throw new Error('Invalid grid column pattern')
       }
-    }
 
-    const columns = Math.max(1, Math.floor(
-      (width + numericGap) / (numericWidth + numericGap),
-    ))
+      const columns = config.columns.map(col => {
+        // Preserve fr units and other valid CSS values
+        if (typeof col === 'string') return /^\d+fr$/.test(col) ? col : col
+        return parseCSSValue(col)
+      })
 
-    return {
-      gridTemplateColumns: `repeat(${columns}, ${columnWidth})`,
-      columnsCount: columns,
-      calculatedGap: gap,
+      return {
+        gridTemplateColumns: columns.join(' '),
+        columnsCount: columns.length,
+        calculatedGap: parseCSSValue(config.gap, DEFAULT_GAP),
+        isValid: columns.every(Boolean),
+      }
+    },
+    [parseCSSValue],
+  )
+
+  /**
+   * Handles fixed-column layouts with equal column widths.
+   * Uses 1fr as default column width if none specified for equal distribution.
+   */
+  const calculateFixedColumns = useCallback(
+    (config: GridConfig & { columns: number }): UseGridCalculationsResult => ({
+      gridTemplateColumns: `repeat(${config.columns}, ${
+        config.columnWidth ? parseCSSValue(config.columnWidth) : '1fr'
+      })`,
+      columnsCount: config.columns,
+      calculatedGap: parseCSSValue(config.gap, DEFAULT_GAP),
       isValid: true,
-    }
-  }, [parseGapValue, parseColumnWidth])
+    }),
+    [parseCSSValue],
+  )
 
-  return useMemo(() => {
-    try {
-      if (!containerWidth) {
+  /**
+   * Calculates auto-grid layout based on container width and column width.
+   * Handles special cases like 'auto' width and non-numeric values.
+   */
+  const calculateAutoGrid = useCallback(
+    (config: GridConfig & { columnWidth: CSSValue }, width: number): UseGridCalculationsResult => {
+      const gap = parseCSSValue(config.gap, DEFAULT_GAP)
+      const columnWidth = parseCSSValue(config.columnWidth)
+
+      // Handle special 'auto' case
+      if (columnWidth === 'auto') {
         return {
-          gridTemplateColumns: 'none',
-          columnsCount: 0,
-          calculatedGap: '0px',
-          isValid: false,
+          gridTemplateColumns: 'auto',
+          columnsCount: 1,
+          calculatedGap: gap,
+          isValid: true,
         }
       }
 
-      if (isLineVariant(config)) {
-        return calculateLineVariant(config, containerWidth)
+      // Handle non-numeric values (like percentages or other units)
+      const numericGap = parseInt(gap, 10)
+      const numericWidth = parseInt(columnWidth, 10)
+
+      if (isNaN(numericWidth)) {
+        return {
+          gridTemplateColumns: columnWidth,
+          columnsCount: 1,
+          calculatedGap: gap,
+          isValid: true,
+        }
       }
 
-      if (isPatternVariant(config)) {
-        return calculateColumnPattern(config)
-      }
+      // Calculate maximum number of columns that fit in the container
+      const columns = Math.max(1, Math.floor((width + numericGap) / (numericWidth + numericGap)))
 
-      if (isFixedVariant(config)) {
-        return calculateFixedColumns(config)
+      return {
+        gridTemplateColumns: `repeat(${columns}, ${columnWidth})`,
+        columnsCount: columns,
+        calculatedGap: gap,
+        isValid: true,
       }
+    },
+    [parseCSSValue],
+  )
 
-      if (isAutoVariant(config)) {
-        return calculateAutoGrid(config, containerWidth)
+  /**
+   * Memoized final calculation that determines which variant to use
+   * and handles error cases with fallback values.
+   */
+  return useMemo(() => {
+    // Early return if container width is not available
+    if (!containerWidth) {
+      return {
+        gridTemplateColumns: 'none',
+        columnsCount: 0,
+        calculatedGap: '0px',
+        isValid: false,
       }
+    }
 
+    try {
+      // Determine grid variant and calculate appropriate layout
+      if (isLineVariant(config)) return calculateLineVariant(config, containerWidth)
+      if (isPatternVariant(config)) return calculateColumnPattern(config)
+      if (isFixedVariant(config)) return calculateFixedColumns(config)
+      if (isAutoVariant(config)) return calculateAutoGrid(config, containerWidth)
+
+      // Fallback to default grid configuration
       return {
         gridTemplateColumns: `repeat(${GRID.DEFAULTS.COLUMNS}, 1fr)`,
         columnsCount: GRID.DEFAULTS.COLUMNS,
@@ -177,6 +172,7 @@ export function useGridCalculations
       }
     } catch (error) {
       console.error('Error calculating grid layout:', error)
+      // Return safe fallback values on error
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
@@ -184,12 +180,5 @@ export function useGridCalculations
         isValid: false,
       }
     }
-  }, [
-    containerWidth,
-    config,
-    calculateLineVariant,
-    calculateColumnPattern,
-    calculateFixedColumns,
-    calculateAutoGrid,
-  ])
+  }, [containerWidth, config, calculateLineVariant, calculateColumnPattern, calculateFixedColumns, calculateAutoGrid])
 }

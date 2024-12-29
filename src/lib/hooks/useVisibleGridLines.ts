@@ -1,51 +1,64 @@
 import { useState, useCallback, useLayoutEffect, type RefObject } from 'react'
 import type { VisibleRange } from '@types'
 
-interface UseVisibleGridLinesProps {
-  totalLines: number
-  lineHeight: number
-  containerRef: RefObject<HTMLDivElement>
-  buffer?: number
-}
+// Buffer size in pixels to render additional lines above and below viewport
+// Prevents visible gaps during fast scrolling
+const DEFAULT_BUFFER = 160
 
+/**
+ * Hook for calculating which grid lines should be rendered based on viewport visibility.
+ * Optimizes performance by only rendering lines that are visible or about to become visible.
+ */
 export function useVisibleGridLines({
   totalLines,
   lineHeight,
   containerRef,
-  buffer = 160,
-}: UseVisibleGridLinesProps): VisibleRange {
-  const [visibleRange, setVisibleRange] = useState<VisibleRange>({
-    start: 0,
-    end: totalLines,
-  })
-
+  buffer = DEFAULT_BUFFER,
+}: {
+  totalLines: number;
+  lineHeight: number;
+  containerRef: RefObject<HTMLDivElement>;
+  buffer?: number;
+}): VisibleRange {
+  /**
+   * Calculates the range of visible lines based on current scroll position.
+   * Includes buffer zones above and below viewport for smooth scrolling.
+   */
   const calculateRange = useCallback((): VisibleRange => {
     if (!containerRef.current) {
+      // Return full range if container isn't mounted yet
       return { start: 0, end: totalLines }
     }
 
     const rect = containerRef.current.getBoundingClientRect()
+    // Calculate visible area accounting for scroll position
     const viewportTop = Math.max(0, -rect.top)
     const viewportBottom = viewportTop + window.innerHeight
 
     return {
+      // Include buffer zone above viewport
       start: Math.max(0, Math.floor(viewportTop / lineHeight) - buffer),
+      // Include buffer zone below viewport, but don't exceed total lines
       end: Math.min(totalLines, Math.ceil(viewportBottom / lineHeight) + buffer),
     }
   }, [totalLines, lineHeight, containerRef, buffer])
 
+  // Track visible range in state
+  const [visibleRange, setVisibleRange] = useState<VisibleRange>(calculateRange)
+
   useLayoutEffect(() => {
-    const updateRange = () => {
-      setVisibleRange(calculateRange())
-    }
+    const element = containerRef.current
+    if (!element) return
 
-    const observer = new IntersectionObserver(updateRange, {
-      threshold: 0,
-    })
+    /**
+     * Update visible range when scroll position or size changes.
+     * Uses RAF internally via the browser's IntersectionObserver and event handling.
+     */
+    const updateRange = () => setVisibleRange(calculateRange())
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current)
-    }
+    // IntersectionObserver handles element entering/leaving viewport
+    const observer = new IntersectionObserver(updateRange, { threshold: 0 })
+    observer.observe(element)
 
     window.addEventListener('scroll', updateRange, { passive: true })
     window.addEventListener('resize', updateRange, { passive: true })

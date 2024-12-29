@@ -1,15 +1,72 @@
 :root {
   --max-width: 100%;
+
+  /* Grid colors */
+  --cyan: 190;
+  --blue: 220;
+  --purple: 255;
+  --sat: 70%;
+  --light: 50%;
+
+  --grid-color-line: hsla(var(--blue), var(--sat), var(--light), 0.15);
+  --grid-color-pattern: hsla(var(--purple), var(--sat), var(--light), 0.2);
+  --grid-color-fixed: hsla(var(--cyan), var(--sat), var(--light), 0.2);
+
+  /* Light theme colors */
+  --background-color: white;
+  --title-color: black;
+  --text-color: #181818;
+  --content-block-bg: rgba(229, 229, 229, 1);
+  --box-shadow-color: rgba(0, 0, 0, 0.1);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Grid colors */
+    --sat: 100%;
+    --light: 70%;
+
+    /* Dark theme colors */
+    --background-color: #181818;
+    --title-color: white;
+    --text-color: #c2c2c2;
+    --content-block-bg: rgba(50, 50, 50, 1);
+    --box-shadow-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Updated styles using variables */
 .grid-controls {
   position: fixed;
-  bottom: 1.5rem; 
-  left: 1.5rem; 
-  background-color: white; 
-  padding: 1rem; 
-  border-radius: 0.5rem; 
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); 
+  bottom: 1.5rem;
+  left: 1.5rem;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px var(--box-shadow-color);
+}
+
+.content-block {
+  position: relative;
+  padding: 15px 16px 17px;
+  color: var(--text-color);
+  background-color: var(--content-block-bg);
+  border-radius: 6px;
+}
+
+.demo-title {
+  font-size: 1.5rem;
+  padding-top: 3px;
+  font-weight: bold;
+  color: var(--title-color);
+}
+
+.demo-description {
+  padding-top: 2px;
+  padding-bottom: 1px;
+  max-width: 32rem;
+  color: var(--text-color);
 }
 
 .controls-spacing {
@@ -47,11 +104,8 @@
   font-size: 0.875rem; 
 }
 
-.grid-playground {
-  /* Additional styles if needed */
-}
-
 .demo-wrapper {
+  position: relative;
   min-height: 100vh;
   margin: 0 auto;
   max-width: var(--max-width);
@@ -63,20 +117,5 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding-inline: 24px;
-}
-
-.demo-title {
-  font-size: 1.5rem; 
-  font-weight: bold; 
-}
-
-.demo-description {
-  max-width: 32rem; 
-}
-
-.content-block {
-  padding: 1rem; 
-  background-color: rgba(229, 229, 229, 1); 
-  border-radius: 0.25rem; 
+  /*  padding-inline: 24px;*/
 }

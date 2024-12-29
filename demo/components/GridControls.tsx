@@ -1,20 +1,20 @@
 import type { Dispatch } from 'react'
-
-import type { CSSValue, GridAlignment } from '@types'
+import type { DemoGridAction, DemoGridState } from './types.ts'
 import { usePerformanceMonitor } from '../utils'
-import type { GridAction, GridState } from './GridSetups'
 
 export function GridControls({
   state,
   dispatch,
 }: {
-  state: GridState
-  dispatch: Dispatch<GridAction>
+  state: DemoGridState
+  dispatch: Dispatch<DemoGridAction>
 }) {
   const metrics = usePerformanceMonitor()
+
   return (
     <div className="grid-controls">
       <div className="controls-spacing">
+        {/* Performance Metrics Section */}
         <div>
           <h3>Performance</h3>
           <div>
@@ -22,9 +22,11 @@ export function GridControls({
           </div>
         </div>
 
+        {/* Grid Guides Section */}
         <div>
           <h3>Grid Guides</h3>
           <div className="checkbox-container">
+            {/* Toggle Columns Guide */}
             <label className="checkbox-label">
               <input
                 type="checkbox"
@@ -38,6 +40,8 @@ export function GridControls({
               />
               Columns
             </label>
+
+            {/* Toggle Baseline Guide */}
             <label className="checkbox-label">
               <input
                 type="checkbox"
@@ -52,11 +56,33 @@ export function GridControls({
               Baseline
             </label>
           </div>
+
         </div>
 
+        {/* Grid Configuration Section */}
         <div>
           <h3>Grid Configuration</h3>
 
+          {/* Adjust Z-Index */}
+          <label className="z-index-label">
+            <span className="z-index-text">Z-Index</span>
+            <input
+              type="range"
+              className="z-index-range"
+              min="-1"
+              max="10"
+              value={state.config.zIndex}
+              onChange={(e) =>
+                dispatch({
+                  type: 'UPDATE_CONFIG',
+                  payload: { zIndex: Number(e.target.value) },
+                })
+              }
+            />
+            <span className="z-index-value">{state.config.zIndex}</span>
+          </label>
+
+          {/* Adjust Base Unit */}
           <label className="base-unit-label">
             <span className="base-unit-text">Base Unit</span>
             <input
@@ -64,56 +90,23 @@ export function GridControls({
               className="base-unit-range"
               min="4"
               max="16"
-              value={state.config.base}
+              value={state.config.baseUnit}
               onChange={(e) =>
                 dispatch({
                   type: 'UPDATE_CONFIG',
-                  payload: { base: Number(e.target.value) },
+                  payload: { baseUnit: Number(e.target.value) },
                 })
               }
             />
-            <span className="base-unit-value">{state.config.base}px</span>
-          </label>
-
-          <label className="base-unit-label">
-            <span className="base-unit-text">Max Width</span>
-            <select
-              value={state.config.maxWidth as string}
-              onChange={(e) =>
-                dispatch({
-                  type: 'UPDATE_CONFIG',
-                  payload: { maxWidth: e.target.value as CSSValue },
-                })
-              }
-            >
-              <option value="100%">100%</option>
-              <option value="1200px">1200px</option>
-              <option value="1400px">1400px</option>
-              <option value="1600px">1600px</option>
-            </select>
-          </label>
-
-          <label className="base-unit-label">
-            <span className="base-unit-text">Alignment</span>
-            <select
-              value={state.config.align}
-              onChange={(e) =>
-                dispatch({
-                  type: 'UPDATE_CONFIG',
-                  payload: { align: e.target.value as GridAlignment },
-                })
-              }
-            >
-              <option value="start">Start</option>
-              <option value="center">Center</option>
-              <option value="end">End</option>
-            </select>
+            <span className="base-unit-value">{state.config.baseUnit}px</span>
           </label>
         </div>
 
+        {/* Column Configuration Section */}
         <div>
           <h3>Column Configuration</h3>
 
+          {/* Adjust Column Count */}
           <label className="base-unit-label">
             <span className="base-unit-text">Column Count</span>
             <input
@@ -134,6 +127,7 @@ export function GridControls({
             </span>
           </label>
 
+          {/* Adjust Column Gap */}
           <label className="base-unit-label">
             <span className="base-unit-text">Column Gap</span>
             <input

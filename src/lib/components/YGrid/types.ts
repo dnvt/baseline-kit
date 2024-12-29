@@ -1,40 +1,44 @@
-import type { CSSProperties } from 'react'
 import type {
   BaseComponentProps,
-  BaseGridConfig,
   BaseGridStyles,
   CSSCustomProperties,
   GridFlatStyles,
   GridLineStyles,
   GridVariant,
 } from '@types'
+import type { CSSProperties } from 'react'
 
 export interface YGStyles extends Partial<BaseGridStyles> {
   '--grid-height'?: string
-  '--row-top'?: string
-  '--row-color'?: string
-  '--row-height'?: GridVariant extends 'line'
-    ? GridLineStyles['--row-height']
+  '--grid-row-top'?: string
+  '--grid-row-color'?: string
+  '--grid-row-height'?: GridVariant extends 'line'
+    ? GridLineStyles['--grid-row-height']
     : string
-  '--row-opacity'?: GridVariant extends 'flat'
-    ? GridFlatStyles['--row-opacity']
+  '--grid-row-opacity'?: GridVariant extends 'flat'
+    ? GridFlatStyles['--grid-row-opacity']
     : string
-}
-
-export interface YGContainerStyles extends Partial<CSSProperties & CSSCustomProperties> {
-  '--grid-height'?: string
-  opacity?: 0 | 1
   visibility?: 'visible' | 'hidden'
+
 }
 
-export interface YGridConfig extends BaseGridConfig {
+export interface YGContainerStyles
+  extends Partial<CSSProperties & CSSCustomProperties> {
+  '--grid-height'?: string;
+  '--grid-z-index'?: string | number;
+  '--grid-row-color'?: string;
+}
+
+export interface YGConfig {
   variant?: GridVariant
   color?: CSSProperties['color'] | CSSProperties['backgroundColor']
   height?: CSSProperties['height']
   baseUnit?: number
+  zIndex?: CSSProperties['zIndex']
 }
 
 export interface YGProps extends BaseComponentProps {
-  config: YGridConfig
+  config: YGConfig
+  visibility?: 'hidden' | 'visible';
   style?: Partial<YGStyles>
 }
