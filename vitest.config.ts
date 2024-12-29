@@ -7,14 +7,14 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/lib/test/setup.ts'],
+    setupFiles: ['./src/lib/__tests__/setup.ts'],
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',
       reporter: ['text', 'lcov'],
       exclude: [
         'demo/**/*',
-        'src/lib/test/**/*',
+        'src/lib/__tests__/**/*',
         'src/**/index.ts',
         '**/production.js',
         '**/*.d.ts',
@@ -31,10 +31,10 @@ export default defineConfig({
     alias: {
       '@': resolvePath('src/lib'),
       '@components': resolvePath('src/lib/components'),
+      '@config': resolvePath('src/lib/config'),
       '@hooks': resolvePath('src/lib/hooks'),
       '@types': resolvePath('src/lib/types'),
       '@utils': resolvePath('src/lib/utils'),
-      '@styles': resolvePath('src/lib/styles/modules'),
     },
   },
 })

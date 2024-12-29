@@ -1,12 +1,11 @@
-import type {
+import {
   CSSValue,
   GridAlignment,
   GridColumnValue,
   GridColumnsPattern,
-  GridConfig,
+  GridConfig, CSS_UNITS,
 } from '@types'
 import { GRID_ALIGNMENTS } from '@types'
-import { CSS_UNITS } from './constants'
 
 export const isValidGridColumnValue = (
   value: unknown,

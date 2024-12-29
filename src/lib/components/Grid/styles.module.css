@@ -1,4 +1,43 @@
-.container {
+/* XGrid styles */
+
+.xgrid-container {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  z-index: var(--grid-z-index);
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  max-width: var(--grid-max-width);
+  padding: var(--grid-padding);
+
+}
+
+.columns-container {
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-columns: var(--grid-template-columns);
+  gap: var(--grid-gap);
+  justify-content: var(--grid-justify);
+}
+
+.column {
+  height: 100%;
+  background-color: var(--grid-column-color);
+  width: 100%;
+  min-width: 0;
+}
+
+.line-column {
+  width: var(--grid-column-width, 1px);
+}
+
+/* YGrid styles */
+
+.ygrid-container {
   position: absolute;
   z-index: var(--grid-z-index);
   inset: 0;
@@ -7,6 +46,7 @@
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
+
 }
 
 .visible {
@@ -37,9 +77,13 @@
   perspective: 1000px;
 }
 
+.flat-row {
+  /* In case we need something in the future */
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .container.visible,
-  .container.hidden {
+  .ygrid-container.visible,
+  .ygrid-container.hidden {
     transition: none;
   }
 }

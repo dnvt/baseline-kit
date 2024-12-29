@@ -4,6 +4,5 @@
  */
 
 export * from './validation'
-export * from './constants'
 export * from './styles'
 export * from './performance'

@@ -1,10 +1,3 @@
-/* Base styles */
-@import 'src/lib/styles/base.css';
-
-/* Component styles */
-@import 'src/lib/styles/modules/XGrid.module.css';
-@import 'src/lib/styles/modules/YGrid.module.css';
-
 /* CSS Custom Properties */
 :root {
   /* Colors */

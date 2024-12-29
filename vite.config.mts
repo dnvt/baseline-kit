@@ -21,10 +21,10 @@ export default defineConfig(({ command }) => ({
     alias: {
       '@': resolvePath('src/lib'),
       '@components': resolvePath('src/lib/components'),
+      '@config': resolvePath('src/lib/config'),
       '@hooks': resolvePath('src/lib/hooks'),
       '@types': resolvePath('src/lib/types'),
       '@utils': resolvePath('src/lib/utils'),
-      '@styles': resolvePath('src/lib/styles/modules'),
     },
   },
   build: {

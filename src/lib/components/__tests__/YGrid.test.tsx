@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { YGrid } from '../YGrid'
+import { YGrid } from '../Grid'
 
 // Mock IntersectionObserver
 const observerMap = new Map()

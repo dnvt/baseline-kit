@@ -1,11 +1,13 @@
 import type { CSSCustomProperties, CSSValue } from '@types'
 import { CSSProperties } from 'react'
 
-export const combineClassNames = (
+// Combining classnames
+export const cx = (
   ...classes: Array<string | boolean | undefined | null>
 ): string => classes.filter(Boolean).join(' ').trim()
 
-export const combineStyles = <
+// Combining styles
+export const cs = <
   T extends Partial<CSSProperties & CSSCustomProperties>,
 >(
     ...styles: Array<T | undefined>

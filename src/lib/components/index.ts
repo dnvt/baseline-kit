@@ -3,5 +3,6 @@
  * @module components
  */
 
-export * from './XGrid'
-export * from './YGrid'
+export * from './Grid'
+export * from './Spacer'
+

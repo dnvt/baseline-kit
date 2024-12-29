@@ -1,0 +1,7 @@
+/* Base styles */
+@import 'src/lib/components/styles/reset.css';
+@import 'src/lib/components/styles/theme.css';
+
+/* Component styles */
+@import 'src/lib/components/Grid/styles.module.css';
+@import 'src/lib/components/Spacer/styles.module.css';

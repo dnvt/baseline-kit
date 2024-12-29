@@ -1,10 +1,11 @@
 import { memo, useMemo, useRef } from 'react'
+import { GRID } from '@config'
 import { useGridCalculations, useGridDimensions } from '@hooks'
-import { combineClassNames, combineStyles, GRID } from '@utils'
-import type { XGProps } from './types'
+import { cx, cs } from '@utils'
 import type { CSSCustomProperties, GridVariant } from '@types'
 
-import styles from '@styles/XGrid.module.css'
+import type { XGProps } from './types'
+import styles from './styles.module.css'
 
 const GridColumns = memo(function GridColumns({
   count,
@@ -14,13 +15,13 @@ const GridColumns = memo(function GridColumns({
   variant?: GridVariant;
 }) {
   return (
-    <div className={styles.columnsContainer}>
+    <div className={styles['columns-container']}>
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className={combineClassNames(
+          className={cx(
             styles.column,
-            variant === 'line' && styles.lineColumn,
+            variant === 'line' && styles['line-column'],
           )}
           data-column-index={i}
         />
@@ -37,15 +38,15 @@ export const XGrid = memo(function XGrid({
 }: XGProps) {
 
   const {
-    align = GRID.DEFAULTS.ALIGN,
-    color = GRID.DEFAULTS.COLORS.X_GRID,
-    columns = GRID.DEFAULTS.COLUMNS,
-    columnWidth = GRID.DEFAULTS.COLUMN_WIDTH,
+    align = GRID.defaults.align,
+    color = GRID.defaults.colors.xGrid,
+    columns = GRID.defaults.columns,
+    columnWidth = GRID.defaults.columnWidth,
     gap,
     maxWidth,
     padding,
     variant,
-    zIndex = GRID.DEFAULTS.Z_INDEX,
+    zIndex = GRID.defaults.zIndex,
   } = config
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -87,7 +88,7 @@ export const XGrid = memo(function XGrid({
   })
 
   const containerStyles = useMemo(() =>
-    combineStyles({
+    cs({
       '--grid-template-columns': gridTemplateColumns,
       '--grid-gap': calculatedGap,
       '--grid-max-width': maxWidth,
@@ -105,8 +106,8 @@ export const XGrid = memo(function XGrid({
   return (
     <div
       ref={containerRef}
-      className={combineClassNames(
-        styles.container,
+      className={cx(
+        styles['xgrid-container'],
         className,
         visibility === 'visible' ? styles.visible : styles.hidden,
       )}

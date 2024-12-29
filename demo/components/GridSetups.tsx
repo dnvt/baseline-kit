@@ -1,11 +1,12 @@
 import { useReducer, type PropsWithChildren, useCallback, Children, isValidElement, cloneElement } from 'react'
 import { XGrid, YGrid } from '@components'
-import { type GridColumnsPattern } from '@types'
-import { GRID } from '@utils'
+import { CSSCustomProperties, type GridColumnsPattern } from '@types'
+import { GRID } from '@config'
+
 import { GridControls } from './GridControls'
-import type { DemoGridAction, DemoGridState } from './types.ts'
-import { usePageHeight } from '../hooks/usePageHeight'
-import type { ContentProps } from '../main.tsx'
+import type { DemoGridAction, DemoGridState } from './types'
+import type { ContentProps } from '../main'
+import { usePageHeight } from '../hooks'
 
 // Custom reducer for the demo -------------------------------------------------
 
@@ -47,16 +48,16 @@ const DEMO_WIDTH = '1216px'
 
 const initialState: DemoGridState = {
   config: {
-    baseUnit: GRID.DEFAULTS.BASE,
-    zIndex: GRID.DEFAULTS.Z_INDEX,
+    baseUnit: GRID.defaults.baseUnit,
+    zIndex: GRID.defaults.zIndex,
   },
   showGuides: {
     columns: true,
     baseline: true,
   },
   columnConfig: {
-    count: GRID.DEFAULTS.COLUMNS,
-    gap: GRID.DEFAULTS.BASE,
+    count: GRID.defaults.columns,
+    gap: GRID.defaults.baseUnit,
     pattern: [
       '24px',
       '24px',
@@ -98,7 +99,7 @@ export function GridSetups({ children }: PropsWithChildren) {
       />
       <div
         className="demo-wrapper"
-        style={{ '--max-width': DEMO_WIDTH }}
+        style={{ '--max-width': DEMO_WIDTH } as CSSCustomProperties}
       >
         <XGrid
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}

@@ -12,7 +12,8 @@ import {
   isAutoVariant,
   isFixedVariant,
 } from '@types'
-import { GRID, isValidGridPattern } from '@utils'
+import { isValidGridPattern } from '@utils'
+import { GRID } from '@config'
 
 const DEFAULT_GAP = 8
 
@@ -165,9 +166,9 @@ export function useGridCalculations({
 
       // Fallback to default grid configuration
       return {
-        gridTemplateColumns: `repeat(${GRID.DEFAULTS.COLUMNS}, 1fr)`,
-        columnsCount: GRID.DEFAULTS.COLUMNS,
-        calculatedGap: `${GRID.DEFAULTS.GAP}px`,
+        gridTemplateColumns: `repeat(${GRID.defaults.columns}, 1fr)`,
+        columnsCount: GRID.defaults.columns,
+        calculatedGap: `${GRID.defaults.gap}px`,
         isValid: true,
       }
     } catch (error) {

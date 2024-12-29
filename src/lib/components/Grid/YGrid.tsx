@@ -1,10 +1,12 @@
 import type { CSSProperties, RefObject } from 'react'
 import { memo, useMemo, useRef, useCallback } from 'react'
+import { GRID } from '@config'
 import { useGridDimensions, useVisibleGridLines } from '@hooks'
 import { CSSCustomProperties } from '@types'
-import { clamp, combineClassNames, combineStyles, GRID } from '@utils'
+import { clamp, cx, cs } from '@utils'
+
 import type { YGProps, GridLineStyles, GridFlatStyles } from './types'
-import styles from '@styles/YGrid.module.css'
+import styles from './styles.module.css'
 
 export const YGrid = memo(function YGrid({
   visibility = 'hidden',
@@ -13,11 +15,11 @@ export const YGrid = memo(function YGrid({
   style = {},
 }: YGProps) {
   const {
-    color = GRID.DEFAULTS.COLORS.Y_GRID,
-    height = GRID.DEFAULTS.HEIGHT,
-    variant = GRID.VARIANTS.LINE,
-    baseUnit = GRID.DEFAULTS.BASE,
-    zIndex = GRID.DEFAULTS.Z_INDEX,
+    color = GRID.defaults.colors.yGrid,
+    height = GRID.defaults.height,
+    variant = GRID.variants.line,
+    baseUnit = GRID.defaults.baseUnit,
+    zIndex = GRID.defaults.zIndex,
   } = config
 
   const containerRef = useRef<HTMLDivElement>(null)
@@ -42,7 +44,7 @@ export const YGrid = memo(function YGrid({
         '--grid-row-color': color,
       } as Partial<CSSCustomProperties>
 
-      return combineStyles(baseStyles, style)
+      return cs(baseStyles, style)
     },
     [height, zIndex, color, style],
   )
@@ -64,9 +66,9 @@ export const YGrid = memo(function YGrid({
       rows.push(
         <div
           key={i}
-          className={combineClassNames(
+          className={cx(
             styles.row,
-            variant === 'flat' && styles.flatRow,
+            variant === 'flat' && styles['flat-row'],
           )}
           style={getRowStyles(i)}
           data-row-index={i}
@@ -79,8 +81,8 @@ export const YGrid = memo(function YGrid({
   return (
     <div
       ref={containerRef}
-      className={combineClassNames(
-        styles.container,
+      className={cx(
+        styles['ygrid-container'],
         className,
         visibility === 'visible' ? styles.visible : styles.hidden,
       )}

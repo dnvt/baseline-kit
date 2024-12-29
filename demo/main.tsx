@@ -1,7 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { YGrid } from '@components'
-import { GridSetups } from './components/GridSetups'
+
+import { GridSetups } from './components'
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -32,7 +33,7 @@ function Content({ showBaseline }: ContentProps) {
         <div key={i} className="content-block">
           <YGrid
             visibility={showBaseline ? 'visible' : 'hidden'}
-            config={{ color: 'var(--grid-color-pattern)' }}
+            config={{ color: 'var(--grid-color-pattern)', variant: 'flat' }}
           />
           Content Block {i + 1}
         </div>

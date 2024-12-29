@@ -1,5 +1,6 @@
 import type { Dispatch } from 'react'
-import type { DemoGridAction, DemoGridState } from './types.ts'
+
+import type { DemoGridAction, DemoGridState } from './types'
 import { usePerformanceMonitor } from '../utils'
 
 export function GridControls({

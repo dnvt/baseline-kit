@@ -1,10 +1,13 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { CSSCustomProperties } from '@/types/styles'
 
 // CSS Types
-export type CSSUnit = 'px' | 'rem' | 'em' | '%' | 'fr' | 'vh' | 'vw';
+export const CSS_UNITS = ['px', 'rem', 'em', 'vh', 'vw', '%', 'fr'] as const
+export type CSSUnit = (typeof CSS_UNITS)[number]
 export type CSSCompound<T extends number | string> = T | `${number}${CSSUnit}`;
 export type CSSValue = CSSCompound<number | string>;
+
+// CSS Custom Properties
+export type CSSCustomProperties = Record<`--grid-${string}` | `--stack-${string}` | `--spacer-${string}`, CSSValue>;
 
 // Grid Types
 export type GridFrValue = `${number}fr`;

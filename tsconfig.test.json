@@ -9,6 +9,6 @@
   "include": [
     "src/lib/**/*.test.ts",
     "src/lib/**/*.test.tsx",
-    "src/lib/test/**/*"
+    "src/lib/__tests__/**/*"
   ]
 }

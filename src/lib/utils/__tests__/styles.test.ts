@@ -1,13 +1,13 @@
-import { combineClassNames, combineStyles, parseGridValue } from '@utils'
+import { cx, cs, parseGridValue } from '@utils'
 import { CSSProperties } from 'react'
 import { CSSCustomProperties } from '@types'
 
 describe('Style Utils', () => {
   describe('combineClassNames', () => {
     it('combines class names correctly', () => {
-      expect(combineClassNames('a', 'b', 'c')).toBe('a b c')
-      expect(combineClassNames('a', false, 'b', null, undefined)).toBe('a b')
-      expect(combineClassNames()).toBe('')
+      expect(cx('a', 'b', 'c')).toBe('a b c')
+      expect(cx('a', false, 'b', null, undefined)).toBe('a b')
+      expect(cx()).toBe('')
     })
   })
 
@@ -18,7 +18,7 @@ describe('Style Utils', () => {
       const style1: TestStyle = { color: 'red', '--grid-custom-prop': '10px' }
       const style2: TestStyle = { background: 'blue' }
 
-      expect(combineStyles(style1, style2)).toEqual({
+      expect(cs(style1, style2)).toEqual({
         color: 'red',
         '--grid-custom-prop': '10px',
         background: 'blue',
@@ -26,7 +26,7 @@ describe('Style Utils', () => {
     })
 
     it('handles undefined styles', () => {
-      expect(combineStyles({ color: 'red' }, undefined)).toEqual({ color: 'red' })
+      expect(cs({ color: 'red' }, undefined)).toEqual({ color: 'red' })
     })
   })
 

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import { XGrid } from '../XGrid'
-import { GRID } from '@utils'
+import { GRID } from '@config'
+import { XGrid } from '../Grid'
 
 // Mock ResizeObserver
 const mockResizeObserver = vi.fn(() => ({
@@ -33,8 +33,8 @@ describe('XGrid', () => {
       const container = screen.getByTestId('xgrid-container')
 
       const style = container.style
-      expect(style.getPropertyValue('--grid-column-color')).toBe(GRID.DEFAULTS.COLORS.X_GRID)
-      expect(style.getPropertyValue('--grid-z-index')).toBe(GRID.DEFAULTS.Z_INDEX.toString())
+      expect(style.getPropertyValue('--grid-column-color')).toBe(GRID.defaults.colors.xGrid)
+      expect(style.getPropertyValue('--grid-z-index')).toBe(GRID.defaults.zIndex.toString())
     })
   })
 

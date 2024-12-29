@@ -12,4 +12,4 @@ export type { XGProps, YGProps } from './components'
 export { useGridDimensions, useGridCalculations } from './hooks'
 
 // Export public defaults
-export { GRID } from './utils'
+export { GRID } from './config'

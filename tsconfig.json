@@ -20,21 +20,21 @@
       "@/*": [
         "src/lib/*"
       ],
+      "@components": [
+        "src/lib/components/index.ts"
+      ],
+      "@config": [
+        "src/lib/config/index.ts"
+      ],
       "@hooks": [
         "src/lib/hooks/index.ts"
       ],
       "@types": [
         "src/lib/types/index.ts"
       ],
-      "@components": [
-        "src/lib/components/index.ts"
-      ],
       "@utils": [
         "src/lib/utils/index.ts"
       ],
-      "@styles/*": [
-        "src/lib/styles/modules/*"
-      ]
     }
   },
   "include": [
