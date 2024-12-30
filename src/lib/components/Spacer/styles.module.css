@@ -1,3 +1,9 @@
+:root {
+  --spacer: 0px;
+  --spacer-color: hsla(var(--cyan), 1);
+  --spacer-border: 1px solid var(--spacer-color);
+}
+
 .spacer {
   width: var(--spacer-width, 100%);
   height: var(--spacer-height, 100%);
@@ -9,12 +15,12 @@
 
 .guides {
   position: relative;
-  background: rgba(137, 80, 255, .4); /* #8950FF */
+  background: transparent;
 }
 
 /* So the size of the border doesnt impact the paddings */
 .guides::after {
-  /*  border: 1px solid rgb(0, 189, 255);*/
+  border: var(--spacer-border);
   content: '';
   position: absolute;
   top: 0;
@@ -25,9 +31,9 @@
 }
 
 .height {
-  --spacer-height: var(--space, 0px);
+  --spacer-height: var(--spacer);
 }
 
 .width {
-  --spacer-width: var(--space, 0px);
+  --spacer-width: var(--spacer);
 }

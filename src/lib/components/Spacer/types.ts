@@ -1,23 +1,17 @@
-import { BaseComponentProps, CSSValue } from '@types'
-import { GRID } from '@utils'
+import { ComponentsProps, CSSValue } from '@types'
 
-type SpacerSize = number & {
-  __brand: 'MultipleOfBase';
-};
-
-export function createSpacerSize(value: number): SpacerSize {
-  if (value % GRID.DEFAULTS.BASE !== 0) {
-    throw new Error('SpacerSize must be a multiple of the base value')
-  }
-  return value as SpacerSize
+export type SpacerConfig<T extends 'height' | 'width'> = {
+  baseUnit?: number
+  variant?: 'line' | 'flat'
+  measurements?: 'none' | T
 }
 
-interface SpacerConfig {
-  base?: number
-  height?: CSSValue | SpacerSize
-  width?: CSSValue | SpacerSize
-}
-
-export interface SpacerProps extends BaseComponentProps {
-  config: SpacerConfig
-}
+export type SpacerProps = ({
+  config?: SpacerConfig<'height'>
+  height: CSSValue
+  width?: CSSValue
+} | {
+  config?: SpacerConfig<'width'>
+  height?: CSSValue
+  width: CSSValue
+}) & ComponentsProps

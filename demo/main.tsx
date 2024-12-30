@@ -1,6 +1,6 @@
-import { StrictMode } from 'react'
+import { Fragment, StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { YGrid } from '@components'
+import { Spacer, YGrid } from '@components'
 
 import { GridSetups } from './components'
 
@@ -20,25 +20,32 @@ root.render(
 )
 
 function Content({ showBaseline }: ContentProps) {
+  const visibility = showBaseline ? 'visible' : 'hidden'
+
   return (
     <>
-      <div style={{ height: 40 }} />
+      <Spacer height={40} visibility={visibility} />
       <h1 className="demo-title">Grid Playground</h1>
+      <Spacer height={8} visibility={visibility} />
       <p className="demo-description">
         This is a comprehensive demo showcasing the grid system capabilities.
         Use the controls to experiment with different grid configurations.
       </p>
+      <Spacer height={16} visibility={visibility} />
 
       {Array.from({ length: 100 }).map((_, i) => (
-        <div key={i} className="content-block">
-          <YGrid
-            visibility={showBaseline ? 'visible' : 'hidden'}
-            config={{ color: 'var(--grid-color-pattern)', variant: 'flat' }}
-          />
-          Content Block {i + 1}
-        </div>
+        <Fragment key={i}>
+          {!!i && <Spacer height={8} visibility={visibility} />}
+          <div className="content-block">
+            <YGrid
+              config={{ color: 'var(--grid-color-pattern)' }}
+              visibility={visibility}
+            />
+            Content Block {i + 1}
+          </div>
+        </Fragment>
       ))}
-      <div style={{ height: 40 }} />
+      <Spacer height={40} />
     </>
   )
 }

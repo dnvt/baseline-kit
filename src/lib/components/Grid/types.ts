@@ -1,10 +1,10 @@
 import type { CSSProperties } from 'react'
 import type {
-  GridAlignment,
+  ComponentsProps,
   CSSValue,
+  GridAlignment,
   GridColumnsPattern,
   GridVariant,
-  BaseComponentProps,
 } from '@types'
 
 // XGrid types -----------------------------------------------------------------
@@ -48,7 +48,7 @@ export type XGConfig =
   | XGFixedConfig
   | XGLineConfig;
 
-export interface XGProps extends BaseComponentProps {
+export interface XGProps extends ComponentsProps {
   config: XGConfig;
 }
 
@@ -73,6 +73,6 @@ export interface YGConfig {
   zIndex?: CSSProperties['zIndex']
 }
 
-export interface YGProps extends BaseComponentProps {
+export interface YGProps extends ComponentsProps {
   config: YGConfig
 }

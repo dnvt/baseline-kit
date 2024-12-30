@@ -1,7 +1,7 @@
 import { useReducer, type PropsWithChildren, useCallback, Children, isValidElement, cloneElement } from 'react'
 import { XGrid, YGrid } from '@components'
 import { CSSCustomProperties, type GridColumnsPattern } from '@types'
-import { GRID } from '@config'
+import { COMPONENTS, X_GRID } from '@config'
 
 import { GridControls } from './GridControls'
 import type { DemoGridAction, DemoGridState } from './types'
@@ -48,16 +48,16 @@ const DEMO_WIDTH = '1216px'
 
 const initialState: DemoGridState = {
   config: {
-    baseUnit: GRID.defaults.baseUnit,
-    zIndex: GRID.defaults.zIndex,
+    baseUnit: COMPONENTS.baseUnit,
+    zIndex: COMPONENTS.zIndex,
   },
   showGuides: {
     columns: true,
     baseline: true,
   },
   columnConfig: {
-    count: GRID.defaults.columns,
-    gap: GRID.defaults.baseUnit,
+    count: X_GRID.columns,
+    gap: X_GRID.gap,
     pattern: [
       '24px',
       '24px',
@@ -113,16 +113,16 @@ export function GridSetups({ children }: PropsWithChildren) {
 
         {/* Pattern */}
 
-        {/*<XGrid*/}
-        {/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/}
-        {/*  config={{*/}
-        {/*    padding: '0 16px',*/}
-        {/*    color: 'var(--grid-color-line)',*/}
-        {/*    columns: state.columnConfig.pattern,*/}
-        {/*    gap: 8,*/}
-        {/*    zIndex: state.config.zIndex,*/}
-        {/*  }}*/}
-        {/*/>*/}
+        {/* <XGrid */}
+        {/*   visibility={state.showGuides.columns ? 'visible' : 'hidden'} */}
+        {/*   config={{ */}
+        {/*     padding: '0 16px', */}
+        {/*     color: 'var(--grid-color-line)', */}
+        {/*     columns: state.columnConfig.pattern, */}
+        {/*     gap: 8, */}
+        {/*     zIndex: state.config.zIndex, */}
+        {/*   }} */}
+        {/* /> */}
 
         <XGrid
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}

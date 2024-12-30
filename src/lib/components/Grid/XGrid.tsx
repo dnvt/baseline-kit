@@ -1,7 +1,7 @@
 import { memo, useMemo, useRef } from 'react'
-import { GRID } from '@config'
+import { X_GRID as CONFIG, COMPONENTS } from '@config'
 import { useGridCalculations, useGridDimensions } from '@hooks'
-import { cx, cs } from '@utils'
+import { cx, cs, parseCSSValue, extractCSSNumber } from '@utils'
 import type { CSSCustomProperties, GridVariant } from '@types'
 
 import type { XGProps } from './types'
@@ -31,39 +31,40 @@ const GridColumns = memo(function GridColumns({
 })
 
 export const XGrid = memo(function XGrid({
-  visibility = 'hidden',
   config,
   className = '',
+  visibility = CONFIG.visibility,
   style = {},
 }: XGProps) {
 
   const {
-    align = GRID.defaults.align,
-    color = GRID.defaults.colors.xGrid,
-    columns = GRID.defaults.columns,
-    columnWidth = GRID.defaults.columnWidth,
-    gap,
-    maxWidth,
-    padding,
-    variant,
-    zIndex = GRID.defaults.zIndex,
+    align = CONFIG.align,
+    color = CONFIG.color,
+    columns = CONFIG.columns,
+    columnWidth = CONFIG.columnWidth,
+    gap = CONFIG.gap,
+    maxWidth = CONFIG.maxWidth,
+    padding = CONFIG.padding,
+    variant = CONFIG.variant,
+    zIndex = CONFIG.zIndex,
   } = config
 
   const containerRef = useRef<HTMLDivElement>(null)
   const { width } = useGridDimensions(containerRef)
 
   const gridConfig = useMemo(() => {
+    const numGap = extractCSSNumber(gap) ?? COMPONENTS.baseUnit ?? 8
     if (variant === 'line') {
       return {
         variant: 'line' as const,
-        gap: Math.max(0, (typeof gap === 'number' ? gap : 8) - 1),
+        gap: Math.max(0, numGap - 1),
       }
     }
 
     if (Array.isArray(columns)) {
       return {
         columns,
-        gap,
+        gap: numGap,
         columnWidth: undefined,
       }
     }
@@ -72,13 +73,13 @@ export const XGrid = memo(function XGrid({
       return {
         columns,
         columnWidth,
-        gap,
+        gap: numGap,
       }
     }
 
     return {
       columnWidth,
-      gap,
+      gap: numGap,
     }
   }, [variant, columns, columnWidth, gap])
 
@@ -91,17 +92,15 @@ export const XGrid = memo(function XGrid({
     cs({
       '--grid-template-columns': gridTemplateColumns,
       '--grid-gap': calculatedGap,
-      '--grid-max-width': maxWidth,
+      '--grid-max-width': parseCSSValue(maxWidth),
       '--grid-columns': columnsCount,
       '--grid-justify': align,
       '--grid-padding': padding,
-      '--grid-column-color': color,
+      '--grid-color': color,
       '--grid-z-index': zIndex,
       '--grid-column-width': variant === 'line' ? '1px' : undefined,
-    } as Partial<CSSCustomProperties>, style),
-  [gridTemplateColumns, calculatedGap, maxWidth, columnsCount, align, padding, color, zIndex, variant, style],
-  )
-
+    } as CSSCustomProperties, style),
+  [gridTemplateColumns, calculatedGap, maxWidth, columnsCount, align, padding, color, zIndex, variant, style])
 
   return (
     <div
@@ -111,9 +110,9 @@ export const XGrid = memo(function XGrid({
         className,
         visibility === 'visible' ? styles.visible : styles.hidden,
       )}
-      style={containerStyles}
       data-testid="xgrid-container"
       data-variant={variant}
+      style={containerStyles}
     >
       <GridColumns count={columnsCount} variant={variant} />
     </div>

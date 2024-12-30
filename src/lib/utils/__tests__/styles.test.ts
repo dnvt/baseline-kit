@@ -1,4 +1,4 @@
-import { cx, cs, parseGridValue } from '@utils'
+import { cx, cs, parseCSSValue } from '@utils'
 import { CSSProperties } from 'react'
 import { CSSCustomProperties } from '@types'
 
@@ -32,9 +32,9 @@ describe('Style Utils', () => {
 
   describe('parseGridValue', () => {
     it('parses grid values correctly', () => {
-      expect(parseGridValue(100)).toBe('100px')
-      expect(parseGridValue('100px')).toBe('100px')
-      expect(parseGridValue('auto')).toBe('auto')
+      expect(parseCSSValue(100)).toBe('100px')
+      expect(parseCSSValue('100px')).toBe('100px')
+      expect(parseCSSValue('auto')).toBe('auto')
     })
   })
 })

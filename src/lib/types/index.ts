@@ -3,6 +3,5 @@
  * @module types
  */
 
-export * from './common'
-export * from './styles'
-export * from './hook'
+export * from './components'
+export * from './hooks'

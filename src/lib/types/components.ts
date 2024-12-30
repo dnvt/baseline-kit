@@ -21,8 +21,8 @@ export type GridAlignment = typeof GRID_ALIGNMENTS[number];
 export const GRID_VARIANTS = ['line', 'flat'] as const
 export type GridVariant = typeof GRID_VARIANTS[number];
 
-// Base Component Types
-export interface BaseComponentProps {
+// Common Component Types
+export interface ComponentsProps {
   'data-testid'?: string;
   className?: string;
   children?: ReactNode;

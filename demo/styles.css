@@ -2,15 +2,16 @@
   --max-width: 100%;
 
   /* Grid colors */
-  --cyan: 190;
-  --blue: 220;
-  --purple: 255;
+  --cyan: 190, var(--sat), var(--light);
+  --blue: 220, var(--sat), var(--light);
+  --purple: 255, var(--sat), var(--light);
+
   --sat: 70%;
   --light: 50%;
 
-  --grid-color-line: hsla(var(--blue), var(--sat), var(--light), 0.15);
-  --grid-color-pattern: hsla(var(--purple), var(--sat), var(--light), 0.2);
-  --grid-color-fixed: hsla(var(--cyan), var(--sat), var(--light), 0.2);
+  --grid-color-line: hsla(var(--blue), 0.15);
+  --grid-color-pattern: hsla(var(--purple), 0.15);
+  --grid-color-fixed: hsla(var(--cyan), 0.15);
 
   /* Light theme colors */
   --background-color: white;
@@ -49,7 +50,7 @@
 
 .content-block {
   position: relative;
-  padding: 15px 16px 17px;
+  padding: 14px 16px 18px;
   color: var(--text-color);
   background-color: var(--content-block-bg);
   border-radius: 6px;
@@ -57,14 +58,15 @@
 
 .demo-title {
   font-size: 1.5rem;
-  padding-top: 3px;
+  padding-top: 2px;
+  padding-bottom: 4px;
   font-weight: bold;
   color: var(--title-color);
 }
 
 .demo-description {
-  padding-top: 2px;
-  padding-bottom: 1px;
+  padding-top: 6px;
+  padding-bottom: 2px;
   max-width: 32rem;
   color: var(--text-color);
 }
@@ -116,6 +118,4 @@
 .demo-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  /*  padding-inline: 24px;*/
 }

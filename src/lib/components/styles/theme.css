@@ -1,36 +1,17 @@
-/* CSS Custom Properties */
+/* Default | Light theme colors */
 :root {
-  /* Colors */
-  --cyan: 190;
-  --blue: 220;
-  --purple: 255;
+  /* HSLA Colors */
+  --cyan: 190, var(--sat), var(--light);
+  --blue: 220, var(--sat), var(--light);
+  --purple: 255, var(--sat), var(--light);
+
   --sat: 70%;
   --light: 50%;
-
-  /* Grid System */
-  --grid-base: 8px;
-  --grid-gap: 8px;
-  --grid-height: 100%;
-  --grid-justify: start;
-  --grid-max-width: 100%;
-  --grid-padding: 0;
-  --grid-template-columns: 1fr;
-  --grid-z-index: 0;
-
-  /* Row */
-  --grid-row-color: hsla(var(--blue), var(--sat), var(--light), 0.15);
-  --grid-row-height: 1px;
-  --grid-row-opacity: 1;
-  --grid-row-top: 0;
-
-  /* Column */
-  --grid-column-color: hsla(var(--cyan), var(--sat), var(--light), 0.2);
-  --grid-column-width: 0;
 }
 
+/* Dark theme colors */
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Dark theme colors */
     --sat: 100%;
     --light: 70%;
   }

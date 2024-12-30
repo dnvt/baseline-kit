@@ -1,31 +1,40 @@
-import type { CSSProperties } from 'react'
+import { memo, useMemo } from 'react'
 
+import { CSSCustomProperties } from '@types'
+import { cs, cx, parseCSSValue } from '@utils'
+
+import { SpacerProps } from './types'
 import styles from './styles.module.css'
 
-//
-//const initialState: StackState = {
-//  baseSize: STACK.DEFAULTS.BASE_SIZE,
-//  maxWidth: STACK.DEFAULTS.MAX_WIDTH,
-//  show: STACK.DEFAULTS.SHOW,
-//  zIndex: STACK.DEFAULTS.Z_INDEX,
-//  styles: {},
-//}
-//
-//
-//export function Spacer({ width, height, config, show, className }: SpacerProps) {
-//
-//  return (
-//    <div
-//      className={cx(
-//        styles['spacer'],
-//        (show || state.show) && styles['guides'],
-//        className,
-//      )}
-//      style={{
-//        '--spacer-z-index': state.zIndex,
-//        '--spacer-height': height + 'px',
-//        '--spacer-width': width,
-//      } as CSSProperties}
-//    />
-//  )
-//}
+export const Spacer = memo(function Spacer({
+  visibility = 'hidden',
+  config,
+  height = '100%',
+  width = '100%',
+  className = '',
+  style = {},
+}: SpacerProps) {
+//  const {
+//    baseUnit = GRID.defaults.baseUnit,
+//    variant = 'line',
+//    measurements = 'none',
+//  } = config
+
+  const combinedStyles = useMemo(() =>
+    cs({
+      '--spacer-height': parseCSSValue(height),
+      '--spacer-width': parseCSSValue(width),
+    } as CSSCustomProperties, style),
+  [height, width, style])
+
+  return (
+    <div
+      className={cx(
+        styles.spacer,
+        (visibility === 'visible') && styles.guides,
+        className,
+      )}
+      style={combinedStyles}
+    />
+  )
+})

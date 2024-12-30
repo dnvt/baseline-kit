@@ -1,4 +1,3 @@
-// src/lib/hooks/__tests__/useGridDimensions.test.ts
 import { renderHook, act } from '@testing-library/react'
 import { useGridDimensions } from '@hooks'
 
