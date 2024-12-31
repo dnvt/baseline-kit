@@ -2,6 +2,7 @@
   --max-width: 100%;
 
   /* Grid colors */
+  --grey: 0, 0%, 40%;
   --cyan: 190, var(--sat), var(--light);
   --blue: 220, var(--sat), var(--light);
   --purple: 255, var(--sat), var(--light);
@@ -118,4 +119,23 @@
 .demo-content {
   display: flex;
   flex-direction: column;
+}
+
+.indice {
+  font-size: 13px;
+  padding-block: 2px 3px;
+}
+
+.width {
+  color: var(--spacer-indice);
+  position: absolute;
+  top: 0;
+  right: 8px;
+}
+
+.height {
+  color: var(--spacer-indice);
+  position: absolute;
+  bottom: 0;
+  right: 8px;
 }

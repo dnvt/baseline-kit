@@ -1,9 +1,11 @@
 /* Default | Light theme colors */
 :root {
   /* HSLA Colors */
+  --grey: 0, 0%, 90%;
   --cyan: 190, var(--sat), var(--light);
   --blue: 220, var(--sat), var(--light);
   --purple: 255, var(--sat), var(--light);
+  --black: 0, 0%, 10%;
 
   --sat: 70%;
   --light: 50%;

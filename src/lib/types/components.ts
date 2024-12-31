@@ -4,7 +4,9 @@ import type { CSSProperties, ReactNode } from 'react'
 export const CSS_UNITS = ['px', 'rem', 'em', 'vh', 'vw', '%', 'fr'] as const
 export type CSSUnit = (typeof CSS_UNITS)[number]
 export type CSSCompound<T extends number | string> = T | `${number}${CSSUnit}`;
-export type CSSValue = CSSCompound<number | string>;
+
+export type CSSValue = CSSCompound<number>;
+export type CSSPixelValue = number | `${number}px`
 
 // CSS Custom Properties
 export type CSSCustomProperties = Record<`--grid-${string}` | `--stack-${string}` | `--spacer-${string}`, CSSValue>;

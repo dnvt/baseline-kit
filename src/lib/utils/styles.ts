@@ -1,4 +1,4 @@
-import type { CSSCustomProperties, CSSValue } from '@types'
+import type { CSSCustomProperties, CSSPixelValue, CSSValue } from '@types'
 import { CSSProperties } from 'react'
 
 // Combining classnames
@@ -21,11 +21,11 @@ export const parseCSSValue = (value: CSSValue | 'auto'): string => {
   return typeof value === 'number' ? `${value}px` : value.toString()
 }
 
-export const extractCSSNumber = (value: CSSValue): number | null => {
+export const extractCSSNumber = (value: CSSPixelValue): number => {
   // If value is already a number, return it
   if (typeof value === 'number') return value
 
   // Try to parse the numeric portion
   const numericMatch = value.toString().match(/^-?\d*\.?\d+/)
-  return numericMatch ? parseFloat(numericMatch[0]) : null
+  return numericMatch ? parseFloat(numericMatch[0]) : 0
 }

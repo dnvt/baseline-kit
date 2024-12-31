@@ -1,7 +1,7 @@
-import { COMPONENTS } from '@/config/components'
+import { COMPONENTS } from './components'
 
 export const X_GRID = {
-  align: COMPONENTS.align,
+  align: 'center',
   color: COMPONENTS.colors.xGrid,
   columns: 9,
   columnWidth: '1fr',

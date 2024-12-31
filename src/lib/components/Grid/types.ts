@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import type {
   ComponentsProps,
+  CSSPixelValue,
   CSSValue,
   GridAlignment,
   GridColumnsPattern,
@@ -12,7 +13,7 @@ import type {
 interface XGBaseConfig {
   align?: GridAlignment;
   color?: CSSProperties['color'] | CSSProperties['backgroundColor'];
-  gap?: CSSValue;
+  gap?: CSSPixelValue;
   maxWidth?: CSSValue;
   padding?: CSSProperties['padding'];
   zIndex?: CSSProperties['zIndex'];

@@ -1,17 +1,26 @@
-import { ComponentsProps, CSSValue } from '@types'
+import { ComponentsProps, CSSPixelValue } from '@types'
+import { ReactNode } from 'react'
 
-export type SpacerConfig<T extends 'height' | 'width'> = {
+type ExclusiveProps<T, K extends keyof T> = {
+  [P in K]: (
+    { [Q in P]: T[Q] } &
+    { [Q in Exclude<K, P>]?: undefined } &
+    Omit<T, K>
+    )
+}[K]
+
+export type Measurement = 'none' | 'width' | 'height'
+
+export type SpacerConfig = {
   baseUnit?: number
+  color?: string
+  zIndex?: number
   variant?: 'line' | 'flat'
-  measurements?: 'none' | T
 }
 
-export type SpacerProps = ({
-  config?: SpacerConfig<'height'>
-  height: CSSValue
-  width?: CSSValue
-} | {
-  config?: SpacerConfig<'width'>
-  height?: CSSValue
-  width: CSSValue
-}) & ComponentsProps
+export type SpacerProps = ExclusiveProps<{
+  config?: SpacerConfig
+  height?: CSSPixelValue
+  width?: CSSPixelValue
+  measureRenderer?: ((value: number, measurement: Measurement) => ReactNode)
+}, 'height' | 'width'> & ComponentsProps

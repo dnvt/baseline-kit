@@ -1,7 +1,16 @@
 :root {
   --spacer: 0px;
-  --spacer-color: hsla(var(--cyan), 1);
+  --spacer-color: hsla(var(--blue), 0.75);
+  --spacer-indice: hsla(var(--blue), 1);
+  --spacer-base-unit: 8;
   --spacer-border: 1px solid var(--spacer-color);
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --spacer-color: hsla(var(--blue), 0.80);
+  }
 }
 
 .spacer {

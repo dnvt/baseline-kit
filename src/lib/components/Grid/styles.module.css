@@ -19,6 +19,16 @@
   --grid-color-pattern: hsla(var(--purple), 0.15);
 }
 
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --grid-color: hsla(var(--grey), 0.2);
+    --grid-color-line: hsla(var(--grey), 0.2);
+    --grid-color-fixed: hsla(var(--blue), 0.15);
+    --grid-color-pattern: hsla(var(--cyan), 0.15);
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 /* XGrid styles ------------------------------------------------------------- */
 
@@ -35,6 +45,18 @@
   max-width: var(--grid-max-width);
   padding: var(--grid-padding);
 
+}
+
+.xgrid-container[data-variant="line"] {
+  --grid-column-width: 1px;
+}
+
+.xgrid-container[data-variant="fixed"] {
+  --grid-color: var(--grid-color-fixed);
+}
+
+.xgrid-container[data-variant="pattern"] {
+  --grid-color: var(--grid-color-pattern);
 }
 
 .columns-container {
@@ -69,7 +91,14 @@
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
+}
 
+.ygrid-container[data-variant="line"] {
+  --grid-height: 1px;
+}
+
+.ygrid-container[data-variant="flat"] {
+  --grid-opacity: 0;
 }
 
 .visible {

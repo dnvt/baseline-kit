@@ -1,11 +1,10 @@
 export const COMPONENTS = {
-  align: 'center',
   baseUnit: 8,
   zIndex: 0,
   colors: {
     xGrid: 'var(--grid-color-fixed)',
     yGrid: 'var(--grid-color-line)',
-    spacer: 'var(--spacer-color-line)',
+    spacer: 'var(--spacer-color)',
   },
   variants: {
     xGrid: 'flat',
