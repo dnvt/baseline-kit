@@ -10,10 +10,10 @@
   --sat: 70%;
   --light: 50%;
 
-  --grid-color-line: hsla(var(--blue), 0.15);
-  --grid-color-pattern: hsla(var(--purple), 0.15);
-  --grid-color-auto: hsla(var(--blue), 0.15);
-  --grid-color-fixed: hsla(var(--cyan), 0.15);
+  --padd-grid-color-line: hsla(var(--blue), 0.15);
+  --padd-grid-color-pattern: hsla(var(--purple), 0.15);
+  --padd-grid-color-auto: hsla(var(--blue), 0.15);
+  --padd-grid-color-fixed: hsla(var(--cyan), 0.15);
 
   /* Light theme colors */
   --background-color: white;
@@ -128,14 +128,14 @@
 }
 
 .width {
-  color: var(--spacer-indice);
+  color: var(--padd-spacer-indice);
   position: absolute;
   top: 0;
   right: 8px;
 }
 
 .height {
-  color: var(--spacer-indice);
+  color: var(--padd-spacer-indice);
   position: absolute;
   bottom: 0;
   right: 8px;

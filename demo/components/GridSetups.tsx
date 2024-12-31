@@ -93,8 +93,6 @@ export function GridSetups({ children }: PropsWithChildren) {
         visibility={state.showGuides.baseline ? 'visible' : 'hidden'}
         config={{
           height: state.pageHeight,
-          baseUnit: state.config.baseUnit,
-          zIndex: state.config.zIndex,
         }}
       />
       <div
@@ -138,13 +136,9 @@ export function GridSetups({ children }: PropsWithChildren) {
         {/*/>*/}
 
         <XGrid
-          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+          config={{ variant: 'line' }}
           data-testid="line-grid"
-          config={{
-            variant: 'line',
-            color: 'var(--grid-color-line)',
-            zIndex: state.config.zIndex,
-          }}
+          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
         />
         <div className="demo-content">
           {Children.map(children, (child) => {

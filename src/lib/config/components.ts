@@ -2,12 +2,12 @@ export const COMPONENTS = {
   baseUnit: 8,
   zIndex: 0,
   colors: {
-    xGrid: 'var(--grid-color-fixed)',
-    yGrid: 'var(--grid-color-line)',
+    xGrid: 'var(--padd-grid-color-fixed)',
+    yGrid: 'var(--padd-grid-color-line)',
     spacer: 'var(--spacer-color)',
   },
   variants: {
-    xGrid: 'fixed',
+    xGrid: 'line',
     yGrid: 'line',
     spacer: 'line',
   },

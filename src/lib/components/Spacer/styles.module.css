@@ -1,22 +1,28 @@
 :root {
-  --spacer: 0px;
-  --spacer-color: hsla(var(--blue), 0.75);
-  --spacer-indice: hsla(var(--blue), 1);
-  --spacer-base-unit: 8;
-  --spacer-border: 1px solid var(--spacer-color);
-  --spacer-flat: hsla(var(--blue), 0.30);
+  --padd-spacer: 100%;
+  --padd-spacer-color: hsla(var(--blue), 0.75);
+  --padd-spacer-indice: hsla(var(--blue), 1);
+  --padd-spacer-flat: hsla(var(--blue), 0.30);
+  --padd-spacer-border-width: 1px;
+  --padd-spacer-border-style: solid;
+  --padd-spacer-width: 100%;
+  --padd-spacer-height: 100%;
+  --padd-spacer-border: var(--padd-spacer-border-width)
+    var(--padd-spacer-border-style)
+    var(--padd-spacer-color);
 }
 
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --spacer-color: hsla(var(--blue), 0.80);
+    --padd-spacer-indice: hsla(var(--blue), 1);
+    --padd-spacer-flat: hsla(var(--blue), 0.30);
   }
 }
 
 .spacer {
-  width: var(--spacer-width, 100%);
-  height: var(--spacer-height, 100%);
+  width: var(--padd-spacer-width);
+  height: var(--padd-spacer-height);
   box-sizing: border-box;
 
   /* Required for pseudo-element positioning */
@@ -25,7 +31,7 @@
 }
 
 .spacer[data-variant="line"]::after {
-  border: var(--spacer-border);
+  border: var(--padd-spacer-border);
   content: '';
   position: absolute;
   top: 0;
@@ -35,13 +41,13 @@
 }
 
 .spacer[data-variant="flat"] {
-  background: var(--spacer-flat);
+  background: var(--padd-spacer-flat);
 }
 
 .height {
-  --spacer-height: var(--spacer);
+  --padd-spacer-height: var(--padd-spacer);
 }
 
 .width {
-  --spacer-width: var(--spacer);
+  --padd-spacer-width: var(--padd-spacer);
 }

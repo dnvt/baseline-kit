@@ -12,9 +12,7 @@ function normalizeSpacerSize(size: CSSPixelValue, baseUnit: number) {
   const normalized = num - (num % baseUnit)
 
   if (normalized !== num) {
-    console.warn(
-      `Best to pass a Spacer value as a multiple of the baseUnit.\nConverted: ${num} to ${normalized} to match the baseline`,
-    )
+    console.error(`Best to pass a Spacer value as a multiple of the baseUnit.\nConverted: ${num} to ${normalized} to match the baseline`)
   }
 
   return normalized
@@ -51,11 +49,11 @@ export const Spacer = memo(function Spacer({
 
   const combinedStyles = useMemo(() =>
     cs({
-      '--spacer-height': parseCSSValue(normHeight),
-      '--spacer-width': parseCSSValue(normWidth),
-      '--spacer-base-unit': baseUnit,
-      '--spacer-color': color,
-      '--spacer-z-index': zIndex,
+      '--padd-spacer-height': parseCSSValue(normHeight),
+      '--padd-spacer-width': parseCSSValue(normWidth),
+      '--padd-base-unit': baseUnit,
+      '--padd-spacer-color': color,
+      '--padd-z-index': zIndex,
     } as CSSCustomProperties, style),
   [normHeight, normWidth, baseUnit, color, zIndex, style])
 

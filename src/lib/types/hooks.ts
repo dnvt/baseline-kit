@@ -24,13 +24,13 @@ export interface GridLineVariant extends GridCommonConfig {
 }
 
 export interface GridPatternVariant extends GridCommonConfig {
-  variant?: never
+  variant: 'pattern'
   columns: GridColumnsPattern
   columnWidth?: never
 }
 
 export interface GridFixedVariant extends GridCommonConfig {
-  variant?: never
+  variant: 'fixed'
   columns: number
   columnWidth?: CSSValue
 }

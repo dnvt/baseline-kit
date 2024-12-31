@@ -7,7 +7,13 @@
 @import 'src/lib/components/Spacer/styles.module.css';
 
 :root {
-  --sys-color: transparent;
-  --sys-z-index: 0;
-  --sys-base-unit: 8;
+  /* Padded system base values */
+  --padd-base-unit: 8px;
+  --padd-z-index: 0;
+
+  /* Padded system measurements */
+  --padd-gap: var(--padd-base-unit);
+  --padd-width: 100%;
+  --padd-height: 100%;
+  --padd-padding: 0;
 }

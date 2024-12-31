@@ -38,10 +38,10 @@ export const YGrid = memo(function YGrid({
 
   const getRowStyles = useCallback(
     (idx: number): Partial<CSSProperties & (GridLineStyles | GridFlatStyles)> => ({
-      '--grid-top': `${idx * baseUnit}px`,
-      '--grid-color': color,
-      '--grid-height': variant === 'line' ? '1px' : `${baseUnit}px`,
-      '--grid-opacity': variant === 'flat' && idx % 2 === 0 ? '0' : '1',
+      '--padd-grid-top': `${idx * baseUnit}px`,
+      '--padd-grid-color': color,
+      '--padd-grid-line-height': variant === 'line' ? '1px' : `${baseUnit}px`,
+      '--padd-grid-opacity': variant === 'flat' && idx % 2 === 0 ? '0' : '1',
     }),
     [baseUnit, color, variant],
   )
@@ -66,9 +66,9 @@ export const YGrid = memo(function YGrid({
 
   const containerStyles = useMemo(() =>
     cs({
-      '--grid-height': typeof height === 'number' ? `${height}px` : height,
-      '--grid-z-index': zIndex,
-      '--grid-color': color,
+      '--padd-height': typeof height === 'number' ? `${height}px` : height,
+      '--padd-z-index': zIndex,
+      '--padd-grid-color': color,
     } as CSSCustomProperties, style),
   [height, zIndex, color, style])
 

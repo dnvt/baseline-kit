@@ -2,7 +2,13 @@ import { memo, useMemo, useRef } from 'react'
 import { X_GRID as CONFIG, COMPONENTS } from '@config'
 import { useGridCalculations, useGridDimensions } from '@hooks'
 import { cx, cs, parseCSSValue, extractCSSNumber } from '@utils'
-import type { CSSCustomProperties } from '@types'
+import type {
+  CSSCustomProperties,
+  GridAutoVariant,
+  GridFixedVariant,
+  GridLineVariant,
+  GridPatternVariant,
+} from '@types'
 
 import type { XGProps, XGridVariant } from './types'
 import styles from './styles.module.css'
@@ -55,41 +61,48 @@ export const XGrid = memo(function XGrid({
 
   const gridConfig = useMemo(() => {
     const numGap = extractCSSNumber(gap) ?? COMPONENTS.baseUnit ?? 8
-    if (variant === 'line') {
+
+    switch (variant) {
+    case 'line':
       return {
         variant: 'line' as const,
         gap: Math.max(0, numGap - 1),
-      }
-    }
+      } satisfies GridLineVariant
 
-    if (variant === 'auto') {
+    case 'auto':
       return {
         variant: 'auto' as const,
         columnWidth,
         gap: numGap,
+      } satisfies GridAutoVariant
+
+    case 'pattern':
+      if (Array.isArray(columns)) {
+        return {
+          variant: 'pattern' as const,
+          columns,
+          gap: numGap,
+        } satisfies GridPatternVariant
       }
+      break
+
+    case 'fixed':
+      if (typeof columns === 'number') {
+        return {
+          variant: 'fixed' as const,
+          columns,
+          columnWidth,
+          gap: numGap,
+        } satisfies GridFixedVariant
+      }
+      break
     }
 
-    if (Array.isArray(columns)) {
-      return {
-        columns,
-        gap: numGap,
-        columnWidth: undefined,
-      }
-    }
-
-    if (typeof columns === 'number') {
-      return {
-        columns,
-        columnWidth,
-        gap: numGap,
-      }
-    }
-
+    // Default to fixed variant
     return {
-      columnWidth,
-      gap: numGap,
-    }
+      variant: 'line' as const,
+      gap: Math.max(0, numGap - 1),
+    } satisfies GridLineVariant
   }, [variant, columns, columnWidth, gap])
 
   const { gridTemplateColumns, columnsCount, calculatedGap } = useGridCalculations({
@@ -99,16 +112,15 @@ export const XGrid = memo(function XGrid({
 
   const containerStyles = useMemo(() =>
     cs({
-      '--grid-template-columns': gridTemplateColumns,
-      '--grid-gap': calculatedGap,
-      '--grid-max-width': parseCSSValue(maxWidth),
-      '--grid-columns': columnsCount,
-      '--grid-justify': align,
-      '--grid-padding': padding,
-      '--grid-color': color,
-      '--grid-z-index': zIndex,
+      '--padd-gap': calculatedGap,
+      '--padd-grid-color': color,
+      '--padd-grid-justify': align,
+      '--padd-grid-template-columns': gridTemplateColumns,
+      '--padd-padding': padding,
+      '--padd-width': parseCSSValue(maxWidth),
+      '--padd-z-index': zIndex,
     } as CSSCustomProperties, style),
-  [gridTemplateColumns, calculatedGap, maxWidth, columnsCount, align, padding, color, zIndex, style])
+  [calculatedGap, color, align, gridTemplateColumns, padding, maxWidth, zIndex, style])
 
   return (
     <div
