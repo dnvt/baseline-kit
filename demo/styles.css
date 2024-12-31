@@ -12,6 +12,7 @@
 
   --grid-color-line: hsla(var(--blue), 0.15);
   --grid-color-pattern: hsla(var(--purple), 0.15);
+  --grid-color-auto: hsla(var(--blue), 0.15);
   --grid-color-fixed: hsla(var(--cyan), 0.15);
 
   /* Light theme colors */

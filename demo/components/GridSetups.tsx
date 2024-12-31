@@ -105,31 +105,44 @@ export function GridSetups({ children }: PropsWithChildren) {
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
           data-testid="main-grid"
           config={{
+            variant: 'fixed',
             columns: state.columnConfig.count,
             gap: state.columnConfig.gap,
-            zIndex: state.config.zIndex,
           }}
         />
 
-        {/* Pattern */}
+        {/*Pattern*/}
 
-        {/* <XGrid */}
-        {/*   visibility={state.showGuides.columns ? 'visible' : 'hidden'} */}
-        {/*   config={{ */}
-        {/*     padding: '0 16px', */}
-        {/*     color: 'var(--grid-color-line)', */}
-        {/*     columns: state.columnConfig.pattern, */}
-        {/*     gap: 8, */}
-        {/*     zIndex: state.config.zIndex, */}
-        {/*   }} */}
-        {/* /> */}
+        {/*<XGrid*/}
+        {/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/}
+        {/*  config={{*/}
+        {/*    variant: 'pattern',*/}
+        {/*    padding: '0 16px',*/}
+        {/*    color: 'var(--grid-color-line)',*/}
+        {/*    columns: state.columnConfig.pattern,*/}
+        {/*    gap: 8,*/}
+        {/*    zIndex: state.config.zIndex,*/}
+        {/*  }}*/}
+        {/*/>*/}
+
+        {/*<XGrid*/}
+        {/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/}
+        {/*  config={{*/}
+        {/*    variant: 'auto',*/}
+        {/*    columnWidth: 80,*/}
+        {/*    padding: '0 16px',*/}
+        {/*    color: 'var(--grid-color-line)',*/}
+        {/*    gap: 8,*/}
+        {/*    zIndex: state.config.zIndex,*/}
+        {/*  }}*/}
+        {/*/>*/}
 
         <XGrid
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
           data-testid="line-grid"
           config={{
-            color: 'var(--grid-color-line)',
             variant: 'line',
+            color: 'var(--grid-color-line)',
             zIndex: state.config.zIndex,
           }}
         />

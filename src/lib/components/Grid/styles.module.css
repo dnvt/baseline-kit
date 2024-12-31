@@ -15,6 +15,7 @@
   /* colors */
   --grid-color: hsla(var(--blue), 0.15);
   --grid-color-line: hsla(var(--blue), 0.15);
+  --grid-color-auto: hsla(var(--blue), 0.15);
   --grid-color-fixed: hsla(var(--cyan), 0.15);
   --grid-color-pattern: hsla(var(--purple), 0.15);
 }
@@ -47,18 +48,6 @@
 
 }
 
-.xgrid-container[data-variant="line"] {
-  --grid-column-width: 1px;
-}
-
-.xgrid-container[data-variant="fixed"] {
-  --grid-color: var(--grid-color-fixed);
-}
-
-.xgrid-container[data-variant="pattern"] {
-  --grid-color: var(--grid-color-pattern);
-}
-
 .columns-container {
   height: 100%;
   width: 100%;
@@ -75,9 +64,22 @@
   width: 100%;
 }
 
-.line-column {
+.column[data-variant="line"] {
   width: var(--grid-column-width);
 }
+
+.xgrid-container[data-variant="pattern"] {
+  --grid-color: var(--grid-color-pattern);
+}
+
+.xgrid-container[data-variant="auto"] {
+  --grid-color: var(--grid-color-auto);
+}
+
+.xgrid-container[data-variant="fixed"] {
+  --grid-color: var(--grid-color-fixed);
+}
+
 
 /* -------------------------------------------------------------------------- */
 /* YGrid styles ------------------------------------------------------------- */

@@ -42,8 +42,8 @@ export const Spacer = memo(function Spacer({
   const showFlatSpacer = isShown && variant === 'flat'
 
   // Dimensions measurements
-  const heightMeasurement = height && isShown ? normalizeSpacerSize(height, baseUnit) : null
-  const widthMeasurement = width && isShown ? normalizeSpacerSize(width, baseUnit) : null
+  const heightMeasurement = height ? normalizeSpacerSize(height, baseUnit) : null
+  const widthMeasurement = width ? normalizeSpacerSize(width, baseUnit) : null
 
   // Dimensions styles
   const normHeight = heightMeasurement ?? '100%'
@@ -68,14 +68,16 @@ export const Spacer = memo(function Spacer({
     <div
       className={cx(
         styles.spacer,
-        showLineSpacer && styles.guides,
-        showFlatSpacer && styles.guides,
+        showLineSpacer && styles.border,
+        showFlatSpacer && styles.flat,
         className,
       )}
+      data-testid="spacer-container"
+      data-variant={variant}
       style={combinedStyles}
     >
-      {heightMeasurement && renderMeasurement(heightMeasurement, 'height')}
-      {widthMeasurement && renderMeasurement(widthMeasurement, 'width')}
+      {isShown && heightMeasurement && renderMeasurement(heightMeasurement, 'height')}
+      {isShown && widthMeasurement && renderMeasurement(widthMeasurement, 'width')}
     </div>
   )
 })

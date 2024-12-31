@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react'
-import type {
+import {
   CSSValue,
   GridColumnsPattern,
   GridConfig,
@@ -101,12 +101,11 @@ export function useGridCalculations({
    * Calculates auto-grid layout based on container width and column width.
    * Handles special cases like 'auto' width and non-numeric values.
    */
-  const calculateAutoGrid = useCallback(
+  const calculateFlatGrid = useCallback(
     (config: GridConfig & { columnWidth: CSSValue }, width: number): UseGridCalculationsResult => {
       const gap = parseCSSValue(config.gap, DEFAULT_GAP)
       const columnWidth = parseCSSValue(config.columnWidth)
 
-      // Handle special 'auto' case
       if (columnWidth === 'auto') {
         return {
           gridTemplateColumns: 'auto',
@@ -116,7 +115,6 @@ export function useGridCalculations({
         }
       }
 
-      // Handle non-numeric values (like percentages or other units)
       const numericGap = parseInt(gap, 10)
       const numericWidth = parseInt(columnWidth, 10)
 
@@ -129,7 +127,6 @@ export function useGridCalculations({
         }
       }
 
-      // Calculate maximum number of columns that fit in the container
       const columns = Math.max(1, Math.floor((width + numericGap) / (numericWidth + numericGap)))
 
       return {
@@ -142,12 +139,7 @@ export function useGridCalculations({
     [parseCSSValue],
   )
 
-  /**
-   * Memoized final calculation that determines which variant to use
-   * and handles error cases with fallback values.
-   */
   return useMemo(() => {
-    // Early return if container width is not available
     if (!containerWidth) {
       return {
         gridTemplateColumns: 'none',
@@ -158,11 +150,10 @@ export function useGridCalculations({
     }
 
     try {
-      // Determine grid variant and calculate appropriate layout
       if (isLineVariant(config)) return calculateLineVariant(config, containerWidth)
       if (isPatternVariant(config)) return calculateColumnPattern(config)
       if (isFixedVariant(config)) return calculateFixedColumns(config)
-      if (isAutoVariant(config)) return calculateAutoGrid(config, containerWidth)
+      if (isAutoVariant(config)) return calculateFlatGrid(config, containerWidth)
 
       // Fallback to default grid configuration
       return {
@@ -173,7 +164,6 @@ export function useGridCalculations({
       }
     } catch (error) {
       console.error('Error calculating grid layout:', error)
-      // Return safe fallback values on error
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
@@ -181,5 +171,5 @@ export function useGridCalculations({
         isValid: false,
       }
     }
-  }, [containerWidth, config, calculateLineVariant, calculateColumnPattern, calculateFixedColumns, calculateAutoGrid])
+  }, [containerWidth, config, calculateLineVariant, calculateColumnPattern, calculateFixedColumns, calculateFlatGrid])
 }

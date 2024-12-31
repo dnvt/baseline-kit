@@ -10,60 +10,63 @@ import type {
 
 // XGrid types -----------------------------------------------------------------
 
+export type XGridVariant = 'line' | 'auto' | 'pattern' | 'fixed'
+
 interface XGBaseConfig {
-  align?: GridAlignment;
-  color?: CSSProperties['color'] | CSSProperties['backgroundColor'];
-  gap?: CSSPixelValue;
-  maxWidth?: CSSValue;
-  padding?: CSSProperties['padding'];
-  zIndex?: CSSProperties['zIndex'];
+  align?: GridAlignment
+  color?: CSSProperties['color'] | CSSProperties['backgroundColor']
+  gap?: CSSPixelValue
+  maxWidth?: CSSValue
+  padding?: CSSProperties['padding']
+  zIndex?: CSSProperties['zIndex']
+  variant?: XGridVariant
 }
 
 export interface XGPatternConfig extends XGBaseConfig {
-  variant?: never;
-  columns: GridColumnsPattern;
-  columnWidth?: never;
-}
-
-export interface XGAutoConfig extends XGBaseConfig {
-  variant?: never;
-  columnWidth: CSSValue;
-  columns?: never;
+  variant: 'pattern'
+  columns: GridColumnsPattern
+  columnWidth?: never
 }
 
 export interface XGFixedConfig extends XGBaseConfig {
-  variant?: never;
-  columns: number;
-  columnWidth?: CSSValue;
+  variant: 'fixed'
+  columns: number
+  columnWidth?: CSSValue
+}
+
+export interface XGAutoConfig extends XGBaseConfig {
+  variant: 'auto'
+  columnWidth: CSSValue
+  columns?: never
 }
 
 export interface XGLineConfig extends XGBaseConfig {
-  variant: GridVariant;
-  columns?: never;
-  columnWidth?: never;
+  variant: 'line'
+  columns?: never
+  columnWidth?: never
 }
 
 export type XGConfig =
   | XGPatternConfig
   | XGAutoConfig
   | XGFixedConfig
-  | XGLineConfig;
+  | XGLineConfig
 
 export interface XGProps extends ComponentsProps {
-  config: XGConfig;
+  config: XGConfig
 }
 
 // YGrid types -----------------------------------------------------------------
 
 export interface GridLineStyles {
-  '--grid-column-width': '1px';
-  '--grid-row-height': '1px';
+  '--grid-column-width': '1px'
+  '--grid-row-height': '1px'
 }
 
 export interface GridFlatStyles {
-  '--grid-column-width': CSSValue;
-  '--grid-row-height': CSSValue;
-  '--grid-row-opacity': '0' | '1';
+  '--grid-column-width': CSSValue
+  '--grid-row-height': CSSValue
+  '--grid-row-opacity': '0' | '1'
 }
 
 export interface YGConfig {

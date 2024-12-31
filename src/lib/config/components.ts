@@ -7,7 +7,7 @@ export const COMPONENTS = {
     spacer: 'var(--spacer-color)',
   },
   variants: {
-    xGrid: 'flat',
+    xGrid: 'fixed',
     yGrid: 'line',
     spacer: 'line',
   },

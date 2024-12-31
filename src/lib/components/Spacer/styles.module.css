@@ -4,6 +4,7 @@
   --spacer-indice: hsla(var(--blue), 1);
   --spacer-base-unit: 8;
   --spacer-border: 1px solid var(--spacer-color);
+  --spacer-flat: hsla(var(--blue), 0.30);
 }
 
 /* Dark mode */
@@ -20,15 +21,10 @@
 
   /* Required for pseudo-element positioning */
   position: relative;
+  pointer-events: none;
 }
 
-.guides {
-  position: relative;
-  background: transparent;
-}
-
-/* So the size of the border doesnt impact the paddings */
-.guides::after {
+.spacer[data-variant="line"]::after {
   border: var(--spacer-border);
   content: '';
   position: absolute;
@@ -36,7 +32,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  pointer-events: none;
+}
+
+.spacer[data-variant="flat"] {
+  background: var(--spacer-flat);
 }
 
 .height {

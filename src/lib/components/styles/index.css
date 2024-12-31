@@ -5,3 +5,9 @@
 /* Component styles */
 @import 'src/lib/components/Grid/styles.module.css';
 @import 'src/lib/components/Spacer/styles.module.css';
+
+:root {
+  --sys-color: transparent;
+  --sys-z-index: 0;
+  --sys-base-unit: 8;
+}

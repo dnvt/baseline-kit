@@ -44,7 +44,7 @@ function Content({
 
       {Array.from({ length: 50 }).map((_, i) => (
         <Fragment key={i}>
-          {!!i && <Spacer height={8} visibility={visibility} />}
+          {!!i && <Spacer height={8} visibility={visibility} config={{ variant: 'flat' }} />}
           <div className="content-block">
             <YGrid
               config={{ color: 'var(--grid-color-pattern)' }}
@@ -54,7 +54,7 @@ function Content({
           </div>
         </Fragment>
       ))}
-      <Spacer height={40} />
+      <Spacer height={40} visibility={visibility} measureRenderer={Indice} />
     </>
   )
 }

@@ -2,9 +2,9 @@ import { memo, useMemo, useRef } from 'react'
 import { X_GRID as CONFIG, COMPONENTS } from '@config'
 import { useGridCalculations, useGridDimensions } from '@hooks'
 import { cx, cs, parseCSSValue, extractCSSNumber } from '@utils'
-import type { CSSCustomProperties, GridVariant } from '@types'
+import type { CSSCustomProperties } from '@types'
 
-import type { XGProps } from './types'
+import type { XGProps, XGridVariant } from './types'
 import styles from './styles.module.css'
 
 const GridColumns = memo(function GridColumns({
@@ -12,7 +12,7 @@ const GridColumns = memo(function GridColumns({
   variant,
 }: {
   count: number;
-  variant?: GridVariant;
+  variant?: XGridVariant;
 }) {
   return (
     <div className={styles['columns-container']}>
@@ -24,6 +24,7 @@ const GridColumns = memo(function GridColumns({
             variant === 'line' && styles['line-column'],
           )}
           data-column-index={i}
+          data-variant={variant}
         />
       ))}
     </div>
@@ -58,6 +59,14 @@ export const XGrid = memo(function XGrid({
       return {
         variant: 'line' as const,
         gap: Math.max(0, numGap - 1),
+      }
+    }
+
+    if (variant === 'auto') {
+      return {
+        variant: 'auto' as const,
+        columnWidth,
+        gap: numGap,
       }
     }
 
@@ -98,9 +107,8 @@ export const XGrid = memo(function XGrid({
       '--grid-padding': padding,
       '--grid-color': color,
       '--grid-z-index': zIndex,
-      '--grid-column-width': variant === 'line' ? '1px' : undefined,
     } as CSSCustomProperties, style),
-  [gridTemplateColumns, calculatedGap, maxWidth, columnsCount, align, padding, color, zIndex, variant, style])
+  [gridTemplateColumns, calculatedGap, maxWidth, columnsCount, align, padding, color, zIndex, style])
 
   return (
     <div
