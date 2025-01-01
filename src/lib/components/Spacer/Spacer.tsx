@@ -1,21 +1,11 @@
-import { memo, ReactNode, useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { SPACER } from '@config'
-import { CSSCustomProperties, CSSPixelValue, isFlatVariant, isLineVariant } from '@types'
-import { cs, cx, extractCSSNumber, parseCSSValue } from '@utils'
+import { useSpacerDimensions } from '@hooks'
+import { CSSCustomProperties } from '@types'
+import { cs, cx, parseCSSValue } from '@utils'
 
-import { SpacerDimensions, SpacerProps } from './types'
+import { SpacerProps } from './types'
 import styles from './styles.module.css'
-
-function normalizeSpacerSize(size: CSSPixelValue, baseUnit: number) {
-  const num = extractCSSNumber(size)
-  const normalized = num - (num % baseUnit)
-
-  if (normalized !== num) {
-    console.warn(`Best to pass a Spacer value as a multiple of the baseUnit.\nConverted: ${num} to ${normalized} to match the baseline`)
-  }
-
-  return normalized
-}
 
 export const Spacer = memo(function Spacer({
   height,
@@ -35,46 +25,28 @@ export const Spacer = memo(function Spacer({
 
   const isShown = visibility === 'visible'
 
-  const dimensions: SpacerDimensions = useMemo(() => {
-    if (isLineVariant(config)) {
-      return {
-        height: '100%',
-        width: '100%',
-      }
-    }
-
-    if (isFlatVariant(config)) {
-      return {
-        height: height ? normalizeSpacerSize(height, baseUnit) : '100%',
-        width: width ? normalizeSpacerSize(width, baseUnit) : '100%',
-      }
-    }
-
-    // Default dimensions
-    return {
-      height: height ? normalizeSpacerSize(height, baseUnit) : '100%',
-      width: width ? normalizeSpacerSize(width, baseUnit) : '100%',
-    }
-  }, [config, height, width, baseUnit])
-
+  const { dimensions, normalizedHeight, normalizedWidth } = useSpacerDimensions({
+    height,
+    width,
+    baseUnit,
+    config,
+  })
 
   const measurements = useMemo(() => {
     if (!isShown || !indicatorNode) return null
 
-    const result: ReactNode[] = []
+    const result = []
 
-    if (typeof dimensions.height === 'number') {
-      const measurement = indicatorNode(dimensions.height, 'height')
-      if (measurement) result.push(measurement)
+    if (normalizedHeight !== null) {
+      result.push(indicatorNode(normalizedHeight, 'height'))
     }
 
-    if (typeof dimensions.width === 'number') {
-      const measurement = indicatorNode(dimensions.width, 'width')
-      if (measurement) result.push(measurement)
+    if (normalizedWidth !== null) {
+      result.push(indicatorNode(normalizedWidth, 'width'))
     }
 
     return result
-  }, [isShown, indicatorNode, dimensions])
+  }, [isShown, indicatorNode, normalizedHeight, normalizedWidth])
 
   const combinedStyles = useMemo(() => {
     const baseStyles = {
@@ -84,7 +56,6 @@ export const Spacer = memo(function Spacer({
       '--padd-z-index': zIndex,
     } as const
 
-    // Only override the color if customColor is provided
     if (customColor) {
       return cs({
         ...baseStyles,
