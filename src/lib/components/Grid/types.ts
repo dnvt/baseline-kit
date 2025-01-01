@@ -5,7 +5,7 @@ import type {
   CSSValue,
   GridAlignment,
   GridColumnsPattern,
-  GridVariant,
+  PaddedVariant,
 } from '@types'
 
 // XGrid types -----------------------------------------------------------------
@@ -70,7 +70,7 @@ export interface GridFlatStyles {
 }
 
 export interface YGConfig {
-  variant?: GridVariant
+  variant?: PaddedVariant
   color?: CSSProperties['color'] | CSSProperties['backgroundColor']
   height?: CSSProperties['height']
   baseUnit?: number
@@ -78,5 +78,5 @@ export interface YGConfig {
 }
 
 export interface YGProps extends ComponentsProps {
-  config: YGConfig
+  config?: YGConfig
 }

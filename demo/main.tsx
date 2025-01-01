@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { Spacer, YGrid } from '@components'
 
 import { GridSetups } from './components'
-import { Measurement } from '@/components/Spacer/types'
 import { cx } from '@utils'
+import { SpacerDimension } from '@/components/Spacer/types'
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -21,9 +21,14 @@ root.render(
   </StrictMode>,
 )
 
-function Indice(value: number, measurement: Measurement) {
-  return <div className={cx('indice', measurement)}>{value}</div>
+function Indice(value: number, measurement: SpacerDimension) {
+  return (
+    <div className={cx('indice', measurement)}>
+      {value}
+    </div>
+  )
 }
+
 
 function Content({
   showBaseline,
@@ -33,7 +38,7 @@ function Content({
 
   return (
     <>
-      <Spacer height={42} visibility={visibility} measureRenderer={Indice} />
+      <Spacer height={42} visibility={visibility} indicatorNode={Indice} />
       <h1 className="demo-title">Grid Playground</h1>
       <Spacer height={8} visibility={visibility} />
       <p className="demo-description">
@@ -46,15 +51,12 @@ function Content({
         <Fragment key={i}>
           {!!i && <Spacer height={8} visibility={visibility} config={{ variant: 'flat' }} />}
           <div className="content-block">
-            <YGrid
-              config={{ color: 'var(--grid-color-pattern)' }}
-              visibility={visibility}
-            />
+            <YGrid visibility={visibility} />
             Content Block {i + 1}
           </div>
         </Fragment>
       ))}
-      <Spacer height={40} visibility={visibility} measureRenderer={Indice} />
+      <Spacer height={40} visibility={visibility} indicatorNode={Indice} />
     </>
   )
 }

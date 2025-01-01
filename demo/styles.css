@@ -1,118 +1,46 @@
 :root {
-  --max-width: 100%;
-
-  /* Grid colors */
-  --grey: 0, 0%, 40%;
+  /* Base colors */
+  --grey: 0, 0%, 50%;
   --cyan: 190, var(--sat), var(--light);
   --blue: 220, var(--sat), var(--light);
   --purple: 255, var(--sat), var(--light);
-
   --sat: 70%;
   --light: 50%;
 
+  /* Padded system colors */
   --padd-grid-color-line: hsla(var(--blue), 0.15);
   --padd-grid-color-pattern: hsla(var(--purple), 0.15);
   --padd-grid-color-auto: hsla(var(--blue), 0.15);
   --padd-grid-color-fixed: hsla(var(--cyan), 0.15);
 
-  /* Light theme colors */
-  --background-color: white;
-  --title-color: black;
-  --text-color: #181818;
-  --content-block-bg: rgba(229, 229, 229, 1);
-  --box-shadow-color: rgba(0, 0, 0, 0.1);
+  /* Demo theme colors */
+  --demo-bg: white;
+  --demo-title: black;
+  --demo-text: #181818;
+  --demo-block: rgba(229, 229, 229, 1);
+  --demo-shadow: rgba(0, 0, 0, 0.1);
+  --demo-max-width: 1216px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Grid colors */
     --sat: 100%;
     --light: 70%;
-
-    /* Dark theme colors */
-    --background-color: #181818;
-    --title-color: white;
-    --text-color: #c2c2c2;
-    --content-block-bg: rgba(50, 50, 50, 1);
-    --box-shadow-color: rgba(0, 0, 0, 0.5);
+    --demo-bg: #181818;
+    --demo-title: white;
+    --demo-text: #c2c2c2;
+    --demo-block: rgba(50, 50, 50, 1);
+    --demo-shadow: rgba(0, 0, 0, 0.5);
+    --padd-grid-color-line: hsla(var(--grey), 0.15);
   }
 }
 
-/* Updated styles using variables */
-.grid-controls {
-  position: fixed;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px var(--box-shadow-color);
-}
-
-.content-block {
-  position: relative;
-  padding: 14px 16px 18px;
-  color: var(--text-color);
-  background-color: var(--content-block-bg);
-  border-radius: 6px;
-}
-
-.demo-title {
-  font-size: 1.5rem;
-  padding-top: 2px;
-  padding-bottom: 4px;
-  font-weight: bold;
-  color: var(--title-color);
-}
-
-.demo-description {
-  padding-top: 6px;
-  padding-bottom: 2px;
-  max-width: 32rem;
-  color: var(--text-color);
-}
-
-.controls-spacing {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem; 
-}
-
-.checkbox-container {
-  display: flex;
-  gap: 1rem; 
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem; 
-}
-
-.base-unit-label {
-  display: block;
-}
-
-.base-unit-text {
-  display: block;
-  font-size: 0.875rem; 
-  margin-bottom: 0.25rem; 
-}
-
-.base-unit-range {
-  width: 100%; 
-}
-
-.base-unit-value {
-  font-size: 0.875rem; 
-}
-
+/* Demo layout */
 .demo-wrapper {
   position: relative;
   min-height: 100vh;
   margin: 0 auto;
-  max-width: var(--max-width);
+  max-width: var(--demo-max-width);
   display: flex;
   flex-direction: column;
 }
@@ -122,21 +50,70 @@
   flex-direction: column;
 }
 
+/* Demo components */
+.demo-title {
+  font-size: 1.5rem;
+  padding-block: 2px 4px;
+  font-weight: bold;
+  color: var(--demo-title);
+}
+
+.demo-description {
+  padding-block: 6px 2px;
+  max-width: 32rem;
+  color: var(--demo-text);
+}
+
+.content-block {
+  position: relative;
+  padding: 14px 16px 18px;
+  color: var(--demo-text);
+  background-color: var(--demo-block);
+  border-radius: 6px;
+}
+
+/* Controls */
+.grid-controls {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  background-color: var(--demo-bg);
+  color: var(--demo-text);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px var(--demo-shadow);
+}
+
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.checkbox-container {
+  display: flex;
+  gap: 1rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Indice styles */
 .indice {
   font-size: 13px;
   padding-block: 2px 3px;
+  color: var(--padd-spacer-color-indice);
+  position: absolute;
+  right: 8px;
 }
 
 .width {
-  color: var(--padd-spacer-indice);
-  position: absolute;
   top: 0;
-  right: 8px;
 }
 
 .height {
-  color: var(--padd-spacer-indice);
-  position: absolute;
   bottom: 0;
-  right: 8px;
 }

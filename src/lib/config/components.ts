@@ -4,7 +4,11 @@ export const COMPONENTS = {
   colors: {
     xGrid: 'var(--padd-grid-color-fixed)',
     yGrid: 'var(--padd-grid-color-line)',
-    spacer: 'var(--spacer-color)',
+    spacer: {
+      line: 'var(--padd-spacer-line)',
+      flat: 'var(--padd-spacer-flat)',
+      indice: 'var(--padd-spacer-color-indice)',
+    },
   },
   variants: {
     xGrid: 'line',

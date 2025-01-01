@@ -1,5 +1,6 @@
 import type { CSSValue, GridColumnsPattern } from '@/types'
 import type { RefObject } from 'react'
+import { FlatSpacerConfig, LineSpacerConfig, SpacerConfig } from '@/components/Spacer/types'
 
 // Base interfaces
 export interface VisibleRange {
@@ -17,35 +18,35 @@ interface GridCommonConfig {
   gap?: CSSValue
 }
 
-export interface GridLineVariant extends GridCommonConfig {
+export interface LineGridConfig extends GridCommonConfig {
   variant: 'line'
   columns?: never
   columnWidth?: never
 }
 
-export interface GridPatternVariant extends GridCommonConfig {
+export interface PatternGridConfig extends GridCommonConfig {
   variant: 'pattern'
   columns: GridColumnsPattern
   columnWidth?: never
 }
 
-export interface GridFixedVariant extends GridCommonConfig {
+export interface FixedGridConfig extends GridCommonConfig {
   variant: 'fixed'
   columns: number
   columnWidth?: CSSValue
 }
 
-export interface GridAutoVariant extends GridCommonConfig {
+export interface AutoGridConfig extends GridCommonConfig {
   variant: 'auto'
   columnWidth: CSSValue
   columns?: never
 }
 
 export type GridConfig =
-  | GridLineVariant
-  | GridPatternVariant
-  | GridFixedVariant
-  | GridAutoVariant
+  | LineGridConfig
+  | PatternGridConfig
+  | FixedGridConfig
+  | AutoGridConfig
 
 
 // Grid Calculation Types
@@ -69,17 +70,24 @@ export interface UseVisibleGridLinesProps {
 }
 
 // Type guards
-export const isLineVariant = (config: GridConfig): config is GridLineVariant =>
+export const isLineVariant = (
+  config: GridConfig | SpacerConfig,
+): config is LineGridConfig | LineSpacerConfig =>
   'variant' in config && config.variant === 'line'
 
-export const isAutoVariant = (config: GridConfig): config is GridAutoVariant =>
+export const isFlatVariant = (
+  config: SpacerConfig,
+): config is FlatSpacerConfig =>
+  'variant' in config && config.variant === 'flat'
+
+export const isAutoVariant = (config: GridConfig): config is AutoGridConfig =>
   config.variant === 'auto'
 
 export const isPatternVariant = (
   config: GridConfig,
-): config is GridPatternVariant => Array.isArray(config.columns)
+): config is PatternGridConfig => Array.isArray(config.columns)
 
 export const isFixedVariant = (
   config: GridConfig,
-): config is GridFixedVariant =>
+): config is FixedGridConfig =>
   typeof config.columns === 'number'

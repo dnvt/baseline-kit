@@ -16,10 +16,13 @@ export const cs = <
       .filter((style): style is T => style !== undefined)
       .reduce((acc, style) => ({ ...acc, ...style }), {} as T)
 
-export const parseCSSValue = (value: CSSValue | 'auto'): string => {
-  if (value === 'auto') return value
+export const parseCSSValue = (
+  value: CSSValue | '100%' | 'auto',
+): string => {
+  if (value === 'auto' || value === '100%') return value
   return typeof value === 'number' ? `${value}px` : value.toString()
 }
+
 
 export const extractCSSNumber = (value: CSSPixelValue): number => {
   // If value is already a number, return it

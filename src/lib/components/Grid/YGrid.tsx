@@ -9,7 +9,7 @@ import type { YGProps, GridLineStyles, GridFlatStyles } from './types'
 import styles from './styles.module.css'
 
 export const YGrid = memo(function YGrid({
-  config,
+  config = {},
   className = '',
   visibility = CONFIG.visibility,
   style = {},

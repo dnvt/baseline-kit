@@ -1,26 +1,32 @@
-import { ComponentsProps, CSSPixelValue } from '@types'
 import { ReactNode } from 'react'
+import { ComponentsProps, CSSPixelValue, CSSValue, PaddedCommonConfig } from '@types'
 
-type ExclusiveProps<T, K extends keyof T> = {
-  [P in K]: (
-    { [Q in P]: T[Q] } &
-    { [Q in Exclude<K, P>]?: undefined } &
-    Omit<T, K>
-    )
-}[K]
+export type SpacerDimension = 'width' | 'height'
+export type SpacerDimensions = Record<'width' | 'height', CSSValue | '100%'>
+export type SpacerIndicator = SpacerDimension | 'none'
+export type IndicatorNode = (value: number, dimension: SpacerDimension) => ReactNode
 
-export type Measurement = 'none' | 'width' | 'height'
-
-export type SpacerConfig = {
-  baseUnit?: number
-  color?: string
-  zIndex?: number
-  variant?: 'line' | 'flat'
+export interface LineSpacerConfig extends PaddedCommonConfig {
+  variant: 'line'
+  width?: never
+  height?: never
 }
 
-export type SpacerProps = ExclusiveProps<{
-  config?: SpacerConfig
-  height?: CSSPixelValue
+export interface FlatSpacerConfig extends PaddedCommonConfig {
+  variant: 'flat'
   width?: CSSPixelValue
-  measureRenderer?: ((value: number, measurement: Measurement) => ReactNode)
-}, 'height' | 'width'> & ComponentsProps
+  height?: CSSPixelValue
+}
+
+export type SpacerConfig =
+  | LineSpacerConfig
+  | FlatSpacerConfig
+  | (PaddedCommonConfig & { variant?: never })
+
+export type SpacerProps = {
+  config?: SpacerConfig
+  indicatorNode?: IndicatorNode
+} & ComponentsProps & (
+  | { height: CSSPixelValue; width?: never }
+  | { width: CSSPixelValue; height?: never }
+  )

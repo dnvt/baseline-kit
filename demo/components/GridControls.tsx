@@ -24,7 +24,7 @@ export function GridControls({
         </div>
 
         {/* Grid Guides Section */}
-        <div>
+        <div className="controls-section">
           <h3>Grid Guides</h3>
           <div className="checkbox-container">
             {/* Toggle Columns Guide */}
@@ -61,7 +61,7 @@ export function GridControls({
         </div>
 
         {/* Grid Configuration Section */}
-        <div>
+        <div className="controls-section">
           <h3>Grid Configuration</h3>
 
           {/* Adjust Z-Index */}
@@ -104,7 +104,7 @@ export function GridControls({
         </div>
 
         {/* Column Configuration Section */}
-        <div>
+        <div className="controls-section">
           <h3>Column Configuration</h3>
 
           {/* Adjust Column Count */}

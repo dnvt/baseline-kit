@@ -163,7 +163,7 @@ export function useGridCalculations({
         isValid: true,
       }
     } catch (error) {
-      console.error('Error calculating grid layout:', error)
+      console.warn('Error calculating grid layout:', error)
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,

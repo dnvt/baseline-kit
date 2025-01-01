@@ -8,13 +8,13 @@
   --padd-grid-height: 1px;
   --padd-grid-line-stroke: 1px;
 
+  /* Default */
+  --padd-grid-color: var(--padd-grid-color-line);
   /* Padded system grid colors */
   --padd-grid-color-line: hsla(var(--blue), 0.15);
   --padd-grid-color-auto: hsla(var(--blue), 0.15);
   --padd-grid-color-fixed: hsla(var(--cyan), 0.15);
   --padd-grid-color-pattern: hsla(var(--purple), 0.15);
-
-  --padd-grid-color: var(--padd-grid-color-line); /* Default */
 }
 
 /* Dark mode */
@@ -63,6 +63,7 @@
 
 .column[data-variant="line"] {
   width: var(--padd-grid-column-width);
+  background-color: var(--padd-grid-color-line);
 }
 
 .column[data-variant="pattern"] {

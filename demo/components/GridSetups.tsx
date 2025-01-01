@@ -91,14 +91,9 @@ export function GridSetups({ children }: PropsWithChildren) {
     <div className="grid-playground">
       <YGrid
         visibility={state.showGuides.baseline ? 'visible' : 'hidden'}
-        config={{
-          height: state.pageHeight,
-        }}
+        config={{ height: state.pageHeight }}
       />
-      <div
-        className="demo-wrapper"
-        style={{ '--max-width': DEMO_WIDTH } as CSSCustomProperties}
-      >
+      <div className="demo-wrapper">
         <XGrid
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
           data-testid="main-grid"
@@ -108,40 +103,13 @@ export function GridSetups({ children }: PropsWithChildren) {
             gap: state.columnConfig.gap,
           }}
         />
-
-        {/*Pattern*/}
-
-        {/*<XGrid*/}
-        {/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/}
-        {/*  config={{*/}
-        {/*    variant: 'pattern',*/}
-        {/*    padding: '0 16px',*/}
-        {/*    color: 'var(--grid-color-line)',*/}
-        {/*    columns: state.columnConfig.pattern,*/}
-        {/*    gap: 8,*/}
-        {/*    zIndex: state.config.zIndex,*/}
-        {/*  }}*/}
-        {/*/>*/}
-
-        {/*<XGrid*/}
-        {/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/}
-        {/*  config={{*/}
-        {/*    variant: 'auto',*/}
-        {/*    columnWidth: 80,*/}
-        {/*    padding: '0 16px',*/}
-        {/*    color: 'var(--grid-color-line)',*/}
-        {/*    gap: 8,*/}
-        {/*    zIndex: state.config.zIndex,*/}
-        {/*  }}*/}
-        {/*/>*/}
-
         <XGrid
           config={{ variant: 'line' }}
           data-testid="line-grid"
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
         />
         <div className="demo-content">
-          {Children.map(children, (child) => {
+          {Children.map(children, child => {
             if (isValidElement<PropsWithChildren<ContentProps>>(child)) {
               return cloneElement(child, {
                 showBaseline: state.showGuides.baseline,
@@ -156,3 +124,52 @@ export function GridSetups({ children }: PropsWithChildren) {
   )
 }
 
+
+{/*Pattern*/
+}
+
+{/*<XGrid*/
+}
+{/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/
+}
+{/*  config={{*/
+}
+{/*    variant: 'pattern',*/
+}
+{/*    padding: '0 16px',*/
+}
+{/*    color: 'var(--grid-color-line)',*/
+}
+{/*    columns: state.columnConfig.pattern,*/
+}
+{/*    gap: 8,*/
+}
+{/*    zIndex: state.config.zIndex,*/
+}
+{/*  }}*/
+}
+{/*/>*/
+}
+
+{/*<XGrid*/
+}
+{/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/
+}
+{/*  config={{*/
+}
+{/*    variant: 'auto',*/
+}
+{/*    columnWidth: 80,*/
+}
+{/*    padding: '0 16px',*/
+}
+{/*    color: 'var(--grid-color-line)',*/
+}
+{/*    gap: 8,*/
+}
+{/*    zIndex: state.config.zIndex,*/
+}
+{/*  }}*/
+}
+{/*/>*/
+}

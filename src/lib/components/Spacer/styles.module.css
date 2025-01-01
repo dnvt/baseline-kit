@@ -1,22 +1,25 @@
 :root {
   --padd-spacer: 100%;
-  --padd-spacer-color: hsla(var(--blue), 0.75);
-  --padd-spacer-indice: hsla(var(--blue), 1);
-  --padd-spacer-flat: hsla(var(--blue), 0.30);
-  --padd-spacer-border-width: 1px;
-  --padd-spacer-border-style: solid;
   --padd-spacer-width: 100%;
   --padd-spacer-height: 100%;
-  --padd-spacer-border: var(--padd-spacer-border-width)
-    var(--padd-spacer-border-style)
-    var(--padd-spacer-color);
+  --padd-spacer-border-width: 1px;
+  --padd-spacer-border-style: solid;
+
+  /* Default */
+  --padd-spacer-color: var(--padd-spacer-color-line);
+  /* Padded system spacer colors */
+  --padd-spacer-color-line: hsla(var(--blue), 0.75);
+  --padd-spacer-color-flat: hsla(var(--blue), 0.3);
+  --padd-spacer-color-indice: hsla(var(--blue), 1);
+
 }
 
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --padd-spacer-indice: hsla(var(--blue), 1);
-    --padd-spacer-flat: hsla(var(--blue), 0.30);
+    --padd-spacer-color-line: hsla(var(--blue), 0.8);
+    --padd-spacer-color-flat: hsla(var(--blue), 0.4);
+    --padd-spacer-color-indice: hsla(var(--blue), 1);
   }
 }
 
@@ -24,24 +27,32 @@
   width: var(--padd-spacer-width);
   height: var(--padd-spacer-height);
   box-sizing: border-box;
-
-  /* Required for pseudo-element positioning */
   position: relative;
   pointer-events: none;
 }
 
+/* Border for line variant */
 .spacer[data-variant="line"]::after {
-  border: var(--padd-spacer-border);
+  border: var(--padd-spacer-border-width)
+    var(--padd-spacer-border-style)
+    var(--padd-spacer-color);
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
+}
+
+/* Background for flat variant */
+.spacer[data-variant="flat"] {
+  background-color: var(--padd-spacer-color);
+}
+
+/* Set variant-specific colors */
+.spacer[data-variant="line"] {
+  --padd-spacer-color: var(--padd-spacer-color-line);
 }
 
 .spacer[data-variant="flat"] {
-  background: var(--padd-spacer-flat);
+  --padd-spacer-color: var(--padd-spacer-color-flat);
 }
 
 .height {

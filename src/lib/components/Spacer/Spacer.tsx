@@ -1,18 +1,17 @@
-import { memo, useMemo } from 'react'
-
-import { CSSCustomProperties, CSSPixelValue } from '@types'
+import { memo, ReactNode, useMemo } from 'react'
+import { SPACER } from '@config'
+import { CSSCustomProperties, CSSPixelValue, isFlatVariant, isLineVariant } from '@types'
 import { cs, cx, extractCSSNumber, parseCSSValue } from '@utils'
 
-import { Measurement, SpacerProps } from './types'
+import { SpacerDimensions, SpacerProps } from './types'
 import styles from './styles.module.css'
-import { SPACER } from '@config'
 
 function normalizeSpacerSize(size: CSSPixelValue, baseUnit: number) {
   const num = extractCSSNumber(size)
   const normalized = num - (num % baseUnit)
 
   if (normalized !== num) {
-    console.error(`Best to pass a Spacer value as a multiple of the baseUnit.\nConverted: ${num} to ${normalized} to match the baseline`)
+    console.warn(`Best to pass a Spacer value as a multiple of the baseUnit.\nConverted: ${num} to ${normalized} to match the baseline`)
   }
 
   return normalized
@@ -21,61 +20,90 @@ function normalizeSpacerSize(size: CSSPixelValue, baseUnit: number) {
 export const Spacer = memo(function Spacer({
   height,
   width,
-  config,
-  measureRenderer,
+  config = {},
+  indicatorNode,
   visibility = SPACER.visibility,
   className = '',
   style = {},
 }: SpacerProps) {
-
   const {
     baseUnit = SPACER.baseUnit,
-    color = SPACER.color,
     variant = SPACER.variant,
     zIndex = SPACER.zIndex,
-  } = config || {}
+    color: customColor,
+  } = config
 
   const isShown = visibility === 'visible'
-  const showLineSpacer = isShown && variant === 'line'
-  const showFlatSpacer = isShown && variant === 'flat'
 
-  // Dimensions measurements
-  const heightMeasurement = height ? normalizeSpacerSize(height, baseUnit) : null
-  const widthMeasurement = width ? normalizeSpacerSize(width, baseUnit) : null
+  const dimensions: SpacerDimensions = useMemo(() => {
+    if (isLineVariant(config)) {
+      return {
+        height: '100%',
+        width: '100%',
+      }
+    }
 
-  // Dimensions styles
-  const normHeight = heightMeasurement ?? '100%'
-  const normWidth = widthMeasurement ?? '100%'
+    if (isFlatVariant(config)) {
+      return {
+        height: height ? normalizeSpacerSize(height, baseUnit) : '100%',
+        width: width ? normalizeSpacerSize(width, baseUnit) : '100%',
+      }
+    }
 
-  const combinedStyles = useMemo(() =>
-    cs({
-      '--padd-spacer-height': parseCSSValue(normHeight),
-      '--padd-spacer-width': parseCSSValue(normWidth),
+    // Default dimensions
+    return {
+      height: height ? normalizeSpacerSize(height, baseUnit) : '100%',
+      width: width ? normalizeSpacerSize(width, baseUnit) : '100%',
+    }
+  }, [config, height, width, baseUnit])
+
+
+  const measurements = useMemo(() => {
+    if (!isShown || !indicatorNode) return null
+
+    const result: ReactNode[] = []
+
+    if (typeof dimensions.height === 'number') {
+      const measurement = indicatorNode(dimensions.height, 'height')
+      if (measurement) result.push(measurement)
+    }
+
+    if (typeof dimensions.width === 'number') {
+      const measurement = indicatorNode(dimensions.width, 'width')
+      if (measurement) result.push(measurement)
+    }
+
+    return result
+  }, [isShown, indicatorNode, dimensions])
+
+  const combinedStyles = useMemo(() => {
+    const baseStyles = {
+      '--padd-spacer-height': parseCSSValue(dimensions.height),
+      '--padd-spacer-width': parseCSSValue(dimensions.width),
       '--padd-base-unit': baseUnit,
-      '--padd-spacer-color': color,
       '--padd-z-index': zIndex,
-    } as CSSCustomProperties, style),
-  [normHeight, normWidth, baseUnit, color, zIndex, style])
+    } as const
 
-  const renderMeasurement = (value: number, measurement: Measurement) => {
-    if (!measureRenderer) return null
-    return measureRenderer(value, measurement)
-  }
+    // Only override the color if customColor is provided
+    if (customColor) {
+      return cs({
+        ...baseStyles,
+        '--padd-spacer-color': customColor,
+      } as CSSCustomProperties, style)
+    }
+
+    return cs(baseStyles as CSSCustomProperties, style)
+  }, [dimensions, baseUnit, zIndex, customColor, style])
+
 
   return (
     <div
-      className={cx(
-        styles.spacer,
-        showLineSpacer && styles.border,
-        showFlatSpacer && styles.flat,
-        className,
-      )}
+      className={cx(styles.spacer, className)}
       data-testid="spacer-container"
       data-variant={variant}
       style={combinedStyles}
     >
-      {isShown && heightMeasurement && renderMeasurement(heightMeasurement, 'height')}
-      {isShown && widthMeasurement && renderMeasurement(widthMeasurement, 'width')}
+      {measurements}
     </div>
   )
 })

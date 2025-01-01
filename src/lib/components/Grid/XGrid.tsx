@@ -4,10 +4,10 @@ import { useGridCalculations, useGridDimensions } from '@hooks'
 import { cx, cs, parseCSSValue, extractCSSNumber } from '@utils'
 import type {
   CSSCustomProperties,
-  GridAutoVariant,
-  GridFixedVariant,
-  GridLineVariant,
-  GridPatternVariant,
+  AutoGridConfig,
+  FixedGridConfig,
+  LineGridConfig,
+  PatternGridConfig,
 } from '@types'
 
 import type { XGProps, XGridVariant } from './types'
@@ -38,7 +38,7 @@ const GridColumns = memo(function GridColumns({
 })
 
 export const XGrid = memo(function XGrid({
-  config,
+  config = {},
   className = '',
   visibility = CONFIG.visibility,
   style = {},
@@ -67,14 +67,14 @@ export const XGrid = memo(function XGrid({
       return {
         variant: 'line' as const,
         gap: Math.max(0, numGap - 1),
-      } satisfies GridLineVariant
+      } satisfies LineGridConfig
 
     case 'auto':
       return {
         variant: 'auto' as const,
         columnWidth,
         gap: numGap,
-      } satisfies GridAutoVariant
+      } satisfies AutoGridConfig
 
     case 'pattern':
       if (Array.isArray(columns)) {
@@ -82,7 +82,7 @@ export const XGrid = memo(function XGrid({
           variant: 'pattern' as const,
           columns,
           gap: numGap,
-        } satisfies GridPatternVariant
+        } satisfies PatternGridConfig
       }
       break
 
@@ -93,7 +93,7 @@ export const XGrid = memo(function XGrid({
           columns,
           columnWidth,
           gap: numGap,
-        } satisfies GridFixedVariant
+        } satisfies FixedGridConfig
       }
       break
     }
@@ -102,7 +102,7 @@ export const XGrid = memo(function XGrid({
     return {
       variant: 'line' as const,
       gap: Math.max(0, numGap - 1),
-    } satisfies GridLineVariant
+    } satisfies LineGridConfig
   }, [variant, columns, columnWidth, gap])
 
   const { gridTemplateColumns, columnsCount, calculatedGap } = useGridCalculations({
