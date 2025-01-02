@@ -24,6 +24,8 @@
 }
 
 .spacer {
+  opacity: 0;
+  visibility: hidden;
   width: var(--padd-spacer-width);
   height: var(--padd-spacer-height);
   box-sizing: border-box;
@@ -61,4 +63,25 @@
 
 .width {
   --padd-spacer-width: var(--padd-spacer);
+}
+
+.visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 180ms ease,
+    visibility 0ms linear;
+}
+
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 180ms ease,
+    visibility 0ms linear 180ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visible,
+  .hidden {
+    transition: none;
+  }
 }

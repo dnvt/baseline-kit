@@ -121,19 +121,21 @@ export const XGrid = memo(function XGrid({
     } as CSSProperties, style),
   [calculatedGap, color, align, gridTemplateColumns, padding, maxWidth, zIndex, style])
 
+  const isShown = visibility === 'visible'
+
   return (
     <div
       ref={containerRef}
       className={cx(
         styles['xgrid-container'],
         className,
-        visibility === 'visible' ? styles.visible : styles.hidden,
+        isShown ? styles.visible : styles.hidden,
       )}
       data-testid="xgrid-container"
       data-variant={variant}
       style={containerStyles}
     >
-      <GridColumns count={columnsCount} variant={variant} />
+      {isShown && <GridColumns count={columnsCount} variant={variant} />}
     </div>
   )
 })

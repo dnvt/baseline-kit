@@ -75,7 +75,11 @@ export const Spacer = memo(function Spacer({
 
   return (
     <div
-      className={cx(styles.spacer, className)}
+      className={cx(
+        styles.spacer,
+        className,
+        isShown ? styles.visible : styles.hidden,
+      )}
       data-testid="spacer-container"
       data-variant={variant}
       style={combinedStyles}

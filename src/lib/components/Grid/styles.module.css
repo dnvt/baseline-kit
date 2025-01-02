@@ -31,6 +31,8 @@
 /* XGrid styles ------------------------------------------------------------- */
 
 .xgrid-container {
+  opacity: 0;
+  visibility: hidden;
   position: absolute;
   pointer-events: none;
   user-select: none;
@@ -42,7 +44,6 @@
   width: 100%;
   max-width: var(--padd-width);
   padding: var(--padd-padding);
-
 }
 
 .columns-container {
@@ -103,15 +104,17 @@
 .visible {
   opacity: 1;
   visibility: visible;
-  transition: opacity 180ms ease-out;
+  transition: opacity 180ms ease,
+    visibility 0ms linear;
 }
 
 .hidden {
   opacity: 0;
   visibility: hidden;
-  transition: opacity 180ms ease-out,
+  transition: opacity 180ms ease,
     visibility 0ms linear 180ms;
 }
+
 
 .row {
   background-color: var(--padd-grid-color);

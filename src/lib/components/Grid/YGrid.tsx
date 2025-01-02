@@ -71,13 +71,15 @@ export const YGrid = memo(function YGrid({
     } as CSSProperties, style),
   [height, zIndex, color, style])
 
-  return (
+  const isShown = visibility === 'visible'
+
+  return isShown ? (
     <div
       ref={containerRef}
       className={cx(
         styles['ygrid-container'],
         className,
-        visibility === 'visible' ? styles.visible : styles.hidden,
+        isShown ? styles.visible : styles.hidden,
       )}
       data-testid="ygrid-container"
       data-variant={variant}
@@ -85,5 +87,5 @@ export const YGrid = memo(function YGrid({
     >
       {visibleRows}
     </div>
-  )
+  ) : null
 })
