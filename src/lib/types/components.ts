@@ -9,9 +9,6 @@ export type CSSCompound<T extends number | string> = T | `${number}${CSSUnit}`
 export type CSSValue = CSSCompound<number>
 export type CSSPixelValue = number | `${number}px`
 
-// CSS Custom Properties
-export type CSSCustomProperties = Record<`--grid-${string}` | `--padd-${string}` | `--stack-${string}` | `--spacer-${string}`, CSSValue | string | undefined>
-
 // Grid Types
 export type GridColumnValue = CSSValue | CSSFraction | 'auto'
 export type GridColumnsPattern = readonly GridColumnValue[]
@@ -28,7 +25,7 @@ export interface ComponentsProps {
   'data-testid'?: string
   className?: string
   children?: ReactNode
-  style?: CSSProperties & CSSCustomProperties
+  style?: CSSProperties
   visibility?: Visibility
 }
 
@@ -39,3 +36,11 @@ export interface PaddedCommonConfig {
   color?: CSSProperties['color']
   zIndex?: CSSProperties['zIndex']
 }
+
+export type ExclusiveProps<T, K extends keyof T> = {
+  [P in K]: (
+    { [Q in P]: T[Q] } &
+    { [Q in Exclude<K, P>]?: undefined } &
+    Omit<T, K>
+    )
+}[K]

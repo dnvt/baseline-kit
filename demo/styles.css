@@ -35,6 +35,10 @@
   }
 }
 
+.grid-playground {
+  background: var(--demo-bg);
+}
+
 /* Demo layout */
 .demo-wrapper {
   position: relative;
@@ -66,6 +70,7 @@
 
 .content-block {
   position: relative;
+  height: 60px;
   padding: 14px 16px 18px;
   color: var(--demo-text);
   background-color: var(--demo-block);

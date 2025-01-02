@@ -1,7 +1,6 @@
-import { memo, useMemo } from 'react'
+import { memo, useMemo, Fragment, CSSProperties } from 'react'
 import { SPACER } from '@config'
 import { useSpacerDimensions } from '@hooks'
-import { CSSCustomProperties } from '@types'
 import { cs, cx, parseCSSValue } from '@utils'
 
 import { SpacerProps } from './types'
@@ -10,7 +9,7 @@ import styles from './styles.module.css'
 export const Spacer = memo(function Spacer({
   height,
   width,
-  config = {},
+  config = { variant: 'line' },
   indicatorNode,
   visibility = SPACER.visibility,
   className = '',
@@ -29,7 +28,6 @@ export const Spacer = memo(function Spacer({
     height,
     width,
     baseUnit,
-    config,
   })
 
   const measurements = useMemo(() => {
@@ -38,11 +36,19 @@ export const Spacer = memo(function Spacer({
     const result = []
 
     if (normalizedHeight !== null) {
-      result.push(indicatorNode(normalizedHeight, 'height'))
+      result.push(
+        <Fragment key="height">
+          {indicatorNode(normalizedHeight, 'height')}
+        </Fragment>,
+      )
     }
 
     if (normalizedWidth !== null) {
-      result.push(indicatorNode(normalizedWidth, 'width'))
+      result.push(
+        <Fragment key="width">
+          {indicatorNode(normalizedWidth, 'width')}
+        </Fragment>,
+      )
     }
 
     return result
@@ -54,16 +60,16 @@ export const Spacer = memo(function Spacer({
       '--padd-spacer-width': parseCSSValue(dimensions.width),
       '--padd-base-unit': baseUnit,
       '--padd-z-index': zIndex,
-    } as const
+    } as CSSProperties
 
     if (customColor) {
       return cs({
         ...baseStyles,
         '--padd-spacer-color': customColor,
-      } as CSSCustomProperties, style)
+      } as CSSProperties, style)
     }
 
-    return cs(baseStyles as CSSCustomProperties, style)
+    return cs(baseStyles, style)
   }, [dimensions, baseUnit, zIndex, customColor, style])
 
 

@@ -1,9 +1,8 @@
-import { memo, useMemo, useRef } from 'react'
+import { CSSProperties, memo, useMemo, useRef } from 'react'
 import { X_GRID as CONFIG, COMPONENTS } from '@config'
 import { useGridCalculations, useGridDimensions } from '@hooks'
 import { cx, cs, parseCSSValue, extractCSSNumber } from '@utils'
 import type {
-  CSSCustomProperties,
   AutoGridConfig,
   FixedGridConfig,
   LineGridConfig,
@@ -38,7 +37,7 @@ const GridColumns = memo(function GridColumns({
 })
 
 export const XGrid = memo(function XGrid({
-  config = {},
+  config = { variant: 'line' },
   className = '',
   visibility = CONFIG.visibility,
   style = {},
@@ -119,7 +118,7 @@ export const XGrid = memo(function XGrid({
       '--padd-padding': padding,
       '--padd-width': parseCSSValue(maxWidth),
       '--padd-z-index': zIndex,
-    } as CSSCustomProperties, style),
+    } as CSSProperties, style),
   [calculatedGap, color, align, gridTemplateColumns, padding, maxWidth, zIndex, style])
 
   return (

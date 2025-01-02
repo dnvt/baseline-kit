@@ -1,4 +1,4 @@
-import type { CSSCustomProperties, CSSPixelValue, CSSValue } from '@types'
+import type { CSSPixelValue, CSSValue } from '@types'
 import { CSSProperties } from 'react'
 
 // Combining classnames
@@ -8,7 +8,7 @@ export const cx = (
 
 // Combining styles
 export const cs = <
-  T extends Partial<CSSProperties & CSSCustomProperties>,
+  T extends CSSProperties,
 >(
     ...styles: Array<T | undefined>
   ): T =>

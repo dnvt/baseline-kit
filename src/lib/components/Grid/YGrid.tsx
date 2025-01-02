@@ -2,14 +2,13 @@ import type { CSSProperties, RefObject } from 'react'
 import { memo, useMemo, useRef, useCallback } from 'react'
 import { Y_GRID as CONFIG } from '@config'
 import { useGridDimensions, useVisibleGridLines } from '@hooks'
-import { CSSCustomProperties } from '@types'
 import { clamp, cx, cs } from '@utils'
 
 import type { YGProps, GridLineStyles, GridFlatStyles } from './types'
 import styles from './styles.module.css'
 
 export const YGrid = memo(function YGrid({
-  config = {},
+  config = { variant: 'line' },
   className = '',
   visibility = CONFIG.visibility,
   style = {},
@@ -69,7 +68,7 @@ export const YGrid = memo(function YGrid({
       '--padd-height': typeof height === 'number' ? `${height}px` : height,
       '--padd-z-index': zIndex,
       '--padd-grid-color': color,
-    } as CSSCustomProperties, style),
+    } as CSSProperties, style),
   [height, zIndex, color, style])
 
   return (

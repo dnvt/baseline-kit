@@ -22,38 +22,34 @@ interface XGBaseConfig {
   variant?: XGridVariant
 }
 
-export interface XGPatternConfig extends XGBaseConfig {
+export interface PatternConfig extends XGBaseConfig {
   variant: 'pattern'
   columns: GridColumnsPattern
   columnWidth?: never
 }
 
-export interface XGFixedConfig extends XGBaseConfig {
+export interface FixedConfig extends XGBaseConfig {
   variant: 'fixed'
   columns: number
   columnWidth?: CSSValue
 }
 
-export interface XGAutoConfig extends XGBaseConfig {
+export interface AutoConfig extends XGBaseConfig {
   variant: 'auto'
   columnWidth: CSSValue
   columns?: never
 }
 
-export interface XGLineConfig extends XGBaseConfig {
+export interface LineConfig extends XGBaseConfig {
   variant: 'line'
   columns?: never
   columnWidth?: never
 }
 
-export type XGConfig =
-  | XGPatternConfig
-  | XGAutoConfig
-  | XGFixedConfig
-  | XGLineConfig
+export type XGConfig = PatternConfig | AutoConfig | FixedConfig | LineConfig
 
 export interface XGProps extends ComponentsProps {
-  config: XGConfig
+  config?: XGConfig
 }
 
 // YGrid types -----------------------------------------------------------------

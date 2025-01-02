@@ -2,9 +2,7 @@ import { Fragment, StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Spacer, YGrid } from '@components'
 
-import { GridSetups } from './components'
-import { cx } from '@utils'
-import { SpacerDimension } from '@/components/Spacer/types'
+import { GridSetups, Indice } from './components'
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -21,15 +19,6 @@ root.render(
   </StrictMode>,
 )
 
-function Indice(value: number, measurement: SpacerDimension) {
-  return (
-    <div className={cx('indice', measurement)}>
-      {value}
-    </div>
-  )
-}
-
-
 function Content({
   showBaseline,
 }: ContentProps,
@@ -39,7 +28,7 @@ function Content({
   return (
     <>
       <Spacer height={42} visibility={visibility} indicatorNode={Indice} />
-      <h1 className="demo-title">Grid Playground</h1>
+      <h1 className="demo-title">Padded Playground</h1>
       <Spacer height={8} visibility={visibility} />
       <p className="demo-description">
         This is a comprehensive demo showcasing the grid system capabilities.
@@ -51,7 +40,7 @@ function Content({
         <Fragment key={i}>
           {!!i && <Spacer height={8} visibility={visibility} config={{ variant: 'flat' }} />}
           <div className="content-block">
-            <YGrid visibility={visibility} />
+            <YGrid visibility={visibility} config={{ height: '100%' }} />
             Content Block {i + 1}
           </div>
         </Fragment>

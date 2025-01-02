@@ -4,4 +4,5 @@
  * @module Spacer
  */
 
-export * from './Spacer'
+export { Spacer } from './Spacer'
+export type { SpacerDimension, SpacerDimensions, SpacerConfig, SpacerProps } from './types'

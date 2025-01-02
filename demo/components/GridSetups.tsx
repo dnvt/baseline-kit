@@ -1,6 +1,6 @@
 import { useReducer, type PropsWithChildren, useCallback, Children, isValidElement, cloneElement } from 'react'
 import { XGrid, YGrid } from '@components'
-import { CSSCustomProperties, type GridColumnsPattern } from '@types'
+import { type GridColumnsPattern } from '@types'
 import { COMPONENTS, X_GRID } from '@config'
 
 import { GridControls } from './GridControls'
@@ -43,8 +43,6 @@ function demoGridReducer(state: DemoGridState, action: DemoGridAction): DemoGrid
 }
 
 // Init data -------------------------------------------------------------------
-
-const DEMO_WIDTH = '1216px'
 
 const initialState: DemoGridState = {
   config: {
@@ -96,7 +94,6 @@ export function GridSetups({ children }: PropsWithChildren) {
       <div className="demo-wrapper">
         <XGrid
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
-          data-testid="main-grid"
           config={{
             variant: 'fixed',
             columns: state.columnConfig.count,
@@ -104,8 +101,7 @@ export function GridSetups({ children }: PropsWithChildren) {
           }}
         />
         <XGrid
-          config={{ variant: 'line' }}
-          data-testid="line-grid"
+         
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
         />
         <div className="demo-content">

@@ -1,6 +1,5 @@
 import { cx, cs, parseCSSValue } from '@utils'
 import { CSSProperties } from 'react'
-import { CSSCustomProperties } from '@types'
 
 describe('Style Utils', () => {
   describe('combineClassNames', () => {
@@ -13,7 +12,7 @@ describe('Style Utils', () => {
 
   describe('combineStyles', () => {
     it('combines style objects', () => {
-      type TestStyle = Partial<CSSProperties & CSSCustomProperties>
+      type TestStyle = Partial<CSSProperties>
 
       const style1: TestStyle = { color: 'red', '--grid-custom-prop': '10px' }
       const style2: TestStyle = { background: 'blue' }
