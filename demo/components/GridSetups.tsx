@@ -1,11 +1,10 @@
-import { useReducer, type PropsWithChildren, useCallback, Children, isValidElement, cloneElement } from 'react'
+import { useReducer, useCallback, ReactNode } from 'react'
 import { XGrid, YGrid } from '@components'
 import { type GridColumnsPattern } from '@types'
 import { COMPONENTS, X_GRID } from '@config'
 
 import { GridControls } from './GridControls'
 import type { DemoGridAction, DemoGridState } from './types'
-import type { ContentProps } from '../main'
 import { usePageHeight } from '../hooks'
 
 // Custom reducer for the demo -------------------------------------------------
@@ -73,7 +72,7 @@ const initialState: DemoGridState = {
 
 // Grid demo setup -------------------------------------------------------------
 
-export function GridSetups({ children }: PropsWithChildren) {
+export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolean) => ReactNode }) {
   const [state, dispatch] = useReducer(demoGridReducer, initialState)
 
   // Tracks document height changes to adjust grid overlay dynamically
@@ -124,14 +123,7 @@ export function GridSetups({ children }: PropsWithChildren) {
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
         />
         <div className="demo-content">
-          {Children.map(children, child => {
-            if (isValidElement<PropsWithChildren<ContentProps>>(child)) {
-              return cloneElement(child, {
-                showBaseline: state.showGuides.baseline,
-              })
-            }
-            return child
-          })}
+          {contentNode(state.showGuides.baseline)}
         </div>
       </div>
       <GridControls state={state} dispatch={dispatch} />

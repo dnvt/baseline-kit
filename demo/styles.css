@@ -70,7 +70,6 @@
 
 .content-block {
   position: relative;
-  height: 60px;
   padding: 14px 16px 18px;
   color: var(--demo-text);
   background-color: var(--demo-block);

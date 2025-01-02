@@ -49,7 +49,7 @@
 
 .ygrid-container {
   inset: 0;
-  height: var(--padd-grid-height);
+  height: var(--padd-height);
 }
 
 /* Grid Layout Styles */

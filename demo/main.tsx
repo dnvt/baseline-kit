@@ -13,8 +13,11 @@ const root = createRoot(document.getElementById('root') as HTMLElement)
 
 root.render(
   <StrictMode>
-    <GridSetups>
-      <Content />
+    <GridSetups
+      contentNode={
+        (showBaseline) => <Content showBaseline={showBaseline} />
+      }
+    >
     </GridSetups>
   </StrictMode>,
 )
@@ -40,7 +43,7 @@ function Content({
         <Fragment key={i}>
           {!!i && <Spacer height={8} visibility={visibility} config={{ variant: 'flat' }} />}
           <div className="content-block">
-            <YGrid visibility={visibility} config={{ height: '100%' }} />
+            <YGrid visibility={visibility} />
             Content Block {i + 1}
           </div>
         </Fragment>
