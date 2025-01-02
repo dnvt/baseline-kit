@@ -92,6 +92,25 @@ export function GridSetups({ children }: PropsWithChildren) {
         config={{ height: state.pageHeight }}
       />
       <div className="demo-wrapper">
+
+        {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
+        {/*  variant: 'pattern',*/}
+        {/*  padding: '0 16px',*/}
+        {/*  color: 'var(--grid-color-line)',*/}
+        {/*  columns: state.columnConfig.pattern,*/}
+        {/*  gap: 8,*/}
+        {/*  zIndex: state.config.zIndex,*/}
+        {/*}} />*/}
+
+        {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
+        {/*  variant: 'auto',*/}
+        {/*  columnWidth: 80,*/}
+        {/*  padding: '0 16px',*/}
+        {/*  color: 'var(--grid-color-line)',*/}
+        {/*  gap: 8,*/}
+        {/*  zIndex: state.config.zIndex,*/}
+        {/*}} />*/}
+
         <XGrid
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
           config={{
@@ -100,8 +119,8 @@ export function GridSetups({ children }: PropsWithChildren) {
             gap: state.columnConfig.gap,
           }}
         />
+
         <XGrid
-         
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
         />
         <div className="demo-content">
@@ -118,54 +137,4 @@ export function GridSetups({ children }: PropsWithChildren) {
       <GridControls state={state} dispatch={dispatch} />
     </div>
   )
-}
-
-
-{/*Pattern*/
-}
-
-{/*<XGrid*/
-}
-{/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/
-}
-{/*  config={{*/
-}
-{/*    variant: 'pattern',*/
-}
-{/*    padding: '0 16px',*/
-}
-{/*    color: 'var(--grid-color-line)',*/
-}
-{/*    columns: state.columnConfig.pattern,*/
-}
-{/*    gap: 8,*/
-}
-{/*    zIndex: state.config.zIndex,*/
-}
-{/*  }}*/
-}
-{/*/>*/
-}
-
-{/*<XGrid*/
-}
-{/*  visibility={state.showGuides.columns ? 'visible' : 'hidden'}*/
-}
-{/*  config={{*/
-}
-{/*    variant: 'auto',*/
-}
-{/*    columnWidth: 80,*/
-}
-{/*    padding: '0 16px',*/
-}
-{/*    color: 'var(--grid-color-line)',*/
-}
-{/*    gap: 8,*/
-}
-{/*    zIndex: state.config.zIndex,*/
-}
-{/*  }}*/
-}
-{/*/>*/
 }

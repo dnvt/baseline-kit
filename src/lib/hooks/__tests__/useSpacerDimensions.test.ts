@@ -157,7 +157,7 @@ describe('useSpacerDimensions', () => {
     it('handles invalid size values', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
-          height: 'invalid' as any,
+          height: 'invalid',
           baseUnit,
           config: {
             variant: 'flat',

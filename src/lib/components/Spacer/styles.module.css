@@ -1,20 +1,19 @@
 :root {
+  /* Component Variables */
   --padd-spacer: 100%;
   --padd-spacer-width: 100%;
   --padd-spacer-height: 100%;
   --padd-spacer-border-width: 1px;
   --padd-spacer-border-style: solid;
 
-  /* Default */
+  /* Variant Colors */
   --padd-spacer-color: var(--padd-spacer-color-line);
-  /* Padded system spacer colors */
   --padd-spacer-color-line: hsla(var(--blue), 0.75);
   --padd-spacer-color-flat: hsla(var(--blue), 0.3);
   --padd-spacer-color-indice: hsla(var(--blue), 1);
-
 }
 
-/* Dark mode */
+/* Dark Mode Variables */
 @media (prefers-color-scheme: dark) {
   :root {
     --padd-spacer-color-line: hsla(var(--blue), 0.8);
@@ -23,6 +22,7 @@
   }
 }
 
+/* Base Component Styles */
 .spacer {
   opacity: 0;
   visibility: hidden;
@@ -33,7 +33,7 @@
   pointer-events: none;
 }
 
-/* Border for line variant */
+/* Variant Styles */
 .spacer[data-variant="line"]::after {
   border: var(--padd-spacer-border-width)
     var(--padd-spacer-border-style)
@@ -43,12 +43,10 @@
   inset: 0;
 }
 
-/* Background for flat variant */
 .spacer[data-variant="flat"] {
   background-color: var(--padd-spacer-color);
 }
 
-/* Set variant-specific colors */
 .spacer[data-variant="line"] {
   --padd-spacer-color: var(--padd-spacer-color-line);
 }
@@ -57,6 +55,7 @@
   --padd-spacer-color: var(--padd-spacer-color-flat);
 }
 
+/* Dimension Styles */
 .height {
   --padd-spacer-height: var(--padd-spacer);
 }
@@ -65,6 +64,7 @@
   --padd-spacer-width: var(--padd-spacer);
 }
 
+/* State Styles */
 .visible {
   opacity: 1;
   visibility: visible;
@@ -79,6 +79,7 @@
     visibility 0ms linear 180ms;
 }
 
+/* Media Queries */
 @media (prefers-reduced-motion: reduce) {
   .visible,
   .hidden {

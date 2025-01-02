@@ -1,5 +1,5 @@
 :root {
-  /* Padded system grid */
+  /* Component Variables */
   --padd-grid-column-width: 1px;
   --padd-grid-justify: start;
   --padd-grid-opacity: 1;
@@ -8,16 +8,15 @@
   --padd-grid-height: 1px;
   --padd-grid-line-stroke: 1px;
 
-  /* Default */
+  /* Variant Colors */
   --padd-grid-color: var(--padd-grid-color-line);
-  /* Padded system grid colors */
   --padd-grid-color-line: hsla(var(--blue), 0.15);
   --padd-grid-color-auto: hsla(var(--blue), 0.15);
   --padd-grid-color-fixed: hsla(var(--cyan), 0.15);
   --padd-grid-color-pattern: hsla(var(--purple), 0.15);
 }
 
-/* Dark mode */
+/* Dark Mode Variables */
 @media (prefers-color-scheme: dark) {
   :root {
     --padd-grid-color-line: hsla(var(--grey), 0.2);
@@ -27,25 +26,33 @@
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* XGrid styles ------------------------------------------------------------- */
-
-.xgrid-container {
+/* Base Component Styles */
+.xgrid-container,
+.ygrid-container {
+  position: absolute;
   opacity: 0;
   visibility: hidden;
-  position: absolute;
   pointer-events: none;
-  user-select: none;
   z-index: var(--padd-z-index);
+  width: 100%;
+}
+
+.xgrid-container {
+  user-select: none;
   top: 0;
   left: 0;
   right: 0;
   height: 100%;
-  width: 100%;
   max-width: var(--padd-width);
   padding: var(--padd-padding);
 }
 
+.ygrid-container {
+  inset: 0;
+  height: var(--padd-grid-height);
+}
+
+/* Grid Layout Styles */
 .columns-container {
   height: 100%;
   width: 100%;
@@ -62,6 +69,20 @@
   background-color: var(--padd-grid-color);
 }
 
+.row {
+  background-color: var(--padd-grid-color);
+  height: var(--padd-grid-line-stroke);
+  opacity: var(--padd-grid-opacity);
+  position: absolute;
+  top: var(--padd-grid-top);
+  width: 100%;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Variant Styles */
 .column[data-variant="line"] {
   width: var(--padd-grid-column-width);
   background-color: var(--padd-grid-color-line);
@@ -79,20 +100,6 @@
   background-color: var(--padd-grid-color-fixed);
 }
 
-/* -------------------------------------------------------------------------- */
-/* YGrid styles ------------------------------------------------------------- */
-
-.ygrid-container {
-  position: absolute;
-  z-index: var(--padd-z-index);
-  inset: 0;
-  width: 100%;
-  height: var(--padd-grid-height);
-  pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-}
-
 .ygrid-container[data-variant="line"] {
   --padd-grid-height: 1px;
 }
@@ -101,6 +108,7 @@
   --padd-grid-opacity: 0;
 }
 
+/* State Styles */
 .visible {
   opacity: 1;
   visibility: visible;
@@ -115,29 +123,10 @@
     visibility 0ms linear 180ms;
 }
 
-
-.row {
-  background-color: var(--padd-grid-color);
-  height: var(--padd-grid-line-stroke);
-  opacity: var(--padd-grid-opacity);
-  position: absolute;
-  top: var(--padd-grid-top);
-  width: 100%;
-
-  /* Prevent any animation on the row itself */
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  perspective: 1000px;
-}
-
-.flat {
-  /* In case we need something in the future */
-}
-
+/* Media Queries */
 @media (prefers-reduced-motion: reduce) {
-  .ygrid-container.visible,
-  .ygrid-container.hidden {
+  .visible,
+  .hidden {
     transition: none;
   }
 }

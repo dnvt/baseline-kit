@@ -31,9 +31,9 @@ export interface ComponentsProps {
 
 export type Visibility = 'none' | 'hidden' | 'visible'
 
-export interface PaddedCommonConfig {
+export interface PaddedBaseConfig {
   baseUnit?: number
-  color?: CSSProperties['color']
+  color?: CSSProperties['color'] | CSSProperties['backgroundColor']
   zIndex?: CSSProperties['zIndex']
 }
 

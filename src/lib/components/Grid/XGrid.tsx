@@ -66,6 +66,7 @@ export const XGrid = memo(function XGrid({
       return {
         variant: 'line' as const,
         gap: Math.max(0, numGap - 1),
+        baseUnit: CONFIG.baseUnit,
       } satisfies LineGridConfig
 
     case 'auto':
@@ -73,6 +74,7 @@ export const XGrid = memo(function XGrid({
         variant: 'auto' as const,
         columnWidth,
         gap: numGap,
+        baseUnit: CONFIG.baseUnit,
       } satisfies AutoGridConfig
 
     case 'pattern':
@@ -81,6 +83,7 @@ export const XGrid = memo(function XGrid({
           variant: 'pattern' as const,
           columns,
           gap: numGap,
+          baseUnit: CONFIG.baseUnit,
         } satisfies PatternGridConfig
       }
       break
@@ -92,6 +95,7 @@ export const XGrid = memo(function XGrid({
           columns,
           columnWidth,
           gap: numGap,
+          baseUnit: CONFIG.baseUnit,
         } satisfies FixedGridConfig
       }
       break
@@ -101,6 +105,7 @@ export const XGrid = memo(function XGrid({
     return {
       variant: 'line' as const,
       gap: Math.max(0, numGap - 1),
+      baseUnit: CONFIG.baseUnit,
     } satisfies LineGridConfig
   }, [variant, columns, columnWidth, gap])
 
@@ -108,6 +113,17 @@ export const XGrid = memo(function XGrid({
     containerWidth: width,
     config: gridConfig,
   })
+
+  const isShown = visibility === 'visible'
+
+  const containerClassName = useMemo(() =>
+    cx(
+      styles['xgrid-container'],
+      className,
+      isShown ? styles.visible : styles.hidden,
+    ),
+  [className, isShown],
+  )
 
   const containerStyles = useMemo(() =>
     cs({
@@ -121,16 +137,10 @@ export const XGrid = memo(function XGrid({
     } as CSSProperties, style),
   [calculatedGap, color, align, gridTemplateColumns, padding, maxWidth, zIndex, style])
 
-  const isShown = visibility === 'visible'
-
   return (
     <div
       ref={containerRef}
-      className={cx(
-        styles['xgrid-container'],
-        className,
-        isShown ? styles.visible : styles.hidden,
-      )}
+      className={containerClassName}
       data-testid="xgrid-container"
       data-variant={variant}
       style={containerStyles}

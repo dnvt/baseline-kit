@@ -2,7 +2,7 @@ import type { CSSProperties, RefObject } from 'react'
 import { memo, useMemo, useRef, useCallback } from 'react'
 import { Y_GRID as CONFIG } from '@config'
 import { useGridDimensions, useVisibleGridLines } from '@hooks'
-import { clamp, cx, cs } from '@utils'
+import { clamp, cx, cs, MeasurementSystem } from '@utils'
 
 import type { YGProps, GridLineStyles, GridFlatStyles } from './types'
 import styles from './styles.module.css'
@@ -26,7 +26,9 @@ export const YGrid = memo(function YGrid({
 
   const rowCount = useMemo(() => {
     const totalHeight = typeof height === 'number' ? height : containerHeight
-    return clamp(Math.ceil(totalHeight / baseUnit), 1, 1000)
+    const normalizedHeight = MeasurementSystem.normalize(totalHeight, { unit: baseUnit, suppressWarnings: true })
+
+    return clamp(Math.ceil(normalizedHeight / baseUnit), 1, 1000)
   }, [height, containerHeight, baseUnit])
 
   const visibleRange = useVisibleGridLines({
@@ -45,23 +47,36 @@ export const YGrid = memo(function YGrid({
     [baseUnit, color, variant],
   )
 
+  const rowClassName = useMemo(() =>
+    cx(styles.row, variant === 'flat' && styles.flat),
+  [variant],
+  )
+
   const visibleRows = useMemo(() => {
     const rows = []
     for (let i = visibleRange.start; i < visibleRange.end; i++) {
       rows.push(
         <div
           key={i}
-          className={cx(
-            styles.row,
-            variant === 'flat' && styles.flat,
-          )}
+          className={rowClassName}
           style={getRowStyles(i)}
           data-row-index={i}
         />,
       )
     }
     return rows
-  }, [visibleRange, variant, getRowStyles])
+  }, [visibleRange.start, visibleRange.end, rowClassName, getRowStyles])
+
+  const isShown = visibility === 'visible'
+
+  const containerClassName = useMemo(() =>
+    cx(
+      styles['ygrid-container'],
+      className,
+      isShown ? styles.visible : styles.hidden,
+    ),
+  [className, isShown],
+  )
 
   const containerStyles = useMemo(() =>
     cs({
@@ -71,16 +86,10 @@ export const YGrid = memo(function YGrid({
     } as CSSProperties, style),
   [height, zIndex, color, style])
 
-  const isShown = visibility === 'visible'
-
   return isShown ? (
     <div
       ref={containerRef}
-      className={cx(
-        styles['ygrid-container'],
-        className,
-        isShown ? styles.visible : styles.hidden,
-      )}
+      className={containerClassName}
       data-testid="ygrid-container"
       data-variant={variant}
       style={containerStyles}

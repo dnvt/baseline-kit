@@ -5,6 +5,7 @@ import type {
   CSSValue,
   GridAlignment,
   GridColumnsPattern,
+  PaddedBaseConfig,
   PaddedVariant,
 } from '@types'
 
@@ -12,13 +13,11 @@ import type {
 
 export type XGridVariant = 'line' | 'auto' | 'pattern' | 'fixed'
 
-interface XGBaseConfig {
+interface XGBaseConfig extends PaddedBaseConfig {
   align?: GridAlignment
-  color?: CSSProperties['color'] | CSSProperties['backgroundColor']
   gap?: CSSPixelValue
   maxWidth?: CSSValue
   padding?: CSSProperties['padding']
-  zIndex?: CSSProperties['zIndex']
   variant?: XGridVariant
 }
 
@@ -65,12 +64,9 @@ export interface GridFlatStyles {
   '--grid-row-opacity': '0' | '1'
 }
 
-export interface YGConfig {
+export interface YGConfig extends PaddedBaseConfig {
   variant?: PaddedVariant
-  color?: CSSProperties['color'] | CSSProperties['backgroundColor']
   height?: CSSProperties['height']
-  baseUnit?: number
-  zIndex?: CSSProperties['zIndex']
 }
 
 export interface YGProps extends ComponentsProps {

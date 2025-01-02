@@ -6,3 +6,4 @@
 export * from './validation'
 export * from './styles'
 export * from './performance'
+export * from './measurement'

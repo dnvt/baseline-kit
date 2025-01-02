@@ -2,6 +2,7 @@ import { COMPONENTS } from './components'
 
 export const X_GRID = {
   align: 'center',
+  baseUnit: COMPONENTS.baseUnit,
   color: COMPONENTS.colors.xGrid,
   columns: 9,
   columnWidth: '1fr',

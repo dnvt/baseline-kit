@@ -12,7 +12,7 @@ import {
   isAutoVariant,
   isFixedVariant,
 } from '@types'
-import { isValidGridPattern } from '@utils'
+import { isValidGridPattern, MeasurementSystem } from '@utils'
 import { X_GRID as CONFIG } from '@config'
 
 const DEFAULT_GAP = 8
@@ -40,19 +40,21 @@ export function useGridCalculations({
    */
   const calculateLineVariant = useCallback(
     (config: GridConfig & { variant: 'line' }, width: number): UseGridCalculationsResult => {
-      const gap = parseCSSValue(config.gap, DEFAULT_GAP)
-      // Add 1 to ensure we cover the entire width with columns
-      const numericGap = parseInt(gap, 10)
-      const columns = Math.max(1, Math.floor(width / (numericGap + 1)) + 1)
+      const numericGap = MeasurementSystem.normalize(config.gap ?? DEFAULT_GAP, {
+        unit: config.baseUnit,
+        suppressWarnings: true,
+      })
+      const adjustedGap = numericGap - 1
+      const columns = Math.max(1, Math.floor(width / (adjustedGap + 1)) + 1)
 
       return {
         gridTemplateColumns: `repeat(${columns}, 1px)`,
         columnsCount: columns,
-        calculatedGap: gap,
+        calculatedGap: `${adjustedGap}px`,
         isValid: true,
       }
     },
-    [parseCSSValue],
+    [],
   )
 
   /**

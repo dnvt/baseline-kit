@@ -1,6 +1,6 @@
-import type { CSSValue, GridColumnsPattern } from '@/types'
+import type { CSSPixelValue, CSSValue, GridColumnsPattern } from '@/types'
 import type { RefObject } from 'react'
-import { FlatSpacerConfig, LineSpacerConfig, SpacerConfig } from '@/components/Spacer/types'
+import { SpacerConfig } from '@/components/Spacer/types'
 
 // Base interfaces
 export interface VisibleRange {
@@ -15,7 +15,8 @@ export interface GridDimensions {
 
 // Grid Configuration Types
 interface GridCommonConfig {
-  gap?: CSSValue
+  gap?: CSSPixelValue | number
+  baseUnit?: number
 }
 
 export interface LineGridConfig extends GridCommonConfig {
@@ -72,12 +73,12 @@ export interface UseVisibleGridLinesProps {
 // Type guards
 export const isLineVariant = (
   config: GridConfig | SpacerConfig,
-): config is LineGridConfig | LineSpacerConfig =>
+): config is LineGridConfig | SpacerConfig =>
   'variant' in config && config.variant === 'line'
 
 export const isFlatVariant = (
   config: SpacerConfig,
-): config is FlatSpacerConfig =>
+): config is SpacerConfig =>
   'variant' in config && config.variant === 'flat'
 
 export const isAutoVariant = (config: GridConfig): config is AutoGridConfig =>

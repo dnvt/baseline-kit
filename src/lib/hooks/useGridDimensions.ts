@@ -1,5 +1,6 @@
 import { useLayoutEffect, useState, type RefObject } from 'react'
 import type { GridDimensions } from '@types'
+import { MeasurementSystem } from '@utils'
 
 /**
  * Hook for tracking grid container dimensions.
@@ -18,11 +19,10 @@ export function useGridDimensions(ref: RefObject<HTMLDivElement | null>): GridDi
      */
     const updateDimensions = () => {
       const rect = element.getBoundingClientRect()
-      const width = Math.round(rect.width)
-      const height = Math.round(rect.height)
+      const width = MeasurementSystem.normalize(rect.width, { suppressWarnings: true })
+      const height = MeasurementSystem.normalize(rect.height, { suppressWarnings: true })
 
       setDimensions(prev =>
-        // Prevent unnecessary re-renders if dimensions haven't changed
         prev.width === width && prev.height === height
           ? prev
           : { width, height },
