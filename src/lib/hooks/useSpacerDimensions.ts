@@ -52,9 +52,7 @@ export function useSpacerDimensions({
     }
 
     if (height !== undefined) {
-      console.log('Processing height:', height)
       const [heightValue, normalized] = normalizeValue(height)
-      console.log('Processed height:', { heightValue, normalized })
       normalizedHeight = normalized
       dimensions = {
         height: heightValue,
@@ -73,8 +71,6 @@ export function useSpacerDimensions({
         width: '100%',
       }
     }
-
-    console.log('Final dimensions:', dimensions)
 
     return {
       dimensions,

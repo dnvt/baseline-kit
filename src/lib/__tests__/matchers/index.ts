@@ -7,6 +7,8 @@ interface MatcherContext {
   isNot?: boolean;
 }
 
+export type ResizeObserverCallback = (entries: ResizeObserverEntry[]) => void
+
 export const customMatchers = {
   toHaveGridStyle(
     this: MatcherContext,

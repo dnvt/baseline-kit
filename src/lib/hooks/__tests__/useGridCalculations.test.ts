@@ -341,9 +341,6 @@ describe('useGridCalculations', () => {
         }),
       )
 
-      // Debug the actual result
-      console.log('Actual result:', result.current)
-
       expect(result.current).toEqual({
         gridTemplateColumns: 'repeat(auto-fit, minmax(1in, 1fr))',
         columnsCount: 9,  // Updated to match actual calculation
@@ -362,16 +359,6 @@ describe('useGridCalculations', () => {
         (containerWidth + gapWidth) / (inchInPixels + gapWidth),
       )
 
-      // Debug the calculation
-      console.log('Column calculation:', {
-        containerWidth,
-        gapWidth,
-        inchInPixels,
-        formula: `(${containerWidth} + ${gapWidth}) / (${inchInPixels} + ${gapWidth})`,
-        result: (containerWidth + gapWidth) / (inchInPixels + gapWidth),
-        rounded: Math.floor((containerWidth + gapWidth) / (inchInPixels + gapWidth)),
-      })
-
       const { result } = renderHook(() =>
         useGridCalculations({
           containerWidth,
@@ -385,10 +372,6 @@ describe('useGridCalculations', () => {
 
       expect(result.current.columnsCount).toBe(9) // Updated to match actual calculation
       expect(expectedColumns).toBe(9) // Updated expectation
-
-      // Let's verify the math:
-      // (1000 + 16) / (96 + 16) = 1016 / 112 ≈ 9.07...
-      // Math.floor(9.07...) = 9
     })
   })
 

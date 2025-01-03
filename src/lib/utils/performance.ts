@@ -1,7 +1,6 @@
-// Debounce
 export function debounce<Callback extends (...args: unknown[]) => void>(
   fn: Callback,
-  delay: number
+  delay: number,
 ): (...args: Parameters<Callback>) => void {
   let timer: ReturnType<typeof setTimeout> | null = null
 
@@ -15,7 +14,7 @@ export function debounce<Callback extends (...args: unknown[]) => void>(
 
 // Debounce for animation
 export function rafThrottle<Callback extends (...args: unknown[]) => void>(
-  fn: Callback
+  fn: Callback,
 ): (...args: Parameters<Callback>) => void {
   let rafId: number | null = null
 

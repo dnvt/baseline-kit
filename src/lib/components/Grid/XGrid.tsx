@@ -1,7 +1,7 @@
 import { CSSProperties, memo, useMemo, useRef } from 'react'
 import { X_GRID as CONFIG, COMPONENTS } from '@config'
 import { useGridCalculations, useGridDimensions } from '@hooks'
-import { cx, cs, parseCSSValue, extractCSSNumber, convertToPixels } from '@utils'
+import { cx, cs, parseCSSValue, convertToPixels } from '@utils'
 import type {
   AutoGridConfig,
   FixedGridConfig,
