@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { ComponentsProps, CSSPixelValue, CSSValue, ExclusiveProps, PaddedBaseConfig, PaddedVariant } from '@types'
+import { ComponentsProps, CSSValue, ExclusiveProps, PaddedBaseConfig, PaddedVariant } from '@types'
 
 export type SpacerDimension = 'width' | 'height'
 export type SpacerDimensions = Record<'width' | 'height', CSSValue | '100%'>
@@ -10,7 +10,7 @@ export type SpacerConfig = PaddedBaseConfig & { variant: PaddedVariant }
 
 export type SpacerProps = ExclusiveProps<{
   config?: SpacerConfig
-  height?: CSSPixelValue
-  width?: CSSPixelValue
+  height?: CSSValue
+  width?: CSSValue
   indicatorNode?: ((value: number, measurement: SpacerDimension) => ReactNode)
 }, 'height' | 'width'> & ComponentsProps

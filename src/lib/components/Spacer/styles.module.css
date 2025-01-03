@@ -31,6 +31,7 @@
   box-sizing: border-box;
   position: relative;
   pointer-events: none;
+  --padd-base-unit: var(--padd-base-unit, 8px);
 }
 
 /* Variant Styles */

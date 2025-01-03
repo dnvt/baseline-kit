@@ -1,10 +1,9 @@
 import { useMemo, useCallback } from 'react'
 import { X_GRID as CONFIG } from '@config'
 import {
-  CSSPixelValue,
-  CSSValue,
+  ABSOLUTE_UNITS, AutoGridConfig,
   GridColumnsPattern,
-  GridConfig,
+  GridConfig, RELATIVE_UNITS,
   UseGridCalculationsProps,
   UseGridCalculationsResult,
 } from '@types'
@@ -15,7 +14,6 @@ import {
   isFixedVariant,
 } from '@types'
 import {
-  isRelativeUnit,
   isValidGridPattern,
   MeasurementSystem,
   parseCSSValue,
@@ -111,87 +109,80 @@ export function useGridCalculations({
   )
 
   /**
- * Calculates auto-grid layout based on container width and column width.
- * Supports:
- * - Numbers (converted to pixels)
- * - Pixel values (e.g., "100px")
- * - Auto keyword
- * - Other CSS units (em, rem, etc.)
- */
-const calculateFlatGrid = useCallback(
-  (config: GridConfig & { columnWidth: CSSValue }, width: number): UseGridCalculationsResult => {
-    const gap = formatCSSValue(config.gap ?? DEFAULT_GAP)
-    const columnWidth = config.columnWidth
-    const numericGap = parseInt(gap)
+   * Calculates auto-grid layout based on container width and column width.
+   * Supports:
+   * - Numbers (converted to pixels)
+   * - Pixel values (e.g., "100px")
+   * - Auto keyword
+   * - Other CSS units (em, rem, etc.)
+   */
+  const calculateFlatGrid = useCallback(
+    (config: AutoGridConfig, width: number): UseGridCalculationsResult => {
+      const gap = formatCSSValue(config.gap ?? DEFAULT_GAP)
+      const columnWidth = config.columnWidth
+      const numericGap = parseInt(gap)
 
-    // Handle special cases
-    if (columnWidth === 'auto') {
+      // Handle special cases
+      if (columnWidth === 'auto') {
+        return {
+          gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))',
+          columnsCount: 1,
+          calculatedGap: gap,
+          isValid: true,
+        }
+      }
+
+      // Convert to string if number
+      const columnWidthStr = typeof columnWidth === 'number'
+        ? `${columnWidth}px`
+        : columnWidth as string
+
+      // Handle different unit types
+      if (typeof columnWidthStr === 'string') {
+        // Handle fr units
+        if (columnWidthStr.endsWith('fr')) {
+          return {
+            gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
+            columnsCount: 1,
+            calculatedGap: gap,
+            isValid: true,
+          }
+        }
+
+        // Handle absolute units
+        if (ABSOLUTE_UNITS.some(unit => columnWidthStr.endsWith(unit))) {
+          const pixels = convertToPixels(columnWidthStr) ?? 0
+          const columns = Math.max(1, Math.floor((width + numericGap) / (pixels + numericGap)))
+          return {
+            gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
+            columnsCount: columns,
+            calculatedGap: gap,
+            isValid: true,
+          }
+        }
+
+        // Handle relative units
+        if (RELATIVE_UNITS.some(unit => columnWidthStr.endsWith(unit))) {
+          return {
+            gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
+            columnsCount: 1,
+            calculatedGap: gap,
+            isValid: true,
+          }
+        }
+      }
+
+      // Fallback for invalid values
       return {
-        gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))',
-        columnsCount: 1,
-        calculatedGap: gap,
-        isValid: true,
+        gridTemplateColumns: 'none',
+        columnsCount: 0,
+        calculatedGap: '0px',
+        isValid: false,
       }
-    }
+    },
+    [],
+  )
 
-    // Handle numeric values
-    if (typeof columnWidth === 'number') {
-      const columns = Math.max(1, Math.floor((width + numericGap) / (columnWidth + numericGap)))
-      return {
-        gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidth}px, 1fr))`,
-        columnsCount: columns,
-        calculatedGap: gap,
-        isValid: true,
-      }
-    }
-
-    // Handle string values
-    if (typeof columnWidth === 'string') {
-      // Handle pixel values
-      if (columnWidth.endsWith('px')) {
-        const numericWidth = parseInt(columnWidth)
-        const columns = Math.max(1, Math.floor((width + numericGap) / (numericWidth + numericGap)))
-        return {
-          gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidth}, 1fr))`,
-          columnsCount: columns,
-          calculatedGap: gap,
-          isValid: true,
-        }
-      }
-
-      // Handle other CSS units
-      if (/^\d+(?:em|rem|vh|vw|%)$/.test(columnWidth)) {
-        return {
-          gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidth}, 1fr))`,
-          columnsCount: 1, // We can't calculate exact count with relative units
-          calculatedGap: gap,
-          isValid: true,
-        }
-      }
-
-      // Handle plain numbers (convert to px)
-      if (/^\d+$/.test(columnWidth)) {
-        const numericWidth = parseInt(columnWidth)
-        const columns = Math.max(1, Math.floor((width + numericGap) / (numericWidth + numericGap)))
-        return {
-          gridTemplateColumns: `repeat(auto-fit, minmax(${numericWidth}px, 1fr))`,
-          columnsCount: columns,
-          calculatedGap: gap,
-          isValid: true,
-        }
-      }
-    }
-
-    // Fallback for invalid values
-    return {
-      gridTemplateColumns: 'none',
-      columnsCount: 0,
-      calculatedGap: '0px',
-      isValid: false,
-    }
-  },
-  [],
-)
 
   return useMemo(() => {
     if (!containerWidth) {

@@ -13,14 +13,17 @@ export function useGridDimensions(ref: RefObject<HTMLDivElement | null>): GridDi
     const element = ref.current
     if (!element) return
 
-    /**
-     * Updates dimensions only when they actually change.
-     * Uses Math.round to prevent sub-pixel differences causing unnecessary updates.
-     */
     const updateDimensions = () => {
       const rect = element.getBoundingClientRect()
-      const width = MeasurementSystem.normalize(rect.width, { suppressWarnings: true })
-      const height = MeasurementSystem.normalize(rect.height, { suppressWarnings: true })
+      // Convert to pixels and normalize
+      const width = MeasurementSystem.normalize(rect.width, {
+        unit: 1, // Use 1 for pixel-perfect measurements
+        suppressWarnings: true,
+      })
+      const height = MeasurementSystem.normalize(rect.height, {
+        unit: 1,
+        suppressWarnings: true,
+      })
 
       setDimensions(prev =>
         prev.width === width && prev.height === height

@@ -1,5 +1,7 @@
 import { renderHook, act } from '@testing-library/react'
 import { useVisibleGridLines } from '@hooks'
+import { cssTestUtils } from '@/__tests__/matchers/cssTestUtils'
+import { testUtils } from '@/__tests__/setup'
 
 // Mock IntersectionObserver
 const observerMap = new Map()
@@ -109,4 +111,47 @@ describe('useVisibleGridLines', () => {
     const maxVisibleLines = Math.ceil((800 + customBuffer * 2) / 8)
     expect(result.current.end).toBeLessThanOrEqual(maxVisibleLines)
   })
+
+  describe('Buffer Unit Handling', () => {
+    beforeEach(() => {
+      cssTestUtils.createTestContext({
+        viewportHeight: 800,
+        viewportWidth: 1024,
+      })
+    })
+
+    it('handles viewport-relative buffer', () => {
+      const ref = { current: document.createElement('div') }
+      testUtils.mockElementSize(ref.current, 1024, 800)
+
+      const { result } = renderHook(() =>
+        useVisibleGridLines({
+          totalLines: 100,
+          lineHeight: 8,
+          containerRef: ref,
+          buffer: '10vh',
+        }),
+      )
+
+      const bufferInPixels = cssTestUtils.convertToPx('10vh')
+      const expectedBufferLines = Math.ceil(bufferInPixels / 8)
+
+      act(() => {
+        const callback = observerMap.get(ref.current)
+        callback?.([{
+          isIntersecting: true,
+          boundingClientRect: { top: 0, bottom: 800 },
+          target: ref.current,
+        }])
+      })
+
+      const viewportLines = Math.ceil(800 / 8)
+      expect(result.current.end).toBe(
+        Math.min(100, viewportLines + expectedBufferLines),
+      )
+    })
+  })
+
 })
+
+

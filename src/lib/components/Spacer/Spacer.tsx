@@ -1,7 +1,7 @@
 import { memo, useMemo, Fragment, CSSProperties } from 'react'
 import { SPACER } from '@config'
 import { useSpacerDimensions } from '@hooks'
-import { cs, cx, parseCSSValue } from '@utils'
+import { cs, cx } from '@utils'
 
 import { SpacerProps } from './types'
 import styles from './styles.module.css'
@@ -56,8 +56,8 @@ export const Spacer = memo(function Spacer({
 
   const combinedStyles = useMemo(() => {
     const baseStyles = {
-      '--padd-spacer-height': parseCSSValue(dimensions.height),
-      '--padd-spacer-width': parseCSSValue(dimensions.width),
+      '--padd-spacer-height': dimensions.height,
+      '--padd-spacer-width': dimensions.width,
       '--padd-base-unit': baseUnit,
       '--padd-z-index': zIndex,
     } as CSSProperties
@@ -71,7 +71,6 @@ export const Spacer = memo(function Spacer({
 
     return cs(baseStyles, style)
   }, [dimensions, baseUnit, zIndex, customColor, style])
-
 
   return (
     <div
@@ -88,3 +87,4 @@ export const Spacer = memo(function Spacer({
     </div>
   )
 })
+

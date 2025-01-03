@@ -1,5 +1,18 @@
+interface CustomMatcherResult {
+  pass: boolean;
+  message: () => string;
+}
+
+interface MatcherContext {
+  isNot?: boolean;
+}
+
 export const customMatchers = {
-  toHaveGridStyle(received: HTMLElement, expected: Record<string, string | number>) {
+  toHaveGridStyle(
+    this: MatcherContext,
+    received: HTMLElement,
+    expected: Record<string, string | number>,
+  ): CustomMatcherResult {
     const style = received.style
     const actualStyles: Record<string, string> = {}
     const failedMatches: Record<string, { expected: string; actual: string }> = {}
@@ -10,8 +23,10 @@ export const customMatchers = {
       actualStyles[prop] = actualValue
 
       const expectedStr = expectedValue.toString()
+      const normalizedActual = normalizeStyleValue(actualValue)
+      const normalizedExpected = normalizeStyleValue(expectedStr)
 
-      if (actualValue !== expectedStr) {
+      if (normalizedActual !== normalizedExpected) {
         pass = false
         failedMatches[prop] = {
           expected: expectedStr,
@@ -36,18 +51,37 @@ export const customMatchers = {
     }
   },
 
-  toHavePartialClassName(received: HTMLElement, expected: string) {
-    const classList = Array.from(received.classList)
-    const hasPartialMatch = classList.some(className => className.includes(expected))
+  toHaveEquivalentValue(
+    this: MatcherContext,
+    received: string | number,
+    expected: string | number,
+  ): CustomMatcherResult {
+    const normalizedReceived = normalizeStyleValue(received.toString())
+    const normalizedExpected = normalizeStyleValue(expected.toString())
 
     return {
-      pass: hasPartialMatch,
-      message: () => {
-        const classListStr = classList.join(', ')
-        return hasPartialMatch
-          ? `Expected element not to have class containing "${expected}". Found classes: ${classListStr}`
-          : `Expected element to have class containing "${expected}". Found classes: ${classListStr}`
-      },
+      pass: normalizedReceived === normalizedExpected,
+      message: () =>
+        `Expected ${received} ${this.isNot ? 'not ' : ''}to be equivalent to ${expected}`,
     }
   },
+}
+
+// Helper function to normalize CSS values for comparison
+function normalizeStyleValue(value: string): string {
+  // Remove whitespace
+  value = value.trim()
+
+  // Convert numbers to pixel values
+  if (/^\d+$/.test(value)) {
+    return `${value}px`
+  }
+
+  // Handle calc expressions
+  if (value.startsWith('calc(')) {
+    // Normalize calc spacing
+    return value.replace(/\s+/g, ' ')
+  }
+
+  return value
 }

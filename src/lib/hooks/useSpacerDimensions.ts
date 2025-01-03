@@ -1,13 +1,17 @@
 import { useMemo } from 'react'
 import { SpacerDimensions } from '@components'
-import { CSSPixelValue } from '@types'
+import { CSSValue } from '@types'
 import { MeasurementSystem } from '@utils'
 
 interface UseSpacerDimensionsProps {
-  height?: CSSPixelValue
-  width?: CSSPixelValue
+  height?: CSSValue
+  width?: CSSValue
   baseUnit: number
+  config?: {
+    variant?: 'line' | 'flat'
+  }
 }
+
 
 interface UseSpacerDimensionsResult {
   dimensions: SpacerDimensions
@@ -25,17 +29,43 @@ export function useSpacerDimensions({
     let normalizedHeight: number | null = null
     let normalizedWidth: number | null = null
 
-    if (height) {
-      normalizedHeight = MeasurementSystem.normalize(height, baseUnit)
+    const normalizeValue = (value: CSSValue): [CSSValue, number] => {
+
+      // Handle numeric values directly
+      if (typeof value === 'number') {
+        const normalized = MeasurementSystem.normalize(value, { unit: baseUnit })
+        return [`${normalized}px`, normalized]
+      }
+
+      // Handle string values
+      if (typeof value === 'string') {
+        if (value === 'auto' || value === '100%') {
+          return [value, baseUnit]
+        }
+
+        // Try to normalize if it's a different CSS Unit
+        const normalized = MeasurementSystem.normalize(value, { unit: baseUnit })
+        return [value, normalized]
+      }
+
+      return ['100%', baseUnit]
+    }
+
+    if (height !== undefined) {
+      console.log('Processing height:', height)
+      const [heightValue, normalized] = normalizeValue(height)
+      console.log('Processed height:', { heightValue, normalized })
+      normalizedHeight = normalized
       dimensions = {
-        height: normalizedHeight,
+        height: heightValue,
         width: '100%',
       }
-    } else if (width) {
-      normalizedWidth = MeasurementSystem.normalize(width, baseUnit)
+    } else if (width !== undefined) {
+      const [widthValue, normalized] = normalizeValue(width)
+      normalizedWidth = normalized
       dimensions = {
         height: '100%',
-        width: normalizedWidth,
+        width: widthValue,
       }
     } else {
       dimensions = {
@@ -43,6 +73,8 @@ export function useSpacerDimensions({
         width: '100%',
       }
     }
+
+    console.log('Final dimensions:', dimensions)
 
     return {
       dimensions,

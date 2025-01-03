@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react'
 import type {
   ComponentsProps,
-  CSSPixelValue,
   CSSValue,
   GridAlignment,
   GridColumnsPattern,
@@ -15,7 +14,7 @@ export type XGridVariant = 'line' | 'auto' | 'pattern' | 'fixed'
 
 interface XGBaseConfig extends PaddedBaseConfig {
   align?: GridAlignment
-  gap?: CSSPixelValue
+  gap?: CSSValue
   maxWidth?: CSSValue
   padding?: CSSProperties['padding']
   variant?: XGridVariant

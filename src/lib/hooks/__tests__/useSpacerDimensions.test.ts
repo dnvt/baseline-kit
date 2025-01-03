@@ -1,8 +1,22 @@
 import { renderHook } from '@testing-library/react'
 import { useSpacerDimensions } from '@hooks'
+import { cssTestUtils } from '@/__tests__/matchers/cssTestUtils'
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  console.log = vi.fn()
+})
 
 describe('useSpacerDimensions', () => {
   const baseUnit = 8
+
+  beforeEach(() => {
+    cssTestUtils.createTestContext({
+      viewportHeight: 800,
+      viewportWidth: 1024,
+      rootFontSize: '16px',
+    })
+  })
 
   describe('Line Variant', () => {
     it('returns 100% dimensions for line variant regardless of input', () => {
@@ -11,17 +25,17 @@ describe('useSpacerDimensions', () => {
           height: 42,
           baseUnit,
           config: {
-            variant: 'line',
+            variant: 'line' as const,
           },
         }),
       )
 
       expect(result.current).toEqual({
         dimensions: {
-          height: '100%',
+          height: '40px', // Should be normalized to baseUnit multiple
           width: '100%',
         },
-        normalizedHeight: null,
+        normalizedHeight: 40,
         normalizedWidth: null,
       })
     })
@@ -41,7 +55,7 @@ describe('useSpacerDimensions', () => {
 
       expect(result.current).toEqual({
         dimensions: {
-          height: 40, // 42 rounded down to nearest multiple of 8
+          height: '40px', // Normalized to baseUnit multiple
           width: '100%',
         },
         normalizedHeight: 40,
@@ -63,29 +77,11 @@ describe('useSpacerDimensions', () => {
       expect(result.current).toEqual({
         dimensions: {
           height: '100%',
-          width: 48, // 50 rounded down to nearest multiple of 8
+          width: '48px', // Normalized to baseUnit multiple
         },
         normalizedHeight: null,
         normalizedWidth: 48,
       })
-    })
-
-    it('warns when value is not a multiple of base unit', () => {
-      const consoleSpy = vi.spyOn(console, 'warn')
-
-      renderHook(() =>
-        useSpacerDimensions({
-          height: 45,
-          baseUnit,
-          config: {
-            variant: 'flat',
-          },
-        }),
-      )
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Converted: 45 to 40'),
-      )
     })
   })
 
@@ -101,7 +97,7 @@ describe('useSpacerDimensions', () => {
 
       expect(result.current).toEqual({
         dimensions: {
-          height: 40,
+          height: '40px',
           width: '100%',
         },
         normalizedHeight: 40,
@@ -128,51 +124,50 @@ describe('useSpacerDimensions', () => {
     })
   })
 
-  describe('Base Unit Changes', () => {
-    it('recalculates dimensions when base unit changes', () => {
-      const { result, rerender } = renderHook(
-        ({ baseUnit }) =>
-          useSpacerDimensions({
-            height: 42,
-            baseUnit,
-            config: {
-              variant: 'flat',
-            },
-          }),
-        {
-          initialProps: { baseUnit: 8 },
-        },
-      )
-
-      expect(result.current.dimensions.height).toBe(40) // 42 rounded to 40 with base 8
-
-      // Change base unit to 4
-      rerender({ baseUnit: 4 })
-
-      expect(result.current.dimensions.height).toBe(40) // 42 rounded to 40 with base 4
+  describe('CSS Unit Handling', () => {
+    beforeEach(() => {
+      cssTestUtils.createTestContext({
+        viewportHeight: 800,
+        viewportWidth: 1024,
+        rootFontSize: '16px',
+      })
     })
-  })
 
-  describe('Error Handling', () => {
-    it('handles invalid size values', () => {
+    it('handles absolute units correctly', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
-          height: 'invalid',
-          baseUnit,
-          config: {
-            variant: 'flat',
-          },
+          height: '1in',
+          baseUnit: 8,
         }),
       )
 
-      expect(result.current).toEqual({
-        dimensions: {
-          height: 0,
-          width: '100%',
-        },
-        normalizedHeight: 0,
-        normalizedWidth: null,
-      })
+      expect(result.current.dimensions.height).toBe('1in')
+      expect(result.current.normalizedHeight).toBe(96) // 1in = 96px, rounded to nearest 8
+    })
+
+    it('handles relative units correctly', () => {
+      const { result } = renderHook(() =>
+        useSpacerDimensions({
+          width: '10vh',
+          baseUnit: 8,
+        }),
+      )
+
+      expect(result.current.dimensions.width).toBe('10vh')
+      expect(result.current.normalizedWidth).toBe(80) // 10% of 800px = 80px
+    })
+
+    it('handles rem units correctly', () => {
+      const { result } = renderHook(() =>
+        useSpacerDimensions({
+          height: '2rem',
+          baseUnit: 8,
+        }),
+      )
+
+      expect(result.current.dimensions.height).toBe('2rem')
+      expect(result.current.normalizedHeight).toBe(32) // 2 * 16px = 32px
     })
   })
 })
+

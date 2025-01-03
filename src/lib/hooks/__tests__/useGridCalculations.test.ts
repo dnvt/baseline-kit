@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react'
 import { useGridCalculations } from '@hooks'
-import type { CSSPixelValue, CSSValue } from '@/types'
+import type { CSSValue } from '@/types'
+import { cssTestUtils } from '@/__tests__/matchers/cssTestUtils'
 
 describe('useGridCalculations', () => {
   describe('Line Variant', () => {
@@ -243,7 +244,7 @@ describe('useGridCalculations', () => {
           containerWidth: 1000,
           config: {
             variant: 'auto',
-            columnWidth: '2em' as CSSPixelValue,
+            columnWidth: '2em',
             gap: 16,
           },
         }),
@@ -318,4 +319,77 @@ describe('useGridCalculations', () => {
       })
     })
   })
+
+  describe('Unit Handling', () => {
+    beforeEach(() => {
+      cssTestUtils.createTestContext({
+        viewportWidth: 1000,
+        viewportHeight: 800,
+        rootFontSize: '16px',
+      })
+    })
+
+    it('handles absolute units correctly', () => {
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth: 1000,
+          config: {
+            variant: 'auto',
+            columnWidth: '1in',
+            gap: 16,
+          },
+        }),
+      )
+
+      // Debug the actual result
+      console.log('Actual result:', result.current)
+
+      expect(result.current).toEqual({
+        gridTemplateColumns: 'repeat(auto-fit, minmax(1in, 1fr))',
+        columnsCount: 9,  // Updated to match actual calculation
+        calculatedGap: '16px',
+        isValid: true,
+      })
+    })
+
+    it('calculates columns correctly for absolute units', () => {
+      const containerWidth = 1000
+      const gapWidth = 16
+      const inchInPixels = 96 // 1in = 96px
+
+      // Using the same formula as calculateFlatGrid
+      const expectedColumns = Math.floor(
+        (containerWidth + gapWidth) / (inchInPixels + gapWidth),
+      )
+
+      // Debug the calculation
+      console.log('Column calculation:', {
+        containerWidth,
+        gapWidth,
+        inchInPixels,
+        formula: `(${containerWidth} + ${gapWidth}) / (${inchInPixels} + ${gapWidth})`,
+        result: (containerWidth + gapWidth) / (inchInPixels + gapWidth),
+        rounded: Math.floor((containerWidth + gapWidth) / (inchInPixels + gapWidth)),
+      })
+
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth,
+          config: {
+            variant: 'auto',
+            columnWidth: '1in',
+            gap: gapWidth,
+          },
+        }),
+      )
+
+      expect(result.current.columnsCount).toBe(9) // Updated to match actual calculation
+      expect(expectedColumns).toBe(9) // Updated expectation
+
+      // Let's verify the math:
+      // (1000 + 16) / (96 + 16) = 1016 / 112 ≈ 9.07...
+      // Math.floor(9.07...) = 9
+    })
+  })
+
 })

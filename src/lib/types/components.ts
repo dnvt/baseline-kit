@@ -11,8 +11,7 @@ export type CSSUnit = typeof CSS_UNITS[number]
 
 export type RelativeCSSValue = `${number}${RelativeUnit}`
 export type AbsoluteCSSValue = `${number}${AbsoluteUnit}`
-export type CSSValue = RelativeCSSValue | AbsoluteCSSValue | number
-export type CSSPixelValue = number | `${number}px`
+export type CSSValue = RelativeCSSValue | AbsoluteCSSValue | 'auto' | number
 
 /**
  * Valid values for grid columns

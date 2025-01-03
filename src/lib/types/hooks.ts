@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import type { CSSPixelValue, CSSValue, GridColumnsPattern, GridColumnValue } from '@types'
+import type { CSSValue } from '@types'
 import { SpacerConfig } from '@/components/Spacer/types'
 
 // Base interfaces
@@ -15,7 +15,7 @@ export interface GridDimensions {
 
 // Grid Configuration Types
 interface GridCommonConfig {
-  gap?: CSSPixelValue | number
+  gap?: CSSValue
   baseUnit?: number
 }
 
@@ -27,7 +27,7 @@ export interface LineGridConfig extends GridCommonConfig {
 
 export interface PatternGridConfig extends GridCommonConfig {
   variant: 'pattern'
-  columns: GridColumnsPattern
+  columns: CSSValue[]
   columnWidth?: never
 }
 
@@ -39,7 +39,7 @@ export interface FixedGridConfig extends GridCommonConfig {
 
 export interface AutoGridConfig extends GridCommonConfig {
   variant: 'auto'
-  columnWidth: CSSPixelValue | 'auto'
+  columnWidth: CSSValue
   columns?: never
 }
 
@@ -82,7 +82,7 @@ export const isFlatVariant = (
   'variant' in config && config.variant === 'flat'
 
 export const isAutoVariant = (config: GridConfig): config is AutoGridConfig =>
-  config.variant === 'auto'
+  'variant' in config && config.variant === 'auto'
 
 export const isPatternVariant = (
   config: GridConfig,

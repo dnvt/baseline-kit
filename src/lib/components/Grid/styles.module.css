@@ -84,7 +84,7 @@
 
 /* Variant Styles */
 .column[data-variant="line"] {
-  width: var(--padd-grid-column-width);
+  width: calc(var(--padd-grid-column-width, 1px));
   background-color: var(--padd-grid-color-line);
 }
 

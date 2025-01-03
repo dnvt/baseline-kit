@@ -1,5 +1,7 @@
 import { renderHook, act } from '@testing-library/react'
 import { useGridDimensions } from '@hooks'
+import { testUtils } from '@/__tests__/setup'
+import { cssTestUtils } from '@/__tests__/matchers/cssTestUtils'
 
 // Mock ResizeObserver
 const observerMap = new Map()
@@ -58,4 +60,45 @@ describe('useGridDimensions', () => {
 
     expect(result.current).toEqual({ width: 0, height: 0 })
   })
+
+  describe('Dimension Normalization', () => {
+    beforeEach(() => {
+      cssTestUtils.createTestContext({
+        viewportWidth: 1024,
+        viewportHeight: 768,
+      })
+    })
+
+    it('normalizes dimensions to pixel values', () => {
+      const element = document.createElement('div')
+      testUtils.mockElementSize(element, 100.6, 200.4)
+
+      const ref = { current: element }
+      const { result } = renderHook(() => useGridDimensions(ref))
+
+      expect(result.current).toEqual({
+        width: Math.round(100.6),
+        height: Math.round(200.4),
+      })
+    })
+
+    it('handles rem-based sizes', () => {
+      const element = document.createElement('div')
+      testUtils.mockElementSize(
+        element,
+        cssTestUtils.convertToPx('10rem'),
+        cssTestUtils.convertToPx('5rem'),
+      )
+
+      const ref = { current: element }
+      const { result } = renderHook(() => useGridDimensions(ref))
+
+      expect(result.current).toEqual({
+        width: 160, // 10rem * 16px
+        height: 80,  // 5rem * 16px
+      })
+    })
+  })
+
 })
+

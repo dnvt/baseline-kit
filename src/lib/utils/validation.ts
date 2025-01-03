@@ -3,42 +3,34 @@ import {
   GridAlignment,
   GridColumnValue,
   GridColumnsPattern,
-  GridConfig, CSS_UNITS, RELATIVE_UNITS,
+  GridConfig,
+  CSS_UNITS,
 } from '@types'
 import { GRID_ALIGNMENTS } from '@types'
 
 export const isValidGridColumnValue = (
-    value: unknown,
-  ): value is GridColumnValue => {
-    if (typeof value === 'number') return true
-    if (typeof value !== 'string') return false
-
-    // Handle auto keyword
-    if (value === 'auto') return true
-
-    // Handle fr units
-    if (/^\d+fr$/.test(value)) return true
-
-    // Handle pixel units
-    if (/^\d+px$/.test(value)) return true
-
-    // Handle percentage
-    if (/^\d+%$/.test(value)) return true
-
-    // Handle other common CSS units
-    if (/^\d+(?:em|rem|vh|vw)$/.test(value)) return true
-
-    // Handle plain numbers (will be converted to px)
-    if (/^\d+$/.test(value)) return true
-
-    return false
+  value: unknown,
+): value is GridColumnValue => {
+  // Handle numeric values with proper validation
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value >= 0 // Only allow finite, non-negative numbers
   }
 
-  export const isValidGridPattern = (
-    pattern: unknown,
-  ): pattern is GridColumnsPattern => {
-    return Array.isArray(pattern) && pattern.length > 0 && pattern.every(isValidGridColumnValue)
-  }
+  if (typeof value !== 'string') return false
+
+  // Handle special values
+  if (value === 'auto' || value === '100%') return true
+
+  // Handle all valid CSS units with improved regex to support decimals
+  const unitPattern = /^(?:\d*\.?\d+)(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/
+  return unitPattern.test(value)
+}
+
+export const isValidGridPattern = (
+  pattern: unknown,
+): pattern is GridColumnsPattern => {
+  return Array.isArray(pattern) && pattern.length > 0 && pattern.every(isValidGridColumnValue)
+}
 
 export const isGridValue = (value: unknown): value is CSSValue => {
   if (typeof value === 'number') return true

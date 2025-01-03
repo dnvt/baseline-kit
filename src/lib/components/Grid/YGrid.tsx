@@ -2,7 +2,7 @@ import type { CSSProperties, RefObject } from 'react'
 import { memo, useMemo, useRef, useCallback } from 'react'
 import { Y_GRID as CONFIG } from '@config'
 import { useGridDimensions, useVisibleGridLines } from '@hooks'
-import { clamp, cx, cs, MeasurementSystem } from '@utils'
+import { clamp, cx, cs, MeasurementSystem, normalizeGridUnit } from '@utils'
 
 import type { YGProps, GridLineStyles, GridFlatStyles } from './types'
 import styles from './styles.module.css'
@@ -78,13 +78,26 @@ export const YGrid = memo(function YGrid({
   [className, isShown],
   )
 
+  const processedHeight = useMemo(() => {
+    if (height === undefined) return '100%'
+    if (typeof height === 'number') return `${height}px`
+    if (typeof height === 'string') {
+      // Only normalize non-relative units
+      if (height.endsWith('%') || height === 'auto' || height.endsWith('vh') || height.endsWith('vw')) {
+        return height
+      }
+      return normalizeGridUnit(height)
+    }
+    return height
+  }, [height])
+
   const containerStyles = useMemo(() =>
     cs({
-      '--padd-height': typeof height === 'number' ? `${height}px` : height,
+      '--padd-height': processedHeight,
       '--padd-z-index': zIndex,
       '--padd-grid-color': color,
     } as CSSProperties, style),
-  [height, zIndex, color, style])
+  [processedHeight, zIndex, color, style])
 
   return isShown ? (
     <div

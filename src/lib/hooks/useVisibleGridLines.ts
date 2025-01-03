@@ -1,5 +1,7 @@
-import { useState, useCallback, useLayoutEffect, type RefObject } from 'react'
-import type { VisibleRange } from '@types'
+import { useState, useCallback, useLayoutEffect, useMemo } from 'react'
+import type { RefObject } from 'react'
+import type { CSSValue, VisibleRange } from '@types'
+import { convertToPixels } from '@utils'
 
 // Buffer size in pixels to render additional lines above and below viewport
 // Prevents visible gaps during fast scrolling
@@ -18,8 +20,13 @@ export function useVisibleGridLines({
   totalLines: number;
   lineHeight: number;
   containerRef: RefObject<HTMLDivElement>;
-  buffer?: number;
+  buffer?: CSSValue;
 }): VisibleRange {
+  const bufferPixels = useMemo(() => {
+    if (typeof buffer === 'number') return buffer
+    return convertToPixels(buffer) ?? DEFAULT_BUFFER
+  }, [buffer])
+
   /**
    * Calculates the range of visible lines based on current scroll position.
    * Includes buffer zones above and below viewport for smooth scrolling.
@@ -37,11 +44,11 @@ export function useVisibleGridLines({
 
     return {
       // Include buffer zone above viewport
-      start: Math.max(0, Math.floor(viewportTop / lineHeight) - buffer),
+      start: Math.max(0, Math.floor(viewportTop / lineHeight) - bufferPixels),
       // Include buffer zone below viewport, but don't exceed total lines
-      end: Math.min(totalLines, Math.ceil(viewportBottom / lineHeight) + buffer),
+      end: Math.min(totalLines, Math.ceil(viewportBottom / lineHeight) + bufferPixels),
     }
-  }, [totalLines, lineHeight, containerRef, buffer])
+  }, [totalLines, lineHeight, containerRef, bufferPixels])
 
   // Track visible range in state
   const [visibleRange, setVisibleRange] = useState<VisibleRange>(calculateRange)

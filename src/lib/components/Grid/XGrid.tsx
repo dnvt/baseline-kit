@@ -1,7 +1,7 @@
 import { CSSProperties, memo, useMemo, useRef } from 'react'
 import { X_GRID as CONFIG, COMPONENTS } from '@config'
 import { useGridCalculations, useGridDimensions } from '@hooks'
-import { cx, cs, parseCSSValue, extractCSSNumber } from '@utils'
+import { cx, cs, parseCSSValue, extractCSSNumber, convertToPixels } from '@utils'
 import type {
   AutoGridConfig,
   FixedGridConfig,
@@ -59,7 +59,8 @@ export const XGrid = memo(function XGrid({
   const { width } = useGridDimensions(containerRef)
 
   const gridConfig = useMemo(() => {
-    const numGap = extractCSSNumber(gap) ?? COMPONENTS.baseUnit ?? 8
+    const gapValue = typeof gap === 'string' ? convertToPixels(gap) ?? COMPONENTS.baseUnit : gap
+    const numGap = gapValue ?? COMPONENTS.baseUnit ?? 8
 
     switch (variant) {
     case 'line':
@@ -131,7 +132,7 @@ export const XGrid = memo(function XGrid({
       '--padd-grid-color': color,
       '--padd-grid-justify': align,
       '--padd-grid-template-columns': gridTemplateColumns,
-      '--padd-padding': padding,
+      '--padd-padding': typeof padding === 'string' ? padding : `${padding}px`,
       '--padd-width': parseCSSValue(maxWidth),
       '--padd-z-index': zIndex,
     } as CSSProperties, style),
