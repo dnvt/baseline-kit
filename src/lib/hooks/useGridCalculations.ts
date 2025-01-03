@@ -26,11 +26,18 @@ const DEFAULT_GAP = 8
 /**
  * Hook for calculating grid layout dimensions and properties.
  * Handles different grid variants (line, pattern, fixed, auto) and their specific calculations.
+ *
+ * @param containerWidth - The width of the grid container.
+ * @param config - The configuration object for the grid.
+ * @returns An object containing grid layout properties such as `gridTemplateColumns`, `columnsCount`, and `calculatedGap`.
  */
 export function useGridCalculations({
   containerWidth,
   config,
 }: UseGridCalculationsProps): UseGridCalculationsResult {
+
+  // Helper Functions ----------------------------------------------------------
+
   /**
    * Calculates layout for line variant (single pixel columns).
    * Uses container width and gap to determine optimal number of 1px columns.
@@ -41,7 +48,7 @@ export function useGridCalculations({
         unit: config.baseUnit,
         suppressWarnings: true,
       })
-      const adjustedGap = numericGap - 1
+      const adjustedGap = numericGap - 1 // Adjust gap to account for 1px columns
       const columns = Math.max(1, Math.floor(width / (adjustedGap + 1)) + 1)
 
       return {
@@ -56,8 +63,7 @@ export function useGridCalculations({
 
   /**
    * Handles custom column patterns with mixed units.
-   * @todo Consider expanding support for additional CSS units (em, rem, vh, vw, etc.)
-   * Currently only supports: px, fr, auto, and numeric values
+   * Currently supports: px, fr, %, em, rem, and auto.
    */
   const calculateColumnPattern = useCallback(
     (config: GridConfig & { columns: GridColumnsPattern }): UseGridCalculationsResult => {
@@ -77,7 +83,7 @@ export function useGridCalculations({
             return `${col}px`
           }
         }
-        return '0'
+        return '0' // Fallback for invalid values
       })
 
       const isValid = columns.every(col => col !== '0')
@@ -110,11 +116,6 @@ export function useGridCalculations({
 
   /**
    * Calculates auto-grid layout based on container width and column width.
-   * Supports:
-   * - Numbers (converted to pixels)
-   * - Pixel values (e.g., "100px")
-   * - Auto keyword
-   * - Other CSS units (em, rem, etc.)
    */
   const calculateFlatGrid = useCallback(
     (config: AutoGridConfig, width: number): UseGridCalculationsResult => {
@@ -138,41 +139,33 @@ export function useGridCalculations({
         : columnWidth as string
 
       // Handle different unit types
-      if (typeof columnWidthStr === 'string') {
-        // Handle fr units
-        if (columnWidthStr.endsWith('fr')) {
-          return {
-            gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
-            columnsCount: 1,
-            calculatedGap: gap,
-            isValid: true,
-          }
+      if (columnWidthStr.endsWith('fr')) {
+        return {
+          gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
+          columnsCount: 1,
+          calculatedGap: gap,
+          isValid: true,
         }
-
-        // Handle absolute units
-        if (ABSOLUTE_UNITS.some(unit => columnWidthStr.endsWith(unit))) {
-          const pixels = convertToPixels(columnWidthStr) ?? 0
-          const columns = Math.max(1, Math.floor((width + numericGap) / (pixels + numericGap)))
-          return {
-            gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
-            columnsCount: columns,
-            calculatedGap: gap,
-            isValid: true,
-          }
+      }
+      if (ABSOLUTE_UNITS.some(unit => columnWidthStr.endsWith(unit))) {
+        const pixels = convertToPixels(columnWidthStr) ?? 0
+        const columns = Math.max(1, Math.floor((width + numericGap) / (pixels + numericGap)))
+        return {
+          gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
+          columnsCount: columns,
+          calculatedGap: gap,
+          isValid: true,
         }
-
-        // Handle relative units
-        if (RELATIVE_UNITS.some(unit => columnWidthStr.endsWith(unit))) {
-          return {
-            gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
-            columnsCount: 1,
-            calculatedGap: gap,
-            isValid: true,
-          }
+      }
+      if (RELATIVE_UNITS.some(unit => columnWidthStr.endsWith(unit))) {
+        return {
+          gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
+          columnsCount: 1,
+          calculatedGap: gap,
+          isValid: true,
         }
       }
 
-      // Fallback for invalid values
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
@@ -183,6 +176,7 @@ export function useGridCalculations({
     [],
   )
 
+  // Main Hook Logic -----------------------------------------------------------
 
   return useMemo(() => {
     if (!containerWidth) {

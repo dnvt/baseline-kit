@@ -12,13 +12,21 @@ interface UseSpacerDimensionsProps {
   }
 }
 
-
 interface UseSpacerDimensionsResult {
   dimensions: SpacerDimensions
   normalizedHeight: number | null
   normalizedWidth: number | null
 }
 
+/**
+ * Hook for calculating and normalizing spacer dimensions.
+ * Handles numeric and CSS string values for height and width, normalizing them to a base unit.
+ *
+ * @param height - The height of the spacer.
+ * @param width - The width of the spacer.
+ * @param baseUnit - The base unit for normalization.
+ * @returns An object containing the calculated dimensions and normalized height/width values.
+ */
 export function useSpacerDimensions({
   height,
   width,
@@ -30,7 +38,6 @@ export function useSpacerDimensions({
     let normalizedWidth: number | null = null
 
     const normalizeValue = (value: CSSValue): [CSSValue, number] => {
-
       // Handle numeric values directly
       if (typeof value === 'number') {
         const normalized = MeasurementSystem.normalize(value, { unit: baseUnit })
@@ -48,24 +55,29 @@ export function useSpacerDimensions({
         return [value, normalized]
       }
 
+      // Default to "100%" if the value is invalid
       return ['100%', baseUnit]
     }
 
+    // Calculate dimensions based on height or width
     if (height !== undefined) {
+      // Normalize height if provided
       const [heightValue, normalized] = normalizeValue(height)
       normalizedHeight = normalized
       dimensions = {
         height: heightValue,
-        width: '100%',
+        width: '100%', // Default width
       }
     } else if (width !== undefined) {
+      // Normalize width if provided
       const [widthValue, normalized] = normalizeValue(width)
       normalizedWidth = normalized
       dimensions = {
-        height: '100%',
+        height: '100%', // Default height
         width: widthValue,
       }
     } else {
+      // Default to full height and width if neither is provided
       dimensions = {
         height: '100%',
         width: '100%',

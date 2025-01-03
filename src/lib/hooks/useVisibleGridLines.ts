@@ -10,6 +10,12 @@ const DEFAULT_BUFFER = 160
 /**
  * Hook for calculating which grid lines should be rendered based on viewport visibility.
  * Optimizes performance by only rendering lines that are visible or about to become visible.
+ *
+ * @param totalLines - Total number of grid lines.
+ * @param lineHeight - The height of each grid line in pixels.
+ * @param containerRef - A React ref object pointing to the grid container element.
+ * @param buffer - The buffer zone (in pixels or CSS value) above and below the viewport.
+ * @returns An object representing the visible range of grid lines (`start` and `end` indices).
  */
 export function useVisibleGridLines({
   totalLines,
@@ -22,14 +28,15 @@ export function useVisibleGridLines({
   containerRef: RefObject<HTMLDivElement>;
   buffer?: CSSValue;
 }): VisibleRange {
+  // Convert buffer to pixels if it's a CSS value
   const bufferPixels = useMemo(() => {
     if (typeof buffer === 'number') return buffer
     return convertToPixels(buffer) ?? DEFAULT_BUFFER
   }, [buffer])
 
   /**
-   * Calculates the range of visible lines based on current scroll position.
-   * Includes buffer zones above and below viewport for smooth scrolling.
+   * Calculates the range of visible lines based on the current scroll position.
+   * Includes buffer zones above and below the viewport for smooth scrolling.
    */
   const calculateRange = useCallback((): VisibleRange => {
     if (!containerRef.current) {
@@ -38,19 +45,21 @@ export function useVisibleGridLines({
     }
 
     const rect = containerRef.current.getBoundingClientRect()
-    // Calculate visible area accounting for scroll position
+
+    // Calculate the top of the viewport relative to the container
     const viewportTop = Math.max(0, -rect.top)
+
+    // Calculate the bottom of the viewport relative to the container
     const viewportBottom = viewportTop + window.innerHeight
 
     return {
-      // Include buffer zone above viewport
+      // Include buffer zone above the viewport
       start: Math.max(0, Math.floor(viewportTop / lineHeight) - bufferPixels),
-      // Include buffer zone below viewport, but don't exceed total lines
+      // Include buffer zone below the viewport, but do not exceed total lines
       end: Math.min(totalLines, Math.ceil(viewportBottom / lineHeight) + bufferPixels),
     }
   }, [totalLines, lineHeight, containerRef, bufferPixels])
 
-  // Track visible range in state
   const [visibleRange, setVisibleRange] = useState<VisibleRange>(calculateRange)
 
   useLayoutEffect(() => {
@@ -58,15 +67,16 @@ export function useVisibleGridLines({
     if (!element) return
 
     /**
-     * Update visible range when scroll position or size changes.
-     * Uses RAF internally via the browser's IntersectionObserver and event handling.
+     * Updates the visible range when the scroll position or window size changes.
+     * Uses requestAnimationFrame internally via the browser's IntersectionObserver and event handling.
      */
     const updateRange = () => setVisibleRange(calculateRange())
 
-    // IntersectionObserver handles element entering/leaving viewport
+    // Create an IntersectionObserver to track when the container enters or leaves the viewport
     const observer = new IntersectionObserver(updateRange, { threshold: 0 })
     observer.observe(element)
 
+    // Add event listeners for scroll and resize events
     window.addEventListener('scroll', updateRange, { passive: true })
     window.addEventListener('resize', updateRange, { passive: true })
 

@@ -1,6 +1,11 @@
 import { CSSValue } from '@types'
 
-// Expand CSS unit conversions
+// Unit Conversions ------------------------------------------------------------
+
+/**
+ * A mapping of CSS units to their conversion factors relative to pixels.
+ * Includes both absolute and relative units.
+ */
 export const CSS_UNIT_CONVERSIONS = {
   // Absolute units
   'px': 1,      // Base unit
@@ -21,7 +26,14 @@ export const CSS_UNIT_CONVERSIONS = {
   'fr': null,   // Fraction (grid-specific)
 } as const
 
-// Enhanced unit parsing
+// Parsing Utilities -----------------------------------------------------------
+
+/**
+ * Parses a CSS value into a numeric value and unit.
+ *
+ * @param value - The CSS value to parse (e.g., `10px`, `1em`, `50%`).
+ * @returns An object with the numeric value and unit, or `null` if parsing fails.
+ */
 export const parseCSSUnit = (value: string) => {
   const match = value.match(/^([+-]?[\d.]+)([a-z%]+)$/)
   if (!match) return null
@@ -33,7 +45,7 @@ export const parseCSSUnit = (value: string) => {
   }
 }
 
-// Enhanced conversion with context
+// Conversion Utilities --------------------------------------------------------
 interface ConversionContext {
   parentSize?: number
   viewportWidth?: number
@@ -42,6 +54,14 @@ interface ConversionContext {
   parentFontSize?: number
 }
 
+/**
+ * Converts a CSS value to pixels based on the provided context.
+ * Supports absolute, relative, and viewport-based units.
+ *
+ * @param value - The CSS value to convert (e.g., `10px`, `1em`, `50%`).
+ * @param context - Optional context for relative and viewport-based units.
+ * @returns The equivalent value in pixels, or `null` if conversion is not possible.
+ */
 export const convertToPixels = (
   value: string,
   context: ConversionContext = {},
@@ -97,7 +117,16 @@ export const convertToPixels = (
   }
 }
 
-// Enhanced CSS value formatting
+// Formatting Utilities --------------------------------------------------------
+
+/**
+ * Formats a CSS value into a valid CSS string.
+ * Handles special cases like `auto`, `100%`, and grid-specific units.
+ *
+ * @param value - The CSS value to format.
+ * @param defaultValue - A default value to use if the input is undefined.
+ * @returns A valid CSS string.
+ */
 export const formatCSSValue = (
   value: CSSValue | '100%' | 'auto' | undefined,
   defaultValue?: number,
@@ -124,23 +153,48 @@ export const formatCSSValue = (
 
   return value?.toString() || '0'
 }
+// Unit Validation Utilities ---------------------------------------------------
 
-// New utility functions
+/**
+ * Checks if a CSS value is a grid-specific unit (`fr` or `%`).
+ *
+ * @param value - The CSS value to check.
+ * @returns `true` if the value is a grid-specific unit, otherwise `false`.
+ */
 export const isGridUnit = (value: string): boolean => {
   const parsed = parseCSSUnit(value)
   return parsed !== null && (parsed.unit === 'fr' || parsed.unit === '%')
 }
 
+/**
+ * Checks if a CSS value is an absolute unit (`px`, `in`, `cm`, etc.).
+ *
+ * @param value - The CSS value to check.
+ * @returns `true` if the value is an absolute unit, otherwise `false`.
+ */
 export const isAbsoluteUnit = (value: string): boolean => {
   const parsed = parseCSSUnit(value)
   return parsed !== null && ['px', 'in', 'cm', 'mm', 'pt', 'pc'].includes(parsed.unit)
 }
 
+/**
+ * Checks if a CSS value is a relative unit (`em`, `rem`, `vh`, etc.).
+ *
+ * @param value - The CSS value to check.
+ * @returns `true` if the value is a relative unit, otherwise `false`.
+ */
 export const isRelativeUnit = (value: string): boolean => {
   const parsed = parseCSSUnit(value)
   return parsed !== null && ['em', 'rem', 'vh', 'vw', 'vmin', 'vmax', '%'].includes(parsed.unit)
 }
 
+/**
+ * Normalizes a grid unit to pixels if possible.
+ *
+ * @param value - The CSS value to normalize.
+ * @param context - Optional context for conversion.
+ * @returns A string representing the normalized value in pixels, or the original value if conversion is not possible.
+ */
 export const normalizeGridUnit = (
   value: string,
   context: ConversionContext = {},

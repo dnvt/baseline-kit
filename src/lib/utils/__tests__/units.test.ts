@@ -46,7 +46,7 @@ describe('CSS Units Utils', () => {
       expect(convertToPixels('100%', context)).toBe(1000)
       expect(convertToPixels('1em', context)).toBe(16)
       expect(convertToPixels('1rem', context)).toBe(16)
-      
+
       // Use toBeCloseTo for floating point comparisons
       expect(convertToPixels('10vh', context)).toBeCloseTo(76.8, 1)
       expect(convertToPixels('10vw', context)).toBeCloseTo(102.4, 1)
@@ -81,37 +81,6 @@ describe('CSS Units Utils', () => {
     it('handles undefined and default values', () => {
       expect(formatCSSValue(undefined, 10)).toBe('10px')
       expect(formatCSSValue(undefined)).toBe('0')
-    })
-  })
-
-  describe('Unit Type Checks', () => {
-    describe('isGridUnit', () => {
-      it('identifies grid units', () => {
-        expect(isGridUnit('1fr')).toBe(true)
-        expect(isGridUnit('100%')).toBe(true)
-        expect(isGridUnit('100px')).toBe(false)
-        expect(isGridUnit('invalid')).toBe(false)
-      })
-    })
-
-    describe('isAbsoluteUnit', () => {
-      it('identifies absolute units', () => {
-        expect(isAbsoluteUnit('100px')).toBe(true)
-        expect(isAbsoluteUnit('1in')).toBe(true)
-        expect(isAbsoluteUnit('1cm')).toBe(true)
-        expect(isAbsoluteUnit('1fr')).toBe(false)
-        expect(isAbsoluteUnit('1rem')).toBe(false)
-      })
-    })
-
-    describe('isRelativeUnit', () => {
-      it('identifies relative units', () => {
-        expect(isRelativeUnit('1rem')).toBe(true)
-        expect(isRelativeUnit('1em')).toBe(true)
-        expect(isRelativeUnit('10vh')).toBe(true)
-        expect(isRelativeUnit('100%')).toBe(true)
-        expect(isRelativeUnit('100px')).toBe(false)
-      })
     })
   })
 })

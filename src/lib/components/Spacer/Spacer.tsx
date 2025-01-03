@@ -6,6 +6,18 @@ import { cs, cx } from '@utils'
 import { SpacerProps } from './types'
 import styles from './styles.module.css'
 
+/**
+ * Spacer Component
+ * A flexible spacer element that adjusts its dimensions based on provided height and width.
+ * Optionally displays measurement indicators.
+ * @param height - The height of the spacer.
+ * @param width - The width of the spacer.
+ * @param config - Configuration object for the spacer.
+ * @param indicatorNode - A function to render measurement indicators.
+ * @param visibility - Visibility of the spacer ('visible' or 'hidden').
+ * @param className - Additional class names for the container.
+ * @param style - Additional inline styles for the container.
+ */
 export const Spacer = memo(function Spacer({
   height,
   width,
@@ -15,6 +27,7 @@ export const Spacer = memo(function Spacer({
   className = '',
   style = {},
 }: SpacerProps) {
+  // Destructure configuration with default values from SPACER
   const {
     baseUnit = SPACER.baseUnit,
     variant = SPACER.variant,
@@ -22,14 +35,18 @@ export const Spacer = memo(function Spacer({
     color: customColor,
   } = config
 
+  // Determine whether the spacer should be shown
   const isShown = visibility === 'visible'
 
+  // Calculate dimensions and normalize height/width
   const { dimensions, normalizedHeight, normalizedWidth } = useSpacerDimensions({
     height,
     width,
     baseUnit,
   })
 
+  // Generate measurement indicators if the spacer is visible
+  // and an indicatorNode is provided
   const measurements = useMemo(() => {
     if (!isShown || !indicatorNode) return null
 
@@ -54,6 +71,7 @@ export const Spacer = memo(function Spacer({
     return result
   }, [isShown, indicatorNode, normalizedHeight, normalizedWidth])
 
+  // Combine base styles with custom styles
   const combinedStyles = useMemo(() => {
     const baseStyles = {
       '--padd-spacer-height': dimensions.height,
@@ -62,6 +80,7 @@ export const Spacer = memo(function Spacer({
       '--padd-z-index': zIndex,
     } as CSSProperties
 
+    // Add custom color if provided
     if (customColor) {
       return cs({
         ...baseStyles,
@@ -87,4 +106,3 @@ export const Spacer = memo(function Spacer({
     </div>
   )
 })
-
