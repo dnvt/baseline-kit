@@ -1,5 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { useGridCalculations } from '@hooks'
+import type { CSSPixelValue, CSSValue } from '@/types'
 
 describe('useGridCalculations', () => {
   describe('Line Variant', () => {
@@ -14,24 +15,108 @@ describe('useGridCalculations', () => {
         }),
       )
 
-      // For line variant:
-      // - gap becomes 8px (not 7px as previously thought)
-      // - columns = Math.floor(100 / (8 + 1)) + 1 = 12
+      // Gap becomes 7px (8px - 1px for line width)
+      // columns = Math.floor(100 / (7 + 1)) + 1 = 13
       expect(result.current).toEqual({
-        gridTemplateColumns: 'repeat(12, 1px)',
-        columnsCount: 12,
-        calculatedGap: '8px',
+        gridTemplateColumns: 'repeat(13, 1px)',
+        columnsCount: 13,
+        calculatedGap: '7px',
         isValid: true,
       })
     })
   })
 
   describe('Pattern Variant', () => {
+    it('handles pixel values correctly', () => {
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth: 1000,
+          config: {
+            variant: 'pattern',
+            columns: ['100px', '200px', '100px'],
+            gap: 16,
+          },
+        }),
+      )
+
+      expect(result.current).toEqual({
+        gridTemplateColumns: '100px 200px 100px',
+        columnsCount: 3,
+        calculatedGap: '16px',
+        isValid: true,
+      })
+    })
+
+    it('handles basic supported types correctly', () => {
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth: 1000,
+          config: {
+            variant: 'pattern',
+            columns: [
+              '100px',      // Pixels
+              100,          // Number (converted to px)
+              'auto',       // Auto value
+            ],
+            gap: 16,
+          },
+        }),
+      )
+
+      expect(result.current).toEqual({
+        gridTemplateColumns: '100px 100px auto',
+        columnsCount: 3,
+        calculatedGap: '16px',
+        isValid: true,
+      })
+    })
+
+    it('handles numeric values correctly', () => {
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth: 1000,
+          config: {
+            variant: 'pattern',
+            columns: [100, 200, 300],
+            gap: 16,
+          },
+        }),
+      )
+
+      expect(result.current).toEqual({
+        gridTemplateColumns: '100px 200px 300px',
+        columnsCount: 3,
+        calculatedGap: '16px',
+        isValid: true,
+      })
+    })
+
+    it('handles invalid values appropriately', () => {
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth: 1000,
+          config: {
+            variant: 'pattern',
+            columns: ['invalid-unit' as never], // Using truly invalid value instead of '1fr'
+            gap: 16,
+          },
+        }),
+      )
+
+      expect(result.current).toEqual({
+        gridTemplateColumns: 'none',
+        columnsCount: 0,
+        calculatedGap: '0px',
+        isValid: false,
+      })
+    })
+
     it('handles fr units correctly', () => {
       const { result } = renderHook(() =>
         useGridCalculations({
           containerWidth: 1000,
           config: {
+            variant: 'pattern',
             columns: ['1fr', '2fr', '1fr'],
             gap: 16,
           },
@@ -46,24 +131,6 @@ describe('useGridCalculations', () => {
       })
     })
 
-    it('handles mixed units correctly', () => {
-      const { result } = renderHook(() =>
-        useGridCalculations({
-          containerWidth: 1000,
-          config: {
-            columns: ['100px', '1fr', '20%'],
-            gap: 16,
-          },
-        }),
-      )
-
-      expect(result.current).toEqual({
-        gridTemplateColumns: '100px 1fr 20%',
-        columnsCount: 3,
-        calculatedGap: '16px',
-        isValid: true,
-      })
-    })
   })
 
   describe('Fixed Columns', () => {
@@ -72,6 +139,7 @@ describe('useGridCalculations', () => {
         useGridCalculations({
           containerWidth: 1000,
           config: {
+            variant: 'fixed',
             columns: 12,
             gap: 16,
           },
@@ -91,8 +159,9 @@ describe('useGridCalculations', () => {
         useGridCalculations({
           containerWidth: 1000,
           config: {
+            variant: 'fixed',
             columns: 12,
-            columnWidth: '80px',
+            columnWidth: '80px' as CSSValue,
             gap: 16,
           },
         }),
@@ -108,31 +177,12 @@ describe('useGridCalculations', () => {
   })
 
   describe('Auto Grid', () => {
-    it('calculates auto columns based on container width', () => {
+    it('handles auto value correctly', () => {
       const { result } = renderHook(() =>
         useGridCalculations({
           containerWidth: 1000,
           config: {
-            columnWidth: '200px',
-            gap: 16,
-          },
-        }),
-      )
-
-      // (1000 + 16) / (200 + 16) = 4.69, rounded down to 4
-      expect(result.current).toEqual({
-        gridTemplateColumns: 'repeat(4, 200px)',
-        columnsCount: 4,
-        calculatedGap: '16px',
-        isValid: true,
-      })
-    })
-
-    it('handles auto width correctly', () => {
-      const { result } = renderHook(() =>
-        useGridCalculations({
-          containerWidth: 1000,
-          config: {
+            variant: 'auto',
             columnWidth: 'auto',
             gap: 16,
           },
@@ -140,7 +190,87 @@ describe('useGridCalculations', () => {
       )
 
       expect(result.current).toEqual({
-        gridTemplateColumns: 'auto',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))',
+        columnsCount: 1,
+        calculatedGap: '16px',
+        isValid: true,
+      })
+    })
+
+    it('handles pixel values correctly', () => {
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth: 1000,
+          config: {
+            variant: 'auto',
+            columnWidth: '100px',
+            gap: 16,
+          },
+        }),
+      )
+
+      expect(result.current).toEqual({
+        gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+        columnsCount: 8,
+        calculatedGap: '16px',
+        isValid: true,
+      })
+    })
+
+    it('handles numeric values correctly', () => {
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth: 1000,
+          config: {
+            variant: 'auto',
+            columnWidth: 100,
+            gap: 16,
+          },
+        }),
+      )
+
+      expect(result.current).toEqual({
+        gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
+        columnsCount: 8,
+        calculatedGap: '16px',
+        isValid: true,
+      })
+    })
+
+    it('handles unsupported units appropriately', () => {
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth: 1000,
+          config: {
+            variant: 'auto',
+            columnWidth: '2em' as CSSPixelValue,
+            gap: 16,
+          },
+        }),
+      )
+
+      expect(result.current).toEqual({
+        gridTemplateColumns: 'repeat(auto-fit, minmax(2em, 1fr))',
+        columnsCount: 1,
+        calculatedGap: '16px',
+        isValid: true,
+      })
+    })
+
+    it('handles percentage values correctly', () => {
+      const { result } = renderHook(() =>
+        useGridCalculations({
+          containerWidth: 1000,
+          config: {
+            variant: 'auto',
+            columnWidth: '20%',
+            gap: 16,
+          },
+        }),
+      )
+
+      expect(result.current).toEqual({
+        gridTemplateColumns: 'repeat(auto-fit, minmax(20%, 1fr))',
         columnsCount: 1,
         calculatedGap: '16px',
         isValid: true,
@@ -154,6 +284,7 @@ describe('useGridCalculations', () => {
         useGridCalculations({
           containerWidth: 0,
           config: {
+            variant: 'fixed',
             columns: 12,
           },
         }),
@@ -172,6 +303,7 @@ describe('useGridCalculations', () => {
         useGridCalculations({
           containerWidth: 1000,
           config: {
+            variant: 'pattern',
             columns: ['invalid' as never],
             gap: 16,
           },

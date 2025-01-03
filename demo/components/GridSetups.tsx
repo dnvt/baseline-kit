@@ -103,10 +103,9 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
 
         {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
         {/*  variant: 'auto',*/}
-        {/*  columnWidth: 80,*/}
-        {/*  padding: '0 16px',*/}
+        {/*  columnWidth: 144,*/}
         {/*  color: 'var(--grid-color-line)',*/}
-        {/*  gap: 8,*/}
+        {/*  gap: 16,*/}
         {/*  zIndex: state.config.zIndex,*/}
         {/*}} />*/}
 

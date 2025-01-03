@@ -3,26 +3,42 @@ import {
   GridAlignment,
   GridColumnValue,
   GridColumnsPattern,
-  GridConfig, CSS_UNITS,
+  GridConfig, CSS_UNITS, RELATIVE_UNITS,
 } from '@types'
 import { GRID_ALIGNMENTS } from '@types'
 
 export const isValidGridColumnValue = (
-  value: unknown,
-): value is GridColumnValue => {
-  if (typeof value === 'number') return true
-  if (typeof value !== 'string') return false
+    value: unknown,
+  ): value is GridColumnValue => {
+    if (typeof value === 'number') return true
+    if (typeof value !== 'string') return false
 
-  if (value === 'auto') return true
-  if (/^\d+fr$/.test(value)) return true
-  return CSS_UNITS.some((unit) => value.endsWith(unit))
-}
+    // Handle auto keyword
+    if (value === 'auto') return true
 
-export const isValidGridPattern = (
-  pattern: unknown,
-): pattern is GridColumnsPattern => {
-  return Array.isArray(pattern) && pattern.every(isValidGridColumnValue)
-}
+    // Handle fr units
+    if (/^\d+fr$/.test(value)) return true
+
+    // Handle pixel units
+    if (/^\d+px$/.test(value)) return true
+
+    // Handle percentage
+    if (/^\d+%$/.test(value)) return true
+
+    // Handle other common CSS units
+    if (/^\d+(?:em|rem|vh|vw)$/.test(value)) return true
+
+    // Handle plain numbers (will be converted to px)
+    if (/^\d+$/.test(value)) return true
+
+    return false
+  }
+
+  export const isValidGridPattern = (
+    pattern: unknown,
+  ): pattern is GridColumnsPattern => {
+    return Array.isArray(pattern) && pattern.length > 0 && pattern.every(isValidGridColumnValue)
+  }
 
 export const isGridValue = (value: unknown): value is CSSValue => {
   if (typeof value === 'number') return true

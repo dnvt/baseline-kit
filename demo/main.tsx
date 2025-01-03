@@ -32,12 +32,11 @@ function Content({
     <>
       <Spacer height={42} visibility={visibility} indicatorNode={Indice} />
       <h1 className="demo-title">Padded Playground</h1>
-      <Spacer height={8} visibility={visibility} />
       <p className="demo-description">
         This is a comprehensive demo showcasing the grid system capabilities.
         Use the controls to experiment with different grid configurations.
       </p>
-      <Spacer height={16} visibility={visibility} />
+      <Spacer height={24} visibility={visibility} />
 
       {Array.from({ length: 50 }).map((_, i) => (
         <Fragment key={i}>

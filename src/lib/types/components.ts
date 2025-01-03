@@ -1,16 +1,24 @@
 import type { CSSProperties, ReactNode } from 'react'
 
 // CSS Types
-export const CSS_UNITS = ['px', 'rem', 'em', 'vh', 'vw', '%', 'fr'] as const
-export type CSSFraction = `${number}fr`
-export type CSSUnit = (typeof CSS_UNITS)[number]
-export type CSSCompound<T extends number | string> = T | `${number}${CSSUnit}`
+export const RELATIVE_UNITS = ['fr', '%', 'em', 'rem', 'vh', 'vw'] as const
+export const ABSOLUTE_UNITS = ['px', 'pt', 'pc', 'cm', 'mm', 'in'] as const
+export const CSS_UNITS = [...RELATIVE_UNITS, ...ABSOLUTE_UNITS] as const
 
-export type CSSValue = CSSCompound<number>
+export type RelativeUnit = typeof RELATIVE_UNITS[number]
+export type AbsoluteUnit = typeof ABSOLUTE_UNITS[number]
+export type CSSUnit = typeof CSS_UNITS[number]
+
+export type RelativeCSSValue = `${number}${RelativeUnit}`
+export type AbsoluteCSSValue = `${number}${AbsoluteUnit}`
+export type CSSValue = RelativeCSSValue | AbsoluteCSSValue | number
 export type CSSPixelValue = number | `${number}px`
 
-// Grid Types
-export type GridColumnValue = CSSValue | CSSFraction | 'auto'
+/**
+ * Valid values for grid columns
+ * @todo Consider expanding to support additional CSS units (em, rem, vh, vw, etc.)
+ */
+export type GridColumnValue = CSSValue | `${number}fr` | 'auto'
 export type GridColumnsPattern = readonly GridColumnValue[]
 
 // Grid Constants & Types

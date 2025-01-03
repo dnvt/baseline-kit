@@ -1,5 +1,5 @@
-import type { CSSPixelValue, CSSValue, GridColumnsPattern } from '@/types'
 import type { RefObject } from 'react'
+import type { CSSPixelValue, CSSValue, GridColumnsPattern, GridColumnValue } from '@types'
 import { SpacerConfig } from '@/components/Spacer/types'
 
 // Base interfaces
@@ -39,7 +39,7 @@ export interface FixedGridConfig extends GridCommonConfig {
 
 export interface AutoGridConfig extends GridCommonConfig {
   variant: 'auto'
-  columnWidth: CSSValue
+  columnWidth: CSSPixelValue | 'auto'
   columns?: never
 }
 
