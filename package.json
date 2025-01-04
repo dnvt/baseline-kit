@@ -78,7 +78,7 @@
     "vitest": "^2.1.8"
   },
   "name": "padded-grid",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "homepage": "https://github.com/dnvt/padded-grid#readme",
   "types": "dist/index.d.ts",
