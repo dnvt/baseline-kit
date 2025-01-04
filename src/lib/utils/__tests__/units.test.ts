@@ -2,9 +2,6 @@ import {
   parseCSSUnit,
   convertToPixels,
   formatCSSValue,
-  isGridUnit,
-  isAbsoluteUnit,
-  isRelativeUnit,
 } from '@utils'
 
 describe('CSS Units Utils', () => {

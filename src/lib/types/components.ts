@@ -17,7 +17,7 @@ export type CSSValue = RelativeCSSValue | AbsoluteCSSValue | 'auto' | number
  * Valid values for grid columns
  * @todo Consider expanding to support additional CSS units (em, rem, vh, vw, etc.)
  */
-export type GridColumnValue = CSSValue | `${number}fr` | 'auto'
+export type GridColumnValue = CSSValue | 'auto'
 export type GridColumnsPattern = readonly GridColumnValue[]
 
 // Grid Constants & Types

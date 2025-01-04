@@ -89,21 +89,27 @@ export const XGrid = memo(function XGrid({
       } satisfies AutoGridConfig
 
     case 'pattern':
-      return {
-        variant: 'pattern' as const,
-        columns,
-        gap: numGap,
-        baseUnit: CONFIG.baseUnit,
-      } satisfies PatternGridConfig
+      if (Array.isArray(columns)) {
+        return {
+          variant: 'pattern' as const,
+          columns,
+          gap: numGap,
+          baseUnit: CONFIG.baseUnit,
+        } satisfies PatternGridConfig
+      }
+      break
 
     case 'fixed':
-      return {
-        variant: 'fixed' as const,
-        columns,
-        columnWidth,
-        gap: numGap,
-        baseUnit: CONFIG.baseUnit,
-      } satisfies FixedGridConfig
+      if (typeof columns === 'number') {
+        return {
+          variant: 'fixed' as const,
+          columns,
+          columnWidth,
+          gap: numGap,
+          baseUnit: CONFIG.baseUnit,
+        } satisfies FixedGridConfig
+      }
+      break
     }
 
     // Default to 'line' variant

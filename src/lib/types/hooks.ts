@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import type { CSSValue } from '@types'
+import type { CSSValue, GridColumnsPattern } from '@types'
 import { SpacerConfig } from '@/components/Spacer/types'
 
 // Base interfaces
@@ -27,7 +27,7 @@ export interface LineGridConfig extends GridCommonConfig {
 
 export interface PatternGridConfig extends GridCommonConfig {
   variant: 'pattern'
-  columns: CSSValue[]
+  columns: GridColumnsPattern
   columnWidth?: never
 }
 
@@ -86,7 +86,8 @@ export const isAutoVariant = (config: GridConfig): config is AutoGridConfig =>
 
 export const isPatternVariant = (
   config: GridConfig,
-): config is PatternGridConfig => Array.isArray(config.columns)
+): config is PatternGridConfig =>
+  config.variant === 'pattern' && Array.isArray(config.columns)
 
 export const isFixedVariant = (
   config: GridConfig,
