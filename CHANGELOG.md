@@ -1,5 +1,11 @@
 # padded-grid
 
+## 1.1.2
+
+### Patch Changes
+
+- type and lint fixing
+
 ## 1.1.1
 
 ### Patch Changes
