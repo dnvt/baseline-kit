@@ -49,6 +49,9 @@
   flex-direction: column;
 }
 
+input {
+  padding-block: 8px;
+}
 .demo-content {
   display: flex;
   flex-direction: column;
@@ -68,6 +71,23 @@
   color: var(--demo-text);
 }
 
+section {
+  padding: 16px 16px 12px;
+}
+
+.range-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.range-header > :last-child {
+  color: hsla(var(--blue), 1);
+}
+
+.range-input {
+  width: 100%;
+}
+
 .content-block {
   position: relative;
   padding: 14px 16px 18px;
@@ -78,14 +98,20 @@
 
 /* Controls */
 .grid-controls {
+  width: 240px;
   position: fixed;
   bottom: 1.5rem;
   left: 1.5rem;
   background-color: var(--demo-bg);
   color: var(--demo-text);
-  padding: 1rem;
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px var(--demo-shadow);
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background: rgba(0, 0, 0, .1);
 }
 
 .controls-section {
@@ -93,10 +119,35 @@
   flex-direction: column;
   gap: 1rem;
 }
+.visibility-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-block: 24px;
+}
+
+.checkbox-label, .z-index-label, .base-unit-label, .base-unit-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.items {
+  display: flex;
+  justify-content: space-between;
+}
 
 .checkbox-container {
   display: flex;
   gap: 1rem;
+}
+
+.sr-only {
+  display: none;
+  visibility: hidden;
+}
+
+.metrics-container pre {
+  margin: 0
 }
 
 .checkbox-label {

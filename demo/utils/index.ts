@@ -1,1 +1,1 @@
-export { usePerformanceMonitor } from './UsePerformanceMonitor'
+export { usePerformanceMonitor, type PerformanceMetrics } from './UsePerformanceMonitor'

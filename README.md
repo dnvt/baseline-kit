@@ -4,6 +4,8 @@ Padded Grid is a lightweight, debugging / dev-tool library for visualizing and m
 React applications. Inspired by tools like Figma, it provides powerful, customizable grid overlays and spacing utilities
 to ensure precise alignment and spacing during development.
 
+![Demo visual](demo/padded-demo.png)
+
 ## Features
 
 - 🎯 **Interactive Grid Overlays:** Toggleable grids for development.

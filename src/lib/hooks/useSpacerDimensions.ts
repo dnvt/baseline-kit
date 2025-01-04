@@ -38,13 +38,11 @@ export function useSpacerDimensions({
     let normalizedWidth: number | null = null
 
     const normalizeValue = (value: CSSValue): [CSSValue, number] => {
-      // Handle numeric values directly
       if (typeof value === 'number') {
         const normalized = MeasurementSystem.normalize(value, { unit: baseUnit })
         return [`${normalized}px`, normalized]
       }
 
-      // Handle string values
       if (typeof value === 'string') {
         if (value === 'auto' || value === '100%') {
           return [value, baseUnit]
@@ -55,29 +53,24 @@ export function useSpacerDimensions({
         return [value, normalized]
       }
 
-      // Default to "100%" if the value is invalid
       return ['100%', baseUnit]
     }
 
-    // Calculate dimensions based on height or width
     if (height !== undefined) {
-      // Normalize height if provided
       const [heightValue, normalized] = normalizeValue(height)
       normalizedHeight = normalized
       dimensions = {
         height: heightValue,
-        width: '100%', // Default width
+        width: '100%',
       }
     } else if (width !== undefined) {
-      // Normalize width if provided
       const [widthValue, normalized] = normalizeValue(width)
       normalizedWidth = normalized
       dimensions = {
-        height: '100%', // Default height
+        height: '100%',
         width: widthValue,
       }
     } else {
-      // Default to full height and width if neither is provided
       dimensions = {
         height: '100%',
         width: '100%',

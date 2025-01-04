@@ -13,7 +13,6 @@ export function useGridDimensions(ref: RefObject<HTMLDivElement | null>): GridDi
   const [dimensions, setDimensions] = useState<GridDimensions>({ width: 0, height: 0 })
 
   useLayoutEffect(() => {
-    // Get the current element from the ref
     const element = ref.current
     if (!element) return
 
@@ -34,7 +33,6 @@ export function useGridDimensions(ref: RefObject<HTMLDivElement | null>): GridDi
         suppressWarnings: true,
       })
 
-      // Update state only if dimensions have changed
       setDimensions(prev =>
         prev.width === width && prev.height === height
           ? prev // Avoid unnecessary re-renders

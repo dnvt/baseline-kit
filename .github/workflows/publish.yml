@@ -43,6 +43,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Debug File Paths
+        run: ls -R
+
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
         uses: softprops/action-gh-release@v1
@@ -52,6 +55,5 @@ jobs:
           files: |
             dist/*
             LICENSE
-            README.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

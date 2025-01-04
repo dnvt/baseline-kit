@@ -1,152 +1,182 @@
-import type { Dispatch } from 'react'
-
+import { Dispatch, useId } from 'react'
+import { COMPONENTS } from '@config'
 import type { DemoGridAction, DemoGridState } from './types'
-import { usePerformanceMonitor } from '../utils'
+import { usePerformanceMonitor, type PerformanceMetrics } from '../utils'
+import { Spacer } from '@components'
 
-export function GridControls({
-  state,
-  dispatch,
-}: {
+type GridControlsProps = {
   state: DemoGridState
   dispatch: Dispatch<DemoGridAction>
-}) {
+}
+
+const GuideControls = ({ state, dispatch }: GridControlsProps) => (
+  <section className="visibility-section">
+    <h4>Grid Guides</h4>
+    <div className="checkbox-container">
+      <label className="toggle-label">
+        <input
+          type="checkbox"
+          checked={state.showGuides.columns}
+          onChange={(e) =>
+            dispatch({
+              type: 'TOGGLE_GUIDE',
+              payload: { type: 'columns', value: e.target.checked },
+            })
+          }
+        />
+        Columns
+      </label>
+      <label className="toggle-label">
+        <input
+          type="checkbox"
+          checked={state.showGuides.baseline}
+          onChange={(e) =>
+            dispatch({
+              type: 'TOGGLE_GUIDE',
+              payload: { type: 'baseline', value: e.target.checked },
+            })
+          }
+        />
+        Baseline
+      </label>
+    </div>
+  </section>
+)
+
+const RangeControl = ({
+  label,
+  value,
+  suffix = '',
+  min,
+  max,
+  onChange,
+  ariaDescription,
+}: {
+  label: string
+  value: number
+  suffix?: string
+  min: number
+  max: number
+  onChange: (value: number) => void
+  ariaDescription?: string
+}) => {
+  const id = useId()
+  const labelId = `${id}-label`
+  const descriptionId = `${id}-description`
+
+  return (
+    <div className="range-control">
+      <div className="range-header">
+        <label
+          id={labelId}
+          htmlFor={id}
+          className="range-label"
+        >
+          {label}
+        </label>
+        <span
+          className="range-value"
+          aria-live="polite"
+        >
+          {value}{suffix}
+        </span>
+      </div>
+      <input
+        id={id}
+        type="range"
+        className="range-input"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        aria-labelledby={labelId}
+        aria-describedby={ariaDescription ? descriptionId : undefined}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={value}
+        aria-valuetext={`${value}${suffix}`}
+      />
+      {ariaDescription && (
+        <div
+          id={descriptionId}
+          className="sr-only"
+        >
+          {ariaDescription}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Usage in ConfigControls:
+const ConfigControls = ({ state, dispatch }: GridControlsProps) => (
+  <section className="controls-section">
+    <h4>Grid Configuration</h4>
+    <RangeControl
+      label="Base Unit"
+      value={state.config.baseUnit ?? COMPONENTS.baseUnit}
+      suffix="px"
+      min={4}
+      max={16}
+      ariaDescription="Adjust the base unit size for the grid system"
+      onChange={(value) =>
+        dispatch({
+          type: 'UPDATE_CONFIG',
+          payload: { baseUnit: value },
+        })
+      }
+    />
+    <RangeControl
+      label="Column Count"
+      value={state.columnConfig.count}
+      suffix=" columns"
+      min={2}
+      max={24}
+      ariaDescription="Adjust the number of columns in the grid"
+      onChange={(value) =>
+        dispatch({
+          type: 'UPDATE_COLUMN_CONFIG',
+          payload: { count: value },
+        })
+      }
+    />
+    <RangeControl
+      label="Column Gap"
+      value={state.columnConfig.gap}
+      suffix="px"
+      min={0}
+      max={48}
+      ariaDescription="Adjust the space between grid columns"
+      onChange={(value) =>
+        dispatch({
+          type: 'UPDATE_COLUMN_CONFIG',
+          payload: { gap: value },
+        })
+      }
+    />
+  </section>
+)
+
+const PerformanceMetrics = ({ metrics }: { metrics: PerformanceMetrics }) => (
+  <section className="controls-section">
+    <h4>Performance</h4>
+    <div className="metrics-container">
+      <pre>{JSON.stringify(metrics, null, 2)}</pre>
+    </div>
+  </section>
+)
+
+export function GridControls({ state, dispatch }: GridControlsProps) {
   const metrics = usePerformanceMonitor()
 
   return (
     <div className="grid-controls">
-      <div className="controls-spacing">
-        {/* Performance Metrics Section */}
-        <div>
-          <h3>Performance</h3>
-          <div>
-            <pre>{JSON.stringify(metrics, null, 2)}</pre>
-          </div>
-        </div>
-
-        {/* Grid Guides Section */}
-        <div className="controls-section">
-          <h3>Grid Guides</h3>
-          <div className="checkbox-container">
-            {/* Toggle Columns Guide */}
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={state.showGuides.columns}
-                onChange={(e) =>
-                  dispatch({
-                    type: 'TOGGLE_GUIDE',
-                    payload: { type: 'columns', value: e.target.checked },
-                  })
-                }
-              />
-              Columns
-            </label>
-
-            {/* Toggle Baseline Guide */}
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={state.showGuides.baseline}
-                onChange={(e) =>
-                  dispatch({
-                    type: 'TOGGLE_GUIDE',
-                    payload: { type: 'baseline', value: e.target.checked },
-                  })
-                }
-              />
-              Baseline
-            </label>
-          </div>
-
-        </div>
-
-        {/* Grid Configuration Section */}
-        <div className="controls-section">
-          <h3>Grid Configuration</h3>
-
-          {/* Adjust Z-Index */}
-          <label className="z-index-label">
-            <span className="z-index-text">Z-Index</span>
-            <input
-              type="range"
-              className="z-index-range"
-              min="-1"
-              max="10"
-              value={state.config.zIndex}
-              onChange={(e) =>
-                dispatch({
-                  type: 'UPDATE_CONFIG',
-                  payload: { zIndex: Number(e.target.value) },
-                })
-              }
-            />
-            <span className="z-index-value">{state.config.zIndex}</span>
-          </label>
-
-          {/* Adjust Base Unit */}
-          <label className="base-unit-label">
-            <span className="base-unit-text">Base Unit</span>
-            <input
-              type="range"
-              className="base-unit-range"
-              min="4"
-              max="16"
-              value={state.config.baseUnit}
-              onChange={(e) =>
-                dispatch({
-                  type: 'UPDATE_CONFIG',
-                  payload: { baseUnit: Number(e.target.value) },
-                })
-              }
-            />
-            <span className="base-unit-value">{state.config.baseUnit}px</span>
-          </label>
-        </div>
-
-        {/* Column Configuration Section */}
-        <div className="controls-section">
-          <h3>Column Configuration</h3>
-
-          {/* Adjust Column Count */}
-          <label className="base-unit-label">
-            <span className="base-unit-text">Column Count</span>
-            <input
-              type="range"
-              className="base-unit-range"
-              min="2"
-              max="24"
-              value={state.columnConfig.count}
-              onChange={(e) =>
-                dispatch({
-                  type: 'UPDATE_COLUMN_CONFIG',
-                  payload: { count: Number(e.target.value) },
-                })
-              }
-            />
-            <span className="base-unit-value">
-              {state.columnConfig.count} columns
-            </span>
-          </label>
-
-          {/* Adjust Column Gap */}
-          <label className="base-unit-label">
-            <span className="base-unit-text">Column Gap</span>
-            <input
-              type="range"
-              className="base-unit-range"
-              min="0"
-              max="48"
-              value={state.columnConfig.gap}
-              onChange={(e) =>
-                dispatch({
-                  type: 'UPDATE_COLUMN_CONFIG',
-                  payload: { gap: Number(e.target.value) },
-                })
-              }
-            />
-            <span className="base-unit-value">{state.columnConfig.gap}px</span>
-          </label>
-        </div>
+      <div className="controls-content">
+        <GuideControls state={state} dispatch={dispatch} />
+        <div className="divider" />
+        <ConfigControls state={state} dispatch={dispatch} />
+        <div className="divider" />
+        <PerformanceMetrics metrics={metrics} />
       </div>
     </div>
   )

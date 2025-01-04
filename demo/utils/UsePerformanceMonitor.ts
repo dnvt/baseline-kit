@@ -9,7 +9,7 @@ interface ChromePerformance extends Performance {
   }
 }
 
-interface PerformanceMetrics {
+export interface PerformanceMetrics {
   fps: number
   memory: number
   elements: number

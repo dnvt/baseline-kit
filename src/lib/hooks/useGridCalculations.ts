@@ -1,9 +1,11 @@
 import { useMemo, useCallback } from 'react'
 import { X_GRID as CONFIG } from '@config'
 import {
-  ABSOLUTE_UNITS, AutoGridConfig,
+  ABSOLUTE_UNITS,
+  RELATIVE_UNITS,
+  AutoGridConfig,
   GridColumnsPattern,
-  GridConfig, RELATIVE_UNITS,
+  GridConfig,
   UseGridCalculationsProps,
   UseGridCalculationsResult,
 } from '@types'
@@ -83,7 +85,7 @@ export function useGridCalculations({
             return `${col}px`
           }
         }
-        return '0' // Fallback for invalid values
+        return '0'
       })
 
       const isValid = columns.every(col => col !== '0')

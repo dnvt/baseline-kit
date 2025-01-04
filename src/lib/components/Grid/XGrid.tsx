@@ -12,11 +12,6 @@ import type {
 import type { XGProps, XGridVariant } from './types'
 import styles from './styles.module.css'
 
-/**
- * Subcomponent for rendering the grid columns.
- * @param count - Number of columns to render.
- * @param variant - The variant of the grid (e.g., 'line', 'auto').
- */
 const GridColumns = memo(function GridColumns({
   count,
   variant,
@@ -45,6 +40,7 @@ const GridColumns = memo(function GridColumns({
  * XGrid Component
  * A flexible column grid system with support for multiple layout variants:
  * 'auto', 'fixed', 'line' (default), and 'pattern'.
+ *
  * @param config - Configuration object for the grid.
  * @param className - Additional class names for the container.
  * @param visibility - Visibility of the grid ('visible' or 'hidden').
@@ -56,7 +52,6 @@ export const XGrid = memo(function XGrid({
   visibility = CONFIG.visibility,
   style = {},
 }: XGProps) {
-  // Destructure configuration with default values from CONFIG
   const {
     align = CONFIG.align,
     color = CONFIG.color,
@@ -69,7 +64,6 @@ export const XGrid = memo(function XGrid({
     zIndex = CONFIG.zIndex,
   } = config
 
-  // Ref for the container to measure dimensions
   const containerRef = useRef<HTMLDivElement>(null)
   const { width } = useGridDimensions(containerRef)
 
@@ -80,15 +74,13 @@ export const XGrid = memo(function XGrid({
 
     switch (variant) {
     case 'line':
-      // Configuration for 'line' variant
       return {
         variant: 'line' as const,
-        gap: Math.max(0, numGap - 1), // Ensure gap is non-negative
+        gap: Math.max(0, numGap - 1),
         baseUnit: CONFIG.baseUnit,
       } satisfies LineGridConfig
 
     case 'auto':
-      // Configuration for 'auto' variant
       return {
         variant: 'auto' as const,
         columnWidth,
@@ -97,29 +89,21 @@ export const XGrid = memo(function XGrid({
       } satisfies AutoGridConfig
 
     case 'pattern':
-      if (Array.isArray(columns)) {
-        // Configuration for 'pattern' variant
-        return {
-          variant: 'pattern' as const,
-          columns,
-          gap: numGap,
-          baseUnit: CONFIG.baseUnit,
-        } satisfies PatternGridConfig
-      }
-      break
+      return {
+        variant: 'pattern' as const,
+        columns,
+        gap: numGap,
+        baseUnit: CONFIG.baseUnit,
+      } satisfies PatternGridConfig
 
     case 'fixed':
-      if (typeof columns === 'number') {
-        // Configuration for 'fixed' variant
-        return {
-          variant: 'fixed' as const,
-          columns,
-          columnWidth,
-          gap: numGap,
-          baseUnit: CONFIG.baseUnit,
-        } satisfies FixedGridConfig
-      }
-      break
+      return {
+        variant: 'fixed' as const,
+        columns,
+        columnWidth,
+        gap: numGap,
+        baseUnit: CONFIG.baseUnit,
+      } satisfies FixedGridConfig
     }
 
     // Default to 'line' variant
@@ -130,16 +114,13 @@ export const XGrid = memo(function XGrid({
     } satisfies LineGridConfig
   }, [variant, columns, columnWidth, gap])
 
-  // Calculate grid template and column count
   const { gridTemplateColumns, columnsCount, calculatedGap } = useGridCalculations({
     containerWidth: width,
     config: gridConfig,
   })
 
-  // Determine visibility of the grid
   const isShown = visibility === 'visible'
 
-  // Memoized class names for the container
   const containerClassName = useMemo(() =>
     cx(
       styles['xgrid-container'],
@@ -149,7 +130,6 @@ export const XGrid = memo(function XGrid({
   [className, isShown],
   )
 
-  // Memoized inline styles for the container
   const containerStyles = useMemo(() =>
     cs({
       '--padd-gap': calculatedGap,

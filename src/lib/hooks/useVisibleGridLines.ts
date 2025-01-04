@@ -46,16 +46,13 @@ export function useVisibleGridLines({
 
     const rect = containerRef.current.getBoundingClientRect()
 
-    // Calculate the top of the viewport relative to the container
+    // Calculate the top and bottom of the viewport relative to the container
     const viewportTop = Math.max(0, -rect.top)
-
-    // Calculate the bottom of the viewport relative to the container
     const viewportBottom = viewportTop + window.innerHeight
 
     return {
-      // Include buffer zone above the viewport
+      // Include buffer zone above and below the viewport, but do not exceed total lines
       start: Math.max(0, Math.floor(viewportTop / lineHeight) - bufferPixels),
-      // Include buffer zone below the viewport, but do not exceed total lines
       end: Math.min(totalLines, Math.ceil(viewportBottom / lineHeight) + bufferPixels),
     }
   }, [totalLines, lineHeight, containerRef, bufferPixels])

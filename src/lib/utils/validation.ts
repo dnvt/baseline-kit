@@ -27,7 +27,7 @@ export const isValidGridColumnValue = (
   // Handle special values
   if (value === 'auto' || value === '100%') return true
 
-  // Handle all valid CSS units with improved regex to support decimals
+  // Handle all valid CSS units with regex to support decimals
   const unitPattern = /^(?:\d*\.?\d+)(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/
   return unitPattern.test(value)
 }

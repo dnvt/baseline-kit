@@ -24,9 +24,7 @@ export const cs = <T extends CSSProperties>(
   ...styles: Array<T | undefined>
 ): T =>
     styles
-    // Filter out undefined styles
       .filter((style): style is T => style !== undefined)
-    // Merge all style objects into one
       .reduce((acc, style) => ({ ...acc, ...style }), {} as T)
 
 /**

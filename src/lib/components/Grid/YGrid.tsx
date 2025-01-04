@@ -11,6 +11,7 @@ import styles from './styles.module.css'
  * YGrid Component
  * A vertical row grid system that supports multiple layout variants:
  * 'flat', and 'line' (default).
+ *
  * @param config - Configuration object for the grid.
  * @param className - Additional class names for the container.
  * @param visibility - Visibility of the grid ('visible' or 'hidden').
@@ -22,7 +23,6 @@ export const YGrid = memo(function YGrid({
   visibility = CONFIG.visibility,
   style = {},
 }: YGProps) {
-  // Destructure configuration with default values from CONFIG
   const {
     baseUnit = CONFIG.baseUnit,
     color = CONFIG.color,
@@ -31,7 +31,6 @@ export const YGrid = memo(function YGrid({
     zIndex = CONFIG.zIndex,
   } = config
 
-  // Ref for the container to measure dimensions
   const containerRef = useRef<HTMLDivElement>(null)
   const { height: containerHeight } = useGridDimensions(containerRef)
 
@@ -40,7 +39,6 @@ export const YGrid = memo(function YGrid({
     const totalHeight = typeof height === 'number' ? height : containerHeight
     const normalizedHeight = MeasurementSystem.normalize(totalHeight, { unit: baseUnit, suppressWarnings: true })
 
-    // Clamp the number of rows to a reasonable range (1 to 1000)
     return clamp(Math.ceil(normalizedHeight / baseUnit), 1, 1000)
   }, [height, containerHeight, baseUnit])
 
@@ -51,7 +49,6 @@ export const YGrid = memo(function YGrid({
     containerRef: containerRef as RefObject<HTMLDivElement>,
   })
 
-  // Generate styles for each row based on its index
   const getRowStyles = useCallback(
     (idx: number): Partial<CSSProperties & (GridLineStyles | GridFlatStyles)> => ({
       '--padd-grid-top': `${idx * baseUnit}px`,
@@ -62,13 +59,11 @@ export const YGrid = memo(function YGrid({
     [baseUnit, color, variant],
   )
 
-  // Calculate the class name for individual rows
   const rowClassName = useMemo(() =>
     cx(styles.row, variant === 'flat' && styles.flat),
   [variant],
   )
 
-  // Generate the visible rows based on the visible range
   const visibleRows = useMemo(() => {
     const rows = []
     for (let i = visibleRange.start; i < visibleRange.end; i++) {
@@ -84,10 +79,8 @@ export const YGrid = memo(function YGrid({
     return rows
   }, [visibleRange.start, visibleRange.end, rowClassName, getRowStyles])
 
-  // Determine whether the grid should be shown
   const isShown = visibility === 'visible'
 
-  // Memoized class names for the container
   const containerClassName = useMemo(() =>
     cx(
       styles['ygrid-container'],
@@ -111,7 +104,6 @@ export const YGrid = memo(function YGrid({
     return height
   }, [height])
 
-  // Memoized inline styles for the container
   const containerStyles = useMemo(() =>
     cs({
       '--padd-height': processedHeight,

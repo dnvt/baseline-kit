@@ -38,12 +38,11 @@ export const MeasurementSystem: MeasurementSystemType = {
     try {
       if (value === 'auto') return unit
 
-      // Handle string values with units
       if (typeof value === 'string') {
         // For relative units, try to get context-aware conversion
         if (isRelativeUnit(value)) {
           const pixels = convertToPixels(value, {
-            parentSize: window.innerWidth, // Context for relative units
+            parentSize: window.innerWidth,
             viewportWidth: window.innerWidth,
             viewportHeight: window.innerHeight,
             rootFontSize: parseFloat(getComputedStyle(document.documentElement).fontSize),
