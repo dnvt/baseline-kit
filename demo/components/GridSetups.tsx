@@ -1,11 +1,13 @@
 import { useReducer, useCallback, ReactNode } from 'react'
 import { XGrid, YGrid } from '@components'
+import { THEME } from '@context'
 import { type GridColumnsPattern } from '@types'
-import { COMPONENTS, X_GRID } from '@config'
+import { X_GRID } from '@config'
 
 import { GridControls } from './GridControls'
 import type { DemoGridAction, DemoGridState } from './types'
 import { usePageHeight } from '../hooks'
+import { Config } from '@/components/Config/Config'
 
 // Custom reducer for the demo -------------------------------------------------
 
@@ -43,10 +45,10 @@ function demoGridReducer(state: DemoGridState, action: DemoGridAction): DemoGrid
 
 // Init data -------------------------------------------------------------------
 
-const initialState: DemoGridState = {
+export const DEMO: DemoGridState = {
   config: {
-    baseUnit: COMPONENTS.baseUnit,
-    zIndex: COMPONENTS.zIndex,
+    baseUnit: THEME.baseUnit,
+    zIndex: THEME.zIndex,
   },
   showGuides: {
     columns: true,
@@ -73,7 +75,7 @@ const initialState: DemoGridState = {
 // Grid demo setup -------------------------------------------------------------
 
 export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolean) => ReactNode }) {
-  const [state, dispatch] = useReducer(demoGridReducer, initialState)
+  const [state, dispatch] = useReducer(demoGridReducer, DEMO)
 
   // Tracks document height changes to adjust grid overlay dynamically
   const handleHeightChange = useCallback((height: number) => {
@@ -85,47 +87,49 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
   usePageHeight(handleHeightChange)
 
   return (
-    <div className="grid-playground">
-      <YGrid
-        visibility={state.showGuides.baseline ? 'visible' : 'hidden'}
-        config={{ height: state.pageHeight }}
-      />
-      <div className="demo-wrapper">
-
-        {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
-        {/*  variant: 'pattern',*/}
-        {/*  padding: '0 16px',*/}
-        {/*  color: 'var(--grid-color-line)',*/}
-        {/*  columns: state.columnConfig.pattern,*/}
-        {/*  gap: 8,*/}
-        {/*  zIndex: state.config.zIndex,*/}
-        {/*}} />*/}
-
-        {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
-        {/*  variant: 'auto',*/}
-        {/*  columnWidth: 144,*/}
-        {/*  color: 'var(--grid-color-line)',*/}
-        {/*  gap: 16,*/}
-        {/*  zIndex: state.config.zIndex,*/}
-        {/*}} />*/}
-
-        <XGrid
-          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
-          config={{
-            variant: 'fixed',
-            columns: state.columnConfig.count,
-            gap: state.columnConfig.gap,
-          }}
+    <Config config={{ ...THEME, baseUnit: 8 }}>
+      <div className="grid-playground">
+        <YGrid
+          visibility={state.showGuides.baseline ? 'visible' : 'hidden'}
+          config={{ height: state.pageHeight }}
         />
+        <div className="demo-wrapper">
 
-        <XGrid
-          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
-        />
-        <div className="demo-content">
-          {contentNode(state.showGuides.baseline)}
+          {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
+          {/*  variant: 'pattern',*/}
+          {/*  padding: '0 16px',*/}
+          {/*  color: 'var(--grid-color-line)',*/}
+          {/*  columns: state.columnConfig.pattern,*/}
+          {/*  gap: 8,*/}
+          {/*  zIndex: state.config.zIndex,*/}
+          {/*}} />*/}
+
+          {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
+          {/*  variant: 'auto',*/}
+          {/*  columnWidth: 144,*/}
+          {/*  color: 'var(--grid-color-line)',*/}
+          {/*  gap: 16,*/}
+          {/*  zIndex: state.config.zIndex,*/}
+          {/*}} />*/}
+
+          <XGrid
+            visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+            config={{
+              variant: 'fixed',
+              columns: state.columnConfig.count,
+              gap: state.columnConfig.gap,
+            }}
+          />
+
+          <XGrid
+            visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+          />
+          <div className="demo-content">
+            {contentNode(state.showGuides.baseline)}
+          </div>
         </div>
+        <GridControls state={state} dispatch={dispatch} />
       </div>
-      <GridControls state={state} dispatch={dispatch} />
-    </div>
+    </Config>
   )
 }

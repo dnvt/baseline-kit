@@ -1,5 +1,5 @@
 import { memo, useMemo, Fragment, CSSProperties } from 'react'
-import { SPACER } from '@config'
+import { THEME, useComponentConfig } from '@context'
 import { useSpacerDimensions } from '@hooks'
 import { cs, cx } from '@utils'
 
@@ -22,17 +22,17 @@ import styles from './styles.module.css'
 export const Spacer = memo(function Spacer({
   height,
   width,
-  config = { variant: 'line' },
   indicatorNode,
-  visibility = SPACER.visibility,
+  visibility = THEME.visibility.hidden,
   className = '',
   style = {},
 }: SpacerProps) {
+  const config = useComponentConfig('spacer')
   const {
-    baseUnit = SPACER.baseUnit,
-    variant = SPACER.variant,
-    zIndex = SPACER.zIndex,
-    color: customColor,
+    baseUnit,
+    variant,
+    zIndex,
+    colors,
   } = config
 
   const isShown = visibility === 'visible'
@@ -70,21 +70,15 @@ export const Spacer = memo(function Spacer({
 
   const combinedStyles = useMemo(() => {
     const baseStyles = {
-      '--padd-spacer-height': dimensions.height,
-      '--padd-spacer-width': dimensions.width,
-      '--padd-base-unit': baseUnit,
-      '--padd-z-index': zIndex,
+      '--spc-height': dimensions.height,
+      '--spc-width': dimensions.width,
+      '--spc-base-unit': baseUnit,
+      '--spc-z-index': zIndex,
+      '--spc-color': colors[variant as keyof typeof colors],
     } as CSSProperties
 
-    if (customColor) {
-      return cs({
-        ...baseStyles,
-        '--padd-spacer-color': customColor,
-      } as CSSProperties, style)
-    }
-
     return cs(baseStyles, style)
-  }, [dimensions, baseUnit, zIndex, customColor, style])
+  }, [dimensions, baseUnit, zIndex, colors, variant, style])
 
   return (
     <div

@@ -1,0 +1,34 @@
+:root {
+  /* Colors */
+  --box-base-unit: var(--padd-base-unit, 8px);
+  --box-z-index: var(--padd-z-index, 0);
+  --box-color-flat: hsla(var(--purple), 0.2);
+  --box-color: hsla(var(--purple), 0.9);
+
+  /* Variables */
+  --box-block-start: 0;
+  --box-block-end: 0;
+  --box-inline-start: 0;
+  --box-inline-end: 0;
+
+  --box-width: "fit-content";
+  --box-height: "fit-content";
+}
+
+.box {
+  padding-block-start: var(--box-block-start);
+  padding-block-end: var(--box-block-end);
+  padding-inline-start: var(--box-inline-start);
+  padding-inline-end: var(--box-inline-end);
+}
+
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .box {
+    transition: none;
+  }
+}

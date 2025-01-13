@@ -32,6 +32,9 @@
       "@types": [
         "src/lib/types/index.ts"
       ],
+      "@context": [
+        "src/lib/context/index.ts"
+      ],
       "@utils": [
         "src/lib/utils/index.ts"
       ],

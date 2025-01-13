@@ -1,8 +1,6 @@
 import { useMemo, useCallback } from 'react'
 import { X_GRID as CONFIG } from '@config'
 import {
-  ABSOLUTE_UNITS,
-  RELATIVE_UNITS,
   AutoGridConfig,
   GridColumnsPattern,
   GridConfig,
@@ -21,6 +19,8 @@ import {
   parseCSSValue,
   convertToPixels,
   formatCSSValue,
+  ABSOLUTE_UNITS,
+  RELATIVE_UNITS,
 } from '@utils'
 
 const DEFAULT_GAP = 8

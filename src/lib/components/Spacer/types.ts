@@ -1,16 +1,18 @@
 import { ReactNode } from 'react'
-import { ComponentsProps, CSSValue, ExclusiveProps, PaddedBaseConfig, PaddedVariant } from '@types'
+import { ComponentsProps } from '@types'
+import { CSSValue } from '@utils'
+import { Visibility } from '@context'
 
 export type SpacerDimension = 'width' | 'height'
 export type SpacerDimensions = Record<'width' | 'height', CSSValue | '100%'>
 export type SpacerIndicator = SpacerDimension | 'none'
 export type IndicatorNode = (value: number, dimension: SpacerDimension) => ReactNode
 
-export type SpacerConfig = PaddedBaseConfig & { variant: PaddedVariant }
+//export type SpacerConfig = PaddedBaseConfig & { variant: PaddedVariant, grow?: boolean }
 
-export type SpacerProps = ExclusiveProps<{
-  config?: SpacerConfig
-  height?: CSSValue
-  width?: CSSValue
+export type SpacerProps = {
+  height?: CSSValue | 'fit-content' | 'auto'
+  width?: CSSValue | 'fit-content' | 'auto'
   indicatorNode?: ((value: number, measurement: SpacerDimension) => ReactNode)
-}, 'height' | 'width'> & ComponentsProps
+  visibility?: Visibility
+} & ComponentsProps

@@ -2,7 +2,6 @@ import { Dispatch, useId } from 'react'
 import { COMPONENTS } from '@config'
 import type { DemoGridAction, DemoGridState } from './types'
 import { usePerformanceMonitor, type PerformanceMetrics } from '../utils'
-import { Spacer } from '@components'
 
 type GridControlsProps = {
   state: DemoGridState

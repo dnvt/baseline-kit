@@ -22,6 +22,7 @@ export default defineConfig(({ command }) => ({
       '@': resolvePath('src/lib'),
       '@components': resolvePath('src/lib/components'),
       '@config': resolvePath('src/lib/config'),
+      '@context': resolvePath('src/lib/context'),
       '@hooks': resolvePath('src/lib/hooks'),
       '@types': resolvePath('src/lib/types'),
       '@utils': resolvePath('src/lib/utils'),

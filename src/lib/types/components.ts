@@ -1,24 +1,11 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { Visibility } from '@context'
+import { CSSValue } from '@utils'
 
-// CSS Types
-export const RELATIVE_UNITS = ['fr', '%', 'em', 'rem', 'vh', 'vw'] as const
-export const ABSOLUTE_UNITS = ['px', 'pt', 'pc', 'cm', 'mm', 'in'] as const
-export const CSS_UNITS = [...RELATIVE_UNITS, ...ABSOLUTE_UNITS] as const
-
-export type RelativeUnit = typeof RELATIVE_UNITS[number]
-export type AbsoluteUnit = typeof ABSOLUTE_UNITS[number]
-export type CSSUnit = typeof CSS_UNITS[number]
-
-export type RelativeCSSValue = `${number}${RelativeUnit}`
-export type AbsoluteCSSValue = `${number}${AbsoluteUnit}`
-export type CSSValue = RelativeCSSValue | AbsoluteCSSValue | 'auto' | number
-
-/**
- * Valid values for grid columns
- * @todo Consider expanding to support additional CSS units (em, rem, vh, vw, etc.)
- */
+// Grid Column
 export type GridColumnValue = CSSValue | 'auto'
 export type GridColumnsPattern = readonly GridColumnValue[]
+export type GridSpan = `span ${number}`
 
 // Grid Constants & Types
 export const GRID_ALIGNMENTS = ['start', 'center', 'end'] as const
@@ -28,7 +15,7 @@ export const PADD_VARIANTS = ['line', 'flat'] as const
 export type PaddedVariant = typeof PADD_VARIANTS[number]
 
 // Common Component Types
-export interface ComponentsProps {
+export type ComponentsProps = {
   'data-testid'?: string
   className?: string
   children?: ReactNode
@@ -36,18 +23,19 @@ export interface ComponentsProps {
   visibility?: Visibility
 }
 
-export type Visibility = 'none' | 'hidden' | 'visible'
-
-export interface PaddedBaseConfig {
+export type PaddedBaseConfig = {
   baseUnit?: number
   color?: CSSProperties['color'] | CSSProperties['backgroundColor']
   zIndex?: CSSProperties['zIndex']
 }
 
+// This utility type ensures that exactly one property
+// from the specified keys (K) of a given type (T) is required,
+// while all others remain optional or undefined.
 export type ExclusiveProps<T, K extends keyof T> = {
   [P in K]: (
-    { [Q in P]: T[Q] } &
-    { [Q in Exclude<K, P>]?: undefined } &
-    Omit<T, K>
+    { [Q in P]: T[Q] } & // Require the selected property
+    { [Q in Exclude<K, P>]?: undefined } & // Others must be undefined
+    Omit<T, K> // Include all remaining properties of T, excluding K
     )
 }[K]

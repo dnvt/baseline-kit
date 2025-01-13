@@ -234,6 +234,63 @@ interface SpacerProps {
 />
 ```
 
+---
+
+### Spacer
+
+#### Props
+
+```typescript
+type StackProps = {
+  // Dimension Properties
+  width?: CSSValue | `${number}/${number}` | 'fit-content' | 'fill-available'
+  height?: CSSValue | `${number}/${number}` | 'fit-content' | 'fill-available'
+  block?: number | [number, number] | { start: number; end: number }
+  inline?: number | [number, number] | { start: number; end: number }
+  gap?: number
+
+  // Config Properties
+  config?: {
+    variant?: PaddedVariant | 'pattern'
+    border?: boolean
+    max?: {
+      width?: CSSValue
+      height?: CSSValue
+    }
+    baseUnit?: number
+    zIndex?: string | number
+    color?: string
+  }
+
+  // Component Properties (from ComponentsProps)
+  className?: string
+  style?: React.CSSProperties
+  visibility?: 'visible' | 'hidden' | 'none'
+  children?: ReactNode
+
+  // Layout Properties (Exclusive choice between flex and grid)
+  flex?: {
+    direction?: 'row' | 'column'
+    align?: 'start' | 'end' | 'center' | 'baseline' | 'stretch'
+    justify?: 'start' | 'end' | 'center' | 'between' | 'around' | 'evenly'
+    grow?: boolean
+  }
+  grid?: {
+    direction?: 'row' | 'column'
+    align?: 'start' | 'end' | 'center' | 'baseline' | 'stretch'
+    justify?: 'start' | 'end' | 'center' | 'stretch'
+    columns?: number
+    gap?: number
+    template?: string
+  }
+} & ExclusiveProps<{
+  flex?: FlexLayout
+  grid?: GridLayout
+}, 'flex' | 'grid'>
+```
+
+---
+
 ## Core Concepts
 
 ### Grid Calculations

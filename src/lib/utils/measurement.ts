@@ -1,7 +1,6 @@
-import type { CSSValue } from '@types'
 import { extractCSSNumber } from './styles'
 import { COMPONENTS as CONFIG } from '@config'
-import { convertToPixels, isRelativeUnit } from '@/utils/units'
+import { convertToPixels, isRelativeUnit, CSSValue } from './units'
 
 export type MeasurementError = {
   code: 'INVALID_INPUT' | 'NOT_NORMALIZED' | 'PARSING_ERROR'

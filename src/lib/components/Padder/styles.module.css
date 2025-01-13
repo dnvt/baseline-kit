@@ -1,0 +1,23 @@
+:root {
+  --padder-color-flat: hsla(var(--purple), 0.2);
+  --padder-color-line: hsla(var(--purple), 0.9);
+  --padder-z-index: var(--padd-z-index, 0);
+  --padder-width: fit-content;
+  --padder-height: fit-content;
+}
+
+.padder {
+  display: flex;
+  width: var(--padder-width);
+  height: var(--padder-height);
+  flex-direction: column;
+  position: relative;
+}
+
+.padder::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--padder-color-line);
+  pointer-events: none;
+}

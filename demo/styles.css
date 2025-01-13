@@ -52,6 +52,7 @@
 input {
   padding-block: 8px;
 }
+
 .demo-content {
   display: flex;
   flex-direction: column;
@@ -60,14 +61,11 @@ input {
 /* Demo components */
 .demo-title {
   font-size: 1.5rem;
-  padding-block: 2px 4px;
   font-weight: bold;
   color: var(--demo-title);
 }
 
-.demo-description {
-  padding-block: 6px 2px;
-  max-width: 32rem;
+p {
   color: var(--demo-text);
 }
 
@@ -89,8 +87,9 @@ section {
 }
 
 .content-block {
+  width: 100%;
   position: relative;
-  padding: 14px 16px 18px;
+  padding: 14px 16px 16px;
   color: var(--demo-text);
   background-color: var(--demo-block);
   border-radius: 6px;
@@ -119,6 +118,7 @@ section {
   flex-direction: column;
   gap: 1rem;
 }
+
 .visibility-section {
   display: flex;
   flex-direction: column;
@@ -160,7 +160,7 @@ section {
 .indice {
   font-size: 13px;
   padding-block: 2px 3px;
-  color: var(--padd-spacer-color-indice);
+  color: var(--spc-color-indice);
   position: absolute;
   right: 8px;
 }

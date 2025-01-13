@@ -1,6 +1,4 @@
-import { CSSValue } from '@types'
-
-// Unit Conversions ------------------------------------------------------------
+// CSS Units -------------------------------------------------------------------
 
 /**
  * A mapping of CSS units to their conversion factors relative to pixels.
@@ -25,6 +23,27 @@ export const CSS_UNIT_CONVERSIONS = {
   '%': null,    // Percentage (calculated based on parent)
   'fr': null,   // Fraction (grid-specific)
 } as const
+
+
+export const RELATIVE_UNITS = ['fr', '%', 'em', 'rem', 'vh', 'vw'] as const
+export const ABSOLUTE_UNITS = ['px', 'pt', 'pc', 'cm', 'mm', 'in'] as const
+export const CSS_UNITS = [...RELATIVE_UNITS, ...ABSOLUTE_UNITS] as const
+
+export type RelativeUnit = typeof RELATIVE_UNITS[number]
+export type AbsoluteUnit = typeof ABSOLUTE_UNITS[number]
+export type CSSUnit = typeof CSS_UNITS[number]
+
+export type RelativeCSSValue = `${number}${RelativeUnit}`
+export type AbsoluteCSSValue = `${number}${AbsoluteUnit}`
+export type CSSValue = RelativeCSSValue | AbsoluteCSSValue | 'auto' | number
+
+export type Spacing = | number | [number, number] | { start: number; end: number }
+export type Padding = { block?: Spacing, inline?: Spacing }
+  | {
+  padding: | number | [number, number] | [number, number, number, number] |
+    { start?: number, end?: number, left?: number, right?: number }
+}
+
 
 // Parsing Utilities -----------------------------------------------------------
 

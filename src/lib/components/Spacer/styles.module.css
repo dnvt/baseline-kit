@@ -1,24 +1,24 @@
 :root {
   /* Component Variables */
-  --padd-spacer: 100%;
-  --padd-spacer-width: 100%;
-  --padd-spacer-height: 100%;
-  --padd-spacer-border-width: 1px;
-  --padd-spacer-border-style: solid;
+  --spacer: 100%;
+  --spc-width: 100%;
+  --spc-height: 100%;
+  --spc-border-width: 1px;
+  --spc-border-style: solid;
 
-  /* Variant Colors */
-  --padd-spacer-color: var(--padd-spacer-color-line);
-  --padd-spacer-color-line: hsla(var(--blue), 0.75);
-  --padd-spacer-color-flat: hsla(var(--blue), 0.3);
-  --padd-spacer-color-indice: hsla(var(--blue), 1);
+  /* Spacer Colors */
+  --spc-color: var(--spc-color-line);
+  --spc-color-line: hsla(var(--blue), 0.75);
+  --spc-color-flat: hsla(var(--blue), 0.3);
+  --spc-color-indice: hsla(var(--blue), 1);
 }
 
 /* Dark Mode Variables */
 @media (prefers-color-scheme: dark) {
   :root {
-    --padd-spacer-color-line: hsla(var(--blue), 0.8);
-    --padd-spacer-color-flat: hsla(var(--blue), 0.4);
-    --padd-spacer-color-indice: hsla(var(--blue), 1);
+    --spc-color-line: hsla(var(--blue), 0.8);
+    --spc-color-flat: hsla(var(--blue), 0.4);
+    --spc-color-indice: hsla(var(--blue), 1);
   }
 }
 
@@ -26,43 +26,46 @@
 .spacer {
   opacity: 0;
   visibility: hidden;
-  width: var(--padd-spacer-width);
-  height: var(--padd-spacer-height);
+  width: var(--spc-width);
+  height: var(--spc-height);
   box-sizing: border-box;
   position: relative;
   pointer-events: none;
   --padd-base-unit: var(--padd-base-unit, 8px);
+
+  /* Prevent spacers from shrinking by default */
+  flex-shrink: 0;
 }
 
 /* Variant Styles */
 .spacer[data-variant="line"]::after {
-  border: var(--padd-spacer-border-width)
-    var(--padd-spacer-border-style)
-    var(--padd-spacer-color);
+  border: var(--spc-border-width)
+    var(--spc-border-style)
+    var(--spc-color);
   content: '';
   position: absolute;
   inset: 0;
 }
 
 .spacer[data-variant="flat"] {
-  background-color: var(--padd-spacer-color);
+  background-color: var(--spc-color);
 }
 
 .spacer[data-variant="line"] {
-  --padd-spacer-color: var(--padd-spacer-color-line);
+  --spc-color: var(--spc-color-line);
 }
 
 .spacer[data-variant="flat"] {
-  --padd-spacer-color: var(--padd-spacer-color-flat);
+  --spc-color: var(--spc-color-flat);
 }
 
 /* Dimension Styles */
 .height {
-  --padd-spacer-height: var(--padd-spacer);
+  --spc-height: var(--spacer);
 }
 
 .width {
-  --padd-spacer-width: var(--padd-spacer);
+  --spc-width: var(--spacer);
 }
 
 /* State Styles */

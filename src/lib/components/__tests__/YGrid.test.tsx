@@ -106,12 +106,12 @@ describe('YGrid', () => {
     it('renders with hidden visibility', () => {
       render(<YGrid config={baseConfig} visibility="hidden" />)
       // Component returns null when hidden
-      expect(screen.queryByTestId('ygrid-container')).toBeNull()
+      expect(screen.queryByTestId('YGrid-container')).toBeNull()
     })
 
     it('renders with visible visibility', () => {
       render(<YGrid config={baseConfig} visibility="visible" />)
-      const container = screen.getByTestId('ygrid-container')
+      const container = screen.getByTestId('YGrid-container')
       expect(container.className).toContain('visible')
     })
 
@@ -124,8 +124,8 @@ describe('YGrid', () => {
         />,
       )
 
-      const container = screen.getByTestId('ygrid-container')
-      expect(container.className).toContain('ygrid-container')
+      const container = screen.getByTestId('YGrid-container')
+      expect(container.className).toContain('YGrid-container')
       expect(container.className).toContain('custom-class-1')
       expect(container.className).toContain('custom-class-2')
     })
@@ -149,7 +149,7 @@ describe('YGrid', () => {
       const gridElement = container.firstChild as Element
       triggerIntersection(gridElement)
 
-      const gridContainer = screen.getByTestId('ygrid-container')
+      const gridContainer = screen.getByTestId('YGrid-container')
       const rows = gridContainer.querySelectorAll('[data-row-index]')
       expect(rows.length).toBeGreaterThan(0)
 
@@ -177,7 +177,7 @@ describe('YGrid', () => {
       const gridElement = container.firstChild as Element
       triggerIntersection(gridElement)
 
-      const gridContainer = screen.getByTestId('ygrid-container')
+      const gridContainer = screen.getByTestId('YGrid-container')
       expect(gridContainer).toHaveAttribute('data-variant', 'line')
 
       const rows = gridContainer.querySelectorAll('[data-row-index]')
@@ -203,7 +203,7 @@ describe('YGrid', () => {
       const gridElement = container.firstChild as Element
       triggerIntersection(gridElement)
 
-      const gridContainer = screen.getByTestId('ygrid-container')
+      const gridContainer = screen.getByTestId('YGrid-container')
       expect(gridContainer).toHaveAttribute('data-variant', 'flat')
 
       const rows = gridContainer.querySelectorAll('[data-row-index]')
@@ -277,7 +277,7 @@ describe('YGrid', () => {
       // Force all updates
       await vi.runAllTimersAsync()
 
-      const rows = screen.getByTestId('ygrid-container').querySelectorAll('[data-row-index]')
+      const rows = screen.getByTestId('YGrid-container').querySelectorAll('[data-row-index]')
       const expectedRows = Math.ceil(100 / 8) // 13 rows
       expect(rows.length).toBe(expectedRows)
     })
@@ -351,7 +351,7 @@ describe('YGrid', () => {
       // Force all updates
       await vi.runAllTimersAsync()
 
-      const rows = screen.getByTestId('ygrid-container').querySelectorAll('[data-row-index]')
+      const rows = screen.getByTestId('YGrid-container').querySelectorAll('[data-row-index]')
 
       // Calculate expected rows based on component logic:
       // 1. Total rows = height / baseUnit = 1000 / 8 = 125
@@ -383,7 +383,7 @@ describe('YGrid', () => {
         />,
       )
 
-      const container = screen.getByTestId('ygrid-container')
+      const container = screen.getByTestId('YGrid-container')
       Object.entries(customStyle).forEach(([prop, value]) => {
         expect(container.style.getPropertyValue(prop)).toBe(value)
       })
@@ -398,7 +398,7 @@ describe('YGrid', () => {
         />,
       )
 
-      const container = screen.getByTestId('ygrid-container')
+      const container = screen.getByTestId('YGrid-container')
       expect(container).toHaveClass('custom-class-1', 'custom-class-2')
     })
   })
@@ -417,7 +417,7 @@ describe('YGrid', () => {
         />,
       )
 
-      const initialContainer = screen.getByTestId('ygrid-container')
+      const initialContainer = screen.getByTestId('YGrid-container')
       const initialStyles = initialContainer.getAttribute('style')
 
       rerender(
@@ -427,7 +427,7 @@ describe('YGrid', () => {
         />,
       )
 
-      const rerenderedContainer = screen.getByTestId('ygrid-container')
+      const rerenderedContainer = screen.getByTestId('YGrid-container')
       expect(rerenderedContainer.getAttribute('style')).toBe(initialStyles)
     })
   })

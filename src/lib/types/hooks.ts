@@ -2,46 +2,48 @@ import type { RefObject } from 'react'
 import type { CSSValue, GridColumnsPattern } from '@types'
 import { SpacerConfig } from '@/components/Spacer/types'
 
-// Base interfaces
-export interface VisibleRange {
+// Base interfaces -------------------------------------------------------------
+
+export type VisibleRange = {
   start: number
   end: number
 }
 
-export interface GridDimensions {
+export type GridDimensions = {
   width: number
   height: number
 }
 
-// Grid Configuration Types
+// Grid Configuration Types ----------------------------------------------------
+
 interface GridCommonConfig {
   gap?: CSSValue
   baseUnit?: number
 }
 
-export interface LineGridConfig extends GridCommonConfig {
+export type LineGridConfig = {
   variant: 'line'
   columns?: never
   columnWidth?: never
-}
+} & GridCommonConfig
 
-export interface PatternGridConfig extends GridCommonConfig {
+export type PatternGridConfig = {
   variant: 'pattern'
   columns: GridColumnsPattern
   columnWidth?: never
-}
+} & GridCommonConfig
 
-export interface FixedGridConfig extends GridCommonConfig {
+export type FixedGridConfig = {
   variant: 'fixed'
   columns: number
   columnWidth?: CSSValue
-}
+} & GridCommonConfig
 
-export interface AutoGridConfig extends GridCommonConfig {
+export type AutoGridConfig = {
   variant: 'auto'
   columnWidth: CSSValue
   columns?: never
-}
+} & GridCommonConfig
 
 export type GridConfig =
   | LineGridConfig
@@ -50,27 +52,29 @@ export type GridConfig =
   | AutoGridConfig
 
 
-// Grid Calculation Types
-export interface UseGridCalculationsProps {
+// Grid Calculation Types ------------------------------------------------------
+
+export type UseGridCalculationsProps = {
   containerWidth: number
   config: GridConfig
 }
 
-export interface UseGridCalculationsResult {
+export type UseGridCalculationsResult = {
   gridTemplateColumns: string
   columnsCount: number
   calculatedGap: string
   isValid: boolean
 }
 
-export interface UseVisibleGridLinesProps {
+export type UseVisibleGridLinesProps = {
   totalLines: number
   lineHeight: number
   containerRef: RefObject<HTMLDivElement>
   buffer?: number
 }
 
-// Type guards
+// Type guards -----------------------------------------------------------------
+
 export const isLineVariant = (
   config: GridConfig | SpacerConfig,
 ): config is LineGridConfig | SpacerConfig =>

@@ -1,12 +1,11 @@
 import {
-  CSSValue,
   GridAlignment,
   GridColumnValue,
   GridColumnsPattern,
   GridConfig,
-  CSS_UNITS,
 } from '@types'
 import { GRID_ALIGNMENTS } from '@types'
+import { CSS_UNITS, CSSValue } from '@/utils/units'
 
 /**
  * Validates if the given value is a valid grid column value.
@@ -28,7 +27,7 @@ export const isValidGridColumnValue = (
   if (value === 'auto' || value === '100%') return true
 
   // Handle all valid CSS units with regex to support decimals
-  const unitPattern = /^(?:\d*\.?\d+)(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/
+  const unitPattern = /^\d*\.?\d+(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/
   return unitPattern.test(value)
 }
 
