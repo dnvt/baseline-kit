@@ -8,11 +8,15 @@ export type SpacerDimensions = Record<'width' | 'height', CSSValue | '100%'>
 export type SpacerIndicator = SpacerDimension | 'none'
 export type IndicatorNode = (value: number, dimension: SpacerDimension) => ReactNode
 
-//export type SpacerConfig = PaddedBaseConfig & { variant: PaddedVariant, grow?: boolean }
+export type SpacerColors = {
+  line: string
+  flat: string
+  indice: string
+}
 
 export type SpacerProps = {
-  height?: CSSValue | 'fit-content' | 'auto'
-  width?: CSSValue | 'fit-content' | 'auto'
-  indicatorNode?: ((value: number, measurement: SpacerDimension) => ReactNode)
+  height?: CSSValue
+  width?: CSSValue
+  indicatorNode?: IndicatorNode
   visibility?: Visibility
 } & ComponentsProps

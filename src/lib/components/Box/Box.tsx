@@ -1,41 +1,26 @@
 import { CSSProperties, memo, useMemo } from 'react'
 import { Padder } from '@components'
-import { BOX as CONFIG } from '@config'
-import { cx, cs, Padding, normalizePadding } from '@utils'
-import type { BoxContentProps, BoxProps } from './types'
+import { cx, cs, normalizePadding } from '@utils'
+import type { BoxProps } from './types'
+import type { Padding, Spacing } from '@utils'
 import styles from './styles.module.css'
-import { THEME, useComponentConfig, useConfig, ConfigContext } from '@context'
+import { ConfigContext, useComponentConfig } from '@context'
 
-
-function BoxContent({
-  children,
-  spacing,
-  width,
-  height,
-  className,
-  style,
-}: BoxContentProps) {
-  const { baseUnit } = useComponentConfig('box')
-  const b = (num: number) => num % baseUnit
-
-  return (
-    <div
-      className={cx(styles.box, className)}
-      data-testid="box"
-      style={cs({
-        '--box-block-start': `${b(spacing.block[0])}px`,
-        '--box-block-end': `${b(spacing.block[1])}px`,
-        '--box-inline-start': `${b(spacing.inline[0])}px`,
-        '--box-inline-end': `${b(spacing.inline[1])}px`,
-        '--box-width': width,
-        '--box-height': height,
-      } as CSSProperties, style)}
-    >
-      {children}
-    </div>
-  )
+const normalizeSpacingValue = (value: Spacing, baseUnit: number) => {
+  if (typeof value === 'number') {
+    return value % (2 * baseUnit)
+  }
+  if (Array.isArray(value)) {
+    return [
+      value[0] % (2 * baseUnit),
+      value[1] % (2 * baseUnit),
+    ]
+  }
+  return {
+    start: value.start % (2 * baseUnit),
+    end: value.end % (2 * baseUnit),
+  }
 }
-
 export const Box = memo(function Box({
   children,
   width = 'fit-content',
@@ -43,36 +28,57 @@ export const Box = memo(function Box({
   visibility = 'none',
   className,
   style,
+  inline,
+  block,
   ...spacingProps
 }: BoxProps) {
   const config = useComponentConfig('box')
-  const spacing = useMemo(() =>
-    normalizePadding(spacingProps as Padding),
-  [spacingProps])
+  const { color, baseUnit, zIndex } = config
 
-  const content = visibility !== THEME.visibility.none ? (
+  const spacing = useMemo(() => {
+    let normalizedSpacing
+
+    if (inline !== undefined || block !== undefined) {
+      normalizedSpacing = {
+        inline: inline ? normalizeSpacingValue(inline, baseUnit) : [0, 0],
+        block: block ? normalizeSpacingValue(block, baseUnit) : [0, 0],
+      }
+    } else {
+      normalizedSpacing = normalizePadding(spacingProps as Padding)
+      return {
+        inline: normalizeSpacingValue(normalizedSpacing.inline, baseUnit),
+        block: normalizeSpacingValue(normalizedSpacing.block, baseUnit),
+      }
+    }
+
+    return normalizedSpacing
+  }, [inline, block, spacingProps, baseUnit])
+
+  return (
     <ConfigContext value={{
-      spacer: { baseUnit: 1 },
-      padder: { baseUnit: 1 },
+      spacer: { baseUnit: 1, variant: 'flat', colors: { flat: 'var(--box-color-flat)' } },
     }}>
-      <Padder {...spacingProps} width={width} height={height}>
-        {children}
+      <Padder
+        {...spacing}
+        width={width}
+        height={height}
+        visibility={visibility}
+        {...spacingProps}
+      >
+        <div
+          className={cx(styles.box, className)}
+          data-testid={spacingProps['data-testid'] ?? 'box'}
+          style={cs({
+            '--box-width': width,
+            '--box-height': height,
+            '--box-color': color,
+            '--box-base-unit': `${baseUnit}px`,
+            '--box-z-index': zIndex,
+          } as CSSProperties, style)}
+        >
+          {children}
+        </div>
       </Padder>
     </ConfigContext>
-  ) : (
-    <BoxContent
-      spacing={spacing}
-      width={width}
-      height={height}
-      className={className}
-      style={style}
-    >
-      {children}
-    </BoxContent>
   )
-
-  return content
-
 })
-
-

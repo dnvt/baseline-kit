@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { X_GRID as CONFIG } from '@config'
-import { XGConfig, XGrid } from '../Grid'
+import { XGConfig, Guide } from '../Grid'
 
 export type ResizeObserverCallback = (entries: ResizeObserverEntry[]) => void
 
@@ -80,20 +80,20 @@ describe('XGrid', () => {
     }
 
     it('renders nothing when visibility is hidden', () => {
-      render(<XGrid config={baseConfig} visibility="hidden" />)
+      render(<Guide config={baseConfig} visibility="hidden" />)
       const container = screen.getByTestId('XGrid-container')
       expect(container.className).toContain('hidden')
       expect(container.querySelector('[data-column-index]')).toBeNull()
     })
 
     it('renders with visibility when set to visible', () => {
-      render(<XGrid config={baseConfig} visibility="visible" />)
+      render(<Guide config={baseConfig} visibility="visible" />)
       const container = screen.getByTestId('XGrid-container')
       expect(container.className).toContain('visible')
     })
 
     it('applies default values correctly', () => {
-      render(<XGrid config={baseConfig} />)
+      render(<Guide config={baseConfig} />)
       const container = screen.getByTestId('XGrid-container')
       expect(container.style.getPropertyValue('--padd-grid-color')).toBe(CONFIG.color)
       expect(container.style.getPropertyValue('--padd-z-index')).toBe(CONFIG.zIndex.toString())
@@ -107,7 +107,7 @@ describe('XGrid', () => {
         gap: 16,
       }
 
-      render(<XGrid config={config} visibility="visible" />)
+      render(<Guide config={config} visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container).toHaveAttribute('data-variant', 'line')
@@ -121,7 +121,7 @@ describe('XGrid', () => {
         gap: 16,
       }
 
-      render(<XGrid config={config} visibility="visible" />)
+      render(<Guide config={config} visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container).toHaveAttribute('data-variant', 'auto')
@@ -137,7 +137,7 @@ describe('XGrid', () => {
         gap: 16,
       }
 
-      render(<XGrid config={config} visibility="visible" />)
+      render(<Guide config={config} visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container).toHaveAttribute('data-variant', 'pattern')
@@ -154,7 +154,7 @@ describe('XGrid', () => {
         gap: 16,
       }
 
-      render(<XGrid config={config} visibility="visible" />)
+      render(<Guide config={config} visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container).toHaveAttribute('data-variant', 'fixed')
@@ -173,7 +173,7 @@ describe('XGrid', () => {
         gap: 16,
       }
 
-      render(<XGrid config={config} visibility="visible" />)
+      render(<Guide config={config} visibility="visible" />)
 
       const gridContainer = screen.getByTestId('XGrid-container')
       expect(gridContainer.style.getPropertyValue('--padd-grid-template-columns')).toBe('repeat(3, 100px)')
@@ -186,7 +186,7 @@ describe('XGrid', () => {
         align: 'center',
       }
 
-      render(<XGrid config={config} visibility="visible" />)
+      render(<Guide config={config} visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container.style.getPropertyValue('--padd-grid-justify')).toBe('center')
@@ -207,7 +207,7 @@ describe('XGrid', () => {
         '--custom-property': '20px',
       }
 
-      render(<XGrid config={baseConfig} style={customStyle} visibility="visible" />)
+      render(<Guide config={baseConfig} style={customStyle} visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       Object.entries(customStyle).forEach(([prop, value]) => {
@@ -216,7 +216,7 @@ describe('XGrid', () => {
     })
 
     it('combines multiple class names correctly', () => {
-      render(<XGrid config={baseConfig} className="custom-class-1 custom-class-2" visibility="visible" />)
+      render(<Guide config={baseConfig} className="custom-class-1 custom-class-2" visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container).toHaveClass('custom-class-1', 'custom-class-2')
@@ -231,7 +231,7 @@ describe('XGrid', () => {
         maxWidth: undefined,
       }
 
-      render(<XGrid config={config} visibility="visible" />)
+      render(<Guide config={config} visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container.style.getPropertyValue('--padd-width')).toBe('100%') // Updated expectation
@@ -244,7 +244,7 @@ describe('XGrid', () => {
         padding: undefined,
       }
 
-      render(<XGrid config={config} visibility="visible" />)
+      render(<Guide config={config} visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       // When padding is undefined, it uses the default value from CONFIG

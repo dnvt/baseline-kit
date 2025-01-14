@@ -5,8 +5,8 @@
  */
 
 // Export public components
-export { XGrid, YGrid } from './components'
-export type { XGProps, YGProps } from './components'
+export { Guide, YGrid } from './components'
+export type { GuideProps, YGProps } from './components'
 
 // Export public hooks
 export { useGridDimensions, useGridCalculations } from './hooks'

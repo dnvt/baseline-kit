@@ -1,5 +1,5 @@
 import { useReducer, useCallback, ReactNode } from 'react'
-import { XGrid, YGrid } from '@components'
+import { Guide } from '@components'
 import { THEME } from '@context'
 import { type GridColumnsPattern } from '@types'
 import { X_GRID } from '@config'
@@ -89,10 +89,18 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
   return (
     <Config config={{ ...THEME, baseUnit: 8 }}>
       <div className="grid-playground">
-        <YGrid
-          visibility={state.showGuides.baseline ? 'visible' : 'hidden'}
-          config={{ height: state.pageHeight }}
+        <Guide
+          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+          config={{
+            variant: 'line',
+            direction: 'horizontal',
+            height: state.pageHeight,
+          }}
         />
+        {/*<YGrid*/}
+        {/*  visibility={state.showGuides.baseline ? 'visible' : 'hidden'}*/}
+        {/*  config={{ height: state.pageHeight }}*/}
+        {/*/>*/}
         <div className="demo-wrapper">
 
           {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
@@ -112,7 +120,7 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
           {/*  zIndex: state.config.zIndex,*/}
           {/*}} />*/}
 
-          <XGrid
+          <Guide
             visibility={state.showGuides.columns ? 'visible' : 'hidden'}
             config={{
               variant: 'fixed',
@@ -121,7 +129,9 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
             }}
           />
 
-          <XGrid
+          {/*<Guide direction="horizontal" />*/}
+
+          <Guide
             visibility={state.showGuides.columns ? 'visible' : 'hidden'}
           />
           <div className="demo-content">

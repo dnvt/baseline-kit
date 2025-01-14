@@ -1,5 +1,5 @@
 import { memo, useMemo, Fragment, CSSProperties } from 'react'
-import { THEME, useComponentConfig } from '@context'
+import { useComponentConfig, Visibility } from '@context'
 import { useSpacerDimensions } from '@hooks'
 import { cs, cx } from '@utils'
 
@@ -23,9 +23,9 @@ export const Spacer = memo(function Spacer({
   height,
   width,
   indicatorNode,
-  visibility = THEME.visibility.hidden,
-  className = '',
-  style = {},
+  visibility,
+  className,
+  style,
 }: SpacerProps) {
   const config = useComponentConfig('spacer')
   const {
@@ -33,11 +33,12 @@ export const Spacer = memo(function Spacer({
     variant,
     zIndex,
     colors,
+    visibility: defaultVisibility,
   } = config
 
-  const isShown = visibility === 'visible'
+  const isShown = visibility ?? (defaultVisibility as Visibility) === 'visible'
 
-  // Calculate dimensions and normalize height/width
+
   const { dimensions, normalizedHeight, normalizedWidth } = useSpacerDimensions({
     height,
     width,
@@ -70,22 +71,28 @@ export const Spacer = memo(function Spacer({
 
   const combinedStyles = useMemo(() => {
     const baseStyles = {
+      '--spacer': '100%',
       '--spc-height': dimensions.height,
       '--spc-width': dimensions.width,
-      '--spc-base-unit': baseUnit,
+      '--spc-base-unit': `${baseUnit}px`,
       '--spc-z-index': zIndex,
-      '--spc-color': colors[variant as keyof typeof colors],
+      '--spc-border-width': '1px',
+      '--spc-border-style': 'solid',
+      '--spc-color-line': colors.line,
+      '--spc-color-flat': colors.flat,
+      '--spc-color-indice': colors.indice,
+
     } as CSSProperties
 
     return cs(baseStyles, style)
-  }, [dimensions, baseUnit, zIndex, colors, variant, style])
+  }, [dimensions.height, dimensions.width, baseUnit, zIndex, colors.line, colors.flat, colors.indice, style])
 
   return (
     <div
       className={cx(
         styles.spacer,
+        styles[isShown ? 'visible' : 'hidden'],
         className,
-        isShown ? styles.visible : styles.hidden,
       )}
       data-testid="spacer-container"
       data-variant={variant}
@@ -95,3 +102,4 @@ export const Spacer = memo(function Spacer({
     </div>
   )
 })
+

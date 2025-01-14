@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { SpacerDimensions } from '@components'
-import { CSSValue } from '@types'
-import { MeasurementSystem } from '@utils'
+import { CSSValue, MeasurementSystem } from '@utils'
 
 interface UseSpacerDimensionsProps {
   height?: CSSValue

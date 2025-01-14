@@ -1,8 +1,7 @@
 import { ReactNode } from 'react'
 import { ComponentsProps } from '@types'
-import { CSSValue, normalizePadding, Spacing } from '@utils'
+import { CSSValue, normalizePadding, Padding, Spacing } from '@utils'
 import { Visibility } from '@context'
-
 
 export type BoxConfig = {
   baseUnit?: number
@@ -11,13 +10,13 @@ export type BoxConfig = {
 }
 
 export type BoxProps = {
-  block?: Spacing
-  inline?: Spacing
   width?: CSSValue | 'fit-content' | 'auto'
   height?: CSSValue | 'fit-content' | 'auto'
   visibility?: Visibility
   children?: ReactNode
-} & ComponentsProps
+  block?: Spacing
+  inline?: Spacing
+} & Padding & ComponentsProps
 
 export type BoxContentProps = {
   children: ReactNode

@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
-import type { CSSValue, GridColumnsPattern } from '@types'
-import { SpacerConfig } from '@/components/Spacer/types'
+import type { GridColumnsPattern } from '@types'
+import { CSSValue } from '@utils'
+import { SpacerConfig } from '@components'
 
 // Base interfaces -------------------------------------------------------------
 

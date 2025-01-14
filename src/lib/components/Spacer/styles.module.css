@@ -31,20 +31,17 @@
   box-sizing: border-box;
   position: relative;
   pointer-events: none;
-  --padd-base-unit: var(--padd-base-unit, 8px);
-
-  /* Prevent spacers from shrinking by default */
   flex-shrink: 0;
 }
 
-/* Variant Styles */
 .spacer[data-variant="line"]::after {
-  border: var(--spc-border-width)
-    var(--spc-border-style)
-    var(--spc-color);
   content: '';
   position: absolute;
   inset: 0;
+  border: var(--spc-border-width)
+    var(--spc-border-style)
+    var(--spc-color);
+  box-sizing: border-box;
 }
 
 .spacer[data-variant="flat"] {

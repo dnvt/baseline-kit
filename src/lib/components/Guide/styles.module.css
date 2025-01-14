@@ -27,17 +27,13 @@
 }
 
 /* Base Component Styles */
-.xgrid-container,
-.ygrid-container {
+.guide-container {
   position: absolute;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   z-index: var(--padd-z-index);
   width: 100%;
-}
-
-.xgrid-container {
   user-select: none;
   top: 0;
   left: 0;
@@ -45,6 +41,26 @@
   height: 100%;
   max-width: var(--padd-width);
   padding: var(--padd-padding);
+}
+
+.guide-container[data-direction="horizontal"] {
+  inset: 0;
+  height: var(--padd-height);
+  max-width: none;
+  padding: 0;
+}
+
+.row {
+  background-color: var(--padd-grid-color);
+  height: var(--padd-grid-line-stroke);
+  opacity: var(--padd-grid-opacity, 1);
+  position: absolute;
+  top: var(--padd-grid-top);
+  width: 100%;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .ygrid-container {
@@ -98,14 +114,6 @@
 
 .column[data-variant="fixed"] {
   background-color: var(--padd-grid-color-fixed);
-}
-
-.ygrid-container[data-variant="line"] {
-  --padd-grid-height: 1px;
-}
-
-.ygrid-container[data-variant="flat"] {
-  --padd-grid-opacity: 0;
 }
 
 /* State Styles */
