@@ -1,7 +1,7 @@
 import { useState, useCallback, useLayoutEffect, useMemo } from 'react'
 import type { RefObject } from 'react'
-import type { CSSValue, VisibleRange } from '@types'
-import { convertToPixels } from '@utils'
+import type { VisibleRange } from '@types'
+import { convertToPixels, CSSValue } from '@utils'
 
 // Buffer size in pixels to render additional lines above and below viewport
 // Prevents visible gaps during fast scrolling
@@ -25,7 +25,7 @@ export function useVisibleGridLines({
 }: {
   totalLines: number;
   lineHeight: number;
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
   buffer?: CSSValue;
 }): VisibleRange {
   // Convert buffer to pixels if it's a CSS value

@@ -22,11 +22,6 @@
   padding-inline-end: var(--box-inline-end);
 }
 
-.hidden {
-  opacity: 0;
-  visibility: hidden;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .box {
     transition: none;

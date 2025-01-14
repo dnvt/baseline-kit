@@ -44,6 +44,7 @@ export type Padding = { block?: Spacing, inline?: Spacing }
     { start?: number, end?: number, left?: number, right?: number }
 }
 
+export type Direction = 'horizontal' | 'vertical'
 
 // Parsing Utilities -----------------------------------------------------------
 

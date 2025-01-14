@@ -1,6 +1,5 @@
-import type { CSSValue } from '@types'
 import { CSSProperties } from 'react'
-import { convertToPixels, isGridUnit, isRelativeUnit, parseCSSUnit } from './units'
+import { convertToPixels, CSSValue, isGridUnit, isRelativeUnit, parseCSSUnit } from './units'
 
 /**
  * Combines class names, filtering out falsy values.

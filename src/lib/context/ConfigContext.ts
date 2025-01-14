@@ -1,9 +1,14 @@
 import { createContext, use } from 'react'
-import type { ComponentKeys, ThemeComponents } from './theme'
+import type { ComponentKey, ThemeComponents } from './theme'
 import { THEME } from './theme'
 
 type ComponentConfigs = {
-  [K in ComponentKeys]: Partial<ThemeComponents[K]>
+  [K in ComponentKey]: Partial<
+    ThemeComponents[K] & {
+    baseUnit?: number
+    zIndex?: number
+  }
+  >
 }
 
 export type ConfigOverride = Partial<{
@@ -18,17 +23,19 @@ export function useConfig() {
   return use(ConfigContext)
 }
 
-export function useComponentConfig<K extends ComponentKeys>(componentKey: K): ThemeComponents[K] {
+export function useComponentConfig<K extends ComponentKey>(
+  componentKey: K,
+): ThemeComponents[K] {
   const parentConfig = useConfig()
-  const themeConfig = THEME.components[componentKey] as Record<string, unknown>
+  const themeConfig = THEME.components[componentKey]
   const componentConfig = parentConfig?.[componentKey] as Partial<ThemeComponents[K]> | undefined
 
   const config = {
     baseUnit: parentConfig?.baseUnit ?? THEME.baseUnit,
     zIndex: parentConfig?.zIndex ?? THEME.zIndex,
-    ...(themeConfig as object),
+    ...themeConfig,
     ...(componentConfig || {}),
-  }
+  } as ThemeComponents[K]
 
-  return config as ThemeComponents[K]
+  return config
 }

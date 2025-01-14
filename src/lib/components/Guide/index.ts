@@ -4,12 +4,12 @@
  * @module Grid
  */
 
-export { XGrid } from './XGrid'
+export { Guide } from './Guide'
 export { YGrid } from './YGrid'
 
 export type {
-  XGProps,
+  GuideProps,
   YGProps,
   YGConfig,
-  XGConfig,
+  GuideConfig,
 } from './types'

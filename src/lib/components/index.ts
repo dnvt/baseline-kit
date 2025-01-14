@@ -3,7 +3,7 @@
  * @module components
  */
 
-export * from './Grid'
+export * from './Guide'
 export * from './Spacer'
 export * from './Box'
 export * from './Padder'

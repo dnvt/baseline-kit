@@ -14,7 +14,7 @@
   position: relative;
 }
 
-.padder::after {
+.show::after {
   content: '';
   position: absolute;
   inset: 0;
