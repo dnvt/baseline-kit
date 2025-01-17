@@ -1,6 +1,4 @@
-// Spacer.test.tsx
 import { render, screen } from '@testing-library/react'
-import { SPACER as CONFIG } from '@config'
 import { SpacerConfig, Spacer } from '../Spacer'
 
 describe('Spacer', () => {
@@ -49,7 +47,7 @@ describe('Spacer', () => {
     it('normalizes dimensions to base unit', () => {
       const config: SpacerConfig = {
         variant: 'line',
-        baseUnit: 8,
+        base: 8,
       }
       render(<Spacer height={103} config={config} visibility="visible" />)
       const container = screen.getByTestId('spacer-container')
@@ -117,7 +115,7 @@ describe('Spacer', () => {
       const mockIndicator = vi.fn((value: number) => <span>{value}px</span>)
       const config: SpacerConfig = {
         variant: 'line',
-        baseUnit: 8,
+        base: 8,
       }
 
       render(

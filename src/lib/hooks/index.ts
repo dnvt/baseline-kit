@@ -1,5 +1,5 @@
 /**
- * Grid system hooks
+ * Padded system hooks
  * @module hooks
  */
 

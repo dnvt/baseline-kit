@@ -5,11 +5,9 @@
  */
 
 // Export public components
-export { Guide, YGrid } from './components'
-export type { GuideProps, YGProps } from './components'
+export { Guide } from './components'
+export type { GuideProps } from './components'
 
 // Export public hooks
 export { useGridDimensions, useGridCalculations } from './hooks'
 
-// Export public defaults
-export { Y_GRID, X_GRID } from './config'

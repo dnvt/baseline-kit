@@ -1,6 +1,0 @@
-export { BOX } from './box'
-export { COMPONENTS } from './components'
-export { PADDER } from './padder'
-export { SPACER } from './spacer'
-export { STACK } from './stack'
-export { Y_GRID, X_GRID } from './grids'

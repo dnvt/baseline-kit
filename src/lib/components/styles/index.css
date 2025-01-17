@@ -3,7 +3,9 @@
 @import 'src/lib/components/styles/theme.css';
 
 /* Component styles */
-@import 'src/lib/components/Grid/styles.module.css';
+@import 'src/lib/components/Box/styles.module.css';
+@import 'src/lib/components/Guide/styles.module.css';
+@import 'src/lib/components/Padder/styles.module.css';
 @import 'src/lib/components/Spacer/styles.module.css';
 
 :root {

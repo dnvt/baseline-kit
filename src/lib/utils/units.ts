@@ -37,11 +37,28 @@ export type RelativeCSSValue = `${number}${RelativeUnit}`
 export type AbsoluteCSSValue = `${number}${AbsoluteUnit}`
 export type CSSValue = RelativeCSSValue | AbsoluteCSSValue | 'auto' | number
 
-export type Spacing = | number | [number, number] | { start: number; end: number }
-export type Padding = { block?: Spacing, inline?: Spacing }
-  | {
-  padding: | number | [number, number] | [number, number, number, number] |
-    { start?: number, end?: number, left?: number, right?: number }
+export type SpacingTuple = [number, number]
+export type SpacingObject = { start: number; end: number }
+export type Spacing = number | SpacingTuple | SpacingObject
+
+export type BlockInlineSpacing = {
+  block?: Spacing
+  inline?: Spacing
+}
+
+export type PaddingValue =
+  | number
+  | [number, number]  // [block, inline]
+  | [number, number, number, number]  // [top, right, bottom, left]
+  | { start?: number; end?: number; left?: number; right?: number }
+
+export type PaddingSpacing = {
+  padding: PaddingValue
+}
+
+export type NormalizedSpacing = {
+  block: SpacingTuple
+  inline: SpacingTuple
 }
 
 export type Direction = 'horizontal' | 'vertical'

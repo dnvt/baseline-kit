@@ -40,7 +40,7 @@ function App() {
       {/* Baseline grid for typography alignment */}
       <YGrid
         config={{
-          baseUnit: 8,
+          base: 8,
           height: "100%",
         }}
         visibility={showGrid ? 'visible' : 'hidden'}
@@ -61,7 +61,7 @@ function App() {
         height="16px"
         width="100%"
         config={{
-          baseUnit: 8,
+          base: 8,
           color: "#ff0000",
         }}
         visibility="visible"
@@ -138,7 +138,7 @@ The YGrid component provides baseline grid overlays for typography alignment.
 
 ```typescript
 interface YGConfig {
-  baseUnit?: number;                   // Base unit for spacing (default: 8)
+  base?: number;                   // Base unit for spacing (default: 8)
   height?: CSSValue;                   // Grid height (default: '100%')
   variant?: 'line' | 'flat';           // Grid style variant (default: "line")
   color?: CSSProperties['color'];      // Guide color
@@ -159,7 +159,7 @@ interface YGProps {
 // Basic baseline grid
 <YGrid
   config={{
-    baseUnit: 8,
+    base: 8,
     height: "100%",
   }}
   visibility="visible"
@@ -168,7 +168,7 @@ interface YGProps {
 // Custom variant and color
 <YGrid
   config={{
-    baseUnit: 8,
+    base: 8,
     variant: "flat",
     color: "rgba(255,0,0,0.1)",
   }}
@@ -192,7 +192,7 @@ interface SpacerProps {
   height?: CSSValue;                      // Height of the spacer
   width?: CSSValue;                       // Width of the spacer
   config?: {
-    baseUnit?: number;                    // Base unit for spacing (default: 8)
+    base?: number;                    // Base unit for spacing (default: 8)
     variant?: 'line';                     // Style variant for the spacer
     color?: CSSProperties['color'];       // Color of the spacer
     zIndex?: number;                      // Z-index for layering
@@ -218,7 +218,7 @@ interface SpacerProps {
 <Spacer
   height="32px"
   config={{
-    baseUnit: 8,
+    base: 8,
     color: "#ff0000",
   }}
   visibility="visible"
@@ -257,7 +257,7 @@ type StackProps = {
       width?: CSSValue
       height?: CSSValue
     }
-    baseUnit?: number
+    base?: number
     zIndex?: string | number
     color?: string
   }

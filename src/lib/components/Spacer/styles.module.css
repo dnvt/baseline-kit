@@ -5,6 +5,7 @@
   --spc-height: 100%;
   --spc-border-width: 1px;
   --spc-border-style: solid;
+  --spc-z-index: 0;
 
   /* Spacer Colors */
   --spc-color: var(--spc-color-line);
@@ -32,9 +33,11 @@
   position: relative;
   pointer-events: none;
   flex-shrink: 0;
+  z-index: var(--spc-z-index);
 }
 
-.spacer[data-variant="line"]::after {
+/* Variant styles */
+.line::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -44,28 +47,11 @@
   box-sizing: border-box;
 }
 
-.spacer[data-variant="flat"] {
+.flat {
   background-color: var(--spc-color);
 }
 
-.spacer[data-variant="line"] {
-  --spc-color: var(--spc-color-line);
-}
-
-.spacer[data-variant="flat"] {
-  --spc-color: var(--spc-color-flat);
-}
-
-/* Dimension Styles */
-.height {
-  --spc-height: var(--spacer);
-}
-
-.width {
-  --spc-width: var(--spacer);
-}
-
-/* State Styles */
+/* Visibility states */
 .visible {
   opacity: 1;
   visibility: visible;
@@ -80,7 +66,7 @@
     visibility 0ms linear 180ms;
 }
 
-/* Media Queries */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .visible,
   .hidden {

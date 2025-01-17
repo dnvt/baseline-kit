@@ -1,5 +1,5 @@
 import { Dispatch, useId } from 'react'
-import { COMPONENTS } from '@config'
+import { DEFAULT_CONFIG } from '@components'
 import type { DemoGridAction, DemoGridState } from './types'
 import { usePerformanceMonitor, type PerformanceMetrics } from '../utils'
 
@@ -113,7 +113,7 @@ const ConfigControls = ({ state, dispatch }: GridControlsProps) => (
     <h4>Grid Configuration</h4>
     <RangeControl
       label="Base Unit"
-      value={state.config.baseUnit ?? COMPONENTS.baseUnit}
+      value={state.config.base ?? DEFAULT_CONFIG.base}
       suffix="px"
       min={4}
       max={16}
@@ -121,7 +121,7 @@ const ConfigControls = ({ state, dispatch }: GridControlsProps) => (
       onChange={(value) =>
         dispatch({
           type: 'UPDATE_CONFIG',
-          payload: { baseUnit: value },
+          payload: { base: value },
         })
       }
     />

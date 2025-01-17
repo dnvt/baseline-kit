@@ -8,7 +8,7 @@ beforeEach(() => {
 })
 
 describe('useSpacerDimensions', () => {
-  const baseUnit = 8
+  const base = 8
 
   beforeEach(() => {
     cssTestUtils.createTestContext({
@@ -23,7 +23,7 @@ describe('useSpacerDimensions', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
           height: 42,
-          baseUnit,
+          base,
           config: {
             variant: 'line' as const,
           },
@@ -32,7 +32,7 @@ describe('useSpacerDimensions', () => {
 
       expect(result.current).toEqual({
         dimensions: {
-          height: '40px', // Should be normalized to baseUnit multiple
+          height: '40px', // Should be normalized to base multiple
           width: '100%',
         },
         normalizedHeight: 40,
@@ -46,7 +46,7 @@ describe('useSpacerDimensions', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
           height: 42,
-          baseUnit,
+          base,
           config: {
             variant: 'flat',
           },
@@ -55,7 +55,7 @@ describe('useSpacerDimensions', () => {
 
       expect(result.current).toEqual({
         dimensions: {
-          height: '40px', // Normalized to baseUnit multiple
+          height: '40px', // Normalized to base multiple
           width: '100%',
         },
         normalizedHeight: 40,
@@ -67,7 +67,7 @@ describe('useSpacerDimensions', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
           width: 50,
-          baseUnit,
+          base,
           config: {
             variant: 'flat',
           },
@@ -77,7 +77,7 @@ describe('useSpacerDimensions', () => {
       expect(result.current).toEqual({
         dimensions: {
           height: '100%',
-          width: '48px', // Normalized to baseUnit multiple
+          width: '48px', // Normalized to base multiple
         },
         normalizedHeight: null,
         normalizedWidth: 48,
@@ -90,7 +90,7 @@ describe('useSpacerDimensions', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
           height: 40,
-          baseUnit,
+          base,
           config: {},
         }),
       )
@@ -108,7 +108,7 @@ describe('useSpacerDimensions', () => {
     it('returns 100% dimensions when no size provided', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
-          baseUnit,
+          base,
           config: {},
         }),
       )
@@ -137,7 +137,7 @@ describe('useSpacerDimensions', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
           height: '1in',
-          baseUnit: 8,
+          base: 8,
         }),
       )
 
@@ -149,7 +149,7 @@ describe('useSpacerDimensions', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
           width: '10vh',
-          baseUnit: 8,
+          base: 8,
         }),
       )
 
@@ -161,7 +161,7 @@ describe('useSpacerDimensions', () => {
       const { result } = renderHook(() =>
         useSpacerDimensions({
           height: '2rem',
-          baseUnit: 8,
+          base: 8,
         }),
       )
 

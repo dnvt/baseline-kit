@@ -1,76 +1,78 @@
 import { CSSProperties, memo, RefObject, useCallback, useMemo, useRef } from 'react'
-import { X_GRID as CONFIG, COMPONENTS } from '@config'
 import { useGridCalculations, useGridDimensions, useVisibleGridLines } from '@hooks'
 import { cx, cs, convertToPixels, MeasurementSystem, clamp } from '@utils'
-import type {
-  AutoGridConfig,
-  FixedGridConfig,
-  LineGridConfig,
-  PatternGridConfig,
-} from '@types'
-
-import type { GuideProps, GuideVariant } from './types'
+import type { AutoConfig, FixedConfig, GuideProps, GuideVariant, LineConfig, PatternConfig } from './types'
 import styles from './styles.module.css'
+import { useConfig } from '../Config'
 
 const GridRows = memo(function GridRows({
   count,
-  baseUnit,
+  base,
   color,
   containerRef,
+  variant,
 }: {
-  count: number;
-  baseUnit: number;
-  color: string;
-  containerRef: RefObject<HTMLDivElement | null>;
+  count: number
+  base: number
+  color: string
+  containerRef: RefObject<HTMLDivElement | null>
+  variant: GuideVariant
 }) {
+
   const visibleRange = useVisibleGridLines({
     totalLines: count,
-    lineHeight: baseUnit,
+    lineHeight: base,
     containerRef,
   })
 
   const getRowStyles = useCallback(
     (idx: number): Partial<CSSProperties> => ({
-      '--padd-grid-top': `${idx * baseUnit}px`,
+      '--padd-grid-top': `${idx * base}px`,
       '--padd-grid-color': color,
-      '--padd-grid-line-stroke': '1px',
+      '--padd-grid-line-stroke': variant === 'line' ? '1px' : `${base}px`,
     }),
-    [baseUnit, color],
+    [base, color, variant],
   )
 
-  const rows = useMemo(() => {
-    const elements = []
-    for (let i = visibleRange.start; i < visibleRange.end; i++) {
-      elements.push(
-        <div
-          key={i}
-          className={styles.row}
-          style={getRowStyles(i)}
-          data-row-index={i}
-        />,
-      )
-    }
-    return elements
-  }, [visibleRange.start, visibleRange.end, getRowStyles])
-
-  return <>{rows}</>
+  return (
+    <>
+      {Array.from(
+        { length: visibleRange.end - visibleRange.start },
+        (_, i) => {
+          const idx = i + visibleRange.start
+          return (
+            <div
+              key={idx}
+              className={styles.row}
+              style={getRowStyles(idx)}
+              data-row-index={idx}
+              data-variant={variant}
+            />
+          )
+        },
+      )}
+    </>
+  )
 })
 
 const GridColumns = memo(function GridColumns({
   count,
   variant,
+  colors,
 }: {
-  count: number;
-  variant?: GuideVariant;
+  count: number
+  variant: GuideVariant
+  colors: Record<GuideVariant, string>
 }) {
   return (
     <div className={styles['columns-container']}>
-      {Array.from({ length: count }).map((_, i) => (
+      {Array.from({ length: count }, (_, i) => (
         <div
           key={i}
           className={styles.column}
           data-column-index={i}
           data-variant={variant}
+          style={{ '--padd-grid-color': colors[variant] }}
         />
       ))}
     </div>
@@ -79,37 +81,31 @@ const GridColumns = memo(function GridColumns({
 
 /**
  * Guide Component
- * A flexible column grid system with support for multiple layout variants:
- * 'auto', 'fixed', 'line' (default), and 'pattern'.
- *
- * @param config - Configuration object for the grid.
- * @param className - Additional class names for the container.
- * @param visibility - Visibility of the grid ('visible' or 'hidden').
- * @param style - Additional inline styles for the container.
+ * A flexible column grid system with support for multiple layout variants.
+ * Integrates with theme context for consistent styling and behavior.
  */
 export const Guide = memo(function Guide({
-  config = { variant: 'line' },
-  className = '',
-  visibility = CONFIG.visibility,
-  style = {},
+  className,
+  visibility: visibilityProp,
+  style,
+  variant: variantProp,
+  align = 'start',
+  direction = 'vertical',
+  gap,
+  height,
+  maxWidth,
+  padding = 0,
+  columns,
+  columnWidth,
+  ...props
 }: GuideProps) {
-  const {
-    align = CONFIG.align,
-    color = CONFIG.color,
-    columns = CONFIG.columns,
-    columnWidth = CONFIG.columnWidth,
-    direction = 'vertical',
-    gap = CONFIG.gap,
-    height,
-    maxWidth = CONFIG.maxWidth,
-    padding = CONFIG.padding,
-    variant = CONFIG.variant,
-    zIndex = CONFIG.zIndex,
-    baseUnit = CONFIG.baseUnit,
-  } = config
-
+  const config = useConfig('guide')
   const containerRef = useRef<HTMLDivElement>(null)
   const { width, height: containerHeight } = useGridDimensions(containerRef)
+
+  // Use variant from props or fallback to config
+  const variant = variantProp ?? config.variant
+  const isShown = (visibilityProp ?? config.visibility) === 'visible'
 
   // Calculate row count for horizontal direction
   const rowCount = useMemo(() => {
@@ -117,80 +113,63 @@ export const Guide = memo(function Guide({
 
     const totalHeight = typeof height === 'number' ? height : containerHeight
     const normalizedHeight = MeasurementSystem.normalize(totalHeight, {
-      unit: baseUnit,
+      unit: config.base,
       suppressWarnings: true,
     })
 
-    return clamp(Math.ceil(normalizedHeight / baseUnit), 1, 1000)
-  }, [direction, height, containerHeight, baseUnit])
+    return clamp(Math.ceil(normalizedHeight / config.base), 1, 1000)
+  }, [direction, height, containerHeight, config.base])
 
   // Memoized grid configuration based on the variant
   const gridConfig = useMemo(() => {
-    const gapValue = typeof gap === 'string' ? convertToPixels(gap) ?? COMPONENTS.baseUnit : gap
-    const numGap = gapValue ?? COMPONENTS.baseUnit ?? 8
+    const normalizedGap = typeof gap === 'string'
+      ? convertToPixels(gap)
+      : (gap ?? config.base)
+    const numGap = typeof normalizedGap === 'number' ? normalizedGap : config.base
 
-    switch (variant) {
-    case 'line':
-      return {
+    const configs = {
+      line: {
         variant: 'line' as const,
         gap: Math.max(0, numGap - 1),
-        baseUnit: CONFIG.baseUnit,
-      } satisfies LineGridConfig
+        base: config.base,
+      } satisfies LineConfig,
 
-    case 'auto':
-      return {
+      auto: columnWidth ? {
         variant: 'auto' as const,
         columnWidth,
         gap: numGap,
-        baseUnit: CONFIG.baseUnit,
-      } satisfies AutoGridConfig
+        base: config.base,
+      } satisfies AutoConfig : null,
 
-    case 'pattern':
-      if (Array.isArray(columns)) {
-        return {
-          variant: 'pattern' as const,
-          columns,
-          gap: numGap,
-          baseUnit: CONFIG.baseUnit,
-        } satisfies PatternGridConfig
-      }
-      break
+      pattern: Array.isArray(columns) ? {
+        variant: 'pattern' as const,
+        columns,
+        gap: numGap,
+        base: config.base,
+      } satisfies PatternConfig : null,
 
-    case 'fixed':
-      if (typeof columns === 'number') {
-        return {
-          variant: 'fixed' as const,
-          columns,
-          columnWidth,
-          gap: numGap,
-          baseUnit: CONFIG.baseUnit,
-        } satisfies FixedGridConfig
-      }
-      break
+      fixed: typeof columns === 'number' ? {
+        variant: 'fixed' as const,
+        columns,
+        columnWidth,
+        gap: numGap,
+        base: config.base,
+      } satisfies FixedConfig : null,
     }
 
-    // Default to 'line' variant
-    return {
-      variant: 'line' as const,
-      gap: Math.max(0, numGap - 1),
-      baseUnit: CONFIG.baseUnit,
-    } satisfies LineGridConfig
-  }, [variant, columns, columnWidth, gap])
+    return configs[variant] ?? configs.line
+  }, [variant, columns, columnWidth, gap, config.base])
 
   const { gridTemplateColumns, columnsCount, calculatedGap } = useGridCalculations({
     containerWidth: width,
     config: gridConfig,
   })
 
-  const isShown = visibility === 'visible'
-
   const containerStyles = useMemo(() => {
     const baseStyles: CSSProperties = {
       '--padd-gap': calculatedGap,
-      '--padd-grid-color': color,
       '--padd-grid-justify': align,
       '--padd-padding': typeof padding === 'string' ? padding : `${padding}px`,
-      '--padd-z-index': zIndex,
     }
 
     if (direction === 'horizontal') {
@@ -209,10 +188,8 @@ export const Guide = memo(function Guide({
     } as CSSProperties, style)
   }, [
     calculatedGap,
-    color,
     align,
     padding,
-    zIndex,
     direction,
     height,
     gridTemplateColumns,
@@ -233,16 +210,23 @@ export const Guide = memo(function Guide({
       data-variant={variant}
       data-direction={direction}
       style={containerStyles}
+      {...props}
     >
       {isShown && direction === 'horizontal' ? (
         <GridRows
           count={rowCount}
-          baseUnit={baseUnit}
-          color={color}
+          base={config.base}
+          color={config.colors[variant]}
           containerRef={containerRef}
+          variant={variant}
         />
       ) : (
-        isShown && <GridColumns count={columnsCount} variant={variant} />
+        isShown &&
+        <GridColumns
+          count={columnsCount}
+          variant={variant}
+          colors={config.colors}
+        />
       )}
     </div>
   )

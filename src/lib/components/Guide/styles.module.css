@@ -50,10 +50,20 @@
   padding: 0;
 }
 
+/* New styles for guide within content block */
+.content-block > .guide-container[data-direction="horizontal"] {
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.content-block > .guide-container[data-direction="horizontal"] .row {
+  margin-bottom: calc(var(--padd-base-unit) - var(--padd-grid-line-stroke));
+}
 .row {
   background-color: var(--padd-grid-color);
   height: var(--padd-grid-line-stroke);
-  opacity: var(--padd-grid-opacity, 1);
   position: absolute;
   top: var(--padd-grid-top);
   width: 100%;
@@ -61,6 +71,11 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   perspective: 1000px;
+}
+
+/* For flat variant, hide every other row */
+.row[data-variant='flat']:nth-child(odd) {
+  opacity: 0;
 }
 
 .ygrid-container {
@@ -100,7 +115,7 @@
 
 /* Variant Styles */
 .column[data-variant="line"] {
-  width: calc(var(--padd-grid-column-width, 1px));
+  width: 1px;
   background-color: var(--padd-grid-color-line);
 }
 

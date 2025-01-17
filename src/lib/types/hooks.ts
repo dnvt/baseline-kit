@@ -1,7 +1,6 @@
 import type { RefObject } from 'react'
 import type { GridColumnsPattern } from '@types'
 import { CSSValue } from '@utils'
-import { SpacerConfig } from '@components'
 
 // Base interfaces -------------------------------------------------------------
 
@@ -19,7 +18,7 @@ export type GridDimensions = {
 
 interface GridCommonConfig {
   gap?: CSSValue
-  baseUnit?: number
+  base?: number
 }
 
 export type LineGridConfig = {
@@ -77,14 +76,9 @@ export type UseVisibleGridLinesProps = {
 // Type guards -----------------------------------------------------------------
 
 export const isLineVariant = (
-  config: GridConfig | SpacerConfig,
-): config is LineGridConfig | SpacerConfig =>
+  config: GridConfig,
+): config is LineGridConfig =>
   'variant' in config && config.variant === 'line'
-
-export const isFlatVariant = (
-  config: SpacerConfig,
-): config is SpacerConfig =>
-  'variant' in config && config.variant === 'flat'
 
 export const isAutoVariant = (config: GridConfig): config is AutoGridConfig =>
   'variant' in config && config.variant === 'auto'

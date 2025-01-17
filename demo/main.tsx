@@ -1,9 +1,7 @@
 import { Fragment, StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Spacer, YGrid, Box } from '@components'
-
+import { Spacer, Box, Guide, Config } from '@components'
 import { GridSetups, Indice } from './components'
-
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -14,8 +12,7 @@ const root = createRoot(document.getElementById('root') as HTMLElement)
 
 root.render(
   <StrictMode>
-    <GridSetups contentNode={(bool) => <Content showBaseline={bool} />}>
-    </GridSetups>
+    <GridSetups contentNode={(bool) => <Content showBaseline={bool} />} />
   </StrictMode>,
 )
 
@@ -25,7 +22,7 @@ function Content({ showBaseline }: ContentProps) {
   return (
     <>
       <Spacer height={42} visibility={visibility} indicatorNode={Indice} />
-      <Box block={[2, 4]} visibility={visibility} style={{ gridColumn: '1 / span 4' }}>
+      <Box block={[6, 10]} visibility={visibility} style={{ gridColumn: '1 / span 4' }}>
         <h1 className="demo-title">Padded Playground</h1>
       </Box>
       <Box block={[6, 10]} visibility="visible" style={{ gridColumn: '1 / span 4' }}>
@@ -37,15 +34,22 @@ function Content({ showBaseline }: ContentProps) {
 
       <Spacer height={24} visibility={visibility} indicatorNode={Indice} />
 
+
       {Array.from({ length: 50 }).map((_, i) => {
         return (
           <Fragment key={i}>
             {!!i && <Spacer height={8} visibility={visibility} />}
             <Box visibility={visibility} block={[0, 2]} width={'100%'}>
-              <div className="content-block">
-                <YGrid visibility={visibility} />
-                Content Block {i + 1}
-              </div>
+              <Config base={8}>
+                <div className="content-block">
+                  <Guide
+                    height="100%"
+                    direction="horizontal"
+                    visibility={visibility}
+                  />
+                  Content Block {i + 1}
+                </div>
+              </Config>
             </Box>
           </Fragment>
         )

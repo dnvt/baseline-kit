@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { Visibility } from '@context'
+import { Visibility } from '@components'
 import { CSSValue } from '@utils'
 
 // Grid Column
@@ -24,7 +24,7 @@ export type ComponentsProps = {
 }
 
 export type PaddedBaseConfig = {
-  baseUnit?: number
+  base?: number
   color?: CSSProperties['color'] | CSSProperties['backgroundColor']
   zIndex?: CSSProperties['zIndex']
 }

@@ -5,7 +5,7 @@ import { CSSValue, MeasurementSystem } from '@utils'
 interface UseSpacerDimensionsProps {
   height?: CSSValue
   width?: CSSValue
-  baseUnit: number
+  base: number
   config?: {
     variant?: 'line' | 'flat'
   }
@@ -23,13 +23,13 @@ interface UseSpacerDimensionsResult {
  *
  * @param height - The height of the spacer.
  * @param width - The width of the spacer.
- * @param baseUnit - The base unit for normalization.
+ * @param base - The base unit for normalization.
  * @returns An object containing the calculated dimensions and normalized height/width values.
  */
 export function useSpacerDimensions({
   height,
   width,
-  baseUnit,
+  base,
 }: UseSpacerDimensionsProps): UseSpacerDimensionsResult {
   return useMemo(() => {
     let dimensions: SpacerDimensions
@@ -38,21 +38,21 @@ export function useSpacerDimensions({
 
     const normalizeValue = (value: CSSValue): [CSSValue, number] => {
       if (typeof value === 'number') {
-        const normalized = MeasurementSystem.normalize(value, { unit: baseUnit })
+        const normalized = MeasurementSystem.normalize(value, { unit: base })
         return [`${normalized}px`, normalized]
       }
 
       if (typeof value === 'string') {
         if (value === 'auto' || value === '100%') {
-          return [value, baseUnit]
+          return [value, base]
         }
 
         // Try to normalize if it's a different CSS Unit
-        const normalized = MeasurementSystem.normalize(value, { unit: baseUnit })
+        const normalized = MeasurementSystem.normalize(value, { unit: base })
         return [value, normalized]
       }
 
-      return ['100%', baseUnit]
+      return ['100%', base]
     }
 
     if (height !== undefined) {
@@ -81,5 +81,5 @@ export function useSpacerDimensions({
       normalizedHeight,
       normalizedWidth,
     }
-  }, [height, width, baseUnit])
+  }, [height, width, base])
 }

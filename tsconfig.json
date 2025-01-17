@@ -23,9 +23,6 @@
       "@components": [
         "src/lib/components/index.ts"
       ],
-      "@config": [
-        "src/lib/config/index.ts"
-      ],
       "@hooks": [
         "src/lib/hooks/index.ts"
       ],

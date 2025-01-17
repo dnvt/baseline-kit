@@ -1,4 +1,5 @@
 :root {
+  --padder-color: transparent;
   --padder-color-flat: hsla(var(--purple), 0.2);
   --padder-color-line: hsla(var(--purple), 0.9);
   --padder-z-index: var(--padd-z-index, 0);
@@ -12,12 +13,20 @@
   height: var(--padder-height);
   flex-direction: column;
   position: relative;
+  z-index: var(--padder-z-index);
 }
 
-.show::after {
+/* Variant styles */
+.padder::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--padder-color-line);
+  border: 1px solid var(--padder-color);
   pointer-events: none;
+  z-index: var(--box-z-index);
+}
+
+/* Visibility states */
+.visible {
+  --padder-color: var(--padder-color-flat);
 }

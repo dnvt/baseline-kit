@@ -1,75 +1,117 @@
-import { CSSProperties, memo, useMemo } from 'react'
-import { useComponentConfig } from '@context'
-import { Spacer } from '@components'
-import { cx, cs, normalizePadding } from '@utils'
-import type { PadderProps } from './types'
-import type { Padding } from '@utils'
+import { CSSProperties, memo, ReactNode, useMemo } from 'react'
+import { cx, cs, CSSValue, normalizeSpacing, BlockInlineSpacing, PaddingSpacing } from '@utils'
+import { ComponentsProps } from '@types'
 import styles from './styles.module.css'
+import { useConfig, Visibility } from '../Config'
+import { Spacer } from '../Spacer'
 
+export type PadderProps = Omit<ComponentsProps, 'data-testid'> & (BlockInlineSpacing | PaddingSpacing) & {
+  /** Width of the padder container */
+  width?: CSSValue | 'fit-content' | 'auto'
+  /** Height of the padder container */
+  height?: CSSValue | 'fit-content' | 'auto'
+  /** Content to be padded */
+  children: ReactNode
+  /** Override visibility from theme */
+  visibility?: Visibility
+}
+
+/**
+ * Padder Component
+ * Manages spacing and padding with optional visual indicators.
+ * Uses Spacer components to visualize padding when visible.
+ */
 export const Padder = memo(function Padder({
   children,
-  className = '',
+  className,
   height = 'fit-content',
   width = 'fit-content',
-  visibility = 'none',
-  style = {},
+  visibility: visibilityProp,
+  style,
   ...spacingProps
 }: PadderProps) {
-  const config = useComponentConfig('padder')
-  const { color, baseUnit, zIndex, variant } = config
+  const config = useConfig('padder')
 
+  // Calculate normalized padding values
   const spacing = useMemo(() =>
-    normalizePadding(spacingProps as Padding),
-  [spacingProps])
+    normalizeSpacing(spacingProps, config.base),
+  [spacingProps, config.base])
 
-  const showSpacers = visibility !== 'none'
-  const paddingStyles = showSpacers ? {} : {
-    paddingBlock: `${spacing.block[0]}px ${spacing.block[1]}px`,
-    paddingInline: `${spacing.inline[0]}px ${spacing.inline[1]}px`,
-  }
+  // Determine if spacers should be shown
+  const visibility = visibilityProp ?? config.visibility
+  const enableSpacers = visibility !== 'none'
+  const showSpacers = visibility === 'visible'
+
+  const containerStyles = useMemo(() => cs({
+    '--padder-width': width,
+    '--padder-height': height,
+    '--padder-base': `${config.base}px`,
+    '--padder-color': config.color,
+    ...(enableSpacers ? {} : {
+      paddingBlock: `${spacing.block[0]}px ${spacing.block[1]}px`,
+      paddingInline: `${spacing.inline[0]}px ${spacing.inline[1]}px`,
+    }),
+  } as CSSProperties, style), [
+    enableSpacers,
+    spacing,
+    width,
+    height,
+    config,
+    style,
+  ])
 
   return (
     <div
-      className={cx(className, styles.padder, visibility === 'visible' && styles.show)}
+      className={cx(
+        styles.padder,
+        showSpacers && styles.visible,
+        className,
+      )}
       data-testid="padder"
-      data-variant={variant}
-      style={cs({
-        '--padder-width': width,
-        '--padder-height': height,
-        '--padder-color': color,
-        '--padder-base-unit': `${baseUnit}px`,
-        '--padder-z-index': zIndex,
-        ...paddingStyles,
-      } as CSSProperties, style)}
+      style={containerStyles}
     >
-      {showSpacers && spacing.inline[0] > 0 && (
-        <Spacer
-          width={spacing.inline[0]}
-          height="100%"
-          visibility="visible"
-        />
+      {enableSpacers && (
+        <>
+          {/* Left spacing */}
+          {spacing.inline[0] > 0 && (
+            <Spacer
+              width={spacing.inline[0]}
+              height="100%"
+              visibility="visible"
+            />
+          )}
+          {/* Top spacing */}
+          {spacing.block[0] > 0 && (
+            <Spacer
+              width="100%"
+              height={spacing.block[0]}
+              visibility="visible"
+            />
+          )}
+        </>
       )}
-      {showSpacers && spacing.block[0] > 0 && (
-        <Spacer
-          width="100%"
-          height={spacing.block[0]}
-          visibility="visible"
-        />
-      )}
+
       {children}
-      {showSpacers && spacing.block[1] > 0 && (
-        <Spacer
-          width="100%"
-          height={spacing.block[1]}
-          visibility="visible"
-        />
-      )}
-      {showSpacers && spacing.inline[1] > 0 && (
-        <Spacer
-          width={spacing.inline[1]}
-          height="100%"
-          visibility="visible"
-        />
+
+      {enableSpacers && (
+        <>
+          {/* Bottom spacing */}
+          {spacing.block[1] > 0 && (
+            <Spacer
+              width="100%"
+              height={spacing.block[1]}
+              visibility="visible"
+            />
+          )}
+          {/* Right spacing */}
+          {spacing.inline[1] > 0 && (
+            <Spacer
+              width={spacing.inline[1]}
+              height="100%"
+              visibility="visible"
+            />
+          )}
+        </>
       )}
     </div>
   )
