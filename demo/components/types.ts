@@ -1,7 +1,7 @@
 import type { GridColumnsPattern } from '@types'
 
 interface PGConfig {
-  baseUnit: number;
+  base: number;
   zIndex: number;
 }
 

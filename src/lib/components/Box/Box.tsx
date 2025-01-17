@@ -1,84 +1,72 @@
-import { CSSProperties, memo, useMemo } from 'react'
-import { Padder } from '@components'
-import { cx, cs, normalizePadding } from '@utils'
-import type { BoxProps } from './types'
-import type { Padding, Spacing } from '@utils'
+import { CSSProperties, memo, ReactNode, useMemo } from 'react'
+import { cx, cs, CSSValue, BlockInlineSpacing, PaddingSpacing } from '@utils'
+import type { ComponentsProps } from '@types'
 import styles from './styles.module.css'
-import { ConfigContext, useComponentConfig } from '@context'
+import { Config, useConfig, Visibility } from '../Config'
+import { Padder } from '../Padder'
 
-const normalizeSpacingValue = (value: Spacing, baseUnit: number) => {
-  if (typeof value === 'number') {
-    return value % (2 * baseUnit)
-  }
-  if (Array.isArray(value)) {
-    return [
-      value[0] % (2 * baseUnit),
-      value[1] % (2 * baseUnit),
-    ]
-  }
-  return {
-    start: value.start % (2 * baseUnit),
-    end: value.end % (2 * baseUnit),
-  }
-}
+export type BoxProps = ComponentsProps & {
+  /** Width of the box */
+  width?: CSSValue | 'fit-content' | 'auto'
+  /** Height of the box */
+  height?: CSSValue | 'fit-content' | 'auto'
+  /** Override visibility from theme */
+  visibility?: Visibility
+  /** Content to be wrapped */
+  children?: ReactNode
+} & (BlockInlineSpacing | PaddingSpacing)
+
+/**
+ * Box Component
+ * A container component that provides consistent spacing and visual styling.
+ * Uses Padder for spacing management and integrates with theme context.
+ */
 export const Box = memo(function Box({
   children,
   width = 'fit-content',
   height = 'fit-content',
-  visibility = 'none',
+  visibility,
   className,
   style,
-  inline,
-  block,
-  ...spacingProps
+  ...props
 }: BoxProps) {
-  const config = useComponentConfig('box')
-  const { color, baseUnit, zIndex } = config
+  const config = useConfig('box')
+  const spacerConfig = useConfig('spacer')
 
-  const spacing = useMemo(() => {
-    let normalizedSpacing
-
-    if (inline !== undefined || block !== undefined) {
-      normalizedSpacing = {
-        inline: inline ? normalizeSpacingValue(inline, baseUnit) : [0, 0],
-        block: block ? normalizeSpacingValue(block, baseUnit) : [0, 0],
-      }
-    } else {
-      normalizedSpacing = normalizePadding(spacingProps as Padding)
-      return {
-        inline: normalizeSpacingValue(normalizedSpacing.inline, baseUnit),
-        block: normalizeSpacingValue(normalizedSpacing.block, baseUnit),
-      }
-    }
-
-    return normalizedSpacing
-  }, [inline, block, spacingProps, baseUnit])
+  const boxStyles = useMemo(() => cs({
+    '--box-width': width,
+    '--box-height': height,
+    '--box-base': `${config.base}px`,
+    '--box-color': config.colors.line,
+  } as CSSProperties, style), [
+    width,
+    height,
+    config,
+    style,
+  ])
 
   return (
-    <ConfigContext value={{
-      spacer: { baseUnit: 1, variant: 'flat', colors: { flat: 'var(--box-color-flat)' } },
-    }}>
-      <Padder
-        {...spacing}
-        width={width}
-        height={height}
-        visibility={visibility}
-        {...spacingProps}
+    <Config
+      base={1}
+      spacer={{
+        variant: 'flat',
+        colors: { ...spacerConfig.colors, flat: config.colors.flat },
+      }}
+    >
+      <div
+        className={cx(styles.box, className)}
+        data-testid="box"
+        style={boxStyles}
       >
-        <div
-          className={cx(styles.box, className)}
-          data-testid={spacingProps['data-testid'] ?? 'box'}
-          style={cs({
-            '--box-width': width,
-            '--box-height': height,
-            '--box-color': color,
-            '--box-base-unit': `${baseUnit}px`,
-            '--box-z-index': zIndex,
-          } as CSSProperties, style)}
+        <Padder
+          {...props}
+          width={width}
+          height={height}
+          visibility={visibility ?? config.visibility}
         >
           {children}
-        </div>
-      </Padder>
-    </ConfigContext>
+        </Padder>
+      </div>
+    </Config>
   )
 })

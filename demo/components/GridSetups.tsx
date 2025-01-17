@@ -1,13 +1,10 @@
 import { useReducer, useCallback, ReactNode } from 'react'
-import { Guide } from '@components'
-import { THEME } from '@context'
+import { Guide, DEFAULT_CONFIG } from '@components'
 import { type GridColumnsPattern } from '@types'
-import { X_GRID } from '@config'
-
 import { GridControls } from './GridControls'
 import type { DemoGridAction, DemoGridState } from './types'
 import { usePageHeight } from '../hooks'
-import { Config } from '@/components/Config/Config'
+
 
 // Custom reducer for the demo -------------------------------------------------
 
@@ -47,16 +44,15 @@ function demoGridReducer(state: DemoGridState, action: DemoGridAction): DemoGrid
 
 export const DEMO: DemoGridState = {
   config: {
-    baseUnit: THEME.baseUnit,
-    zIndex: THEME.zIndex,
+    base: DEFAULT_CONFIG.base,
   },
   showGuides: {
     columns: true,
     baseline: true,
   },
   columnConfig: {
-    count: X_GRID.columns,
-    gap: X_GRID.gap,
+    count: 9,
+    gap: DEFAULT_CONFIG.base,
     pattern: [
       '24px',
       '24px',
@@ -77,7 +73,6 @@ export const DEMO: DemoGridState = {
 export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolean) => ReactNode }) {
   const [state, dispatch] = useReducer(demoGridReducer, DEMO)
 
-  // Tracks document height changes to adjust grid overlay dynamically
   const handleHeightChange = useCallback((height: number) => {
     if (height !== state.pageHeight) {
       dispatch({ type: 'SET_PAGE_HEIGHT', payload: height })
@@ -87,59 +82,33 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
   usePageHeight(handleHeightChange)
 
   return (
-    <Config config={{ ...THEME, baseUnit: 8 }}>
-      <div className="grid-playground">
+    <div className="grid-playground">
+      {/* Horizontal guide */}
+      <Guide
+        visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+        direction="horizontal"
+        height={state.pageHeight}
+      />
+
+      <div className="demo-wrapper">
+        {/* Fixed columns guide */}
         <Guide
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
-          config={{
-            variant: 'line',
-            direction: 'horizontal',
-            height: state.pageHeight,
-          }}
+          variant="line"
+          gap={state.columnConfig.gap}
         />
-        {/*<YGrid*/}
-        {/*  visibility={state.showGuides.baseline ? 'visible' : 'hidden'}*/}
-        {/*  config={{ height: state.pageHeight }}*/}
-        {/*/>*/}
-        <div className="demo-wrapper">
-
-          {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
-          {/*  variant: 'pattern',*/}
-          {/*  padding: '0 16px',*/}
-          {/*  color: 'var(--grid-color-line)',*/}
-          {/*  columns: state.columnConfig.pattern,*/}
-          {/*  gap: 8,*/}
-          {/*  zIndex: state.config.zIndex,*/}
-          {/*}} />*/}
-
-          {/*<XGrid visibility={state.showGuides.columns ? 'visible' : 'hidden'} config={{*/}
-          {/*  variant: 'auto',*/}
-          {/*  columnWidth: 144,*/}
-          {/*  color: 'var(--grid-color-line)',*/}
-          {/*  gap: 16,*/}
-          {/*  zIndex: state.config.zIndex,*/}
-          {/*}} />*/}
-
-          <Guide
-            visibility={state.showGuides.columns ? 'visible' : 'hidden'}
-            config={{
-              variant: 'fixed',
-              columns: state.columnConfig.count,
-              gap: state.columnConfig.gap,
-            }}
-          />
-
-          {/*<Guide direction="horizontal" />*/}
-
-          <Guide
-            visibility={state.showGuides.columns ? 'visible' : 'hidden'}
-          />
-          <div className="demo-content">
-            {contentNode(state.showGuides.baseline)}
-          </div>
+        <Guide
+          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+          variant="fixed"
+          gap={state.columnConfig.gap}
+          columns={9}
+        />
+        <div className="demo-content">
+          {contentNode(state.showGuides.baseline)}
         </div>
-        <GridControls state={state} dispatch={dispatch} />
       </div>
-    </Config>
+
+      <GridControls state={state} dispatch={dispatch} />
+    </div>
   )
 }

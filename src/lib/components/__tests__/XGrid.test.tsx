@@ -1,13 +1,12 @@
 import { render, screen } from '@testing-library/react'
-import { X_GRID as CONFIG } from '@config'
-import { XGConfig, Guide } from '../Grid'
+import { DEFAULT_CONFIG, Guide, GuideConfig } from '@components'
 
 export type ResizeObserverCallback = (entries: ResizeObserverEntry[]) => void
 
 // Add this mock at the top of XGrid.test.tsx
 vi.mock('@hooks', () => ({
   useGridDimensions: () => ({ width: 1024, height: 768 }),
-  useGridCalculations: ({ config }: { config: XGConfig }) => {
+  useGridCalculations: ({ config }: { config: GuideConfig }) => {
     switch (config.variant) {
     case 'line':
       return {
@@ -74,40 +73,40 @@ describe('XGrid', () => {
   })
 
   describe('Rendering', () => {
-    const baseConfig: XGConfig = {
+    const baseConfig: GuideConfig = {
       variant: 'fixed',
       columns: 12,
     }
 
     it('renders nothing when visibility is hidden', () => {
-      render(<Guide config={baseConfig} visibility="hidden" />)
+      render(<Guide visibility="hidden" />)
       const container = screen.getByTestId('XGrid-container')
       expect(container.className).toContain('hidden')
       expect(container.querySelector('[data-column-index]')).toBeNull()
     })
 
     it('renders with visibility when set to visible', () => {
-      render(<Guide config={baseConfig} visibility="visible" />)
+      render(<Guide visibility="visible" />)
       const container = screen.getByTestId('XGrid-container')
       expect(container.className).toContain('visible')
     })
 
     it('applies default values correctly', () => {
-      render(<Guide config={baseConfig} />)
+      render(<Guide />)
       const container = screen.getByTestId('XGrid-container')
-      expect(container.style.getPropertyValue('--padd-grid-color')).toBe(CONFIG.color)
-      expect(container.style.getPropertyValue('--padd-z-index')).toBe(CONFIG.zIndex.toString())
+      expect(container.style.getPropertyValue('--padd-grid-color')).toBe(DEFAULT_CONFIG.color)
+      expect(container.style.getPropertyValue('--padd-z-index')).toBe(DEFAULT_CONFIG.zIndex.toString())
     })
   })
-  
+
   describe('Configuration Variants', () => {
     it('handles line variant configuration', () => {
-      const config: XGConfig = {
+      const config: GuideConfig = {
         variant: 'line',
         gap: 16,
       }
 
-      render(<Guide config={config} visibility="visible" />)
+      render(<Guide visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container).toHaveAttribute('data-variant', 'line')
@@ -115,13 +114,13 @@ describe('XGrid', () => {
     })
 
     it('handles auto variant configuration', () => {
-      const config: XGConfig = {
+      const config: GuideConfig = {
         variant: 'auto',
         columnWidth: '100px',
         gap: 16,
       }
 
-      render(<Guide config={config} visibility="visible" />)
+      render(<Guide visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container).toHaveAttribute('data-variant', 'auto')
@@ -131,7 +130,7 @@ describe('XGrid', () => {
     })
 
     it('handles pattern variant configuration', () => {
-      const config: XGConfig = {
+      const config: GuideConfig = {
         variant: 'pattern',
         columns: ['1fr', '2fr', '100px'],
         gap: 16,
@@ -147,7 +146,7 @@ describe('XGrid', () => {
     })
 
     it('handles fixed variant configuration', () => {
-      const config: XGConfig = {
+      const config: GuideConfig = {
         variant: 'fixed',
         columns: 12,
         columnWidth: '100px',
@@ -166,7 +165,7 @@ describe('XGrid', () => {
 
   describe('Grid Calculations', () => {
     it('calculates grid template columns correctly', () => {
-      const config: XGConfig = {
+      const config: GuideConfig = {
         variant: 'fixed',
         columns: 3,
         columnWidth: '100px',
@@ -180,7 +179,7 @@ describe('XGrid', () => {
     })
 
     it('handles alignment configuration', () => {
-      const config: XGConfig = {
+      const config: GuideConfig = {
         variant: 'fixed',
         columns: 3,
         align: 'center',
@@ -194,7 +193,7 @@ describe('XGrid', () => {
   })
 
   describe('Style Customization', () => {
-    const baseConfig: XGConfig = {
+    const baseConfig: GuideConfig = {
       variant: 'fixed',
       columns: 12,
       gap: 16,
@@ -207,7 +206,7 @@ describe('XGrid', () => {
         '--custom-property': '20px',
       }
 
-      render(<Guide config={baseConfig} style={customStyle} visibility="visible" />)
+      render(<Guide style={customStyle} visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       Object.entries(customStyle).forEach(([prop, value]) => {
@@ -216,7 +215,7 @@ describe('XGrid', () => {
     })
 
     it('combines multiple class names correctly', () => {
-      render(<Guide config={baseConfig} className="custom-class-1 custom-class-2" visibility="visible" />)
+      render(<Guide className="custom-class-1 custom-class-2" visibility="visible" />)
 
       const container = screen.getByTestId('XGrid-container')
       expect(container).toHaveClass('custom-class-1', 'custom-class-2')
@@ -225,7 +224,7 @@ describe('XGrid', () => {
 
   describe('Edge Cases', () => {
     it('handles undefined maxWidth', () => {
-      const config: XGConfig = {
+      const config: GuideConfig = {
         variant: 'fixed',
         columns: 12,
         maxWidth: undefined,
@@ -238,7 +237,7 @@ describe('XGrid', () => {
     })
 
     it('handles undefined padding', () => {
-      const config: XGConfig = {
+      const config: GuideConfig = {
         variant: 'fixed',
         columns: 12,
         padding: undefined,

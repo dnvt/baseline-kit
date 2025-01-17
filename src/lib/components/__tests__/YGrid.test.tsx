@@ -100,7 +100,7 @@ describe('YGrid', () => {
   describe('Rendering', () => {
     const baseConfig: YGConfig = {
       variant: 'line',
-      baseUnit: 8,
+      base: 8,
     }
 
     it('renders with hidden visibility', () => {
@@ -135,7 +135,7 @@ describe('YGrid', () => {
   describe('Grid Configuration', () => {
     it('applies custom base unit', () => {
       const config: YGConfig = {
-        baseUnit: 16,
+        base: 16,
         height: 100,
       }
 
@@ -163,7 +163,7 @@ describe('YGrid', () => {
     it('handles line variant configuration', () => {
       const config: YGConfig = {
         variant: 'line',
-        baseUnit: 8,
+        base: 8,
         height: 100,
       }
 
@@ -189,7 +189,7 @@ describe('YGrid', () => {
     it('handles flat variant configuration', () => {
       const config: YGConfig = {
         variant: 'flat',
-        baseUnit: 8,
+        base: 8,
         height: 100,
       }
 
@@ -217,7 +217,7 @@ describe('YGrid', () => {
   describe('Height Calculations', () => {
     it('calculates rows based on container height', async () => {
       const config: YGConfig = {
-        baseUnit: 8,
+        base: 8,
       }
 
       // Mock getBoundingClientRect
@@ -284,7 +284,7 @@ describe('YGrid', () => {
 
     it('only renders visible rows', async () => {
       const config: YGConfig = {
-        baseUnit: 8,
+        base: 8,
         height: 1000, // Total height of 1000px
       }
 
@@ -354,8 +354,8 @@ describe('YGrid', () => {
       const rows = screen.getByTestId('YGrid-container').querySelectorAll('[data-row-index]')
 
       // Calculate expected rows based on component logic:
-      // 1. Total rows = height / baseUnit = 1000 / 8 = 125
-      const totalRows = Math.ceil(config.height! as number / config.baseUnit!) // 125 rows total
+      // 1. Total rows = height / base = 1000 / 8 = 125
+      const totalRows = Math.ceil(config.height! as number / config.base!) // 125 rows total
 
       // This matches the actual component behavior where it renders all rows
       // because the component is designed to maintain the full grid structure
@@ -365,7 +365,7 @@ describe('YGrid', () => {
 
   describe('Style Customization', () => {
     const baseConfig: YGConfig = {
-      baseUnit: 8,
+      base: 8,
     }
 
     it('applies custom CSS variables', () => {
@@ -406,7 +406,7 @@ describe('YGrid', () => {
   describe('Performance Optimizations', () => {
     it('memoizes calculations for identical props', () => {
       const config: YGConfig = {
-        baseUnit: 8,
+        base: 8,
         height: 500,
       }
 

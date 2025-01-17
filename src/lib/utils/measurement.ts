@@ -1,5 +1,4 @@
 import { extractCSSNumber } from './styles'
-import { COMPONENTS as CONFIG } from '@config'
 import { convertToPixels, isRelativeUnit, CSSValue } from './units'
 
 export type MeasurementError = {
@@ -9,7 +8,7 @@ export type MeasurementError = {
 }
 
 type MeasurementSystemType = {
-  readonly baseUnit: number
+  readonly base: number
   /**
    * Normalizes a CSS value to the nearest multiple of the base unit.
    *
@@ -28,12 +27,15 @@ type MeasurementSystemType = {
   isNormalized: (value: CSSValue, config?: { unit?: number }) => boolean
 }
 
+// Default base value for measurement system
+const DEFAULT_BASE = 8
+
 /**
  * Utility object for handling and normalizing CSS values to a grid baseline unit.
  */
 export const MeasurementSystem: MeasurementSystemType = {
-  baseUnit: CONFIG.baseUnit,
-  normalize(value: CSSValue, { unit = CONFIG.baseUnit, suppressWarnings = false } = {}): number {
+  base: DEFAULT_BASE,
+  normalize(value: CSSValue, { unit = DEFAULT_BASE, suppressWarnings = false } = {}): number {
     try {
       if (value === 'auto') return unit
 
@@ -88,8 +90,7 @@ export const MeasurementSystem: MeasurementSystemType = {
       return unit // Fallback to base unit in case of error
     }
   },
-
-  isNormalized(value: CSSValue, { unit = CONFIG.baseUnit } = {}): boolean {
+  isNormalized(value: CSSValue, { unit = DEFAULT_BASE } = {}): boolean {
     if (value === 'auto') return true
 
     // Check if string value can be converted to pixels and is divisible by the unit

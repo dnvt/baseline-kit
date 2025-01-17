@@ -1,15 +1,8 @@
 /**
- * Grid Component
- * Horizontal and Vertical based Grid component.
- * @module Grid
+ * Guide Component
+ * Horizontal and Vertical based Guide component.
+ * @module Guide
  */
 
 export { Guide } from './Guide'
-export { YGrid } from './YGrid'
-
-export type {
-  GuideProps,
-  YGProps,
-  YGConfig,
-  GuideConfig,
-} from './types'
+export type { GuideProps, GuideConfig } from './types'

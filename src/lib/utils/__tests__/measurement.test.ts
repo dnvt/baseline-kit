@@ -1,6 +1,5 @@
 import { MeasurementSystem } from '@utils'
-import { COMPONENTS as CONFIG } from '@config'
-import { CSSValue } from '@types'
+import { CSSValue } from '@utils'
 
 describe('MeasurementSystem', () => {
   const originalWindow = global.window
@@ -49,7 +48,7 @@ describe('MeasurementSystem', () => {
     })
 
     it('handles auto value', () => {
-      expect(MeasurementSystem.normalize('auto')).toBe(CONFIG.baseUnit)
+      expect(MeasurementSystem.normalize('auto')).toBe(8)
     })
 
     it('normalizes relative units', () => {
@@ -63,7 +62,7 @@ describe('MeasurementSystem', () => {
 
     it('handles invalid inputs', () => {
       // Test invalid string input
-      expect(MeasurementSystem.normalize('invalid' as CSSValue)).toBe(CONFIG.baseUnit)
+      expect(MeasurementSystem.normalize('invalid' as CSSValue)).toBe(8)
     })
 
     it('handles NaN input', () => {

@@ -7,8 +7,7 @@ import type {
 } from '@types'
 import { CSSValue, Direction } from '@utils'
 
-
-export type GuideVariant = 'line' | 'auto' | 'pattern' | 'fixed'
+export type GuideVariant = 'line' | 'pattern' | 'fixed' | 'auto'
 
 type BaseConfig = {
   align?: GridAlignment
@@ -47,5 +46,17 @@ export type LineConfig = {
 export type GuideConfig = PatternConfig | AutoConfig | FixedConfig | LineConfig
 
 export type GuideProps = {
-  config?: GuideConfig
+  variant?: GuideVariant
+} & (
+  | { variant?: 'pattern'; columns?: GridColumnsPattern; columnWidth?: never }
+  | { variant?: 'fixed'; columns?: number; columnWidth?: CSSValue }
+  | { variant?: 'auto'; columnWidth?: CSSValue; columns?: never }
+  | { variant?: 'line'; columns?: never; columnWidth?: never }
+  ) & {
+  align?: GridAlignment
+  direction?: Direction
+  gap?: CSSValue
+  maxWidth?: CSSValue
+  height?: CSSValue
+  padding?: CSSProperties['padding']
 } & ComponentsProps

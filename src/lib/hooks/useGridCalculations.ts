@@ -1,17 +1,10 @@
 import { useMemo, useCallback } from 'react'
-import { X_GRID as CONFIG } from '@config'
 import {
   AutoGridConfig,
   GridColumnsPattern,
   GridConfig,
   UseGridCalculationsProps,
   UseGridCalculationsResult,
-} from '@types'
-import {
-  isLineVariant,
-  isPatternVariant,
-  isAutoVariant,
-  isFixedVariant,
 } from '@types'
 import {
   isValidGridPattern,
@@ -22,8 +15,8 @@ import {
   ABSOLUTE_UNITS,
   RELATIVE_UNITS,
 } from '@utils'
-
-const DEFAULT_GAP = 8
+import { useConfig } from '@components'
+import { LineConfig } from '@/components/Guide/types'
 
 /**
  * Hook for calculating grid layout dimensions and properties.
@@ -37,6 +30,7 @@ export function useGridCalculations({
   containerWidth,
   config,
 }: UseGridCalculationsProps): UseGridCalculationsResult {
+  const { base } = useConfig('guide')
 
   // Helper Functions ----------------------------------------------------------
 
@@ -45,12 +39,12 @@ export function useGridCalculations({
    * Uses container width and gap to determine optimal number of 1px columns.
    */
   const calculateLineVariant = useCallback(
-    (config: GridConfig & { variant: 'line' }, width: number): UseGridCalculationsResult => {
-      const numericGap = MeasurementSystem.normalize(config.gap ?? DEFAULT_GAP, {
-        unit: config.baseUnit,
+    (config: LineConfig, width: number): UseGridCalculationsResult => {
+      const numericGap = MeasurementSystem.normalize(config.gap ?? base, {
+        unit: config.base,
         suppressWarnings: true,
       })
-      const adjustedGap = numericGap - 1 // Adjust gap to account for 1px columns
+      const adjustedGap = Math.max(0, numericGap - 1)
       const columns = Math.max(1, Math.floor(width / (adjustedGap + 1)) + 1)
 
       return {
@@ -60,7 +54,7 @@ export function useGridCalculations({
         isValid: true,
       }
     },
-    [],
+    [base],
   )
 
   /**
@@ -93,11 +87,11 @@ export function useGridCalculations({
       return {
         gridTemplateColumns: columns.join(' '),
         columnsCount: columns.length,
-        calculatedGap: parseCSSValue(config.gap ?? DEFAULT_GAP),
+        calculatedGap: parseCSSValue(config.gap ?? base),
         isValid,
       }
     },
-    [],
+    [base],
   )
 
   /**
@@ -110,18 +104,18 @@ export function useGridCalculations({
         config.columnWidth ? parseCSSValue(config.columnWidth) : '1fr'
       })`,
       columnsCount: config.columns,
-      calculatedGap: parseCSSValue(config.gap ?? DEFAULT_GAP),
+      calculatedGap: parseCSSValue(config.gap ?? base),
       isValid: true,
     }),
-    [],
+    [base],
   )
 
   /**
    * Calculates auto-grid layout based on container width and column width.
    */
-  const calculateFlatGrid = useCallback(
+  const calculateAutoGrid = useCallback(
     (config: AutoGridConfig, width: number): UseGridCalculationsResult => {
-      const gap = formatCSSValue(config.gap ?? DEFAULT_GAP)
+      const gap = formatCSSValue(config.gap ?? base)
       const columnWidth = config.columnWidth
       const numericGap = parseInt(gap)
 
@@ -175,7 +169,7 @@ export function useGridCalculations({
         isValid: false,
       }
     },
-    [],
+    [base],
   )
 
   // Main Hook Logic -----------------------------------------------------------
@@ -191,17 +185,24 @@ export function useGridCalculations({
     }
 
     try {
-      if (isLineVariant(config)) return calculateLineVariant(config, containerWidth)
-      if (isPatternVariant(config)) return calculateColumnPattern(config)
-      if (isFixedVariant(config)) return calculateFixedColumns(config)
-      if (isAutoVariant(config)) return calculateFlatGrid(config, containerWidth)
-
-      // Fallback to default grid configuration
-      return {
-        gridTemplateColumns: `repeat(${CONFIG.columns}, 1fr)`,
-        columnsCount: CONFIG.columns,
-        calculatedGap: `${CONFIG.gap}px`,
-        isValid: true,
+      switch (config.variant) {
+      case 'line':
+        return calculateLineVariant(config, containerWidth)
+      case 'pattern':
+        return calculateColumnPattern(config)
+      case 'fixed':
+        return calculateFixedColumns(config)
+      case 'auto':
+        return calculateAutoGrid(config, containerWidth)
+      default: {
+        // Fallback to line variant with theme defaults
+        const defaultConfig: LineConfig = {
+          variant: 'line',
+          base: base,
+          gap: base,
+        }
+        return calculateLineVariant(defaultConfig, containerWidth)
+      }
       }
     } catch (error) {
       console.warn('Error calculating grid layout:', error)
@@ -212,5 +213,13 @@ export function useGridCalculations({
         isValid: false,
       }
     }
-  }, [containerWidth, config, calculateLineVariant, calculateColumnPattern, calculateFixedColumns, calculateFlatGrid])
+  }, [
+    containerWidth,
+    config,
+    base,
+    calculateLineVariant,
+    calculateColumnPattern,
+    calculateFixedColumns,
+    calculateAutoGrid,
+  ])
 }

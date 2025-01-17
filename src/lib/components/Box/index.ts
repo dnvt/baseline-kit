@@ -1,8 +1,7 @@
 /**
- * Stack Component
- * Horizontal and Vertical stack component.
+ * Box Component
+ * Simple Box wrapping component.
  * @module Box
  */
 
 export * from './Box'
-export * from './types'

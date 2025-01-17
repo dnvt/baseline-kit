@@ -16,12 +16,22 @@
 }
 
 .box {
-  padding-block-start: var(--box-block-start);
-  padding-block-end: var(--box-block-end);
-  padding-inline-start: var(--box-inline-start);
-  padding-inline-end: var(--box-inline-end);
+  width: var(--box-width);
+  height: var(--box-height);
+  position: relative;
 }
 
+/* Variant styles */
+.box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--box-color);
+  pointer-events: none;
+  z-index: var(--box-z-index);
+}
+
+/* Media Queries */
 @media (prefers-reduced-motion: reduce) {
   .box {
     transition: none;

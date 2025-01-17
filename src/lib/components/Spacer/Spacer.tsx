@@ -1,57 +1,64 @@
-import { memo, useMemo, Fragment, CSSProperties } from 'react'
-import { useComponentConfig, Visibility } from '@context'
+import { memo, useMemo, Fragment, CSSProperties, ReactNode } from 'react'
 import { useSpacerDimensions } from '@hooks'
-import { cs, cx } from '@utils'
-
-import { SpacerProps } from './types'
+import { ComponentsProps } from '@types'
+import { cs, CSSValue, cx } from '@utils'
 import styles from './styles.module.css'
+import { useConfig, Visibility } from '../Config'
+
+export type SpacerVariant = 'line' | 'flat'
+export type SpacerDimension = 'width' | 'height'
+export type SpacerDimensions = Record<SpacerDimension, CSSValue | '100%'>
+
+// For measurement indicators
+export type IndicatorNode = (value: number, dimension: SpacerDimension) => ReactNode
+export type SpacerProps = ComponentsProps & {
+  /** Height of the spacer */
+  height?: CSSValue
+  /** Width of the spacer */
+  width?: CSSValue
+  /** Optional node for displaying measurements */
+  indicatorNode?: IndicatorNode
+  /** Override variant from theme */
+  variant?: SpacerVariant
+  /** Override visibility from theme */
+  visibility?: Visibility
+}
 
 /**
  * Spacer Component
  * A flexible spacer element that adjusts its dimensions based on provided height and width.
- * Optionally displays measurement indicators.
- *
- * @param height - The height of the spacer.
- * @param width - The width of the spacer.
- * @param config - Configuration object for the spacer.
- * @param indicatorNode - A function to render measurement indicators.
- * @param visibility - Visibility of the spacer ('visible' or 'hidden').
- * @param className - Additional class names for the container.
- * @param style - Additional inline styles for the container.
+ * Integrates with theme context for consistent styling and behavior.
  */
 export const Spacer = memo(function Spacer({
   height,
   width,
   indicatorNode,
-  visibility,
+  visibility: visibilityProp,
+  variant: variantProp,
   className,
   style,
+  ...props
 }: SpacerProps) {
-  const config = useComponentConfig('spacer')
-  const {
-    baseUnit,
-    variant,
-    zIndex,
-    colors,
-    visibility: defaultVisibility,
-  } = config
+  const config = useConfig('spacer')
 
-  const isShown = visibility ?? (defaultVisibility as Visibility) === 'visible'
+  const isShown = (visibilityProp ?? config.visibility) === 'visible'
+  const variant = variantProp ?? config.variant
 
-
+  // Calculate dimensions based on provided values or theme defaults
   const { dimensions, normalizedHeight, normalizedWidth } = useSpacerDimensions({
     height,
     width,
-    baseUnit,
+    base: config.base,
   })
 
+  // Generate measurement indicators when visible
   const measurements = useMemo(() => {
     if (!isShown || !indicatorNode) return null
 
-    const result = []
+    const indicators = []
 
     if (normalizedHeight !== null) {
-      result.push(
+      indicators.push(
         <Fragment key="height">
           {indicatorNode(normalizedHeight, 'height')}
         </Fragment>,
@@ -59,47 +66,47 @@ export const Spacer = memo(function Spacer({
     }
 
     if (normalizedWidth !== null) {
-      result.push(
+      indicators.push(
         <Fragment key="width">
           {indicatorNode(normalizedWidth, 'width')}
         </Fragment>,
       )
     }
 
-    return result
+    return indicators
   }, [isShown, indicatorNode, normalizedHeight, normalizedWidth])
 
-  const combinedStyles = useMemo(() => {
-    const baseStyles = {
-      '--spacer': '100%',
-      '--spc-height': dimensions.height,
-      '--spc-width': dimensions.width,
-      '--spc-base-unit': `${baseUnit}px`,
-      '--spc-z-index': zIndex,
-      '--spc-border-width': '1px',
-      '--spc-border-style': 'solid',
-      '--spc-color-line': colors.line,
-      '--spc-color-flat': colors.flat,
-      '--spc-color-indice': colors.indice,
-
-    } as CSSProperties
-
-    return cs(baseStyles, style)
-  }, [dimensions.height, dimensions.width, baseUnit, zIndex, colors.line, colors.flat, colors.indice, style])
+  // Combine base styles with theme values and custom styles
+  const containerStyles = useMemo(() => cs({
+    '--spc-height': dimensions.height,
+    '--spc-width': dimensions.width,
+    '--spc-base': `${config.base}px`,
+    '--spc-color': variant === 'line'
+      ? config.colors.line
+      : config.colors.flat,
+    '--spc-indicator-color': config.colors.indice,
+  } as CSSProperties, style), [
+    dimensions,
+    config,
+    variant,
+    style,
+  ])
 
   return (
     <div
       className={cx(
         styles.spacer,
-        styles[isShown ? 'visible' : 'hidden'],
+        config.variant === 'line' && styles.line,
+        config.variant === 'flat' && styles.flat,
+        isShown ? styles.visible : styles.hidden,
         className,
       )}
-      data-testid="spacer-container"
-      data-variant={variant}
-      style={combinedStyles}
+      data-testid="spacer"
+      data-variant={config.variant}
+      style={containerStyles}
+      {...props}
     >
       {measurements}
     </div>
   )
 })
-
