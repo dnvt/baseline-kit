@@ -1,6 +1,5 @@
 import { useReducer, useCallback, ReactNode } from 'react'
-import { Guide, DEFAULT_CONFIG } from '@components'
-import { type GridColumnsPattern } from '@types'
+import { Guide, DEFAULT_CONFIG, GuideColumnsPattern } from '@components'
 import { GridControls } from './GridControls'
 import type { DemoGridAction, DemoGridState } from './types'
 import { usePageHeight } from '../hooks'
@@ -52,7 +51,7 @@ export const DEMO: DemoGridState = {
   },
   columnConfig: {
     count: 9,
-    gap: DEFAULT_CONFIG.base,
+    gap: 1,
     pattern: [
       '24px',
       '24px',
@@ -63,7 +62,7 @@ export const DEMO: DemoGridState = {
       '48px',
       '24px',
       '24px',
-    ] as GridColumnsPattern,
+    ] as GuideColumnsPattern,
   },
   pageHeight: 0,
 }
@@ -91,10 +90,8 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
       />
 
       <div className="demo-wrapper">
-        {/* Fixed columns guide */}
         <Guide
           visibility={state.showGuides.columns ? 'visible' : 'hidden'}
-          variant="line"
           gap={state.columnConfig.gap}
         />
         <Guide

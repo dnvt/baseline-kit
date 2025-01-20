@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Config, useDefaultConfig } from './Config'
+import { Config, useDefaultConfig } from '@components'
 
 export type ComponentConfig<K extends keyof Config> = Config[K] & {
   base: number
@@ -11,10 +11,9 @@ export function useConfig<K extends keyof Config>(
   const defaultConfig = useDefaultConfig()
 
   return useMemo(() => {
-    const componentConfig = defaultConfig[component]
     return Object.assign(
       { base: defaultConfig.base },
-      componentConfig,
+      defaultConfig[component],
     ) as ComponentConfig<K>
   }, [defaultConfig, component])
 }

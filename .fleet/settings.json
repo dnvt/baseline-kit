@@ -66,5 +66,6 @@
         "format"
       ]
     }
-  ]
+  ],
+  "backend.maxHeapSizeMb": 1487
 }

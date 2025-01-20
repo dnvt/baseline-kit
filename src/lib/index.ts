@@ -1,13 +1,11 @@
 /**
- * Padded Grid System
+ * Padded System
  * A lightweight, flexible grid system for React applications.
- * @module padded-grid
+ * @module padded
  */
 
-// Export public components
-export { Guide } from './components'
-export type { GuideProps } from './components'
 
-// Export public hooks
-export { useGridDimensions, useGridCalculations } from './hooks'
+export * from './components'
+export * from './hooks'
+export * from './utils'
 

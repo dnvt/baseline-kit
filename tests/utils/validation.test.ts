@@ -1,9 +1,9 @@
 import {
   isValidGridColumnValue,
-  isValidGridPattern,
-  isGridLineConfig,
-  isGridColumnConfig,
-  isAutoCalculatedGrid,
+  isValidGuidePattern,
+  isGuideLineConfig,
+  isGuideColumnConfig,
+  isAutoCalculatedGuide,
 } from '@utils'
 
 describe('Validation Utils', () => {
@@ -55,49 +55,49 @@ describe('Validation Utils', () => {
   // Rest of the tests remain the same...
   describe('isValidGridPattern', () => {
     it('validates valid patterns', () => {
-      expect(isValidGridPattern(['1fr', '2fr', '100px'])).toBe(true)
-      expect(isValidGridPattern(['auto', '1fr'])).toBe(true)
-      expect(isValidGridPattern(['100%'])).toBe(true)
+      expect(isValidGuidePattern(['1fr', '2fr', '100px'])).toBe(true)
+      expect(isValidGuidePattern(['auto', '1fr'])).toBe(true)
+      expect(isValidGuidePattern(['100%'])).toBe(true)
     })
 
     it('rejects invalid patterns', () => {
-      expect(isValidGridPattern([])).toBe(false)
-      expect(isValidGridPattern(['invalid'])).toBe(false)
-      expect(isValidGridPattern(['1fr', null])).toBe(false)
-      expect(isValidGridPattern(null)).toBe(false)
-      expect(isValidGridPattern(undefined)).toBe(false)
-      expect(isValidGridPattern('1fr')).toBe(false)
+      expect(isValidGuidePattern([])).toBe(false)
+      expect(isValidGuidePattern(['invalid'])).toBe(false)
+      expect(isValidGuidePattern(['1fr', null])).toBe(false)
+      expect(isValidGuidePattern(null)).toBe(false)
+      expect(isValidGuidePattern(undefined)).toBe(false)
+      expect(isValidGuidePattern('1fr')).toBe(false)
     })
   })
 
   describe('Grid Config Type Guards', () => {
     it('identifies line variant config', () => {
-      expect(isGridLineConfig({ variant: 'line' })).toBe(true)
-      expect(isGridLineConfig({ variant: 'line', otherProp: true })).toBe(true)
-      expect(isGridLineConfig({ variant: 'other' })).toBe(false)
-      expect(isGridLineConfig({ columns: 12 })).toBe(false)
-      expect(isGridLineConfig(null)).toBe(false)
-      expect(isGridLineConfig({})).toBe(false)
+      expect(isGuideLineConfig({ variant: 'line' })).toBe(true)
+      expect(isGuideLineConfig({ variant: 'line', otherProp: true })).toBe(true)
+      expect(isGuideLineConfig({ variant: 'other' })).toBe(false)
+      expect(isGuideLineConfig({ columns: 12 })).toBe(false)
+      expect(isGuideLineConfig(null)).toBe(false)
+      expect(isGuideLineConfig({})).toBe(false)
     })
 
     it('identifies column config', () => {
-      expect(isGridColumnConfig({ columns: 12 })).toBe(true)
-      expect(isGridColumnConfig({ columns: ['1fr', '2fr'] })).toBe(true)
-      expect(isGridColumnConfig({ columns: 12, otherProp: true })).toBe(true)
-      expect(isGridColumnConfig({ variant: 'line' })).toBe(false)
-      expect(isGridColumnConfig({ columnWidth: '100px' })).toBe(false)
-      expect(isGridColumnConfig(null)).toBe(false)
-      expect(isGridColumnConfig({})).toBe(false)
+      expect(isGuideColumnConfig({ columns: 12 })).toBe(true)
+      expect(isGuideColumnConfig({ columns: ['1fr', '2fr'] })).toBe(true)
+      expect(isGuideColumnConfig({ columns: 12, otherProp: true })).toBe(true)
+      expect(isGuideColumnConfig({ variant: 'line' })).toBe(false)
+      expect(isGuideColumnConfig({ columnWidth: '100px' })).toBe(false)
+      expect(isGuideColumnConfig(null)).toBe(false)
+      expect(isGuideColumnConfig({})).toBe(false)
     })
 
     it('identifies auto calculated grid', () => {
-      expect(isAutoCalculatedGrid({ columnWidth: '100px' })).toBe(true)
-      expect(isAutoCalculatedGrid({ columnWidth: 100 })).toBe(true)
-      expect(isAutoCalculatedGrid({ columnWidth: '100px', otherProp: true })).toBe(true)
-      expect(isAutoCalculatedGrid({ columns: 12 })).toBe(false)
-      expect(isAutoCalculatedGrid({ variant: 'line' })).toBe(false)
-      expect(isAutoCalculatedGrid(null)).toBe(false)
-      expect(isAutoCalculatedGrid({})).toBe(false)
+      expect(isAutoCalculatedGuide({ columnWidth: '100px' })).toBe(true)
+      expect(isAutoCalculatedGuide({ columnWidth: 100 })).toBe(true)
+      expect(isAutoCalculatedGuide({ columnWidth: '100px', otherProp: true })).toBe(true)
+      expect(isAutoCalculatedGuide({ columns: 12 })).toBe(false)
+      expect(isAutoCalculatedGuide({ variant: 'line' })).toBe(false)
+      expect(isAutoCalculatedGuide(null)).toBe(false)
+      expect(isAutoCalculatedGuide({})).toBe(false)
     })
   })
 })

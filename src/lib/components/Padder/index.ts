@@ -4,4 +4,4 @@
  * @module Padder
  */
 
-export { Padder } from './Padder'
+export * from './Padder'

@@ -1,9 +1,11 @@
 import { CSSProperties, memo, ReactNode, useMemo } from 'react'
+import { useConfig } from '@hooks'
 import { cx, cs, CSSValue, normalizeSpacing, BlockInlineSpacing, PaddingSpacing } from '@utils'
-import { ComponentsProps } from '@types'
-import styles from './styles.module.css'
-import { useConfig, Visibility } from '../Config'
+import { ComponentsProps } from '../types'
+import { Visibility } from '../Config'
 import { Spacer } from '../Spacer'
+import styles from './styles.module.css'
+import { useVisibility } from '@/hooks/visibility/useVisibility'
 
 export type PadderProps = Omit<ComponentsProps, 'data-testid'> & (BlockInlineSpacing | PaddingSpacing) & {
   /** Width of the padder container */
@@ -19,34 +21,31 @@ export type PadderProps = Omit<ComponentsProps, 'data-testid'> & (BlockInlineSpa
 /**
  * Padder Component
  * Manages spacing and padding with optional visual indicators.
- * Uses Spacer components to visualize padding when visible.
+ * Uses Spacer components to visualize padding within your components.
  */
 export const Padder = memo(function Padder({
   children,
   className,
   height = 'fit-content',
   width = 'fit-content',
-  visibility: visibilityProp,
+  visibility,
   style,
   ...spacingProps
 }: PadderProps) {
   const config = useConfig('padder')
-
-  // Calculate normalized padding values
   const spacing = useMemo(() =>
     normalizeSpacing(spacingProps, config.base),
-  [spacingProps, config.base])
+  [spacingProps, config.base],
+  )
 
-  // Determine if spacers should be shown
-  const visibility = visibilityProp ?? config.visibility
-  const enableSpacers = visibility !== 'none'
-  const showSpacers = visibility === 'visible'
+  const { isShown, isNone } = useVisibility(visibility, config.visibility)
+  const enableSpacers = !isNone
 
   const containerStyles = useMemo(() => cs({
-    '--padder-width': width,
-    '--padder-height': height,
-    '--padder-base': `${config.base}px`,
-    '--padder-color': config.color,
+    '--pdd-padder-width': width,
+    '--pdd-padder-height': height,
+    '--pdd-padder-base': `${config.base}px`,
+    '--pdd-padder-color': config.color,
     ...(enableSpacers ? {} : {
       paddingBlock: `${spacing.block[0]}px ${spacing.block[1]}px`,
       paddingInline: `${spacing.inline[0]}px ${spacing.inline[1]}px`,
@@ -60,11 +59,19 @@ export const Padder = memo(function Padder({
     style,
   ])
 
+  const renderSpacer = (width: CSSValue, height: CSSValue) => (
+    <Spacer
+      width={width}
+      height={height}
+      visibility="visible"
+    />
+  )
+
   return (
     <div
       className={cx(
         styles.padder,
-        showSpacers && styles.visible,
+        isShown && styles.visible,
         className,
       )}
       data-testid="padder"
@@ -72,22 +79,8 @@ export const Padder = memo(function Padder({
     >
       {enableSpacers && (
         <>
-          {/* Left spacing */}
-          {spacing.inline[0] > 0 && (
-            <Spacer
-              width={spacing.inline[0]}
-              height="100%"
-              visibility="visible"
-            />
-          )}
-          {/* Top spacing */}
-          {spacing.block[0] > 0 && (
-            <Spacer
-              width="100%"
-              height={spacing.block[0]}
-              visibility="visible"
-            />
-          )}
+          {spacing.inline[0] > 0 && renderSpacer(spacing.inline[0], '100%')}
+          {spacing.block[0] > 0 && renderSpacer('100%', spacing.block[0])}
         </>
       )}
 
@@ -95,22 +88,8 @@ export const Padder = memo(function Padder({
 
       {enableSpacers && (
         <>
-          {/* Bottom spacing */}
-          {spacing.block[1] > 0 && (
-            <Spacer
-              width="100%"
-              height={spacing.block[1]}
-              visibility="visible"
-            />
-          )}
-          {/* Right spacing */}
-          {spacing.inline[1] > 0 && (
-            <Spacer
-              width={spacing.inline[1]}
-              height="100%"
-              visibility="visible"
-            />
-          )}
+          {spacing.block[1] > 0 && renderSpacer('100%', spacing.block[1])}
+          {spacing.inline[1] > 0 && renderSpacer(spacing.inline[1], '100%')}
         </>
       )}
     </div>

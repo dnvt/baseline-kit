@@ -3,9 +3,7 @@
  * @module utils
  */
 
-export * from './validation'
-export * from './styles'
-export * from './performance'
+export * from './style'
 export * from './measurement'
-export * from './units'
-export * from './spacing'
+export * from './performance'
+export * from './validation'

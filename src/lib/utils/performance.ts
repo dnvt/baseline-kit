@@ -6,21 +6,12 @@
  * @param delay - The delay in milliseconds.
  * @returns A debounced version of the function.
  */
-export function debounce<Callback extends (...args: unknown[]) => void>(
-  fn: Callback,
-  delay: number,
-): (...args: Parameters<Callback>) => void {
+export const debounce = <T extends (...args: unknown[]) => void>(fn: T, delay: number): T => {
   let timer: ReturnType<typeof setTimeout> | null = null
-
-  return (...args: Parameters<Callback>) => {
-    // Clear the existing timer, if any
+  return ((...args) => {
     if (timer) clearTimeout(timer)
-
-    // Set a new timer to invoke the function after the delay
-    timer = setTimeout(() => {
-      fn(...args)
-    }, delay)
-  }
+    timer = setTimeout(() => fn(...args), delay)
+  }) as T
 }
 
 /**
@@ -30,21 +21,15 @@ export function debounce<Callback extends (...args: unknown[]) => void>(
  * @param fn - The function to throttle.
  * @returns A throttled version of the function.
  */
-export function rafThrottle<Callback extends (...args: unknown[]) => void>(
-  fn: Callback,
-): (...args: Parameters<Callback>) => void {
+export const rafThrottle = <T extends (...args: unknown[]) => void>(fn: T): T => {
   let rafId: number | null = null
-
-  return (...args: Parameters<Callback>) => {
-    // If a frame is already scheduled, do nothing
+  return ((...args) => {
     if (rafId) return
-
-    // Schedule the function to run in the next animation frame
     rafId = requestAnimationFrame(() => {
       fn(...args)
-      rafId = null // Reset the ID after execution
+      rafId = null
     })
-  }
+  }) as T
 }
 
 /**
@@ -65,7 +50,5 @@ export const clamp = (value: number, min: number, max: number): number =>
  * @param precision - The number of decimal places to round to (default is 0).
  * @returns The rounded number.
  */
-export const round = (value: number, precision = 0): number => {
-  const multiplier = Math.pow(10, precision)
-  return Math.round(value * multiplier) / multiplier
-}
+export const round = (value: number, precision = 0): number =>
+  Number((Math.round(value * 10 ** precision) / 10 ** precision).toFixed(precision))

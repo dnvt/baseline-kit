@@ -1,13 +1,13 @@
 import { renderHook } from '@testing-library/react'
-import { useGridCalculations } from '@hooks'
+import { useGuideCalculations } from '@hooks'
 import type { CSSValue } from '@/types'
 import { cssTestUtils } from '@/__tests__/matchers/cssTestUtils'
 
-describe('useGridCalculations', () => {
+describe('useGuideCalculations', () => {
   describe('Line Variant', () => {
     it('calculates line variant layout correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 100,
           config: {
             variant: 'line',
@@ -30,7 +30,7 @@ describe('useGridCalculations', () => {
   describe('Pattern Variant', () => {
     it('handles pixel values correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'pattern',
@@ -50,7 +50,7 @@ describe('useGridCalculations', () => {
 
     it('handles basic supported types correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'pattern',
@@ -74,7 +74,7 @@ describe('useGridCalculations', () => {
 
     it('handles numeric values correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'pattern',
@@ -94,7 +94,7 @@ describe('useGridCalculations', () => {
 
     it('handles invalid values appropriately', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'pattern',
@@ -114,7 +114,7 @@ describe('useGridCalculations', () => {
 
     it('handles fr units correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'pattern',
@@ -137,7 +137,7 @@ describe('useGridCalculations', () => {
   describe('Fixed Columns', () => {
     it('calculates fixed columns with default width', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'fixed',
@@ -157,7 +157,7 @@ describe('useGridCalculations', () => {
 
     it('calculates fixed columns with custom width', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'fixed',
@@ -180,7 +180,7 @@ describe('useGridCalculations', () => {
   describe('Auto Grid', () => {
     it('handles auto value correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'auto',
@@ -200,7 +200,7 @@ describe('useGridCalculations', () => {
 
     it('handles pixel values correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'auto',
@@ -220,7 +220,7 @@ describe('useGridCalculations', () => {
 
     it('handles numeric values correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'auto',
@@ -240,7 +240,7 @@ describe('useGridCalculations', () => {
 
     it('handles unsupported units appropriately', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'auto',
@@ -260,7 +260,7 @@ describe('useGridCalculations', () => {
 
     it('handles percentage values correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'auto',
@@ -282,7 +282,7 @@ describe('useGridCalculations', () => {
   describe('Error Handling', () => {
     it('handles missing container width', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 0,
           config: {
             variant: 'fixed',
@@ -301,7 +301,7 @@ describe('useGridCalculations', () => {
 
     it('handles invalid pattern', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'pattern',
@@ -331,7 +331,7 @@ describe('useGridCalculations', () => {
 
     it('handles absolute units correctly', () => {
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth: 1000,
           config: {
             variant: 'auto',
@@ -360,7 +360,7 @@ describe('useGridCalculations', () => {
       )
 
       const { result } = renderHook(() =>
-        useGridCalculations({
+        useGuideCalculations({
           containerWidth,
           config: {
             variant: 'auto',

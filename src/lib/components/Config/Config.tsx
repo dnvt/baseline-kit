@@ -1,39 +1,32 @@
 import { createContext, use, useMemo, type ReactNode } from 'react'
 import { DEFAULT_CONFIG } from './defaults'
-import { GuideVariant } from '../Guide/types'
-import { SpacerVariant } from '../Spacer'
+import type { SpacerVariant } from '../Spacer'
+import type { GuideVariant } from '../types'
 
 export type Visibility = 'visible' | 'hidden' | 'none'
-export type Config = {
-  // System base unit
-  base: number
 
-  // Component configs
+type Colors = {
+  line: string
+  flat: string
+  indice: string
+}
+
+export type Config = {
+  base: number
   guide: {
     variant: GuideVariant
     visibility: Visibility
     colors: Record<GuideVariant, string>
   }
-
   spacer: {
     variant: SpacerVariant
     visibility: Visibility
-    colors: {
-      line: string
-      flat: string
-      indice: string
-    }
+    colors: Colors
   }
-
   box: {
-    colors: {
-      line: string
-      flat: string
-      indice: string
-    }
+    colors: Colors
     visibility: Visibility
   }
-
   padder: {
     color: string
     visibility: Visibility
@@ -43,9 +36,7 @@ export type Config = {
 const ConfigContext = createContext<Config | null>(null)
 ConfigContext.displayName = 'ConfigContext'
 
-export function useDefaultConfig() {
-  return use(ConfigContext) ?? DEFAULT_CONFIG
-}
+export const useDefaultConfig = () => use(ConfigContext) ?? DEFAULT_CONFIG
 
 type ConfigProps = {
   children: ReactNode
@@ -56,26 +47,20 @@ type ConfigProps = {
   padder?: Partial<Config['padder']>
 }
 
-function createCSSVariables(config: Config): Record<string, string> {
-  return {
-    '--padd-base': `${config.base}px`,
-    // Guide colors
-    '--padd-guide-line': config.guide.colors.line,
-    '--padd-guide-pattern': config.guide.colors.pattern,
-    '--padd-guide-auto': config.guide.colors.auto,
-    '--padd-guide-fixed': config.guide.colors.fixed,
-    // Spacer colors
-    '--padd-spacer-line': config.spacer.colors.line,
-    '--padd-spacer-flat': config.spacer.colors.flat,
-    '--padd-spacer-indice': config.spacer.colors.indice,
-    // Box color
-    '--padd-box-line': config.box.colors.line,
-    '--padd-box-flat': config.box.colors.flat,
-    '--padd-box-indice': config.box.colors.indice,
-    // Padder color
-    '--padd-padder-color': config.padder.color,
-  }
-}
+const createCSSVariables = ({ base, guide, spacer, box, padder }: Config) => ({
+  '--pdd-base': `${base}px`,
+  '--pdd-spacer-line': spacer.colors.line,
+  '--pdd-spacer-flat': spacer.colors.flat,
+  '--pdd-spacer-indice': spacer.colors.indice,
+  '--pdd-box-line': box.colors.line,
+  '--pdd-box-flat': box.colors.flat,
+  '--pdd-box-indice': box.colors.indice,
+  '--pdd-padder-color': padder.color,
+  '--pdd-guide-color-line': guide.colors.line,
+  '--pdd-guide-color-pattern': guide.colors.pattern,
+  '--pdd-guide-color-auto': guide.colors.auto,
+  '--pdd-guide-color-fixed': guide.colors.fixed,
+})
 
 export function Config({
   children,
@@ -90,22 +75,10 @@ export function Config({
   const value = useMemo(() => {
     const newConfig: Config = {
       base: base ?? parentConfig.base,
-      guide: {
-        ...parentConfig.guide,
-        ...guide,
-      },
-      spacer: {
-        ...parentConfig.spacer,
-        ...spacer,
-      },
-      box: {
-        ...parentConfig.box,
-        ...box,
-      },
-      padder: {
-        ...parentConfig.padder,
-        ...padder,
-      },
+      guide: { ...parentConfig.guide, ...guide },
+      spacer: { ...parentConfig.spacer, ...spacer },
+      box: { ...parentConfig.box, ...box },
+      padder: { ...parentConfig.padder, ...padder },
     }
 
     return {
@@ -115,10 +88,8 @@ export function Config({
   }, [parentConfig, base, guide, spacer, box, padder])
 
   return (
-    <ConfigContext value={value}>
-      <div style={value.cssVariables}>
-        {children}
-      </div>
-    </ConfigContext>
+    <ConfigContext.Provider value={value}>
+      <div style={value.cssVariables}>{children}</div>
+    </ConfigContext.Provider>
   )
 }

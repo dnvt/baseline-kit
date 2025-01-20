@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react'
-import { useGridDimensions } from '@hooks'
+import { useGuideDimensions } from '@hooks'
 import { testUtils } from '@/__tests__/setup'
 import { cssTestUtils } from '@/__tests__/matchers/cssTestUtils'
 
@@ -15,7 +15,7 @@ const mockResizeObserver = vi.fn((callback: unknown) => ({
 
 vi.stubGlobal('ResizeObserver', mockResizeObserver)
 
-describe('useGridDimensions', () => {
+describe('useGuideDimensions', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     observerMap.clear()
@@ -30,7 +30,7 @@ describe('useGridDimensions', () => {
     })
 
     const ref = { current: element }
-    const { result } = renderHook(() => useGridDimensions(ref))
+    const { result } = renderHook(() => useGuideDimensions(ref))
 
     // Trigger initial measurement
     act(() => {
@@ -56,7 +56,7 @@ describe('useGridDimensions', () => {
 
   it('handles null ref', () => {
     const ref = { current: null }
-    const { result } = renderHook(() => useGridDimensions(ref))
+    const { result } = renderHook(() => useGuideDimensions(ref))
 
     expect(result.current).toEqual({ width: 0, height: 0 })
   })
@@ -74,7 +74,7 @@ describe('useGridDimensions', () => {
       testUtils.mockElementSize(element, 100.6, 200.4)
 
       const ref = { current: element }
-      const { result } = renderHook(() => useGridDimensions(ref))
+      const { result } = renderHook(() => useGuideDimensions(ref))
 
       expect(result.current).toEqual({
         width: Math.round(100.6),
@@ -91,7 +91,7 @@ describe('useGridDimensions', () => {
       )
 
       const ref = { current: element }
-      const { result } = renderHook(() => useGridDimensions(ref))
+      const { result } = renderHook(() => useGuideDimensions(ref))
 
       expect(result.current).toEqual({
         width: 160, // 10rem * 16px
