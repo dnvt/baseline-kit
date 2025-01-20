@@ -1,62 +1,31 @@
-import type { CSSProperties } from 'react'
-import type {
-  ComponentsProps,
-  GridAlignment,
-  GridColumnsPattern,
-  PaddedBaseConfig,
-} from '@types'
-import { CSSValue, Direction } from '@utils'
+import { CSSValue } from '@utils'
+import { GuideColumnsPattern } from '../types'
 
-export type GuideVariant = 'line' | 'pattern' | 'fixed' | 'auto'
+type BaseGuideConfig = {
+  gap?: number
+  base?: number
+}
 
-type BaseConfig = {
-  align?: GridAlignment
-  direction?: Direction
-  gap?: CSSValue
-  maxWidth?: CSSValue
-  height?: CSSValue
-  padding?: CSSProperties['padding']
-  variant?: GuideVariant
-} & PaddedBaseConfig
-
-export type PatternConfig = {
+export type PatternConfig = BaseGuideConfig & {
   variant: 'pattern'
-  columns: GridColumnsPattern
+  columns: GuideColumnsPattern
   columnWidth?: never
-} & BaseConfig
+}
 
-export type FixedConfig = {
+export type FixedConfig = BaseGuideConfig & {
   variant: 'fixed'
   columns: number
   columnWidth?: CSSValue
-} & BaseConfig
+}
 
-export type AutoConfig = {
+export type AutoConfig = BaseGuideConfig & {
   variant: 'auto'
   columnWidth: CSSValue
   columns?: never
-} & BaseConfig
+}
 
-export type LineConfig = {
-  variant: 'line'
+export type LineConfig = BaseGuideConfig & {
+  variant?: 'line'
   columns?: never
   columnWidth?: never
-} & BaseConfig
-
-export type GuideConfig = PatternConfig | AutoConfig | FixedConfig | LineConfig
-
-export type GuideProps = {
-  variant?: GuideVariant
-} & (
-  | { variant?: 'pattern'; columns?: GridColumnsPattern; columnWidth?: never }
-  | { variant?: 'fixed'; columns?: number; columnWidth?: CSSValue }
-  | { variant?: 'auto'; columnWidth?: CSSValue; columns?: never }
-  | { variant?: 'line'; columns?: never; columnWidth?: never }
-  ) & {
-  align?: GridAlignment
-  direction?: Direction
-  gap?: CSSValue
-  maxWidth?: CSSValue
-  height?: CSSValue
-  padding?: CSSProperties['padding']
-} & ComponentsProps
+}

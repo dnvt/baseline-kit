@@ -41,11 +41,6 @@ export type SpacingTuple = [number, number]
 export type SpacingObject = { start: number; end: number }
 export type Spacing = number | SpacingTuple | SpacingObject
 
-export type BlockInlineSpacing = {
-  block?: Spacing
-  inline?: Spacing
-}
-
 export type PaddingValue =
   | number
   | [number, number]  // [block, inline]
@@ -54,6 +49,11 @@ export type PaddingValue =
 
 export type PaddingSpacing = {
   padding: PaddingValue
+}
+
+export type BlockInlineSpacing = {
+  block?: Spacing
+  inline?: Spacing
 }
 
 export type NormalizedSpacing = {
@@ -242,4 +242,56 @@ export const normalizeGridUnit = (
     return `${pixels}px`
   }
   return value // Keep original value if conversion not possible
+}
+
+/**
+ * Extracts the numeric value from a CSS value.
+ * Converts relative and absolute units to pixels where possible.
+ *
+ * @param value - The CSS value to extract the number from (e.g., `10px`, `1em`, `auto`).
+ * @returns The numeric value as a number, or `0` if the value cannot be parsed.
+ */
+export const extractCSSNumber = (value: CSSValue): number => {
+  if (value === 'auto') return 0
+  if (typeof value === 'number') return value
+
+  // Try to convert to pixels first
+  const pixels = convertToPixels(value)
+  if (pixels !== null) return pixels
+
+  // Fallback: Extract numeric part of the value
+  const numericMatch = value.toString().match(/^-?\d*\.?\d+/)
+  return numericMatch ? parseFloat(numericMatch[0]) : 0
+}
+
+/**
+ * Parses a CSS value into a valid CSS string.
+ * Handles numeric values, relative units, grid units, and absolute units.
+ *
+ * @param value - The CSS value to parse (e.g., `px`, `em`, `rem`, `auto`, or a number).
+ * @returns A valid CSS string (e.g., `10px`, `auto`, `1em`).
+ */
+export const parseCSSValue = (
+  value: CSSValue | undefined,
+): string => {
+  if (!value) return '0'
+  if (value === 'auto') return value
+  if (typeof value === 'number') return `${value}px`
+
+  // Handle units
+  const parsed = parseCSSUnit(value)
+  if (parsed) {
+    // Keep relative and grid units as-is
+    if (isRelativeUnit(value) || isGridUnit(value)) {
+      return value
+    }
+    // Convert absolute units to pixels
+    const pixels = convertToPixels(value)
+    if (pixels !== null) {
+      return `${pixels}px`
+    }
+  }
+
+  // Fallback: Return the value as a string
+  return value.toString()
 }

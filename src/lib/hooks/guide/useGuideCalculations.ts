@@ -1,22 +1,26 @@
 import { useMemo, useCallback } from 'react'
+import { AutoConfig, GuideColumnsPattern, GuideConfig, LineConfig } from '@components'
 import {
-  AutoGridConfig,
-  GridColumnsPattern,
-  GridConfig,
-  UseGridCalculationsProps,
-  UseGridCalculationsResult,
-} from '@types'
-import {
-  isValidGridPattern,
-  MeasurementSystem,
+  isValidGuidePattern,
   parseCSSValue,
   convertToPixels,
   formatCSSValue,
   ABSOLUTE_UNITS,
   RELATIVE_UNITS,
 } from '@utils'
-import { useConfig } from '@components'
-import { LineConfig } from '@/components/Guide/types'
+import { useConfig } from '@hooks'
+
+type Props = {
+  containerWidth: number
+  config: GuideConfig
+}
+
+type Result = {
+  gridTemplateColumns: string
+  columnsCount: number
+  calculatedGap: string
+  isValid: boolean
+}
 
 /**
  * Hook for calculating grid layout dimensions and properties.
@@ -26,10 +30,10 @@ import { LineConfig } from '@/components/Guide/types'
  * @param config - The configuration object for the grid.
  * @returns An object containing grid layout properties such as `gridTemplateColumns`, `columnsCount`, and `calculatedGap`.
  */
-export function useGridCalculations({
+export function useGuideCalculations({
   containerWidth,
   config,
-}: UseGridCalculationsProps): UseGridCalculationsResult {
+}: Props): Result {
   const { base } = useConfig('guide')
 
   // Helper Functions ----------------------------------------------------------
@@ -38,32 +42,27 @@ export function useGridCalculations({
    * Calculates layout for line variant (single pixel columns).
    * Uses container width and gap to determine optimal number of 1px columns.
    */
-  const calculateLineVariant = useCallback(
-    (config: LineConfig, width: number): UseGridCalculationsResult => {
-      const numericGap = MeasurementSystem.normalize(config.gap ?? base, {
-        unit: config.base,
-        suppressWarnings: true,
-      })
-      const adjustedGap = Math.max(0, numericGap - 1)
-      const columns = Math.max(1, Math.floor(width / (adjustedGap + 1)) + 1)
+
+  const calculateLineVariant = useMemo(() =>
+    (config: LineConfig, width: number): Result => {
+      const columns = Math.max(1, Math.floor(width / ((config.gap ?? 8) + 1)) + 1)
 
       return {
         gridTemplateColumns: `repeat(${columns}, 1px)`,
         columnsCount: columns,
-        calculatedGap: `${adjustedGap}px`,
+        calculatedGap: `${config.gap}px`,
         isValid: true,
       }
     },
-    [base],
-  )
+  [])
 
   /**
    * Handles custom column patterns with mixed units.
    * Currently supports: px, fr, %, em, rem, and auto.
    */
-  const calculateColumnPattern = useCallback(
-    (config: GridConfig & { columns: GridColumnsPattern }): UseGridCalculationsResult => {
-      if (!isValidGridPattern(config.columns)) {
+  const calculateColumnPattern = useMemo(() =>
+    (config: GuideConfig & { columns: GuideColumnsPattern }): Result => {
+      if (!isValidGuidePattern(config.columns)) {
         throw new Error('Invalid grid column pattern')
       }
 
@@ -87,11 +86,11 @@ export function useGridCalculations({
       return {
         gridTemplateColumns: columns.join(' '),
         columnsCount: columns.length,
-        calculatedGap: parseCSSValue(config.gap ?? base),
+        calculatedGap: `${config.gap}px`,
         isValid,
       }
     },
-    [base],
+  [],
   )
 
   /**
@@ -99,22 +98,22 @@ export function useGridCalculations({
    * Uses 1fr as default column width if none specified for equal distribution.
    */
   const calculateFixedColumns = useCallback(
-    (config: GridConfig & { columns: number }): UseGridCalculationsResult => ({
+    (config: GuideConfig & { columns: number }): Result => ({
       gridTemplateColumns: `repeat(${config.columns}, ${
         config.columnWidth ? parseCSSValue(config.columnWidth) : '1fr'
       })`,
       columnsCount: config.columns,
-      calculatedGap: parseCSSValue(config.gap ?? base),
+      calculatedGap: `${config.gap}px`, // Gap already in pixels
       isValid: true,
     }),
-    [base],
+    [],
   )
 
   /**
    * Calculates auto-grid layout based on container width and column width.
    */
-  const calculateAutoGrid = useCallback(
-    (config: AutoGridConfig, width: number): UseGridCalculationsResult => {
+  const calculateAutoGuide = useCallback(
+    (config: AutoConfig, width: number): Result => {
       const gap = formatCSSValue(config.gap ?? base)
       const columnWidth = config.columnWidth
       const numericGap = parseInt(gap)
@@ -124,7 +123,7 @@ export function useGridCalculations({
         return {
           gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))',
           columnsCount: 1,
-          calculatedGap: gap,
+          calculatedGap: `${numericGap}px`,
           isValid: true,
         }
       }
@@ -179,7 +178,7 @@ export function useGridCalculations({
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
-        calculatedGap: '0px',
+        calculatedGap: 1,
         isValid: false,
       }
     }
@@ -193,13 +192,13 @@ export function useGridCalculations({
       case 'fixed':
         return calculateFixedColumns(config)
       case 'auto':
-        return calculateAutoGrid(config, containerWidth)
+        return calculateAutoGuide(config, containerWidth)
       default: {
         // Fallback to line variant with theme defaults
         const defaultConfig: LineConfig = {
           variant: 'line',
           base: base,
-          gap: base,
+          gap: 8,
         }
         return calculateLineVariant(defaultConfig, containerWidth)
       }
@@ -209,7 +208,7 @@ export function useGridCalculations({
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
-        calculatedGap: '0px',
+        calculatedGap: 8,
         isValid: false,
       }
     }
@@ -220,6 +219,6 @@ export function useGridCalculations({
     calculateLineVariant,
     calculateColumnPattern,
     calculateFixedColumns,
-    calculateAutoGrid,
+    calculateAutoGuide,
   ])
 }

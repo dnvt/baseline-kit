@@ -1,11 +1,12 @@
 import { CSSProperties, memo, ReactNode, useMemo } from 'react'
+import { useConfig } from '@hooks'
 import { cx, cs, CSSValue, BlockInlineSpacing, PaddingSpacing } from '@utils'
-import type { ComponentsProps } from '@types'
 import styles from './styles.module.css'
-import { Config, useConfig, Visibility } from '../Config'
+import { Config, Visibility } from '../Config'
 import { Padder } from '../Padder'
+import { ComponentsProps } from '../types'
 
-export type BoxProps = ComponentsProps & {
+export type Props = ComponentsProps & {
   /** Width of the box */
   width?: CSSValue | 'fit-content' | 'auto'
   /** Height of the box */
@@ -20,6 +21,9 @@ export type BoxProps = ComponentsProps & {
  * Box Component
  * A container component that provides consistent spacing and visual styling.
  * Uses Padder for spacing management and integrates with theme context.
+ *
+ * Should remain as simple of a wrapper.
+ * Good from wrapping simple primitives like font elements.
  */
 export const Box = memo(function Box({
   children,
@@ -29,21 +33,16 @@ export const Box = memo(function Box({
   className,
   style,
   ...props
-}: BoxProps) {
+}: Props) {
   const config = useConfig('box')
   const spacerConfig = useConfig('spacer')
 
   const boxStyles = useMemo(() => cs({
-    '--box-width': width,
-    '--box-height': height,
-    '--box-base': `${config.base}px`,
-    '--box-color': config.colors.line,
-  } as CSSProperties, style), [
-    width,
-    height,
-    config,
-    style,
-  ])
+    '--pdd-box-width': width,
+    '--pdd-box-height': height,
+    '--pdd-box-base': `${config.base}px`,
+    '--pdd-box-color': config.colors.line,
+  } as CSSProperties, style), [width, height, config.base, config.colors.line, style])
 
   return (
     <Config
@@ -62,7 +61,7 @@ export const Box = memo(function Box({
           {...props}
           width={width}
           height={height}
-          visibility={visibility ?? config.visibility}
+          visibility={visibility}
         >
           {children}
         </Padder>

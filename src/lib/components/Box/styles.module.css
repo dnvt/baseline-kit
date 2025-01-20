@@ -1,39 +1,23 @@
 :root {
-  /* Colors */
-  --box-base-unit: var(--padd-base-unit, 8px);
-  --box-z-index: var(--padd-z-index, 0);
-  --box-color-flat: hsla(var(--purple), 0.2);
-  --box-color: hsla(var(--purple), 0.9);
-
-  /* Variables */
-  --box-block-start: 0;
-  --box-block-end: 0;
-  --box-inline-start: 0;
-  --box-inline-end: 0;
-
-  --box-width: "fit-content";
-  --box-height: "fit-content";
+  --pdd-box-base: var(--pdd-base, 8px);
+  --pdd-box-z-index: var(--pdd-z-index, 0);
+  --pdd-box-color-flat: var(--pdd-color-purple-20);
+  --pdd-box-color: var(--pdd-color-purple-90);
 }
 
 .box {
-  width: var(--box-width);
-  height: var(--box-height);
+  --pdd-box-width: fit-content;
+  --pdd-box-height: fit-content;
   position: relative;
+  width: var(--pdd-box-width);
+  height: var(--pdd-box-height);
 }
 
-/* Variant styles */
 .box::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--box-color);
+  border: 1px solid var(--pdd-box-color);
   pointer-events: none;
-  z-index: var(--box-z-index);
-}
-
-/* Media Queries */
-@media (prefers-reduced-motion: reduce) {
-  .box {
-    transition: none;
-  }
+  z-index: var(--pdd-box-z-index);
 }

@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react'
-import { useVisibleGridLines } from '@hooks'
+import { useGuideVisibleLines } from '@hooks'
 import { cssTestUtils } from '@/__tests__/matchers/cssTestUtils'
 import { testUtils } from '@/__tests__/setup'
 
@@ -33,7 +33,7 @@ describe('useVisibleGridLines', () => {
     const lineHeight = 8
 
     const { result } = renderHook(() =>
-      useVisibleGridLines({
+      useGuideVisibleLines({
         totalLines: 100,
         lineHeight,
         containerRef: ref,
@@ -63,7 +63,7 @@ describe('useVisibleGridLines', () => {
     const totalLines = 50
 
     const { result } = renderHook(() =>
-      useVisibleGridLines({
+      useGuideVisibleLines({
         totalLines,
         lineHeight: 8,
         containerRef: ref,
@@ -89,7 +89,7 @@ describe('useVisibleGridLines', () => {
     const customBuffer = 80 // Half of default buffer
 
     const { result } = renderHook(() =>
-      useVisibleGridLines({
+      useGuideVisibleLines({
         totalLines: 100,
         lineHeight: 8,
         containerRef: ref,
@@ -125,7 +125,7 @@ describe('useVisibleGridLines', () => {
       testUtils.mockElementSize(ref.current, 1024, 800)
 
       const { result } = renderHook(() =>
-        useVisibleGridLines({
+        useGuideVisibleLines({
           totalLines: 100,
           lineHeight: 8,
           containerRef: ref,

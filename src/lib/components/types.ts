@@ -3,9 +3,9 @@ import { Visibility } from '@components'
 import { CSSValue } from '@utils'
 
 // Grid Column
-export type GridColumnValue = CSSValue | 'auto'
-export type GridColumnsPattern = readonly GridColumnValue[]
-export type GridSpan = `span ${number}`
+export type GuideVariant = 'line' | 'pattern' | 'fixed' | 'auto'
+export type GuideColumnValue = CSSValue | 'auto'
+export type GuideColumnsPattern = readonly GuideColumnValue[]
 
 // Grid Constants & Types
 export const GRID_ALIGNMENTS = ['start', 'center', 'end'] as const

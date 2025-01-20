@@ -5,5 +5,4 @@
  */
 
 export * from './Config'
-export * from './useConfig'
 export * from './defaults'

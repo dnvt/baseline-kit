@@ -8,10 +8,10 @@
   --light: 50%;
 
   /* Padded system colors */
-  --padd-grid-color-line: hsla(var(--blue), 0.15);
-  --padd-grid-color-pattern: hsla(var(--purple), 0.15);
-  --padd-grid-color-auto: hsla(var(--blue), 0.15);
-  --padd-grid-color-fixed: hsla(var(--cyan), 0.15);
+  --gd-color-line: hsla(var(--blue), 0.15);
+  --gd-color-pattern: hsla(var(--purple), 0.15);
+  --gd-color-auto: hsla(var(--blue), 0.15);
+  --gd-color-fixed: hsla(var(--cyan), 0.15);
 
   --spc-color-line: hsla(var(--blue), 0.75);
   --spc-color-flat: hsla(var(--blue), 0.3);
@@ -35,7 +35,7 @@
     --demo-text: #c2c2c2;
     --demo-block: rgba(50, 50, 50, 1);
     --demo-shadow: rgba(0, 0, 0, 0.5);
-    --padd-grid-color-line: hsla(var(--grey), 0.15);
+    --gd-color-line: hsla(var(--grey), 0.15);
   }
 }
 
@@ -96,6 +96,8 @@ section {
 .content-block {
   width: 100%;
   position: relative;
+  min-height: 40px;
+  height: 100%;
   padding: 14px 16px 16px;
   color: var(--demo-text);
   background-color: var(--demo-block);

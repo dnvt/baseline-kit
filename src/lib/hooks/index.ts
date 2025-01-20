@@ -3,7 +3,7 @@
  * @module hooks
  */
 
-export * from './useGridCalculations'
-export * from './useGridDimensions'
-export * from './useVisibleGridLines'
-export * from './useSpacerDimensions'
+export * from './guide'
+export * from './dimension'
+export * from './visibility'
+export * from './useConfig'

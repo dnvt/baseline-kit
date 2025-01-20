@@ -4,5 +4,5 @@
  * @module Guide
  */
 
-export { Guide } from './Guide'
-export type { GuideProps, GuideConfig } from './types'
+export * from './Guide'
+export * from './types'

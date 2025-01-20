@@ -1,75 +1,22 @@
-:root {
-  /* Component Variables */
-  --spacer: 100%;
-  --spc-width: 100%;
-  --spc-height: 100%;
-  --spc-border-width: 1px;
-  --spc-border-style: solid;
-  --spc-z-index: 0;
-
-  /* Spacer Colors */
-  --spc-color: var(--spc-color-line);
-  --spc-color-line: hsla(var(--blue), 0.75);
-  --spc-color-flat: hsla(var(--blue), 0.3);
-  --spc-color-indice: hsla(var(--blue), 1);
-}
-
-/* Dark Mode Variables */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --spc-color-line: hsla(var(--blue), 0.8);
-    --spc-color-flat: hsla(var(--blue), 0.4);
-    --spc-color-indice: hsla(var(--blue), 1);
-  }
-}
-
-/* Base Component Styles */
 .spacer {
-  opacity: 0;
-  visibility: hidden;
-  width: var(--spc-width);
-  height: var(--spc-height);
-  box-sizing: border-box;
+  --pdd-spacer-width: 100%;
+  --pdd-spacer-height: 100%;
+  --pdd-spacer-color: var(--pdd-color-blue-75);
+
   position: relative;
-  pointer-events: none;
+  width: var(--pdd-spacer-width);
+  height: var(--pdd-spacer-height);
   flex-shrink: 0;
-  z-index: var(--spc-z-index);
 }
 
-/* Variant styles */
 .line::after {
+  --pdd-spacer-border: var(--pdd-spacer-color);
   content: '';
   position: absolute;
   inset: 0;
-  border: var(--spc-border-width)
-    var(--spc-border-style)
-    var(--spc-color);
-  box-sizing: border-box;
+  border: 1px solid var(--pdd-spacer-border);
 }
 
 .flat {
-  background-color: var(--spc-color);
-}
-
-/* Visibility states */
-.visible {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 180ms ease,
-    visibility 0ms linear;
-}
-
-.hidden {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 180ms ease,
-    visibility 0ms linear 180ms;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .visible,
-  .hidden {
-    transition: none;
-  }
+  background-color: var(--pdd-spacer-color);
 }

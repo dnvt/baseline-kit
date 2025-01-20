@@ -35,15 +35,15 @@ function Content({ showBaseline }: ContentProps) {
       <Spacer height={24} visibility={visibility} indicatorNode={Indice} />
 
 
-      {Array.from({ length: 50 }).map((_, i) => {
+      {Array.from({ length: 100 }).map((_, i) => {
         return (
           <Fragment key={i}>
             {!!i && <Spacer height={8} visibility={visibility} />}
-            <Box visibility={visibility} block={[0, 2]} width={'100%'}>
+            <Box visibility={visibility} block={[0, 2]} width="100%" height="100%">
               <Config base={8}>
                 <div className="content-block">
                   <Guide
-                    height="100%"
+                    height={54}
                     direction="horizontal"
                     visibility={visibility}
                   />

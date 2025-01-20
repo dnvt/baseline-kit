@@ -1,32 +1,19 @@
-:root {
-  --padder-color: transparent;
-  --padder-color-flat: hsla(var(--purple), 0.2);
-  --padder-color-line: hsla(var(--purple), 0.9);
-  --padder-z-index: var(--padd-z-index, 0);
-  --padder-width: fit-content;
-  --padder-height: fit-content;
-}
-
 .padder {
-  display: flex;
-  width: var(--padder-width);
-  height: var(--padder-height);
-  flex-direction: column;
+  --pdd-padder-width: fit-content;
+  --pdd-padder-height: fit-content;
+  --pdd-padder-color: var(--pdd-color-purple-90);
+
   position: relative;
-  z-index: var(--padder-z-index);
+  display: flex;
+  flex-direction: column;
+  width: var(--pdd-padder-width);
+  height: var(--pdd-padder-height);
 }
 
-/* Variant styles */
 .padder::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--padder-color);
+  border: 1px solid var(--pdd-padder-color);
   pointer-events: none;
-  z-index: var(--box-z-index);
-}
-
-/* Visibility states */
-.visible {
-  --padder-color: var(--padder-color-flat);
 }

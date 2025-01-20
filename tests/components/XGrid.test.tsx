@@ -5,8 +5,8 @@ export type ResizeObserverCallback = (entries: ResizeObserverEntry[]) => void
 
 // Add this mock at the top of XGrid.test.tsx
 vi.mock('@hooks', () => ({
-  useGridDimensions: () => ({ width: 1024, height: 768 }),
-  useGridCalculations: ({ config }: { config: GuideConfig }) => {
+  useGuideDimensions: () => ({ width: 1024, height: 768 }),
+  useGuideCalculations: ({ config }: { config: GuideConfig }) => {
     switch (config.variant) {
     case 'line':
       return {

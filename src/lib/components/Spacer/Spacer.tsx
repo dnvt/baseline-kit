@@ -1,15 +1,17 @@
-import { memo, useMemo, Fragment, CSSProperties, ReactNode } from 'react'
-import { useSpacerDimensions } from '@hooks'
-import { ComponentsProps } from '@types'
-import { cs, CSSValue, cx } from '@utils'
+import { memo, useMemo, CSSProperties, ReactNode } from 'react'
+import { useConfig, useSpacerDimensions, useVisibility } from '@hooks'
+import { CSSValue, cs, cx } from '@utils'
+import { Visibility } from '../Config'
+import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
-import { useConfig, Visibility } from '../Config'
 
 export type SpacerVariant = 'line' | 'flat'
 export type SpacerDimension = 'width' | 'height'
-export type SpacerDimensions = Record<SpacerDimension, CSSValue | '100%'>
+export type SpacerDimensions = {
+  width: CSSValue | '100%'
+  height: CSSValue | '100%'
+}
 
-// For measurement indicators
 export type IndicatorNode = (value: number, dimension: SpacerDimension) => ReactNode
 export type SpacerProps = ComponentsProps & {
   /** Height of the spacer */
@@ -33,61 +35,49 @@ export const Spacer = memo(function Spacer({
   height,
   width,
   indicatorNode,
-  visibility: visibilityProp,
+  visibility,
   variant: variantProp,
   className,
   style,
   ...props
 }: SpacerProps) {
   const config = useConfig('spacer')
-
-  const isShown = (visibilityProp ?? config.visibility) === 'visible'
+  const { isShown } = useVisibility(visibility, config.visibility)
   const variant = variantProp ?? config.variant
 
-  // Calculate dimensions based on provided values or theme defaults
   const { dimensions, normalizedHeight, normalizedWidth } = useSpacerDimensions({
     height,
     width,
     base: config.base,
   })
 
-  // Generate measurement indicators when visible
   const measurements = useMemo(() => {
     if (!isShown || !indicatorNode) return null
 
-    const indicators = []
-
-    if (normalizedHeight !== null) {
-      indicators.push(
-        <Fragment key="height">
+    return [
+      normalizedHeight !== null && (
+        <span key="height">
           {indicatorNode(normalizedHeight, 'height')}
-        </Fragment>,
-      )
-    }
-
-    if (normalizedWidth !== null) {
-      indicators.push(
-        <Fragment key="width">
+        </span>
+      ),
+      normalizedWidth !== null && (
+        <span key="width">
           {indicatorNode(normalizedWidth, 'width')}
-        </Fragment>,
-      )
-    }
-
-    return indicators
+        </span>
+      ),
+    ].filter(Boolean)
   }, [isShown, indicatorNode, normalizedHeight, normalizedWidth])
 
-  // Combine base styles with theme values and custom styles
   const containerStyles = useMemo(() => cs({
-    '--spc-height': dimensions.height,
-    '--spc-width': dimensions.width,
-    '--spc-base': `${config.base}px`,
-    '--spc-color': variant === 'line'
-      ? config.colors.line
-      : config.colors.flat,
-    '--spc-indicator-color': config.colors.indice,
+    '--pdd-spacer-height': dimensions.height,
+    '--pdd-spacer-width': dimensions.width,
+    '--pdd-spacer-base': `${config.base}px`,
+    '--pdd-spacer-color': variant === 'line' ? config.colors.line : config.colors.flat,
+    '--pdd-spacer-indicator-color': config.colors.indice,
   } as CSSProperties, style), [
     dimensions,
-    config,
+    config.base,
+    config.colors,
     variant,
     style,
   ])
@@ -96,13 +86,12 @@ export const Spacer = memo(function Spacer({
     <div
       className={cx(
         styles.spacer,
-        config.variant === 'line' && styles.line,
-        config.variant === 'flat' && styles.flat,
+        styles[variant],
         isShown ? styles.visible : styles.hidden,
         className,
       )}
       data-testid="spacer"
-      data-variant={config.variant}
+      data-variant={variant}
       style={containerStyles}
       {...props}
     >
