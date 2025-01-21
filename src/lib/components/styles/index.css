@@ -1,45 +1,21 @@
-/* Base styles */
-@import 'src/lib/components/styles/reset.css';
-@import 'src/lib/components/styles/theme.css';
+/* Theme must come first to establish CSS variables */
+@import './theme.css';
+@import './reset.css';
 
-/* Component styles */
-@import 'src/lib/components/Box/styles.module.css';
-@import 'src/lib/components/Guide/styles.module.css';
-@import 'src/lib/components/Padder/styles.module.css';
-@import 'src/lib/components/Spacer/styles.module.css';
+/* Component-specific styles */
+@import '../Box/styles.module.css';
+@import '../Guide/styles.module.css';
+@import '../Padder/styles.module.css';
+@import '../Spacer/styles.module.css';
 
+/* Base root variables */
 :root {
-  /* Base Theme Variables */
   --pdd-base: 8px;
   --pdd-z-index: 0;
-
-  /* Color Palette */
-  --pdd-color-blue-15: hsla(var(--blue), 0.15);
-  --pdd-color-blue-30: hsla(var(--blue), 0.3);
-  --pdd-color-blue-75: hsla(var(--blue), 0.75);
-  --pdd-color-blue-100: hsla(var(--blue), 1);
-  --pdd-color-purple-20: hsla(var(--purple), 0.2);
-  --pdd-color-purple-90: hsla(var(--purple), 0.9);
-  --pdd-color-cyan-15: hsla(var(--cyan), 0.15);
-  --pdd-color-grey-20: hsla(var(--grey), 0.2);
-
-  --pdd-guide-color-line: var(--pdd-color-blue-15);
-  --pdd-guide-color-pattern: var(--pdd-color-purple-20);
-  --pdd-guide-color-auto: var(--pdd-color-blue-15);
-  --pdd-guide-color-fixed: var(--pdd-color-cyan-15);
-
-  /* Transitions */
   --pdd-transition: 180ms ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --pdd-color-blue-15: hsla(var(--grey), 0.15);
-    --pdd-color-blue-30: hsla(var(--blue), 0.4);
-    --pdd-color-blue-75: hsla(var(--blue), 0.8);
-  }
-}
-
+/* Utility classes */
 .visible {
   opacity: 1;
   visibility: visible;
@@ -52,10 +28,4 @@
   visibility: hidden;
   transition: opacity var(--pdd-transition),
     visibility 0ms linear 180ms;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .visible, .hidden {
-    transition: none;
-  }
 }

@@ -1,8 +1,9 @@
 import { useReducer, useCallback, ReactNode } from 'react'
-import { Guide, DEFAULT_CONFIG, GuideColumnsPattern } from '@components'
 import { GridControls } from './GridControls'
 import type { DemoGridAction, DemoGridState } from './types'
 import { usePageHeight } from '../hooks'
+
+import { Guide, DEFAULT_CONFIG, GuideColumnsPattern } from '../../dist'
 
 
 // Custom reducer for the demo -------------------------------------------------

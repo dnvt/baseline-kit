@@ -13,13 +13,7 @@ export const GridColumns = memo(function GridColumns({
   variant,
   colors,
 }: Props) {
-  console.log('GridColumns render:', {
-    count,
-    variant,
-    color: colors[variant],
-    allColors: colors,
-  })
-
+    
   return (
     <div
       className={styles['columns-container']}

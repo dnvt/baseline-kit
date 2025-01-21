@@ -1,7 +1,9 @@
 import { Fragment, StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Spacer, Box, Guide, Config } from '@components'
 import { GridSetups, Indice } from './components'
+
+import '../dist/styles.css'
+import { Spacer, Box, Guide, Config } from '../dist'
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -34,14 +36,13 @@ function Content({ showBaseline }: ContentProps) {
 
       <Spacer height={24} visibility={visibility} indicatorNode={Indice} />
 
-
       {Array.from({ length: 100 }).map((_, i) => {
         return (
           <Fragment key={i}>
             {!!i && <Spacer height={8} visibility={visibility} />}
             <Box visibility={visibility} block={[0, 2]} width="100%" height="100%">
               <Config base={8}>
-                <div className="content-block">
+                < div className="content-block">
                   <Guide
                     height={54}
                     direction="horizontal"

@@ -1,21 +1,4 @@
 :root {
-  /* Base colors */
-  --grey: 0, 0%, 50%;
-  --cyan: 190, var(--sat), var(--light);
-  --blue: 220, var(--sat), var(--light);
-  --purple: 255, var(--sat), var(--light);
-  --sat: 70%;
-  --light: 50%;
-
-  /* Padded system colors */
-  --gd-color-line: hsla(var(--blue), 0.15);
-  --gd-color-pattern: hsla(var(--purple), 0.15);
-  --gd-color-auto: hsla(var(--blue), 0.15);
-  --gd-color-fixed: hsla(var(--cyan), 0.15);
-
-  --spc-color-line: hsla(var(--blue), 0.75);
-  --spc-color-flat: hsla(var(--blue), 0.3);
-  --spc-color-indice: hsla(var(--blue), 1);
 
   /* Demo theme colors */
   --demo-bg: white;
@@ -169,7 +152,7 @@ section {
 .indice {
   font-size: 13px;
   padding-block: 2px 3px;
-  color: var(--spc-color-indice);
+  color: var(--pdd-spacer-color-indice);
   position: absolute;
   right: 8px;
 }

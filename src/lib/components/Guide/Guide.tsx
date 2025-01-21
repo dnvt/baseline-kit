@@ -147,12 +147,12 @@ export const Guide = memo(function Guide({
   })
 
   const containerStyles = useMemo(() => {
-    const baseStyles: CSSProperties = {
-      '--pdd-guide-gap': calculatedGap,
+    const baseStyles = {
+      '--pdd-guide-gap': `${calculatedGap}`,
       '--pdd-guide-justify': align,
       '--pdd-guide-padding-block': `${spacing.block[0]}px ${spacing.block[1]}px`,
       '--pdd-guide-padding-inline': `${spacing.inline[0]}px ${spacing.inline[1]}px`,
-    }
+    } as CSSProperties
 
     if (direction === 'horizontal') {
       return cs(

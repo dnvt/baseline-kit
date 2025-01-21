@@ -47,19 +47,8 @@ type ConfigProps = {
   padder?: Partial<Config['padder']>
 }
 
-const createCSSVariables = ({ base, guide, spacer, box, padder }: Config) => ({
+const createCSSVariables = ({ base }: Config): Record<string, string> => ({
   '--pdd-base': `${base}px`,
-  '--pdd-spacer-line': spacer.colors.line,
-  '--pdd-spacer-flat': spacer.colors.flat,
-  '--pdd-spacer-indice': spacer.colors.indice,
-  '--pdd-box-line': box.colors.line,
-  '--pdd-box-flat': box.colors.flat,
-  '--pdd-box-indice': box.colors.indice,
-  '--pdd-padder-color': padder.color,
-  '--pdd-guide-color-line': guide.colors.line,
-  '--pdd-guide-color-pattern': guide.colors.pattern,
-  '--pdd-guide-color-auto': guide.colors.auto,
-  '--pdd-guide-color-fixed': guide.colors.fixed,
 })
 
 export function Config({
