@@ -9,6 +9,11 @@
   --pdd-guide-padding-block: 0;
   --pdd-guide-padding-inline: 0;
 
+  --pdd-guide-color-line: var(--pdd-guide-color-line-theme);
+  --pdd-guide-color-pattern: var(--pdd-guide-color-pattern-theme);
+  --pdd-guide-color-auto: var(--pdd-guide-color-auto-theme);
+  --pdd-guide-color-fixed: var(--pdd-guide-color-fixed-theme);
+
   position: absolute !important;
   inset: 0;
   width: var(--pdd-guide-width);
@@ -18,10 +23,6 @@
 }
 
 .columns-container {
-  --pdd-guide-color-line: var(--pdd-guide-color-line-theme);
-  --pdd-guide-color-pattern: var(--pdd-guide-color-pattern-theme);
-  --pdd-guide-color-auto: var(--pdd-guide-color-auto-theme);
-  --pdd-guide-color-fixed: var(--pdd-guide-color-fixed-theme);
 
   display: grid;
   gap: var(--pdd-guide-gap);

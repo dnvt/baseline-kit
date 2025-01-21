@@ -7,7 +7,7 @@ import { Spacer } from '../Spacer'
 import styles from './styles.module.css'
 import { useVisibility } from '@/hooks/visibility/useVisibility'
 
-export type PadderProps = Omit<ComponentsProps, 'data-testid'> & (BlockInlineSpacing | PaddingSpacing) & {
+export type Props = Omit<ComponentsProps, 'data-testid'> & (BlockInlineSpacing | PaddingSpacing) & {
   /** Width of the padder container */
   width?: CSSValue | 'fit-content' | 'auto'
   /** Height of the padder container */
@@ -31,7 +31,7 @@ export const Padder = memo(function Padder({
   visibility,
   style,
   ...spacingProps
-}: PadderProps) {
+}: Props) {
   const config = useConfig('padder')
   const spacing = useMemo(() =>
     normalizeSpacing(spacingProps, config.base),
@@ -46,6 +46,7 @@ export const Padder = memo(function Padder({
     '--pdd-padder-height': height,
     '--pdd-padder-base': `${config.base}px`,
     '--pdd-padder-color': config.color,
+
     ...(enableSpacers ? {} : {
       paddingBlock: `${spacing.block[0]}px ${spacing.block[1]}px`,
       paddingInline: `${spacing.inline[0]}px ${spacing.inline[1]}px`,
@@ -83,9 +84,7 @@ export const Padder = memo(function Padder({
           {spacing.block[0] > 0 && renderSpacer('100%', spacing.block[0])}
         </>
       )}
-
       {children}
-
       {enableSpacers && (
         <>
           {spacing.block[1] > 0 && renderSpacer('100%', spacing.block[1])}

@@ -1,7 +1,6 @@
 .spacer {
   --pdd-spacer-width: 100%;
   --pdd-spacer-height: 100%;
-  --pdd-spacer-color-indice: var(--pdd-spacer-color-indice-theme);
 
   position: relative;
   width: var(--pdd-spacer-width);
@@ -10,8 +9,6 @@
 }
 
 .line::after {
-  --pdd-spacer-color-line: var(--pdd-spacer-color-line-theme);
-
   content: '';
   position: absolute;
   inset: 0;
@@ -19,6 +16,5 @@
 }
 
 .flat {
-  --pdd-spacer-color-flat: var(--pdd-spacer-color-flat-theme);
   background-color: var(--pdd-spacer-color-flat);
 }

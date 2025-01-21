@@ -121,7 +121,7 @@ const DEFAULT_CONTEXT: Required<ConversionContext> = {
 export const MeasurementSystem: MeasurementSystemType = {
   base: DEFAULT_BASE,
 
-  normalize(value: CSSValue, {
+  normalize(value, {
     unit = DEFAULT_BASE,
     suppressWarnings = false,
     round = true,

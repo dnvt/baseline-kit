@@ -44,7 +44,7 @@ function Content({ showBaseline }: ContentProps) {
               <Config base={8}>
                 < div className="content-block">
                   <Guide
-                    height={54}
+                    height={56}
                     direction="horizontal"
                     visibility={visibility}
                   />

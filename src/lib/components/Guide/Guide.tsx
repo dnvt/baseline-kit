@@ -158,6 +158,8 @@ export const Guide = memo(function Guide({
     const baseStyles = {
       '--pdd-guide-gap': `${calculatedGap}`,
       '--pdd-guide-justify': align,
+      '--pdd-guide-color-line': config.colors.line,
+      '--pdd-guide-color-pattern': config.colors.pattern,
       '--pdd-guide-padding-block': `${spacing.block[0]}px ${spacing.block[1]}px`,
       '--pdd-guide-padding-inline': `${spacing.inline[0]}px ${spacing.inline[1]}px`,
     } as CSSProperties
@@ -183,7 +185,7 @@ export const Guide = memo(function Guide({
       } as CSSProperties,
       style,
     )
-  }, [calculatedGap, align, spacing.block, spacing.inline, direction, gridTemplateColumns, cssWidth, style])
+  }, [calculatedGap, align, config.colors.line, config.colors.pattern, spacing.block, spacing.inline, direction, gridTemplateColumns, cssWidth, style])
 
   return (
     <div
