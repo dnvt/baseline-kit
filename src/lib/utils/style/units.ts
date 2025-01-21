@@ -1,5 +1,7 @@
 // CSS Units -------------------------------------------------------------------
 
+import { MeasurementSystem } from '@/utils'
+
 /**
  * A mapping of CSS units to their conversion factors relative to pixels.
  * Includes both absolute and relative units.
@@ -99,57 +101,17 @@ interface ConversionContext {
  * @param context - Optional context for relative and viewport-based units.
  * @returns The equivalent value in pixels, or `null` if conversion is not possible.
  */
-export const convertToPixels = (
-  value: string,
-  context: ConversionContext = {},
-): number | null => {
+export function convertToPixels(value: string, context?: ConversionContext): number | null {
   const parsed = parseCSSUnit(value)
   if (!parsed) return null
-
-  const {
-    parentSize = 0,
-    viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 0,
-    viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0,
-    rootFontSize = 16,
-    parentFontSize = 16,
-  } = context
-
-  switch (parsed.unit) {
-  // Absolute units
-  case 'px':
-    return parsed.value
-  case 'in':
-    return parsed.value * 96
-  case 'cm':
-    return parsed.value * 37.8
-  case 'mm':
-    return parsed.value * 3.78
-  case 'pt':
-    return parsed.value * 1.33
-  case 'pc':
-    return parsed.value * 16
-
-    // Relative units
-  case 'em':
-    return parsed.value * parentFontSize
-  case 'rem':
-    return parsed.value * rootFontSize
-  case 'vh':
-    return (parsed.value / 100) * viewportHeight
-  case 'vw':
-    return (parsed.value / 100) * viewportWidth
-  case 'vmin':
-    return (parsed.value / 100) * Math.min(viewportWidth, viewportHeight)
-  case 'vmax':
-    return (parsed.value / 100) * Math.max(viewportWidth, viewportHeight)
-  case '%':
-    return (parsed.value / 100) * parentSize
-
-    // Grid-specific units
-  case 'fr':
-    return null // fr units can't be converted to pixels
-
-  default:
+  try {
+    return MeasurementSystem.convert(
+      parsed.value,   // numeric portion
+      parsed.unit as CSSUnit,
+      'px',
+      context,
+    )
+  } catch {
     return null
   }
 }

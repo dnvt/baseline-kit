@@ -18,6 +18,11 @@
 }
 
 .columns-container {
+  --pdd-guide-color-line: var(--pdd-guide-color-line-theme);
+  --pdd-guide-color-pattern: var(--pdd-guide-color-pattern-theme);
+  --pdd-guide-color-auto: var(--pdd-guide-color-auto-theme);
+  --pdd-guide-color-fixed: var(--pdd-guide-color-fixed-theme);
+
   display: grid;
   gap: var(--pdd-guide-gap);
   grid-template-columns: var(--pdd-guide-template);

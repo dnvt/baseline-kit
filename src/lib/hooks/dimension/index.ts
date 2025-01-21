@@ -1,2 +1,1 @@
-export * from './useSpacerDimensions'
-export * from './useDimension'
+export * from './useNormalizedDimensions'

@@ -18,7 +18,7 @@ type SpacingSystemType = {
   toTuple(value: Spacing): SpacingTuple
 }
 
-export const SpacingSystem = {
+export const SpacingSystem: SpacingSystemType = {
   normalizeValue(value: Spacing | undefined, base: number): SpacingTuple {
     if (!value) return [0, 0]
 
