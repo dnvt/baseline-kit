@@ -3,6 +3,9 @@
   --pdd-box-z-index: var(--pdd-z-index, 0);
   --pdd-box-width: fit-content;
   --pdd-box-height: fit-content;
+  --pdd-box-color-line: var(--pdd-box-color-line-theme);
+  --pdd-box-color-flat: var(--pdd-box-color-flat-theme);
+  --pdd-box-color-indice: var(--pdd-box-color-indice-theme);
 
   position: relative;
   width: var(--pdd-box-width);
@@ -10,8 +13,7 @@
 }
 
 .box::after {
-  --pdd-box-color-line: var(--pdd-box-color-line-theme);
-  
+
   content: '';
   position: absolute;
   inset: 0;

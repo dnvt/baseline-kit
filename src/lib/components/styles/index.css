@@ -13,6 +13,11 @@
   --pdd-base: 8px;
   --pdd-z-index: 0;
   --pdd-transition: 180ms ease;
+
+  /* Colors */
+  --pdd-spacer-color-line: var(--pdd-spacer-color-line-theme);
+  --pdd-spacer-color-flat: var(--pdd-spacer-color-flat-theme);
+  --pdd-spacer-color-indice: var(--pdd-spacer-color-indice-theme);
 }
 
 /* Utility classes */

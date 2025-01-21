@@ -75,13 +75,18 @@ export const Spacer = memo(function Spacer({
     ].filter(Boolean)
   }, [isShown, indicatorNode, normalizedHeight, normalizedWidth])
 
-  const containerStyles = useMemo(() => cs({
-    '--pdd-spacer-height': cssHeight,
-    '--pdd-spacer-width': cssWidth,
-    '--pdd-spacer-base': `${config.base}px`,
-    '--pdd-spacer-color': variant === 'line' ? config.colors.line : config.colors.flat,
-    '--pdd-spacer-indicator-color': config.colors.indice,
-  } as CSSProperties, style), [cssHeight, cssWidth, config.base, config.colors.line, config.colors.flat, config.colors.indice, variant, style])
+  const containerStyles = useMemo(() => {
+    const styleObject = {
+      '--pdd-spacer-height': cssHeight,
+      '--pdd-spacer-width': cssWidth,
+      '--pdd-spacer-base': `${config.base}px`,
+      '--pdd-spacer-color-indice': config.colors.indice,
+      '--pdd-spacer-color-line': config.colors.line,
+      '--pdd-spacer-color-flat': config.colors.flat,
+    } as CSSProperties
+
+    return cs(styleObject, style)
+  }, [cssHeight, cssWidth, config, style])
 
   return (
     <div

@@ -46,20 +46,20 @@
   --pdd-red-secondary: 0, 100%, 70%; /* #FF6666 (bright) */
 
   /* System Colors - using complete HSL strings */
-  --pdd-guide-color-line-theme: hsla(var(--pdd-purple-primary), 0.15);
+  --pdd-guide-color-line-theme: hsla(var(--pdd-blue-primary), 0.15);
   --pdd-guide-color-pattern-theme: hsla(var(--pdd-purple-secondary), 0.2);
   --pdd-guide-color-auto-theme: hsla(var(--pdd-blue-secondary), 0.15);
-  --pdd-guide-color-fixed-theme: hsla(var(--pdd-cyan-secondary), 0.15);
+  --pdd-guide-color-fixed-theme: hsla(var(--pdd-blue-secondary), 0.15);
 
-  --pdd-spacer-color-line-theme: hsla(var(--pdd-purple-primary), 0.7);
-  --pdd-spacer-color-flat-theme: hsla(var(--pdd-purple-secondary), 0.3);
+  --pdd-spacer-color-line-theme: hsla(var(--pdd-purple-primary), 0.6);
+  --pdd-spacer-color-flat-theme: hsla(var(--pdd-purple-secondary), 0.2);
   --pdd-spacer-color-indice-theme: hsla(var(--pdd-purple-primary), 1);
 
-  --pdd-box-color-line-theme: hsla(var(--pdd-pink-primary), 0.7);
+  --pdd-box-color-line-theme: hsla(var(--pdd-pink-primary), 0.6);
   --pdd-box-color-flat-theme: hsla(var(--pdd-pink-secondary), 0.2);
   --pdd-box-color-indice-theme: hsla(var(--pdd-pink-secondary), 0.9);
 
-  --pdd-padder-color-theme: hsla(var(--pdd-purple-primary), 0.7);
+  --pdd-padder-color-theme: hsla(var(--pdd-purple-primary), 0.6);
 }
 
 @media (prefers-color-scheme: dark) {
