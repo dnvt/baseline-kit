@@ -10,6 +10,8 @@
 }
 
 .box::after {
+  --pdd-box-color-line: var(--pdd-box-color-line-theme);
+  
   content: '';
   position: absolute;
   inset: 0;

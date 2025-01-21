@@ -1,5 +1,11 @@
 import { CSSProperties, memo, useMemo, useRef } from 'react'
-import { useConfig, useGuideCalculations, useGuideDimensions, useDimensions, useVisibility } from '@hooks'
+import {
+  useConfig,
+  useGuideCalculations,
+  useGuideDimensions,
+  useVisibility,
+  useNormalizedDimensions,
+} from '@hooks'
 import {
   cx,
   cs,
@@ -77,13 +83,15 @@ export const Guide = memo(function Guide({
 
   // Provide these to your standard dimensions hook (which is used for styling).
   // The fallback "height" will be containerHeight if needed.
-  const dimensions = useDimensions(maxWidth, height, {
+  const {
+    width: cssWidth,
+    normalizedWidth,
+  } = useNormalizedDimensions({
+    width: maxWidth,
+    height,
     defaultWidth: containerWidth,
     defaultHeight: containerHeight,
-    config: {
-      base: config.base,
-      suppressWarnings: true,
-    },
+    base: config.base,
   })
 
   // For horizontal direction, figure out how many lines/rows total
@@ -142,7 +150,7 @@ export const Guide = memo(function Guide({
   }, [variant, columns, columnWidth, gap, config.base])
 
   const { gridTemplateColumns, columnsCount, calculatedGap } = useGuideCalculations({
-    containerWidth: dimensions.normalizedWidth,
+    containerWidth: normalizedWidth,
     config: gridConfig,
   })
 
@@ -158,7 +166,6 @@ export const Guide = memo(function Guide({
       return cs(
         {
           ...baseStyles,
-          ...dimensions.cssProps,
           '--pdd-guide-width': '100%',
           position: 'relative',
         } as CSSProperties,
@@ -171,20 +178,12 @@ export const Guide = memo(function Guide({
       {
         ...baseStyles,
         '--pdd-guide-template': gridTemplateColumns,
-        '--pdd-guide-width': dimensions.width,
+        '--pdd-guide-width': cssWidth,
         '--pdd-guide-height': '100%',
       } as CSSProperties,
       style,
     )
-  }, [
-    calculatedGap,
-    align,
-    spacing,
-    direction,
-    gridTemplateColumns,
-    dimensions,
-    style,
-  ])
+  }, [calculatedGap, align, spacing.block, spacing.inline, direction, gridTemplateColumns, cssWidth, style])
 
   return (
     <div

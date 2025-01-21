@@ -47,8 +47,34 @@ type ConfigProps = {
   padder?: Partial<Config['padder']>
 }
 
-const createCSSVariables = ({ base }: Config): Record<string, string> => ({
+const createCSSVariables = ({
+  base,
+  guide,
+  spacer,
+  box,
+  padder,
+}: Config): Record<string, string> => ({
+  // Always set your base unit
   '--pdd-base': `${base}px`,
+
+  // Guide Colors (matching the variant keys in your config)
+  '--pdd-guide-color-line': guide.colors.line,
+  '--pdd-guide-color-pattern': guide.colors.pattern,
+  '--pdd-guide-color-auto': guide.colors.auto,
+  '--pdd-guide-color-fixed': guide.colors.fixed,
+
+  // Spacer Colors
+  '--pdd-spacer-color-line': spacer.colors.line,
+  '--pdd-spacer-color-flat': spacer.colors.flat,
+  '--pdd-spacer-color-indice': spacer.colors.indice,
+
+  // Box Colors
+  '--pdd-box-color-line': box.colors.line,
+  '--pdd-box-color-flat': box.colors.flat,
+  '--pdd-box-color-indice': box.colors.indice,
+
+  // Padder Color
+  '--pdd-padder-color': padder.color,
 })
 
 export function Config({
@@ -78,6 +104,10 @@ export function Config({
 
   return (
     <ConfigContext.Provider value={value}>
+      {/*
+        Apply the dynamically generated custom properties,
+        which override the same variables declared in your .css
+      */}
       <div style={value.cssVariables}>{children}</div>
     </ConfigContext.Provider>
   )

@@ -1,4 +1,4 @@
-import { CSSUnit, CSSValue, type RelativeUnit } from '@utils'
+import { CSSUnit, CSSValue, type RelativeUnit, clamp as clampFn } from '@utils'
 
 export type MeasurementError = {
   code: 'INVALID_INPUT' | 'NOT_NORMALIZED' | 'PARSING_ERROR' | 'CONVERSION_ERROR'
@@ -140,12 +140,7 @@ export const MeasurementSystem: MeasurementSystemType = {
         }
 
         if (clamp) {
-          if (clamp.min !== undefined) {
-            normalized = Math.max(clamp.min, normalized)
-          }
-          if (clamp.max !== undefined) {
-            normalized = Math.min(clamp.max, normalized)
-          }
+          normalized = clampFn(normalized, clamp.min ?? -Infinity, clamp.max ?? Infinity)
         }
 
         // Warning if value changed

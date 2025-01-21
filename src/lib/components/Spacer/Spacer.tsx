@@ -1,5 +1,5 @@
 import { memo, useMemo, CSSProperties, ReactNode } from 'react'
-import { useConfig, useSpacerDimensions, useVisibility } from '@hooks'
+import { useConfig, useNormalizedDimensions, useVisibility } from '@hooks'
 import { CSSValue, cs, cx } from '@utils'
 import { Visibility } from '../Config'
 import { ComponentsProps } from '../types'
@@ -45,9 +45,16 @@ export const Spacer = memo(function Spacer({
   const { isShown } = useVisibility(visibility, config.visibility)
   const variant = variantProp ?? config.variant
 
-  const { dimensions, normalizedHeight, normalizedWidth } = useSpacerDimensions({
-    height,
+  const {
+    width: cssWidth,
+    height: cssHeight,
+    normalizedWidth,
+    normalizedHeight,
+  } = useNormalizedDimensions({
     width,
+    height,
+    defaultWidth: 0,
+    defaultHeight: 0,
     base: config.base,
   })
 
@@ -55,12 +62,12 @@ export const Spacer = memo(function Spacer({
     if (!isShown || !indicatorNode) return null
 
     return [
-      normalizedHeight !== null && (
+      normalizedHeight !== 0 && (
         <span key="height">
           {indicatorNode(normalizedHeight, 'height')}
         </span>
       ),
-      normalizedWidth !== null && (
+      normalizedWidth !== 0 && (
         <span key="width">
           {indicatorNode(normalizedWidth, 'width')}
         </span>
@@ -69,18 +76,12 @@ export const Spacer = memo(function Spacer({
   }, [isShown, indicatorNode, normalizedHeight, normalizedWidth])
 
   const containerStyles = useMemo(() => cs({
-    '--pdd-spacer-height': dimensions.height,
-    '--pdd-spacer-width': dimensions.width,
+    '--pdd-spacer-height': cssHeight,
+    '--pdd-spacer-width': cssWidth,
     '--pdd-spacer-base': `${config.base}px`,
     '--pdd-spacer-color': variant === 'line' ? config.colors.line : config.colors.flat,
     '--pdd-spacer-indicator-color': config.colors.indice,
-  } as CSSProperties, style), [
-    dimensions,
-    config.base,
-    config.colors,
-    variant,
-    style,
-  ])
+  } as CSSProperties, style), [cssHeight, cssWidth, config.base, config.colors.line, config.colors.flat, config.colors.indice, variant, style])
 
   return (
     <div
