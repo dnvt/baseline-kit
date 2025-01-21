@@ -11,8 +11,8 @@ export default defineConfig(({ command }) => ({
     viteStaticCopy({
       targets: [
         {
-          src: resolvePath('README.md'), // Use an absolute path
-          dest: '.', // Copy to root of `dist`
+          src: resolvePath('README.md'),
+          dest: '.',
         },
       ],
     }),
@@ -27,7 +27,14 @@ export default defineConfig(({ command }) => ({
       '@utils': resolvePath('src/lib/utils'),
     },
   },
+  css: {
+    modules: {
+      localsConvention: 'camelCase',
+      generateScopedName: '[local]_[hash:base64:5]',
+    },
+  },
   build: {
+    cssCodeSplit: false,
     lib: {
       entry: resolvePath('src/lib/index.ts'),
       name: 'PaddedGrid',
@@ -41,12 +48,18 @@ export default defineConfig(({ command }) => ({
           react: 'React',
           'react-dom': 'ReactDOM',
         },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+            return 'styles.css'
+          }
+          return assetInfo.name ?? '[name]-[hash][extname]'
+        },
       },
     },
     sourcemap: true,
   },
   ...(command === 'serve' && {
-    root: 'demo', // Set the root to the `demo/` directory for development
+    root: 'demo',
     base: '/',
   }),
 }))

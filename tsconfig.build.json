@@ -2,7 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    // Add this line
     "declaration": true,
     "declarationDir": "dist",
     "emitDeclarationOnly": true,

@@ -22,13 +22,6 @@
     "typescript": "^5.7.2"
   },
   "main": "dist/index.cjs",
-  "style": "dist/styles.css",
-  "files": [
-    "dist",
-    "dist/styles.css",
-    "LICENSE",
-    "README.md"
-  ],
   "engines": {
     "node": ">=18"
   },
@@ -90,6 +83,12 @@
     },
     "./styles.css": "./dist/styles.css"
   },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "style": "dist/styles.css",
   "sideEffects": [
     "dist/styles.css"
   ],

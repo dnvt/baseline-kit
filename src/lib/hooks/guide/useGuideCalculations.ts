@@ -178,7 +178,7 @@ export function useGuideCalculations({
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
-        calculatedGap: 1,
+        calculatedGap: '0px',
         isValid: false,
       }
     }
@@ -194,7 +194,6 @@ export function useGuideCalculations({
       case 'auto':
         return calculateAutoGuide(config, containerWidth)
       default: {
-        // Fallback to line variant with theme defaults
         const defaultConfig: LineConfig = {
           variant: 'line',
           base: base,
@@ -208,7 +207,7 @@ export function useGuideCalculations({
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
-        calculatedGap: 8,
+        calculatedGap: '8px',
         isValid: false,
       }
     }

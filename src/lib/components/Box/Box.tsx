@@ -1,10 +1,10 @@
 import { CSSProperties, memo, ReactNode, useMemo } from 'react'
 import { useConfig } from '@hooks'
 import { cx, cs, CSSValue, BlockInlineSpacing, PaddingSpacing } from '@utils'
-import styles from './styles.module.css'
 import { Config, Visibility } from '../Config'
 import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
+import styles from './styles.module.css'
 
 export type Props = ComponentsProps & {
   /** Width of the box */
@@ -41,8 +41,7 @@ export const Box = memo(function Box({
     '--pdd-box-width': width,
     '--pdd-box-height': height,
     '--pdd-box-base': `${config.base}px`,
-    '--pdd-box-color': config.colors.line,
-  } as CSSProperties, style), [width, height, config.base, config.colors.line, style])
+  } as CSSProperties, style), [width, height, config.base, style])
 
   return (
     <Config

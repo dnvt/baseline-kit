@@ -24,11 +24,11 @@ export const GridRows = memo(function GridRows({
     containerRef,
   })
 
-  const getRowStyle = (idx: number): CSSProperties => ({
-    '--pdd-guide-top': `${idx * base}px`,
+  const getRowStyle = (idx: number) => ({
     '--pdd-guide-color': color,
+    '--pdd-guide-top': `${idx * base}px`,
     '--pdd-guide-line-stroke': variant === 'line' ? '1px' : `${base}px`,
-  })
+  } as CSSProperties)
 
   return (
     <>

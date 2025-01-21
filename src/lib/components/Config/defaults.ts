@@ -1,33 +1,37 @@
 import type { Config } from './Config'
 
-const COMMON_COLORS = {
-  line: 'hsla(220, 70%, 50%, 0.75)',
-  flat: 'hsla(220, 70%, 50%, 0.2)',
-  indice: 'hsla(220, 70%, 50%, 1)',
+const GUIDE_COLORS = {
+  line: 'var(--pdd-guide-color-line)',
+  pattern: 'var(--pdd-guide-color-pattern)',
+  auto: 'var(--pdd-guide-color-auto)',
+  fixed: 'var(--pdd-guide-color-fixed)',
+}
+
+const SPACER_COLORS = {
+  line: 'var(--pdd-spacer-color-line)',
+  flat: 'var(--pdd-spacer-color-flat)',
+  indice: 'var(--pdd-spacer-color-indice)',
 }
 
 const BOX_COLORS = {
-  line: 'hsla(255, 70%, 50%, 0.75)',
-  flat: 'hsla(255, 70%, 50%, 0.2)',
-  indice: 'hsla(255, 70%, 50%, 0.9)',
+  line: 'var(--pdd-box-color-line)',
+  flat: 'var(--pdd-box-color-flat)',
+  indice: 'var(--pdd-box-color-indice)',
 }
+
+const PADDER_COLOR = 'var(--pdd-padder-color)'
 
 export const DEFAULT_CONFIG: Config = {
   base: 8,
   guide: {
     variant: 'line',
     visibility: 'hidden',
-    colors: {
-      line: 'hsla(220, 70%, 50%, 0.2)',
-      pattern: 'hsla(255, 70%, 50%, 0.2)',
-      auto: 'hsla(220, 70%, 50%, 0.2)',
-      fixed: 'hsla(190, 70%, 50%, 0.2)',
-    },
+    colors: GUIDE_COLORS,
   },
   spacer: {
     variant: 'line',
     visibility: 'hidden',
-    colors: COMMON_COLORS,
+    colors: SPACER_COLORS,
   },
   box: {
     visibility: 'hidden',
@@ -35,6 +39,6 @@ export const DEFAULT_CONFIG: Config = {
   },
   padder: {
     visibility: 'hidden',
-    color: BOX_COLORS.line,
+    color: PADDER_COLOR,
   },
 } as const
