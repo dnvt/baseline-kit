@@ -1,6 +1,6 @@
-import { CSSProperties, memo, useMemo, useRef } from 'react'
+import { CSSProperties, memo, useCallback, useMemo, useRef } from 'react'
 import { ComponentsProps } from '@components'
-import { useConfig, useGuideDimensions, useNormalizedDimensions, useVisibility } from '@hooks'
+import { useConfig, useGuideDimensions, useNormalizedDimensions, useVisibility, useGuideVisibleLines } from '@hooks'
 import { BlockInlineSpacing, convertToPixels, CSSValue, normalizeSpacing, PaddingSpacing } from '@utils'
 import styles from './styles.module.css'
 
@@ -17,7 +17,8 @@ export type BaselineProps = Omit<ComponentsProps, 'children'> &
 
 /**
  * Baseline Component
- * Overlays horizontal lines from top to bottom.
+ * Overlays horizontal lines from top to bottom with performance optimizations.
+ * Only renders rows that are currently visible in the viewport.
  * - If variant='line', each row is 1px thick
  * - If variant='flat', each row is `base` px thick
  * - By default is absolutely positioned (via CSS) so it won't push the layout
@@ -50,11 +51,18 @@ export const Baseline = memo(function Baseline({
 
   const spacing = useMemo(() => normalizeSpacing(props, config.base), [props, config.base])
 
-  // rowCount => (resolvedHeight - topSpacing - bottomSpacing) / base
+  // Calculate total number of rows
   const rowCount = useMemo(() => {
     const totalHeight = (resolvedHeight ?? 0) - (spacing.block[0] + spacing.block[1])
     return Math.max(1, Math.ceil(totalHeight / config.base))
   }, [resolvedHeight, spacing.block, config.base])
+
+  // Get visible row range using useGuideVisibleLines hook
+  const { start, end } = useGuideVisibleLines({
+    totalLines: rowCount,
+    lineHeight: config.base,
+    containerRef,
+  })
 
   const { width: cssWidth } = useNormalizedDimensions({
     width,
@@ -78,8 +86,16 @@ export const Baseline = memo(function Baseline({
     overflow: 'hidden',
     height: resolvedHeight ? `${resolvedHeight}px` : 'auto',
     ...style,
-  } as CSSProperties), [cssWidth, spacing, resolvedHeight, style],
-  )
+  } as CSSProperties), [cssWidth, spacing, resolvedHeight, style])
+
+  const getRowStyle = useCallback((index: number): CSSProperties => ({
+    top: `${index * config.base}px`,
+    left: 0,
+    right: 0,
+    height: variant === 'line' ? '1px' : `${config.base}px`,
+    backgroundColor: chosenColor,
+    position: 'absolute',
+  }), [config.base, variant, chosenColor])
 
   return (
     <div
@@ -93,23 +109,19 @@ export const Baseline = memo(function Baseline({
       style={containerStyles}
       {...props}
     >
-      {isShown && Array.from({ length: rowCount }).map((_, i) => {
-        const rowStyle: CSSProperties = {
-          top: `${i * config.base}px`,
-          left: 0,
-          right: 0,
-          height: variant === 'line' ? '1px' : `${config.base}px`,
-          backgroundColor: chosenColor,
-          position: 'absolute',
-        }
-        return (
-          <div
-            key={i}
-            data-row-index={i}
-            style={rowStyle}
-          />
-        )
-      })}
+      {isShown && Array.from(
+        { length: end - start },
+        (_, i) => {
+          const rowIndex = i + start
+          return (
+            <div
+              key={rowIndex}
+              data-row-index={rowIndex}
+              style={getRowStyle(rowIndex)}
+            />
+          )
+        },
+      )}
     </div>
   )
 })
