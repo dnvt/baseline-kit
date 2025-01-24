@@ -1,4 +1,4 @@
-import { testUtils } from '@/__tests__/setup'
+import { testUtils } from '../setup'
 
 export const cssTestUtils = {
   // Convert relative units to pixels based on root context

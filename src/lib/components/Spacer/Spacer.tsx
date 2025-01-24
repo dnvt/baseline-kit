@@ -5,7 +5,7 @@ import { Visibility } from '../Config'
 import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
 
-export type SpacerVariant = 'line' | 'flat'
+export type SpacerVariant = 'line' | 'flat' | 'pattern'
 export type SpacerDimension = 'width' | 'height'
 export type SpacerDimensions = {
   width: CSSValue | '100%'

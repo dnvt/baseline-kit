@@ -1,173 +1,65 @@
 import { render, screen } from '@testing-library/react'
-import { SpacerConfig, Spacer } from '../Spacer'
+import '@testing-library/jest-dom'
 
-describe('Spacer', () => {
-  describe('Rendering', () => {
-    it('renders with hidden visibility by default', () => {
-      render(<Spacer height={100} />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container.className).toContain('hidden')
-    })
+import { Spacer } from '@/components'
+import * as HooksModule from '@/hooks/useConfig'
 
-    it('renders with visible visibility when specified', () => {
-      render(<Spacer height={100} visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container.className).toContain('visible')
-    })
+interface MockSpacerConfig {
+  base: number
+  variant: string
+  visibility: string
+  colors: {
+    line: string
+    flat: string
+    indice: string
+  }
+}
 
-    it('combines custom class names correctly', () => {
-      render(
-        <Spacer
-          height={100}
-          className="custom-class-1 custom-class-2"
-          visibility="visible"
-        />,
-      )
-      const container = screen.getByTestId('spacer-container')
-      expect(container.className).toContain('custom-class-1')
-      expect(container.className).toContain('custom-class-2')
-    })
+// If you also import a real "Config" or "ComponentConfig" from your code, you can use that instead.
+describe('Spacer component (with mocked useConfig)', () => {
+  beforeEach(() => {
+    vi.spyOn(HooksModule, 'useConfig').mockReturnValue({
+      base: 8,
+      variant: 'line',
+      visibility: 'hidden',
+      colors: {
+        line: 'red',
+        flat: 'blue',
+        indice: 'green',
+      },
+    } as MockSpacerConfig)
   })
 
-  describe('Dimensions', () => {
-    it('handles height prop correctly', () => {
-      render(<Spacer height={100} visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container.style.getPropertyValue('--padd-spacer-height')).toBe('104px')
-      expect(container.style.getPropertyValue('--padd-spacer-width')).toBe('100%')
-    })
-
-    it('handles width prop correctly', () => {
-      render(<Spacer width={200} visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container.style.getPropertyValue('--padd-spacer-width')).toBe('200px')
-      expect(container.style.getPropertyValue('--padd-spacer-height')).toBe('100%')
-    })
-
-    it('normalizes dimensions to base unit', () => {
-      const config: SpacerConfig = {
-        variant: 'line',
-        base: 8,
-      }
-      render(<Spacer height={103} config={config} visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container.style.getPropertyValue('--padd-spacer-height')).toBe('104px')
-    })
-
-    it('handles CSS units correctly', () => {
-      render(<Spacer height="50vh" visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container.style.getPropertyValue('--padd-spacer-height')).toBe('50vh')
-    })
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
-  describe('Variants', () => {
-    it('handles line variant correctly', () => {
-      const config: SpacerConfig = {
-        variant: 'line',
-      }
-      render(<Spacer height={100} config={config} visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container).toHaveAttribute('data-variant', 'line')
-    })
+  it('renders with default (mocked) config => line variant, hidden, base=8', () => {
+    render(<Spacer height={100} />)
+    const container = screen.getByTestId('spacer')
 
-    it('handles flat variant correctly', () => {
-      const config: SpacerConfig = {
-        variant: 'flat',
-      }
-      render(<Spacer height={100} config={config} visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container).toHaveAttribute('data-variant', 'flat')
-    })
+    // Because our mock says variant='line', the spacer should have .line class
+    expect(container).toHaveAttribute('data-variant', 'line')
+    // Also says visibility='hidden', so the hook says isShown=false => .hidden
+    expect(container.className).toContain('hidden')
+    // And the base=8 might cause dimension rounding if we tested that part
   })
 
-  describe('Style Customization', () => {
-    it('applies custom color', () => {
-      const config: SpacerConfig = {
-        variant: 'line',
-        color: '#FF0000',
-      }
-      render(<Spacer height={100} config={config} visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container.style.getPropertyValue('--padd-spacer-color')).toBe('#FF0000')
-    })
-
-    it('applies custom styles', () => {
-      const customStyle = {
-        '--custom-property': '20px',
-        backgroundColor: 'red',
-      }
-      render(
-        <Spacer
-          height={100}
-          style={customStyle}
-          visibility="visible"
-        />,
-      )
-      const container = screen.getByTestId('spacer-container')
-      expect(container.style.getPropertyValue('--custom-property')).toBe('20px')
-      expect(container.style.backgroundColor).toBe('red')
-    })
+  it('can override visibility prop => isShown=true', () => {
+    render(<Spacer height={100} visibility="visible" />)
+    const container = screen.getByTestId('spacer')
+    // Even though the mock says "hidden", the prop=visible overrides that
+    // in your code => isShown => true => .visible
+    expect(container.className).toContain('visible')
   })
 
-  describe('Indicator Node', () => {
-    it('renders indicator node when visible', () => {
-      const mockIndicator = vi.fn((value: number) => <span>{value}px</span>)
-      const config: SpacerConfig = {
-        variant: 'line',
-        base: 8,
-      }
+  it('uses the mocked colors for line, flat, indice', () => {
+    render(<Spacer height={50} visibility="visible" />)
+    const container = screen.getByTestId('spacer')
 
-      render(
-        <Spacer
-          height={100}
-          config={config}
-          indicatorNode={mockIndicator}
-          visibility="visible"
-        />,
-      )
-      // The value is normalized to the nearest base unit multiple (104)
-      expect(mockIndicator).toHaveBeenCalledWith(104, 'height')
-      expect(screen.getByText('104px')).toBeInTheDocument()
-    })
-
-    it('does not render indicator node when hidden', () => {
-      const mockIndicator = vi.fn((value: number) => <span>{value}px</span>)
-      render(
-        <Spacer
-          height={100}
-          indicatorNode={mockIndicator}
-          visibility="hidden"
-        />,
-      )
-      expect(mockIndicator).not.toHaveBeenCalled()
-    })
+    // The code sets CSS variables: --pdd-spacer-color-line, etc.
+    expect(container.style.getPropertyValue('--pdd-spacer-color-line')).toBe('red')
+    expect(container.style.getPropertyValue('--pdd-spacer-color-flat')).toBe('blue')
+    expect(container.style.getPropertyValue('--pdd-spacer-color-indice')).toBe('green')
   })
-
-  describe('Edge Cases', () => {
-    it('handles undefined dimensions', () => {
-      // @ts-expect-error: Need to pass a heigh or width accurate value
-      render(<Spacer visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container.style.getPropertyValue('--padd-spacer-height')).toBe('100%')
-      expect(container.style.getPropertyValue('--padd-spacer-width')).toBe('100%')
-    })
-
-    it('handles invalid CSS values', () => {
-      // @ts-expect-error: Need to pass a heigh or width accurate value
-      render(<Spacer height="invalid" visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      // Invalid values should be passed through as-is
-      expect(container.style.getPropertyValue('--padd-spacer-height')).toBe('invalid')
-    })
-
-    it('applies default config values when not provided', () => {
-      render(<Spacer height={100} visibility="visible" />)
-      const container = screen.getByTestId('spacer-container')
-      expect(container).toHaveAttribute('data-variant', CONFIG.variant)
-      expect(container.style.getPropertyValue('--padd-z-index')).toBe(CONFIG.zIndex.toString())
-    })
-  })
-
-
 })

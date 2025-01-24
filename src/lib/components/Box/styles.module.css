@@ -12,8 +12,7 @@
   height: var(--pdd-box-height);
 }
 
-.box::after {
-
+.visibile::after {
   content: '';
   position: absolute;
   inset: 0;

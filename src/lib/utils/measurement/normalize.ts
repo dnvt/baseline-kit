@@ -218,6 +218,7 @@ export const MeasurementSystem: MeasurementSystemType = {
   },
 
   isNormalized(value: CSSValue, { unit = DEFAULT_BASE } = {}) {
+    if (value === 'auto') return true
     try {
       const normalized = this.normalize(value, { unit, suppressWarnings: true })
       if (typeof value === 'number') {
@@ -268,6 +269,12 @@ export const MeasurementSystem: MeasurementSystemType = {
     case 'vw':
       pixels = (value / 100) * ctx.viewportWidth
       break
+    case 'vmin':
+      pixels = (value / 100) * Math.min(ctx.viewportWidth, ctx.viewportHeight)
+      break
+    case 'vmax':
+      pixels = (value / 100) * Math.max(ctx.viewportWidth, ctx.viewportHeight)
+      break
     case '%':
       pixels = (value / 100) * ctx.parentSize
       break
@@ -304,6 +311,10 @@ export const MeasurementSystem: MeasurementSystemType = {
       return (pixels * 100) / ctx.viewportHeight
     case 'vw':
       return (pixels * 100) / ctx.viewportWidth
+    case 'vmin':
+      return (pixels * 100) / Math.min(ctx.viewportWidth, ctx.viewportHeight) // Fixed
+    case 'vmax':
+      return (pixels * 100) / Math.max(ctx.viewportWidth, ctx.viewportHeight) // Fixed
     case '%':
       return (pixels * 100) / ctx.parentSize
     default:

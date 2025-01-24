@@ -1,4 +1,5 @@
 import { createContext, use, useMemo, type ReactNode } from 'react'
+import { BaselineVariant } from '@components'
 import { DEFAULT_CONFIG } from './defaults'
 import type { SpacerVariant } from '../Spacer'
 import type { GuideVariant } from '../types'
@@ -17,6 +18,11 @@ export type Config = {
     variant: GuideVariant
     visibility: Visibility
     colors: Record<GuideVariant, string>
+  }
+  baseline: {
+    variant: BaselineVariant
+    visibility: Visibility
+    colors: Record<BaselineVariant, string>
   }
   spacer: {
     variant: SpacerVariant
@@ -41,6 +47,7 @@ export const useDefaultConfig = () => use(ConfigContext) ?? DEFAULT_CONFIG
 type ConfigProps = {
   children: ReactNode
   base?: number
+  baseline?: Partial<Config['baseline']>
   guide?: Partial<Config['guide']>
   spacer?: Partial<Config['spacer']>
   box?: Partial<Config['box']>
@@ -49,6 +56,7 @@ type ConfigProps = {
 
 const createCSSVariables = ({
   base,
+  baseline,
   guide,
   spacer,
   box,
@@ -56,6 +64,10 @@ const createCSSVariables = ({
 }: Config): Record<string, string> => ({
   // Always set your base unit
   '--pdd-base': `${base}px`,
+
+  // Baseline Colors
+  '--pdd-baseline-color-line': baseline.colors.line,
+  '--pdd-baseline-color-flat': baseline.colors.flat,
 
   // Guide Colors (matching the variant keys in your config)
   '--pdd-guide-color-line': guide.colors.line,
@@ -80,6 +92,7 @@ const createCSSVariables = ({
 export function Config({
   children,
   base,
+  baseline,
   guide,
   spacer,
   box,
@@ -90,6 +103,7 @@ export function Config({
   const value = useMemo(() => {
     const newConfig: Config = {
       base: base ?? parentConfig.base,
+      baseline: { ...parentConfig.baseline, ...baseline },
       guide: { ...parentConfig.guide, ...guide },
       spacer: { ...parentConfig.spacer, ...spacer },
       box: { ...parentConfig.box, ...box },

@@ -4,6 +4,7 @@ import type { DemoGridAction, DemoGridState } from './types'
 import { usePageHeight } from '../hooks'
 
 import { Guide, DEFAULT_CONFIG, GuideColumnsPattern } from '../../dist'
+import { Baseline } from '@/components/Baseline'
 
 
 // Custom reducer for the demo -------------------------------------------------
@@ -83,12 +84,7 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
 
   return (
     <div className="grid-playground">
-      {/* Horizontal guide */}
-      <Guide
-        visibility={state.showGuides.columns ? 'visible' : 'hidden'}
-        direction="horizontal"
-        height={state.pageHeight}
-      />
+      <Baseline visibility={state.showGuides.columns ? 'visible' : 'hidden'} height={state.pageHeight} />
 
       <div className="demo-wrapper">
         <Guide

@@ -27,7 +27,7 @@ export const CSS_UNIT_CONVERSIONS = {
 } as const
 
 
-export const RELATIVE_UNITS = ['fr', '%', 'em', 'rem', 'vh', 'vw'] as const
+export const RELATIVE_UNITS = ['fr', '%', 'em', 'rem', 'vh', 'vw', 'vmin', 'vmax'] as const
 export const ABSOLUTE_UNITS = ['px', 'pt', 'pc', 'cm', 'mm', 'in'] as const
 export const CSS_UNITS = [...RELATIVE_UNITS, ...ABSOLUTE_UNITS] as const
 

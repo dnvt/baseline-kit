@@ -1,12 +1,11 @@
-import { useLayoutEffect, useState, type RefObject } from 'react'
-import { MeasurementSystem, rafThrottle } from '@utils'
+import { useLayoutEffect, useState, RefObject } from 'react'
+import { rafThrottle, MeasurementSystem } from '@utils'
 
 /**
- * Hook for tracking grid container dimensions.
- * Uses `ResizeObserver` for efficient updates and prevents unnecessary re-renders.
- *
- * @param ref - A React ref object pointing to the grid container element.
- * @returns An object containing the `width` and `height` of the container.
+ * A hook that measures the bounding rect of a ref'd element (and its parent if needed).
+ * - Immediately measures once on mount
+ * - Uses ResizeObserver to update on changes
+ * - Uses `rafThrottle` to avoid multiple re-renders in a single frame
  */
 export function useGuideDimensions(ref: RefObject<HTMLDivElement | null>) {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
@@ -15,32 +14,65 @@ export function useGuideDimensions(ref: RefObject<HTMLDivElement | null>) {
     const element = ref.current
     if (!element) return
 
-    const calculateDimensions = () => {
-      const rect = element.getBoundingClientRect()
-      const parent = element.parentElement
-      const height = rect.height === 0 && parent ? parent.getBoundingClientRect().height : rect.height
+    /**
+     * This function measures the element (or its parent if height=0)
+     * Then normalizes width/height with unit=1 (round to int).
+     */
+    function calculateDimensions() {
+      const rect = element?.getBoundingClientRect()
+      let { width, height } = rect ?? { width: 0, height: 0 }
+
+      // If the child has 0 height but a parent with real size:
+      if (height === 0 && element?.parentElement) {
+        const parentRect = element.parentElement.getBoundingClientRect()
+        height = parentRect.height
+        width = parentRect.width
+      }
+
+      const normalizedWidth = MeasurementSystem.normalize(width, {
+        unit: 1,
+        suppressWarnings: true,
+      })
+      const normalizedHeight = MeasurementSystem.normalize(height, {
+        unit: 1,
+        suppressWarnings: true,
+      })
 
       return {
-        width: MeasurementSystem.normalize(rect.width, { unit: 1, suppressWarnings: true }),
-        height: MeasurementSystem.normalize(height, { unit: 1, suppressWarnings: true }),
+        width: normalizedWidth,
+        height: normalizedHeight,
       }
     }
 
-    const observer = new ResizeObserver(
-      rafThrottle(() => {
-        const newDimensions = calculateDimensions()
-        setDimensions(prev =>
-          prev.width === newDimensions.width && prev.height === newDimensions.height
-            ? prev
-            : newDimensions,
-        )
-      }),
-    )
+    /**
+     * Throttled update. We measure & only set state if dimensions changed.
+     */
+    const updateDimensions = rafThrottle(() => {
+      const newDims = calculateDimensions()
+      setDimensions(prev =>
+        prev.width === newDims.width && prev.height === newDims.height
+          ? prev
+          : newDims,
+      )
+    })
+
+    // Create observer
+    const observer = new ResizeObserver(() => {
+      updateDimensions()
+    })
 
     observer.observe(element)
-    if (element.parentElement) observer.observe(element.parentElement)
+    if (element.parentElement) {
+      observer.observe(element.parentElement)
+    }
 
-    return () => observer.disconnect()
+    // *Immediate initial measure* so we don’t rely solely on observer
+    // This ensures your test sees a dimension after the first render
+    updateDimensions()
+
+    return () => {
+      observer.disconnect()
+    }
   }, [ref])
 
   return dimensions

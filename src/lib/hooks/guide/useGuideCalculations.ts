@@ -1,10 +1,9 @@
 import { useMemo, useCallback } from 'react'
-import { AutoConfig, GuideColumnsPattern, GuideConfig, LineConfig } from '@components'
+import { AutoConfig, DEFAULT_CONFIG, GuideColumnsPattern, GuideConfig, LineConfig } from '@components'
 import {
   isValidGuidePattern,
   parseCSSValue,
   convertToPixels,
-  formatCSSValue,
   ABSOLUTE_UNITS,
   RELATIVE_UNITS,
 } from '@utils'
@@ -18,62 +17,51 @@ type Props = {
 type Result = {
   gridTemplateColumns: string
   columnsCount: number
-  calculatedGap: string
+  calculatedGap: number
   isValid: boolean
 }
 
-/**
- * Hook for calculating grid layout dimensions and properties.
- * Handles different grid variants (line, pattern, fixed, auto) and their specific calculations.
- *
- * @param containerWidth - The width of the grid container.
- * @param config - The configuration object for the grid.
- * @returns An object containing grid layout properties such as `gridTemplateColumns`, `columnsCount`, and `calculatedGap`.
- */
 export function useGuideCalculations({
   containerWidth,
   config,
 }: Props): Result {
   const { base } = useConfig('guide')
 
-  // Helper Functions ----------------------------------------------------------
-
-  /**
-   * Calculates layout for line variant (single pixel columns).
-   * Uses container width and gap to determine optimal number of 1px columns.
-   */
+  // Helper: line variant ------------------------------------------------------
 
   const calculateLineVariant = useMemo(() =>
-    (config: LineConfig, width: number): Result => {
-      const columns = Math.max(1, Math.floor(width / ((config.gap ?? 8) + 1)) + 1)
+    (cfg: LineConfig, width: number): Result => {
+      const gap = cfg.gap ?? 8
+      const columns = Math.max(1, Math.floor(width / (gap + 1)) + 1)
 
       return {
         gridTemplateColumns: `repeat(${columns}, 1px)`,
         columnsCount: columns,
-        calculatedGap: `${config.gap}px`,
+        calculatedGap: gap,
         isValid: true,
       }
     },
   [])
 
-  /**
-   * Handles custom column patterns with mixed units.
-   * Currently supports: px, fr, %, em, rem, and auto.
-   */
+  // Helper: pattern variant ---------------------------------------------------
+
   const calculateColumnPattern = useMemo(() =>
-    (config: GuideConfig & { columns: GuideColumnsPattern }): Result => {
-      if (!isValidGuidePattern(config.columns)) {
+    (cfg: GuideConfig & { columns: GuideColumnsPattern }): Result => {
+      if (!isValidGuidePattern(cfg.columns)) {
         throw new Error('Invalid grid column pattern')
       }
 
-      const columns = config.columns.map(col => {
-        if (typeof col === 'number') return `${col}px`
+      const columns = cfg.columns.map(col => {
+        if (typeof col === 'number') {
+          return `${col}px`
+        }
         if (typeof col === 'string') {
-          // Handle all valid CSS grid units including fr
+          if (col === '0px') {
+            return '0'
+          }
           if (col === 'auto' || /^\d+(?:fr|px|%|em|rem)$/.test(col)) {
             return col
           }
-          // Handle plain numbers with px
           if (/^\d+$/.test(col)) {
             return `${col}px`
           }
@@ -81,59 +69,65 @@ export function useGuideCalculations({
         return '0'
       })
 
-      const isValid = columns.every(col => col !== '0')
+      const isValid = columns.every(c => c !== '0')
+      if (!isValid) {
+        return {
+          gridTemplateColumns: 'none',
+          columnsCount: 0,
+          calculatedGap: 0,
+          isValid: false,
+        }
+      }
 
       return {
         gridTemplateColumns: columns.join(' '),
         columnsCount: columns.length,
-        calculatedGap: `${config.gap}px`,
-        isValid,
+        calculatedGap: cfg.gap ?? 0,
+        isValid: true,
       }
     },
-  [],
-  )
+  [])
 
-  /**
-   * Handles fixed-column layouts with equal column widths.
-   * Uses 1fr as default column width if none specified for equal distribution.
-   */
+  // Helper: fixed variant -----------------------------------------------------
+
   const calculateFixedColumns = useCallback(
-    (config: GuideConfig & { columns: number }): Result => ({
-      gridTemplateColumns: `repeat(${config.columns}, ${
-        config.columnWidth ? parseCSSValue(config.columnWidth) : '1fr'
-      })`,
-      columnsCount: config.columns,
-      calculatedGap: `${config.gap}px`, // Gap already in pixels
-      isValid: true,
-    }),
+    (cfg: GuideConfig & { columns: number }): Result => {
+      if (cfg.columns <= 0) {
+        throw new Error(`Invalid columns count: ${cfg.columns}`)
+      }
+
+      return {
+        gridTemplateColumns: `repeat(${cfg.columns}, ${
+          cfg.columnWidth ? parseCSSValue(cfg.columnWidth) : '1fr'
+        })`,
+        columnsCount: cfg.columns,
+        calculatedGap: cfg.gap ?? 0,
+        isValid: true,
+      }
+    },
     [],
   )
 
-  /**
-   * Calculates auto-grid layout based on container width and column width.
-   */
-  const calculateAutoGuide = useCallback(
-    (config: AutoConfig, width: number): Result => {
-      const gap = formatCSSValue(config.gap ?? base)
-      const columnWidth = config.columnWidth
-      const numericGap = parseInt(gap)
+  // Helper: auto variant ------------------------------------------------------
 
-      // Handle special cases
+  const calculateAutoGuide = useCallback(
+    (cfg: AutoConfig, width: number): Result => {
+      const gap = cfg.gap ?? base
+      const columnWidth = cfg.columnWidth
+
       if (columnWidth === 'auto') {
         return {
           gridTemplateColumns: 'repeat(auto-fit, minmax(0, 1fr))',
           columnsCount: 1,
-          calculatedGap: `${numericGap}px`,
+          calculatedGap: gap,
           isValid: true,
         }
       }
 
-      // Convert to string if number
       const columnWidthStr = typeof columnWidth === 'number'
         ? `${columnWidth}px`
         : columnWidth as string
 
-      // Handle different unit types
       if (columnWidthStr.endsWith('fr')) {
         return {
           gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
@@ -142,9 +136,10 @@ export function useGuideCalculations({
           isValid: true,
         }
       }
+
       if (ABSOLUTE_UNITS.some(unit => columnWidthStr.endsWith(unit))) {
         const pixels = convertToPixels(columnWidthStr) ?? 0
-        const columns = Math.max(1, Math.floor((width + numericGap) / (pixels + numericGap)))
+        const columns = Math.max(1, Math.floor((width + gap) / (pixels + gap)))
         return {
           gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
           columnsCount: columns,
@@ -152,6 +147,7 @@ export function useGuideCalculations({
           isValid: true,
         }
       }
+
       if (RELATIVE_UNITS.some(unit => columnWidthStr.endsWith(unit))) {
         return {
           gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidthStr}, 1fr))`,
@@ -164,7 +160,7 @@ export function useGuideCalculations({
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
-        calculatedGap: '0px',
+        calculatedGap: 0,
         isValid: false,
       }
     },
@@ -178,7 +174,7 @@ export function useGuideCalculations({
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
-        calculatedGap: '0px',
+        calculatedGap: 0,
         isValid: false,
       }
     }
@@ -193,21 +189,19 @@ export function useGuideCalculations({
         return calculateFixedColumns(config)
       case 'auto':
         return calculateAutoGuide(config, containerWidth)
-      default: {
-        const defaultConfig: LineConfig = {
+      default:
+        return calculateLineVariant({
           variant: 'line',
           base: base,
-          gap: 8,
-        }
-        return calculateLineVariant(defaultConfig, containerWidth)
-      }
+          gap: DEFAULT_CONFIG.base,
+        }, containerWidth)
       }
     } catch (error) {
       console.warn('Error calculating grid layout:', error)
       return {
         gridTemplateColumns: 'none',
         columnsCount: 0,
-        calculatedGap: '8px',
+        calculatedGap: 0,
         isValid: false,
       }
     }

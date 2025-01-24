@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { GridSetups, Indice } from './components'
 
 import '../dist/styles.css'
-import { Spacer, Box, Guide, Config } from '../dist'
+import { Spacer, Box, Config, Baseline } from '../dist'
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -27,7 +27,7 @@ function Content({ showBaseline }: ContentProps) {
       <Box block={[6, 10]} visibility={visibility} style={{ gridColumn: '1 / span 4' }}>
         <h1 className="demo-title">Padded Playground</h1>
       </Box>
-      <Box block={[6, 10]} visibility="visible" style={{ gridColumn: '1 / span 4' }}>
+      <Box block={[6, 10]} visibility="visible" style={{ gridColumn: '1 / span 4' }} isModuloize={false}>
         <p>
           This is a comprehensive demo showcasing the grid system capabilities.
           Use the controls to experiment with different grid configurations.
@@ -39,13 +39,12 @@ function Content({ showBaseline }: ContentProps) {
       {Array.from({ length: 100 }).map((_, i) => {
         return (
           <Fragment key={i}>
-            {!!i && <Spacer height={8} visibility={visibility} />}
+            {!!i && <Spacer height={8} visibility={visibility} variant="flat" />}
             <Box visibility={visibility} block={[0, 2]} width="100%" height="100%">
               <Config base={8}>
-                < div className="content-block">
-                  <Guide
+                <div className="content-block">
+                  <Baseline
                     height={56}
-                    direction="horizontal"
                     visibility={visibility}
                   />
                   Content Block {i + 1}

@@ -1,5 +1,5 @@
 import { CSSProperties, memo, ReactNode, useMemo, useRef } from 'react'
-import { useConfig, useDimensionBaseMultiple } from '@hooks'
+import { useConfig, useDimensionBaseMultiple, useVisibility } from '@hooks'
 import {
   cx,
   cs,
@@ -13,17 +13,18 @@ import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
 
-export type Props = ComponentsProps & {
+type Props = ComponentsProps & {
   /** Width of the box */
   width?: CSSValue | 'fit-content' | 'auto'
   /** Height of the box */
   height?: CSSValue | 'fit-content' | 'auto'
   /** Override visibility from theme */
   visibility?: Visibility
+  /** Moduloize the Paddings to the base unit. True by Default */
+  isModuloize?: boolean
   /** Content to be wrapped */
   children?: ReactNode
 } & (BlockInlineSpacing | PaddingSpacing)
-
 
 /**
  * Box Component
@@ -36,6 +37,7 @@ export const Box = memo(function Box({
   children,
   width = 'fit-content',
   height = 'fit-content',
+  isModuloize = true,
   visibility,
   className,
   style,
@@ -43,9 +45,13 @@ export const Box = memo(function Box({
   ...spacingProps
 }: Props) {
   const config = useConfig('box')
+  const { isShown } = useVisibility(visibility, config.visibility)
+
   const boxRef = useRef<HTMLDivElement | null>(null)
 
   const spacing = useMemo(() => {
+    if (!isModuloize) return spacingProps
+
     const result: Record<string, unknown> = {}
     for (const key in spacingProps) {
       const val = (spacingProps as any)[key]
@@ -74,18 +80,16 @@ export const Box = memo(function Box({
       }
     }
     return result
-  }, [spacingProps, config.base])
+  }, [isModuloize, spacingProps, config.base])
 
   const boxStyles = useMemo(() =>
-    cs(
-        {
-          '--pdd-box-width': width,
-          '--pdd-box-height': height,
-          '--pdd-box-base': `${config.base}px`,
-          '--pdd-box-color-line': config.colors.line,
-        } as CSSProperties,
-        style,
-    ),
+    cs({
+      '--pdd-box-width': width,
+      '--pdd-box-height': height,
+      '--pdd-box-base': `${config.base}px`,
+      '--pdd-box-color-line': config.colors.line,
+    } as CSSProperties,
+    style),
   [width, height, config.base, config.colors.line, style])
 
   useDimensionBaseMultiple(boxRef, config.base, true)
@@ -104,7 +108,7 @@ export const Box = memo(function Box({
     >
       <div
         ref={boxRef}
-        className={cx(styles.box, className)}
+        className={cx(styles.box, isShown && styles.visible, className)}
         data-testid={dataTest ?? 'box'}
         style={boxStyles}
       >
