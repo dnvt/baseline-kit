@@ -20,12 +20,15 @@ export function moduloize(
   { round = false } = {},
 ): string {
 
-  const px = MeasurementSystem.normalize(value ?? 0, {
+  if (value === 'auto') return '0px'
+
+  const px = MeasurementSystem.normalize((value) ?? 0, {
     unit: 1,
     round,
     suppressWarnings: true,
   })
 
-  const remainder = px % base
+  const remainderRaw = px % base
+  const remainder = Number(remainderRaw.toFixed(2))
   return `${remainder}px`
 }

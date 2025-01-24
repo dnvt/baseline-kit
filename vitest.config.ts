@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/lib/__tests__/setup.ts'],
+    setupFiles: ['./tests/setup.ts'],
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',
@@ -26,6 +26,7 @@ export default defineConfig({
         '**/react-jsx-runtime.production.js',
       ],
     },
+    include: ['tests/**/*.test.{ts,tsx}'],
   },
   resolve: {
     alias: {

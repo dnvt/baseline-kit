@@ -1,11 +1,9 @@
-.guide-container {
-  --pdd-guide-width: 100%;
-  --pdd-guide-height: 100%;
+.guide {
+  --pdd-guide-width: 100vw;
+  --pdd-guide-height: 100vh;
   --pdd-guide-gap: 8px;
   --pdd-guide-justify: start;
-  --pdd-guide-opacity: 1;
-  --pdd-guide-line-stroke: 1px;
-  --pdd-guide-max-width: none;
+  --pdd-guide-template: auto;
   --pdd-guide-padding-block: 0;
   --pdd-guide-padding-inline: 0;
 
@@ -14,74 +12,57 @@
   --pdd-guide-color-auto: var(--pdd-guide-color-auto-theme);
   --pdd-guide-color-fixed: var(--pdd-guide-color-fixed-theme);
 
-  position: absolute !important;
+  position: absolute;
   inset: 0;
-  width: var(--pdd-guide-width);
-  height: var(--pdd-guide-height);
-  max-width: var(--pdd-guide-max-width);
+  pointer-events: none;
   padding: var(--pdd-guide-padding-block) var(--pdd-guide-padding-inline);
 }
 
-.columns-container {
+.visible {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.hidden {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.columns {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 
   display: grid;
   gap: var(--pdd-guide-gap);
   grid-template-columns: var(--pdd-guide-template);
   justify-content: var(--pdd-guide-justify);
-  height: 100%;
+
   width: 100%;
-  position: relative;
+  height: 100%;
 }
 
 .column {
   min-width: 0;
   width: 100%;
-  height: var(--pdd-guide-height, 100%);
+  height: 100%;
 }
 
-/* Move these variant styles up and make them more specific */
-.columns-container .column[data-variant="line"] {
+.column[data-variant="line"] {
   width: 1px;
   background-color: var(--pdd-guide-color-line);
 }
 
-.columns-container .column[data-variant="pattern"] {
+.column[data-variant="pattern"] {
   background-color: var(--pdd-guide-color-pattern);
 }
 
-.columns-container .column[data-variant="auto"] {
+.column[data-variant="auto"] {
   background-color: var(--pdd-guide-color-auto);
 }
 
-.columns-container .column[data-variant="fixed"] {
+.column[data-variant="fixed"] {
   background-color: var(--pdd-guide-color-fixed);
-}
-
-.row {
-  --pdd-guide-top: 0;
-  --pdd-guide-color: var(--pdd-guide-color-line);
-
-  position: absolute;
-  inset-inline: 0;
-  top: var(--pdd-guide-top);
-  height: var(--pdd-guide-line-stroke);
-  background-color: var(--pdd-guide-color);
-}
-
-/* Special case for line variant */
-.column[data-variant="line"] {
-  width: 1px;
-}
-
-.guide-container[data-direction="horizontal"] {
-  max-width: none;
-  height: var(--pdd-guide-height);
-  padding: 0;
-}
-
-
-.guide-container[data-direction="horizontal"] {
-  max-width: none;
-  height: var(--pdd-guide-height);
-  padding: 0;
 }

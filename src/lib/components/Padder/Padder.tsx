@@ -7,7 +7,7 @@ import { Spacer } from '../Spacer'
 import styles from './styles.module.css'
 import { useVisibility } from '@/hooks/visibility/useVisibility'
 
-export type Props = Omit<ComponentsProps, 'data-testid'> & (BlockInlineSpacing | PaddingSpacing) & {
+type Props = Omit<ComponentsProps, 'data-testid'> & (BlockInlineSpacing | PaddingSpacing) & {
   /** Width of the padder container */
   width?: CSSValue | 'fit-content' | 'auto'
   /** Height of the padder container */
@@ -64,7 +64,7 @@ export const Padder = memo(function Padder({
     <Spacer
       width={width}
       height={height}
-      visibility="visible"
+      visibility={isShown ? 'visible' : 'hidden'}
     />
   )
 

@@ -51,6 +51,9 @@
   --pdd-guide-color-auto-theme: hsla(var(--pdd-blue-secondary), 0.15);
   --pdd-guide-color-fixed-theme: hsla(var(--pdd-blue-secondary), 0.15);
 
+  --pdd-baseline-color-line-theme: hsla(var(--pdd-blue-primary), 0.15);
+  --pdd-baseline-color-flat-theme: hsla(var(--pdd-purple-secondary), 0.2);
+
   --pdd-spacer-color-line-theme: hsla(var(--pdd-purple-primary), 0.6);
   --pdd-spacer-color-flat-theme: hsla(var(--pdd-purple-secondary), 0.2);
   --pdd-spacer-color-indice-theme: hsla(var(--pdd-purple-primary), 1);

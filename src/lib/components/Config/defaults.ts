@@ -7,6 +7,11 @@ const GUIDE_COLORS = {
   fixed: 'var(--pdd-guide-color-fixed-theme)',
 }
 
+const BASELINE_COLORS = {
+  line: 'var(--pdd-baseline-color-line-theme)',
+  flat: 'var(--pdd-baseline-color-flat-theme)',
+}
+
 const SPACER_COLORS = {
   line: 'var(--pdd-spacer-color-line-theme)',
   flat: 'var(--pdd-spacer-color-flat-theme)',
@@ -23,6 +28,11 @@ const PADDER_COLOR = 'var(--pdd-padder-color-theme)'
 
 export const DEFAULT_CONFIG: Config = {
   base: 8,
+  baseline: {
+    variant: 'line',
+    visibility: 'hidden',
+    colors: BASELINE_COLORS,
+  },
   guide: {
     variant: 'line',
     visibility: 'hidden',

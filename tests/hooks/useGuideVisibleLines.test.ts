@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react'
 import { useGuideVisibleLines } from '@hooks'
-import { cssTestUtils } from '@/__tests__/matchers/cssTestUtils'
-import { testUtils } from '@/__tests__/setup'
+import { cssTestUtils } from '../matchers/cssTestUtils'
+import { testUtils } from '../setup'
 
 // Mock IntersectionObserver
 const observerMap = new Map()
