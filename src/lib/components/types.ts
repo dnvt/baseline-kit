@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { Visibility } from '@components'
-import { CSSValue } from '@utils'
+import { DebuggingMode } from '@components'
+import { CSSValue, SpacingProps } from '@utils'
 
 // Grid Column
 export type GuideVariant = 'line' | 'pattern' | 'fixed' | 'auto'
@@ -16,12 +16,15 @@ export type PaddedVariant = typeof PADD_VARIANTS[number]
 
 // Common Component Types
 export type ComponentsProps = {
-  'data-testid'?: string
+  /** Controls debug-related visibility and overlays: */
+  debugging?: DebuggingMode
   className?: string
-  children?: ReactNode
   style?: CSSProperties
-  visibility?: Visibility
-}
+  /** @default: "fit-content" */
+  height?: CSSValue
+  /** @default: "fit-content" */
+  width?: CSSValue
+} & SpacingProps
 
 export type PaddedBaseConfig = {
   base?: number

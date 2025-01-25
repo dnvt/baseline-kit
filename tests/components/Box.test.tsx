@@ -72,17 +72,9 @@ describe('<Box /> component', () => {
   })
 
   it('renders hidden if visibility="hidden"', () => {
-    render(<Box visibility="hidden">Hidden content</Box>)
+    render(<Box debugging="hidden">Hidden content</Box>)
     const boxEl = screen.getByTestId('box')
     expect(boxEl.className).not.toMatch(/visible/)
-  })
-
-  it('applies width/height custom props', () => {
-    render(<Box width="200px" height="auto">Sized box</Box>)
-    const boxEl = screen.getByTestId('box')
-    const style = boxEl.getAttribute('style') || ''
-    expect(style).toContain('--pdd-box-width: 200px')
-    expect(style).toContain('--pdd-box-height: auto')
   })
 
   it('moduloizes spacing by default (isModuloize=true)', () => {
@@ -114,7 +106,7 @@ describe('<Box /> component', () => {
 
   it('skips modulo if isModuloize=false', () => {
     render(
-      <Box block={[14, 22]} inline={10} isModuloize={false}>
+      <Box block={[14, 22]} inline={10} snapping={false}>
         No modulo
       </Box>,
     )

@@ -1,11 +1,11 @@
 // tests/hooks/useVisibility.test.ts
 import { renderHook } from '@testing-library/react'
-import { useVisibility } from '@hooks'
+import { useDebugging } from '@hooks'
 
 describe('useVisibility', () => {
   it('returns isShown=true if prop=visible', () => {
     const { result } = renderHook(() =>
-      useVisibility('visible', 'none'),
+      useDebugging('visible', 'none'),
     )
     expect(result.current).toEqual({
       isShown: true,
@@ -16,7 +16,7 @@ describe('useVisibility', () => {
 
   it('returns isHidden=true if prop=hidden', () => {
     const { result } = renderHook(() =>
-      useVisibility('hidden', 'visible'),
+      useDebugging('hidden', 'visible'),
     )
     expect(result.current).toEqual({
       isShown: false,
@@ -27,7 +27,7 @@ describe('useVisibility', () => {
 
   it('returns isNone=true if prop=none', () => {
     const { result } = renderHook(() =>
-      useVisibility('none', 'visible'),
+      useDebugging('none', 'visible'),
     )
     expect(result.current).toEqual({
       isShown: false,
@@ -38,7 +38,7 @@ describe('useVisibility', () => {
 
   it('falls back to configVisibility if prop is undefined', () => {
     const { result } = renderHook(() =>
-      useVisibility(undefined, 'visible'),
+      useDebugging(undefined, 'visible'),
     )
     expect(result.current).toEqual({
       isShown: true,
@@ -49,7 +49,7 @@ describe('useVisibility', () => {
 
   it('falls back to configVisibility if prop is undefined, config=hidden', () => {
     const { result } = renderHook(() =>
-      useVisibility(undefined, 'hidden'),
+      useDebugging(undefined, 'hidden'),
     )
     expect(result.current).toEqual({
       isShown: false,
@@ -60,7 +60,7 @@ describe('useVisibility', () => {
 
   it('if both are undefined, everything is false', () => {
     const { result } = renderHook(() =>
-      useVisibility(undefined, undefined),
+      useDebugging(undefined, undefined),
     )
     expect(result.current).toEqual({
       isShown: false,
@@ -71,7 +71,7 @@ describe('useVisibility', () => {
 
   it('if prop is set, config is ignored', () => {
     const { result } = renderHook(() =>
-      useVisibility('visible', 'hidden'),
+      useDebugging('visible', 'hidden'),
     )
     // The prop 'visible' wins
     expect(result.current).toEqual({

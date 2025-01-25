@@ -42,7 +42,7 @@ describe('useConfig', () => {
     expect(result.current.base).toBe(10) // from mockDefaultConfig.base
     // from the guide field
     expect(result.current.variant).toBe('line')
-    expect(result.current.visibility).toBe('hidden')
+    expect(result.current.debugging).toBe('hidden')
     expect(result.current.colors).toEqual({
       line: 'red',
       pattern: 'blue',
@@ -68,7 +68,7 @@ describe('useConfig', () => {
     const { result } = renderHook(() => useConfig('box'))
 
     expect(result.current.base).toBe(8)
-    expect(result.current.visibility).toBe('visible')
+    expect(result.current.debugging).toBe('visible')
     expect(result.current.colors).toEqual({
       line: 'red',
       flat: 'blue',

@@ -127,7 +127,7 @@ describe('Guide component', () => {
   })
 
   it('renders a line variant with 64 columns from the partial mock', () => {
-    render(<Guide variant="line" gap={10} visibility="visible" data-testid="guide" />)
+    render(<Guide variant="line" gap={10} debugging="visible" data-testid="guide" />)
     const guide = screen.getByTestId('guide')
 
     const expectedGap = 10 * 8 // Multiply by config.base
@@ -141,7 +141,7 @@ describe('Guide component', () => {
         variant="auto"
         columnWidth={100}
         gap={16}
-        visibility="visible"
+        debugging="visible"
         data-testid="guide"
       />,
     )
@@ -163,7 +163,7 @@ describe('Guide component', () => {
         columns={['1fr', '2fr', '3fr']}
         gap={10}
         data-testid="guide"
-        visibility="visible"
+        debugging="visible"
       />,
     )
     const guideEl = screen.getByTestId('guide')
@@ -185,7 +185,7 @@ describe('Guide component', () => {
         columns={5}
         columnWidth="120px"
         gap={12}
-        visibility="visible"
+        debugging="visible"
         data-testid="guide"
       />,
     )
@@ -202,7 +202,7 @@ describe('Guide component', () => {
   })
 
   it('renders hidden when visibility="hidden"', () => {
-    render(<Guide visibility="hidden" data-testid="guide" />)
+    render(<Guide debugging="hidden" data-testid="guide" />)
     const guideEl = screen.getByTestId('guide')
     // If the final hashed class is something like '_hidden_9f4983'
     // we just check substring

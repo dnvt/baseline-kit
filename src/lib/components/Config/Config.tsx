@@ -4,7 +4,14 @@ import { DEFAULT_CONFIG } from './defaults'
 import type { SpacerVariant } from '../Spacer'
 import type { GuideVariant } from '../types'
 
-export type Visibility = 'visible' | 'hidden' | 'none'
+/**
+ * Controls the visual debugging features of this component or layout.
+ *
+ * - **"none"**: Debug features are fully disabled (no Padders or debug outlines).
+ * - **"hidden"**: Debug features are present in the DOM but not visibly shown.
+ * - **"visible"**: Debug features are fully rendered and visible for inspection.
+ */
+export type DebuggingMode = 'none' | 'hidden' | 'visible'
 
 type Colors = {
   line: string
@@ -16,26 +23,26 @@ export type Config = {
   base: number
   guide: {
     variant: GuideVariant
-    visibility: Visibility
+    debugging: DebuggingMode
     colors: Record<GuideVariant, string>
   }
   baseline: {
     variant: BaselineVariant
-    visibility: Visibility
+    debugging: DebuggingMode
     colors: Record<BaselineVariant, string>
   }
   spacer: {
     variant: SpacerVariant
-    visibility: Visibility
+    debugging: DebuggingMode
     colors: Colors
   }
   box: {
     colors: Colors
-    visibility: Visibility
+    debugging: DebuggingMode
   }
   padder: {
     color: string
-    visibility: Visibility
+    debugging: DebuggingMode
   }
 }
 
@@ -114,14 +121,10 @@ export function Config({
       ...newConfig,
       cssVariables: createCSSVariables(newConfig),
     }
-  }, [parentConfig, base, guide, spacer, box, padder])
+  }, [base, parentConfig.base, parentConfig.baseline, parentConfig.guide, parentConfig.spacer, parentConfig.box, parentConfig.padder, baseline, guide, spacer, box, padder])
 
   return (
     <ConfigContext.Provider value={value}>
-      {/*
-        Apply the dynamically generated custom properties,
-        which override the same variables declared in your .css
-      */}
       <div style={value.cssVariables}>{children}</div>
     </ConfigContext.Provider>
   )
