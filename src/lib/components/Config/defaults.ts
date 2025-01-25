@@ -30,25 +30,25 @@ export const DEFAULT_CONFIG: Config = {
   base: 8,
   baseline: {
     variant: 'line',
-    visibility: 'hidden',
+    debugging: 'hidden',
     colors: BASELINE_COLORS,
   },
   guide: {
     variant: 'line',
-    visibility: 'hidden',
+    debugging: 'hidden',
     colors: GUIDE_COLORS,
   },
   spacer: {
     variant: 'line',
-    visibility: 'hidden',
+    debugging: 'hidden',
     colors: SPACER_COLORS,
   },
   box: {
-    visibility: 'hidden',
+    debugging: 'hidden',
     colors: BOX_COLORS,
   },
   padder: {
-    visibility: 'hidden',
+    debugging: 'hidden',
     color: PADDER_COLOR,
   },
 } as const

@@ -84,15 +84,15 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
 
   return (
     <div className="grid-playground">
-      <Baseline visibility={state.showGuides.columns ? 'visible' : 'hidden'} height={state.pageHeight} />
+      <Baseline debugging={state.showGuides.columns ? 'visible' : 'hidden'} height={state.pageHeight} />
 
       <div className="demo-wrapper">
         <Guide
-          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+          debugging={state.showGuides.columns ? 'visible' : 'hidden'}
           gap={state.columnConfig.gap}
         />
         <Guide
-          visibility={state.showGuides.columns ? 'visible' : 'hidden'}
+          debugging={state.showGuides.columns ? 'visible' : 'hidden'}
           variant="fixed"
           gap={state.columnConfig.gap}
           columns={9}

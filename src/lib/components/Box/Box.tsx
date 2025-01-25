@@ -1,56 +1,68 @@
 import { CSSProperties, memo, ReactNode, useMemo, useRef } from 'react'
-import { useConfig, useDimensionBaseMultiple, useVisibility } from '@hooks'
+import { useConfig, useDimensionBaseMultiple, useDebugging } from '@hooks'
 import {
   cx,
   cs,
   CSSValue,
-  BlockInlineSpacing,
-  PaddingSpacing,
   moduloize,
 } from '@utils'
-import { Config, Visibility } from '../Config'
+import { Config } from '../Config'
 import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
 
-type Props = ComponentsProps & {
-  /** Width of the box */
-  width?: CSSValue | 'fit-content' | 'auto'
-  /** Height of the box */
-  height?: CSSValue | 'fit-content' | 'auto'
-  /** Override visibility from theme */
-  visibility?: Visibility
-  /** Moduloize the Paddings to the base unit. True by Default */
-  isModuloize?: boolean
-  /** Content to be wrapped */
+/**
+ * Determines how the component snaps its layout to the base spacing unit.
+ *
+ * - **"none"**: No snapping; the component uses raw spacing values as provided.
+ * - **"height"**: Only the container's height is snapped to the nearest multiple of the base unit (often adjusted by padding-bottom).
+ * - **"clamp"**: Both container height **and** any spacing/padding props are snapped to the nearest multiple of the base unit.
+ */
+export type SnappingMode = 'none' | 'height' | 'clamp';
+
+type BoxProps = {
+  /** Defines how the box snaps spacing to the base grid: */
+  snapping?: SnappingMode;
   children?: ReactNode
-} & (BlockInlineSpacing | PaddingSpacing)
+} & ComponentsProps
 
 /**
- * Box Component
- * A container component that provides consistent spacing and visual styling.
- * It can accept either block/inline spacing or padding. We partially transform
- * those spacing props by taking `(value % box.base)` so no spacing can exceed
- * the box base. Then we pass the result on to <Padder>.
+ * Box - A fundamental container that ensures consistent spacing
+ * in alignment with the base grid unit. By default, it clamps
+ * any spacing (block/inline) to multiples of the configured base.
+ *
+ * @remarks
+ * - **Debugging**: You can toggle debug modes to visualize
+ *   or hide underlying spacing elements for development.
+ * - **Snapping**: You can toggle snapping modes to ensure your
+ *   box's spacing conforms to the baseline unit.
+ * - **Integration**: Internally uses <Padder> to apply spacing,
+ *   and ties into your global config for base units and colors.
+ *
+ * @example
+ * ```tsx
+ * <Box block={16} inline={8} snapping="clamp" debugging="visible">
+ *   <p>Content aligned to the baseline grid!</p>
+ * </Box>
+ * ```
  */
 export const Box = memo(function Box({
   children,
-  width = 'fit-content',
-  height = 'fit-content',
-  isModuloize = true,
-  visibility,
+  snapping = 'clamp',
+  debugging,
   className,
+  width,
+  height,
   style,
-  ['data-testid']: dataTest,
   ...spacingProps
-}: Props) {
+}: BoxProps) {
   const config = useConfig('box')
-  const { isShown } = useVisibility(visibility, config.visibility)
+  const { isShown } = useDebugging(debugging, config.debugging)
 
   const boxRef = useRef<HTMLDivElement | null>(null)
 
   const spacing = useMemo(() => {
-    if (!isModuloize) return spacingProps
+    if (snapping === 'none') return spacingProps
 
     const result: Record<string, unknown> = {}
     for (const key in spacingProps) {
@@ -80,7 +92,7 @@ export const Box = memo(function Box({
       }
     }
     return result
-  }, [isModuloize, spacingProps, config.base])
+  }, [snapping, spacingProps, config.base])
 
   const boxStyles = useMemo(() =>
     cs({
@@ -90,7 +102,7 @@ export const Box = memo(function Box({
       '--pdd-box-color-line': config.colors.line,
     } as CSSProperties,
     style),
-  [width, height, config.base, config.colors.line, style])
+  [config.base, config.colors.line, height, style, width])
 
   useDimensionBaseMultiple(boxRef, config.base, true)
 
@@ -109,10 +121,10 @@ export const Box = memo(function Box({
       <div
         ref={boxRef}
         className={cx(styles.box, isShown && styles.visible, className)}
-        data-testid={dataTest ?? 'box'}
+        data-testid={'box'}
         style={boxStyles}
       >
-        <Padder {...spacing} width={width} height={height} visibility={visibility}>
+        <Padder {...spacing} debugging={debugging} width={width} height={height}>
           {children}
         </Padder>
       </div>

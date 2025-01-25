@@ -101,7 +101,7 @@ describe('Baseline', () => {
 
   it('renders hidden by default if config says hidden', () => {
     // If your real code uses config=hidden by default, or you pass visibility="hidden"
-    render(<Baseline visibility="hidden" />)
+    render(<Baseline debugging="hidden" />)
     // Because it's hidden => we do still create the element, but your code might hide lines
     // or if your code returns null when hidden, adapt accordingly:
     const baseline = screen.getByTestId('baseline')
@@ -110,7 +110,7 @@ describe('Baseline', () => {
   })
 
   it('renders lines when visible', () => {
-    render(<Baseline visibility="visible" height={100} />)
+    render(<Baseline debugging="visible" height={100} />)
     const baseline = screen.getByTestId('baseline')
     expect(baseline.className).toMatch(/visible/i)
 
@@ -125,7 +125,7 @@ describe('Baseline', () => {
 
   it('handles variant="flat"', () => {
     // variant=flat => each row's height= base px
-    render(<Baseline visibility="visible" variant="flat" height={64} />)
+    render(<Baseline debugging="visible" variant="flat" height={64} />)
     const baseline = screen.getByTestId('baseline')
     const lines = baseline.querySelectorAll('[data-row-index]')
     // 64 / base(8)=8 lines
@@ -137,7 +137,7 @@ describe('Baseline', () => {
   })
 
   it('respects custom numeric height', () => {
-    render(<Baseline visibility="visible" height={200} />)
+    render(<Baseline debugging="visible" height={200} />)
     const baseline = screen.getByTestId('baseline')
     // 200 / 8 => 25 lines
     const lines = baseline.querySelectorAll('[data-row-index]')
@@ -146,7 +146,7 @@ describe('Baseline', () => {
 
   it('respects custom string height e.g. "50vh"', () => {
     // e.g. "50vh" => ~384 px if innerHeight=768
-    render(<Baseline visibility="visible" height="50vh" />)
+    render(<Baseline debugging="visible" height="50vh" />)
     const baseline = screen.getByTestId('baseline')
     // 384 / 8 => 48 lines
     const lines = baseline.querySelectorAll('[data-row-index]')
@@ -158,7 +158,7 @@ describe('Baseline', () => {
     // Then total leftover = height(100)- (10+20)=70 => rowCount=70/8 => 9 lines
     render(
       <Baseline
-        visibility="visible"
+        debugging="visible"
         height={100}
         block={[10, 20]}
       />,
@@ -172,7 +172,7 @@ describe('Baseline', () => {
   it('mocks intersection if your code partial-renders lines (if so)', () => {
     // If you do partial or lazy rendering based on intersection, you'd do:
     // For demonstration we'll just do:
-    render(<Baseline visibility="visible" height={300} />)
+    render(<Baseline debugging="visible" height={300} />)
     const baseline = screen.getByTestId('baseline')
     // Simulate intersection
     triggerIntersection(baseline)

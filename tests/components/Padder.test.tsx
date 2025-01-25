@@ -39,7 +39,7 @@ describe('Padder', () => {
   })
 
   it('renders as visible if prop=visible', () => {
-    render(<Padder visibility="visible">Child</Padder>)
+    render(<Padder debugging="visible">Child</Padder>)
     const padder = screen.getByTestId('padder')
     // We might see a hashed class: _visible_xxxx
     // Just check for "visible" substring or do a data attr approach
@@ -48,7 +48,7 @@ describe('Padder', () => {
 
   it('sets width/height via custom properties', () => {
     render(
-      <Padder width="200px" height="auto" visibility="visible">
+      <Padder width="200px" height="auto" debugging="visible">
         Child
       </Padder>,
     )
@@ -58,13 +58,13 @@ describe('Padder', () => {
   })
 
   it('renders children', () => {
-    render(<Padder visibility="visible">Hello World</Padder>)
+    render(<Padder debugging="visible">Hello World</Padder>)
     screen.getByText('Hello World')
   })
 
   it('renders spacers if visible & not none => block/inline props', () => {
     render(
-      <Padder block={[10, 20]} inline={[5, 15]} visibility="visible">
+      <Padder block={[10, 20]} inline={[5, 15]} debugging="visible">
         Child
       </Padder>,
     )
@@ -76,7 +76,7 @@ describe('Padder', () => {
 
   it('uses direct padding if visibility="none"', () => {
     render(
-      <Padder block={[10, 20]} inline={[5, 15]} visibility="none">
+      <Padder block={[10, 20]} inline={[5, 15]} debugging="none">
         Child
       </Padder>,
     )

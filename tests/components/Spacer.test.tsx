@@ -46,7 +46,7 @@ describe('Spacer component (with mocked useConfig)', () => {
   })
 
   it('can override visibility prop => isShown=true', () => {
-    render(<Spacer height={100} visibility="visible" />)
+    render(<Spacer height={100} debugging="visible" />)
     const container = screen.getByTestId('spacer')
     // Even though the mock says "hidden", the prop=visible overrides that
     // in your code => isShown => true => .visible
@@ -54,7 +54,7 @@ describe('Spacer component (with mocked useConfig)', () => {
   })
 
   it('uses the mocked colors for line, flat, indice', () => {
-    render(<Spacer height={50} visibility="visible" />)
+    render(<Spacer height={50} debugging="visible" />)
     const container = screen.getByTestId('spacer')
 
     // The code sets CSS variables: --pdd-spacer-color-line, etc.

@@ -63,6 +63,8 @@ export type NormalizedSpacing = {
   inline: SpacingTuple
 }
 
+export type SpacingProps = PaddingSpacing | BlockInlineSpacing
+
 export type Direction = 'horizontal' | 'vertical'
 
 // Parsing Utilities -----------------------------------------------------------

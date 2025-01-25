@@ -1,1 +1,1 @@
-export * from './useVisibility'
+export * from './useDebugging'
