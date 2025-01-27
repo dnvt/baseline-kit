@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties } from 'react'
 import { DebuggingMode } from '@components'
 import { CSSValue, SpacingProps } from '@utils'
 

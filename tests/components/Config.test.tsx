@@ -38,7 +38,7 @@ describe('Config component', () => {
       <Config
         baseline={{
           variant: 'flat',
-          visibility: 'visible',
+          debugging: 'visible',
           colors: {
             line: '#FF0000',
             flat: '#00FF00',
@@ -60,7 +60,7 @@ describe('Config component', () => {
       <Config
         guide={{
           variant: 'pattern',
-          visibility: 'visible',
+          debugging: 'visible',
           colors: {
             line: '#FF0000',
             pattern: '#00FF00',
@@ -86,7 +86,7 @@ describe('Config component', () => {
       <Config
         spacer={{
           variant: 'flat',
-          visibility: 'visible',
+          debugging: 'visible',
           colors: {
             line: '#FF0000',
             flat: '#00FF00',
@@ -109,7 +109,7 @@ describe('Config component', () => {
     render(
       <Config
         box={{
-          visibility: 'visible',
+          debugging: 'visible',
           colors: {
             line: '#FF0000',
             flat: '#00FF00',
@@ -132,7 +132,7 @@ describe('Config component', () => {
     render(
       <Config
         padder={{
-          visibility: 'visible',
+          debugging: 'visible',
           color: '#FF0000',
         }}
       >
@@ -150,7 +150,7 @@ describe('Config component', () => {
       <Config base={16}>
         <Config
           base={24}
-          guide={{ visibility: 'visible' }}
+          guide={{ debugging: 'visible' }}
           baseline={{ variant: 'flat' }}
         >
           <div data-testid="nested-child">Nested Content</div>
@@ -166,7 +166,7 @@ describe('Config component', () => {
   it('maintains default values for non-overridden properties', () => {
     render(
       <Config
-        guide={{ visibility: 'visible' }} // Only override visibility
+        guide={{ debugging: 'visible' }} // Only override debugging
       >
         <div data-testid="child">Content</div>
       </Config>,

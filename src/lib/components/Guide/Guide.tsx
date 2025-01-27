@@ -93,7 +93,7 @@ export const Guide = memo(function Guide({
       {
         line: {
           variant: 'line' as const,
-          gap: gapInPixels,
+          gap: gapInPixels - 1,
           base: config.base,
         },
         auto: columnWidth
@@ -124,7 +124,7 @@ export const Guide = memo(function Guide({
             : null,
       }[variant] ?? {
         variant: 'line' as const,
-        gap: gapInPixels,
+        gap: gapInPixels - 1,
         base: config.base,
       }
     )

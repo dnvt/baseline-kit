@@ -1,11 +1,6 @@
 import { CSSProperties, memo, ReactNode, useMemo, useRef } from 'react'
-import { useConfig, useDimensionBaseMultiple, useDebugging } from '@hooks'
-import {
-  cx,
-  cs,
-  CSSValue,
-  moduloize,
-} from '@utils'
+import { usePaddingSnap, useConfig, useDebugging } from '@hooks'
+import { cx, cs, extractPadd } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
@@ -59,41 +54,14 @@ export const Box = memo(function Box({
   const config = useConfig('box')
   const { isShown } = useDebugging(debugging, config.debugging)
 
+  // Set up the paddingBlocks based on box height
   const boxRef = useRef<HTMLDivElement | null>(null)
+  const { top, bottom, left, right } = extractPadd(spacingProps)
 
-  const spacing = useMemo(() => {
-    if (snapping === 'none') return spacingProps
+  const finalTop = snapping === 'clamp' ? top % config.base : top
+  const finalBottom = usePaddingSnap(bottom, snapping, config.base, boxRef)
 
-    const result: Record<string, unknown> = {}
-    for (const key in spacingProps) {
-      const val = (spacingProps as any)[key]
-
-      if (typeof val === 'number' || typeof val === 'string') {
-        result[key] = moduloize(val as CSSValue, config.base)
-      } else if (Array.isArray(val)) {
-        result[key] = val.map((item) =>
-          typeof item === 'number' || typeof item === 'string'
-            ? moduloize(item as CSSValue, config.base)
-            : item,
-        )
-      } else if (val && typeof val === 'object') {
-        const objClone: Record<string, unknown> = {}
-        for (const prop in val) {
-          const subVal = (val as any)[prop]
-          if (typeof subVal === 'number' || typeof subVal === 'string') {
-            objClone[prop] = moduloize(subVal as CSSValue, config.base)
-          } else {
-            objClone[prop] = subVal
-          }
-        }
-        result[key] = objClone
-      } else {
-        result[key] = val
-      }
-    }
-    return result
-  }, [snapping, spacingProps, config.base])
-
+  // Merging styles
   const boxStyles = useMemo(() =>
     cs({
       '--pdd-box-width': width,
@@ -103,8 +71,6 @@ export const Box = memo(function Box({
     } as CSSProperties,
     style),
   [config.base, config.colors.line, height, style, width])
-
-  useDimensionBaseMultiple(boxRef, config.base, true)
 
   return (
     <Config
@@ -124,7 +90,13 @@ export const Box = memo(function Box({
         data-testid={'box'}
         style={boxStyles}
       >
-        <Padder {...spacing} debugging={debugging} width={width} height={height}>
+        <Padder
+          block={[finalTop, finalBottom]}
+          inline={[left, right]}
+          debugging={debugging}
+          width={width}
+          height={height}
+        >
           {children}
         </Padder>
       </div>

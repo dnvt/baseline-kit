@@ -84,7 +84,7 @@ describe('normalizeSpacing', () => {
   })
 
   it('handles object padding', () => {
-    const props = { padding: { start: 5, end: 9, left: 3, right: 7 } }
+    const props = { padding: { top: 5, bottom: 9, left: 3, right: 7 } }
     // block => [start,end], inline => [left,right]
     const result = normalizeSpacing(props, 8)
     expect(result).toEqual({

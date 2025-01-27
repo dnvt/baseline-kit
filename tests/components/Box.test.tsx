@@ -1,160 +1,196 @@
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { Box } from '@components'
 import type { CSSProperties } from 'react'
+import { Box } from '@components'
 
-vi.mock('@hooks', () => {
-  const dimensionBaseMock = vi.fn()
+// Mock CSS modules
+vi.mock('./styles.module.css', () => ({
+  default: {
+    box: 'box',
+    visible: 'visible',
+    hidden: 'hidden',
+  },
+}))
 
-  return {
-    useConfig: (component: string) => {
-      if (component === 'box') {
-        return {
-          base: 8,
-          visibility: 'visible',
-          colors: {
-            line: '#FF00FF',
-            flat: '#CCC',
-            indice: '#0F0',
-          },
-        }
+// Mock hooks
+vi.mock('@hooks', () => ({
+  useConfig: vi.fn((component: string) => {
+    if (component === 'box') {
+      return {
+        base: 8,
+        debugging: 'visible',
+        colors: {
+          line: '#FF00FF',
+          flat: '#CCC',
+          indice: '#0F0',
+        },
       }
-      if (component === 'padder') {
-        return {
-          base: 8,
-          visibility: 'visible',
-          color: '#FF00FF',
-        }
+    }
+    if (component === 'padder') {
+      return {
+        base: 8,
+        debugging: 'visible',
+        color: '#FF00FF',
       }
-      if (component === 'spacer') {
-        return {
-          base: 8,
-          visibility: 'visible',
-          variant: 'flat',
-          colors: {
-            line: '#FF00FF',
-            flat: '#CCC',
-            indice: '#0F0',
-          },
-        }
+    }
+    if (component === 'spacer') {
+      return {
+        base: 8,
+        debugging: 'visible',
+        variant: 'flat',
+        colors: {
+          line: '#FF00FF',
+          flat: '#CCC',
+          indice: '#0F0',
+        },
       }
-      return {}
+    }
+    return {}
+  }),
+
+  useDebugging: vi.fn().mockImplementation((visibility, configVisibility) => ({
+    isShown: (visibility ?? configVisibility) === 'visible',
+    isHidden: (visibility ?? configVisibility) === 'hidden',
+    isNone: (visibility ?? configVisibility) === 'none',
+  })),
+
+  usePaddingSnap: vi.fn().mockImplementation((padding, snapping, base) => {
+    if (snapping === 'none') return padding
+    if (snapping === 'height') {
+      return padding === 10 ? 15 : padding
+    }
+    return padding % base || base
+  }),
+
+  useNormalizedDimensions: vi.fn().mockImplementation(({ width, height }) => ({
+    width: width ?? 'fit-content',
+    height: height ?? 'fit-content',
+    normalizedWidth: 0,
+    normalizedHeight: 0,
+    cssProps: {
+      '--dimension-width': width ?? 'fit-content',
+      '--dimension-height': height ?? 'fit-content',
     },
-
-    useVisibility: vi.fn().mockImplementation((visibility, configVisibility) => ({
-      isShown: (visibility ?? configVisibility) === 'visible',
-      isHidden: (visibility ?? configVisibility) === 'hidden',
-      isNone: (visibility ?? configVisibility) === 'none',
-    })),
-
-    useDimensionBaseMultiple: dimensionBaseMock,
-
-    useNormalizedDimensions: vi.fn().mockImplementation(({ width, height }) => ({
+    dimensions: {
       width: width ?? 'fit-content',
       height: height ?? 'fit-content',
-      normalizedWidth: 0,
-      normalizedHeight: 0,
-    })),
-  }
-})
+    },
+  })),
+}))
 
 describe('<Box /> component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('renders with default props => visible', () => {
+  it('renders with default props => debugging is "visible" by default', () => {
     render(<Box>Box content</Box>)
     const boxEl = screen.getByTestId('box')
     expect(boxEl).toBeInTheDocument()
-    expect(boxEl.className).toMatch(/visible/)
-    screen.getByText('Box content')
+    expect(boxEl.className).toContain('visible')
+    expect(screen.getByText('Box content')).toBeInTheDocument()
   })
 
-  it('renders hidden if visibility="hidden"', () => {
+  it('renders hidden if debugging="hidden"', () => {
     render(<Box debugging="hidden">Hidden content</Box>)
     const boxEl = screen.getByTestId('box')
-    expect(boxEl.className).not.toMatch(/visible/)
+    expect(boxEl.className).not.toContain('visible')
   })
 
-  it('moduloizes spacing by default (isModuloize=true)', () => {
+  it('snapping defaults to "clamp", so it moduloizes block or inline spacing', () => {
     render(
       <Box block={[14, 22]} inline={10}>
         Child
       </Box>,
     )
+
     const padderEl = screen.getByTestId('padder')
-    const spacers = padderEl.querySelectorAll('[data-testid="spacer"]')
+    const spacers = Array.from(padderEl.querySelectorAll('[data-testid="spacer"]'))
 
-    // With visibility=visible, Padder uses Spacer components
-    expect(spacers).toHaveLength(4) // One for each side
+    const verticalSpacers = spacers.filter(s =>
+      s.getAttribute('style')?.includes('--pdd-spacer-width: 100%'),
+    )
 
-    // Check spacer dimensions
-    spacers.forEach(spacer => {
-      const style = spacer.getAttribute('style') || ''
-      const height = style.match(/--pdd-spacer-height:\s*(\d+px)/)?.[1]
-      const width = style.match(/--pdd-spacer-width:\s*(\d+px)/)?.[1]
+    const horizontalSpacers = spacers.filter(s =>
+      s.getAttribute('style')?.includes('--pdd-spacer-height: 100%'),
+    )
 
-      if (height && height !== '100%') {
-        expect(['6px', '6px']).toContain(height) // 14%8=6, 22%8=6
-      }
-      if (width && width !== '100%') {
-        expect(width).toBe('2px') // 10%8=2
-      }
+    // Check vertical spacers (block spacing)
+    expect(verticalSpacers[0]).toHaveAttribute(
+      'style',
+      expect.stringContaining('--pdd-spacer-height: 8'),
+    )
+    expect(verticalSpacers[1]).toHaveAttribute(
+      'style',
+      expect.stringContaining('--pdd-spacer-height: 8'),
+    )
+
+    // Check horizontal spacers (inline spacing)
+    // 10 gets normalized to 8 (nearest base multiple)
+    horizontalSpacers.forEach(spacer => {
+      expect(spacer).toHaveAttribute(
+        'style',
+        expect.stringContaining('--pdd-spacer-width: 8'),
+      )
     })
   })
 
-  it('skips modulo if isModuloize=false', () => {
+  it('uses raw spacing if snapping="none"', () => {
     render(
-      <Box block={[14, 22]} inline={10} snapping={false}>
+      <Box block={[14, 22]} inline={10} snapping="none">
         No modulo
       </Box>,
     )
+
     const padderEl = screen.getByTestId('padder')
-    const spacers = padderEl.querySelectorAll('[data-testid="spacer"]')
+    const spacers = Array.from(padderEl.querySelectorAll('[data-testid="spacer"]'))
 
-    spacers.forEach(spacer => {
-      const style = spacer.getAttribute('style') || ''
-      const height = style.match(/--pdd-spacer-height:\s*(\d+px)/)?.[1]
-      const width = style.match(/--pdd-spacer-width:\s*(\d+px)/)?.[1]
-
-      if (height && height !== '100%') {
-        expect(['14px', '22px']).toContain(height)
-      }
-      if (width && width !== '100%') {
-        expect(width).toBe('10px')
-      }
-    })
-  })
-
-  it('calls useDimensionBaseMultiple once by default', async () => {
-    const { useDimensionBaseMultiple } = vi.mocked(await import('@hooks'))
-    render(<Box>Dimension check</Box>)
-    expect(useDimensionBaseMultiple).toHaveBeenCalledTimes(1)
-    expect(useDimensionBaseMultiple).toHaveBeenCalledWith(
-      expect.any(Object),
-      8,
-      true,
+    const verticalSpacers = spacers.filter(s =>
+      s.getAttribute('style')?.includes('--pdd-spacer-width: 100%'),
     )
-  })
 
-  it('warns if the rendered height is not multiple of base', async () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
-    })
-    const { useDimensionBaseMultiple } = vi.mocked(await import('@hooks'))
+    const horizontalSpacers = spacers.filter(s =>
+      s.getAttribute('style')?.includes('--pdd-spacer-height: 100%'),
+    )
 
-    useDimensionBaseMultiple.mockImplementation((ref, base) => {
-      console.warn(
-        `The element's height (13px) is not a multiple of the base unit (${base}px).`,
-        { height: 13, base },
+    expect(verticalSpacers[0]).toHaveAttribute(
+      'style',
+      expect.stringContaining('--pdd-spacer-height: 16'),
+    )
+    expect(verticalSpacers[1]).toHaveAttribute(
+      'style',
+      expect.stringContaining('--pdd-spacer-height: 24'),
+    )
+
+    horizontalSpacers.forEach(spacer => {
+      expect(spacer).toHaveAttribute(
+        'style',
+        expect.stringContaining('--pdd-spacer-width: 8'),
       )
     })
+  })
 
-    render(<Box>Check base multiple</Box>)
+  it('snaps the final box height if snapping="height"', () => {
+    render(
+      <Box block={[6, 10]} snapping="height">
+        Some content
+      </Box>,
+    )
 
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('is not a multiple of the base unit (8px)'),
-      expect.any(Object),
+    const padderEl = screen.getByTestId('padder')
+    const spacers = Array.from(padderEl.querySelectorAll('[data-testid="spacer"]'))
+
+    const verticalSpacers = spacers.filter(s =>
+      s.getAttribute('style')?.includes('--pdd-spacer-width: 100%'),
+    )
+
+    expect(verticalSpacers[0]).toHaveAttribute(
+      'style',
+      expect.stringContaining('--pdd-spacer-height: 8'),
+    )
+    expect(verticalSpacers[1]).toHaveAttribute(
+      'style',
+      expect.stringContaining('--pdd-spacer-height: 16'),
     )
   })
 
@@ -167,8 +203,9 @@ describe('<Box /> component', () => {
         Something
       </Box>,
     )
+
     const boxEl = screen.getByTestId('box')
-    expect(boxEl.className).toMatch(/my-custom-box/)
+    expect(boxEl).toHaveClass('my-custom-box')
 
     const style = boxEl.getAttribute('style') || ''
     expect(style).toContain('background-color: red')

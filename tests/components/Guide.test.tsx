@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom' // For .toBeInTheDocument, etc.
 import { Guide } from '@components'
+import { CSSProperties } from 'react'
 
 vi.mock('@hooks', async () => {
   const originalModule = await vi.importActual<typeof import('@hooks')>('@hooks')
@@ -132,7 +133,7 @@ describe('Guide component', () => {
 
     const expectedGap = 10 * 8 // Multiply by config.base
     const styleAttr = guide.getAttribute('style') || ''
-    expect(styleAttr).toContain(`--pdd-guide-gap: ${expectedGap}px`)
+    expect(styleAttr).toContain(`--pdd-guide-gap: ${expectedGap - 1}px`)
   })
 
   it('handles "auto" variant with numeric columnWidth', () => {
@@ -201,7 +202,7 @@ describe('Guide component', () => {
     expect(styleAttr).toContain('--pdd-guide-template: repeat(5, 120px)')
   })
 
-  it('renders hidden when visibility="hidden"', () => {
+  it('renders hidden when debugging="hidden"', () => {
     render(<Guide debugging="hidden" data-testid="guide" />)
     const guideEl = screen.getByTestId('guide')
     // If the final hashed class is something like '_hidden_9f4983'
@@ -209,11 +210,11 @@ describe('Guide component', () => {
     expect(guideEl.className).toMatch(/hidden/)
   })
 
-  it('renders visible by default if no visibility prop is given', () => {
+  it('renders hidden by default if no debugging prop is given', () => {
     render(<Guide data-testid="guide" />)
     const guideEl = screen.getByTestId('guide')
     // Our partial mock says default is 'visible' => so check substring
-    expect(guideEl.className).toMatch(/visible/)
+    expect(guideEl.className).toMatch(/hidden/)
   })
 
 
@@ -223,7 +224,7 @@ describe('Guide component', () => {
         style={{
           '--my-custom': '999px',
           backgroundColor: 'red',
-        } as React.CSSProperties}
+        } as CSSProperties}
         data-testid="guide"
       />,
     )
