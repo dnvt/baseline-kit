@@ -12,22 +12,27 @@ describe('useConfig', () => {
     // 1) Create a mock default config
     const mockDefaultConfig: Config = {
       base: 10,
+      baseline: {
+        variant: 'line',
+        debugging: 'hidden',
+        colors: { line: 'pink', flat: 'yellow' },
+      },
       guide: {
         variant: 'line',
-        visibility: 'hidden',
+        debugging: 'hidden',
         colors: { line: 'red', pattern: 'blue', auto: 'green', fixed: 'orange' },
       },
       spacer: {
         variant: 'flat',
-        visibility: 'visible',
+        debugging: 'visible',
         colors: { line: 'pink', flat: 'yellow', indice: 'cyan' },
       },
       box: {
-        visibility: 'none',
+        debugging: 'hidden',
         colors: { line: 'black', flat: 'gray', indice: 'white' },
       },
       padder: {
-        visibility: 'hidden',
+        debugging: 'hidden',
         color: 'purple',
       },
     }
@@ -57,10 +62,15 @@ describe('useConfig', () => {
       guide: { /* ...omitted... */ } as never,
       spacer: { /* ...omitted... */ } as never,
       box: {
-        visibility: 'visible',
+        debugging: 'visible',
         colors: { line: 'red', flat: 'blue', indice: 'green' },
       },
-      padder: { visibility: 'none', color: 'purple' },
+      padder: { debugging: 'none', color: 'purple' },
+      baseline: {
+        variant: 'line',
+        debugging: 'none',
+        colors: { line: 'pink', flat: 'yellow' },
+      },
     }
 
     vi.spyOn(ComponentsModule, 'useDefaultConfig').mockReturnValue(mockDefaultConfig)

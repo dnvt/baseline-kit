@@ -40,6 +40,7 @@ export const Padder = memo(function Padder({
   ...spacingProps
 }: PadderProps) {
   const config = useConfig('padder')
+
   // Normalize block/inline or padding props against the base unit
   const spacing = useMemo(
     () => normalizeSpacing(spacingProps, config.base),
@@ -47,7 +48,7 @@ export const Padder = memo(function Padder({
   )
 
   // Determine debug state from prop or theme config
-  const { isShown, isNone, debugging } = useDebugging(debuggingProp, config.debugging)
+  const { isShown, isNone } = useDebugging(debuggingProp, config.debugging)
   // If debugging is "none", we skip Spacer elements and use direct CSS padding
   const enableSpacers = !isNone
 
@@ -79,7 +80,7 @@ export const Padder = memo(function Padder({
    * If debugging is "none," no spacers are added at all.
    */
   const renderSpacer = (width: CSSValue, height: CSSValue) => (
-    <Spacer width={width} height={height} debugging={debugging} />
+    <Spacer width={width} height={height} debugging={isShown ? 'visible' : 'hidden'} />
   )
 
   return (

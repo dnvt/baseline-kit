@@ -9,6 +9,5 @@ export function useDebugging(
     isShown: (debuggingProp ?? debuggingConfig) === 'visible',
     isHidden: (debuggingProp ?? debuggingConfig) === 'hidden',
     isNone: (debuggingProp ?? debuggingConfig) === 'none',
-    debugging: debuggingProp ?? debuggingConfig,
   }), [debuggingProp, debuggingConfig])
 }

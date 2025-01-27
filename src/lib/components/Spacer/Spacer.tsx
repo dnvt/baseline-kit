@@ -1,6 +1,6 @@
 import { memo, useMemo, CSSProperties, ReactNode } from 'react'
 import { useConfig, useNormalizedDimensions, useDebugging } from '@hooks'
-import { CSSValue, cs, cx } from '@utils'
+import { cs, cx } from '@utils'
 import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
 

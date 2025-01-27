@@ -71,7 +71,7 @@ export const normalizeSpacing = (
     }
 
     return {
-      block: SpacingSystem.normalizeValue([padding.start ?? 0, padding.end ?? 0], base),
+      block: SpacingSystem.normalizeValue([padding.top ?? 0, padding.bottom ?? 0], base),
       inline: SpacingSystem.normalizeValue([padding.left ?? 0, padding.right ?? 0], base),
     }
   }

@@ -47,7 +47,7 @@ export type PaddingValue =
   | number
   | [number, number]  // [block, inline]
   | [number, number, number, number]  // [top, right, bottom, left]
-  | { start?: number; end?: number; left?: number; right?: number }
+  | { top?: number; bottom?: number; left?: number; right?: number }
 
 export type PaddingSpacing = {
   padding: PaddingValue
