@@ -5,5 +5,6 @@
 
 export * from './guide'
 export * from './dimension'
-export * from './visibility'
+export * from './useDebugging'
 export * from './useConfig'
+export * from './core'
