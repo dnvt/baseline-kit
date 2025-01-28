@@ -1,5 +1,5 @@
 import { CSSProperties, memo, ReactNode, useMemo, useRef } from 'react'
-import { usePaddingSnap, useConfig, useDebugging } from '@hooks'
+import { useConfig, useDebugging, useBaseline } from '@hooks'
 import { cx, cs, extractPadd } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
@@ -54,23 +54,33 @@ export const Box = memo(function Box({
   const config = useConfig('box')
   const { isShown } = useDebugging(debugging, config.debugging)
 
-  // Set up the paddingBlocks based on box height
+  // We'll measure & baseline-align this element
   const boxRef = useRef<HTMLDivElement | null>(null)
+
+  // Extract numeric top/bottom/left/right from your props
   const { top, bottom, left, right } = extractPadd(spacingProps)
 
-  const finalTop = snapping === 'clamp' ? top % config.base : top
-  const finalBottom = usePaddingSnap(bottom, snapping, config.base, boxRef)
+  const { padding } = useBaseline(boxRef, {
+    base: config.base,
+    snapping,
+    spacing: { top, bottom, left, right },
+    warnOnMisalignment: debugging !== 'none',
+  })
 
   // Merging styles
-  const boxStyles = useMemo(() =>
-    cs({
-      '--pdd-box-width': width,
-      '--pdd-box-height': height,
-      '--pdd-box-base': `${config.base}px`,
-      '--pdd-box-color-line': config.colors.line,
-    } as CSSProperties,
-    style),
-  [config.base, config.colors.line, height, style, width])
+  const boxStyles = useMemo(
+    () =>
+      cs(
+        {
+          '--pdd-box-width': width,
+          '--pdd-box-height': height,
+          '--pdd-box-base': `${config.base}px`,
+          '--pdd-box-color-line': config.colors.line,
+        } as CSSProperties,
+        style,
+      ),
+    [config.base, config.colors.line, height, style, width],
+  )
 
   return (
     <Config
@@ -87,12 +97,12 @@ export const Box = memo(function Box({
       <div
         ref={boxRef}
         className={cx(styles.box, isShown && styles.visible, className)}
-        data-testid={'box'}
+        data-testid="box"
         style={boxStyles}
       >
         <Padder
-          block={[finalTop, finalBottom]}
-          inline={[left, right]}
+          block={[padding.top, padding.bottom]}
+          inline={[padding.left, padding.right]}
           debugging={debugging}
           width={width}
           height={height}

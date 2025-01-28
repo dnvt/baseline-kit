@@ -1,4 +1,4 @@
-import { RefObject, useEffect, useLayoutEffect, useState } from 'react'
+import { RefObject, useLayoutEffect, useState } from 'react'
 import type { SnappingMode } from '@components'
 
 export type PaddingSnapFn = (
