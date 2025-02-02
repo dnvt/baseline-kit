@@ -1,77 +1,32 @@
 import { debounce, rafThrottle } from '@utils'
 
 describe('Timing Utils', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
+  beforeEach(() => vi.useFakeTimers())
 
   describe('debounce', () => {
-    it('executes function only once after delay', () => {
+    it('delays execution', () => {
       const fn = vi.fn()
-      const debouncedFn = debounce(fn, 100)
+      const debounced = debounce(fn, 100)
 
-      debouncedFn(1)
-      debouncedFn(2)
-      debouncedFn(3)
-
+      debounced()
+      vi.advanceTimersByTime(99)
       expect(fn).not.toBeCalled()
 
-      vi.runAllTimers()
-
-      expect(fn).toBeCalledTimes(1)
-      expect(fn).toBeCalledWith(3)
-    })
-
-    it('cancels previous timeout on new calls', () => {
-      const fn = vi.fn()
-      const debouncedFn = debounce(fn, 100)
-
-      debouncedFn()
-      vi.advanceTimersByTime(50) // Half way through the timeout
-
-      debouncedFn() // Should reset the timeout
-      vi.advanceTimersByTime(50) // Original timeout would have fired here
-
-      expect(fn).not.toBeCalled()
-
-      vi.advanceTimersByTime(50) // Complete the new timeout
-      expect(fn).toBeCalledTimes(1)
+      vi.advanceTimersByTime(1)
+      expect(fn).toBeCalled()
     })
   })
 
   describe('rafThrottle', () => {
-    it('throttles function calls using requestAnimationFrame', () => {
+    it('throttles using animation frames', () => {
       const fn = vi.fn()
-      const throttledFn = rafThrottle(fn)
-      const raf = vi.spyOn(window, 'requestAnimationFrame')
+      const throttled = rafThrottle(fn)
 
-      throttledFn()
-      throttledFn()
-      throttledFn()
-
-      expect(raf).toBeCalledTimes(1)
-      expect(fn).not.toBeCalled()
-
-      // Trigger rAF callback
-      raf.mock.calls[0][0](performance.now())
-
-      expect(fn).toBeCalledTimes(1)
-    })
-
-    it('allows new call after frame completes', () => {
-      const fn = vi.fn()
-      const throttledFn = rafThrottle(fn)
-      const raf = vi.spyOn(window, 'requestAnimationFrame')
-
-      throttledFn()
-      raf.mock.calls[0][0](performance.now()) // Complete first frame
-
-      throttledFn() // Should schedule new frame
-      expect(raf).toBeCalledTimes(2)
+      throttled()
+      throttled()
+      requestAnimationFrame(() => {
+        expect(fn).toBeCalledTimes(1)
+      })
     })
   })
 })

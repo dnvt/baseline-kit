@@ -14,7 +14,6 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       exclude: [
         'demo/**/*',
-        'src/lib/__tests__/**/*',
         'src/**/index.ts',
         '**/production.js',
         '**/*.d.ts',

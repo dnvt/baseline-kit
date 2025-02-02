@@ -1,10 +1,7 @@
 import { useMemo } from 'react'
 import { DebuggingMode } from '@components'
 
-export function useDebugging(
-  debuggingProp?: DebuggingMode,
-  debuggingConfig?: DebuggingMode,
-) {
+export function useDebug(debuggingProp?: DebuggingMode, debuggingConfig?: DebuggingMode) {
   return useMemo(() => ({
     isShown: (debuggingProp ?? debuggingConfig) === 'visible',
     isHidden: (debuggingProp ?? debuggingConfig) === 'hidden',

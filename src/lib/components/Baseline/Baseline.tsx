@@ -1,30 +1,19 @@
 import { CSSProperties, memo, useCallback, useMemo, useRef } from 'react'
 import { ComponentsProps } from '@components'
-import {
-  useConfig,
-  useGuideDimensions,
-  useNormalizedDimensions,
-  useDebugging,
-  useGuideVisibleLines,
-} from '@hooks'
-import {
-  convertToPixels,
-  normalizeSpacing,
-} from '@utils'
+import { useConfig, useDebug, useVirtual, useMeasure } from '@hooks'
+import { cs, cx, parsePadding, normalizeValuePair } from '@utils'
 import styles from './styles.module.css'
 
 export type BaselineVariant = 'line' | 'flat';
 
-/**
- * Props for the Baseline component.
- */
 export type BaselineProps = {
-  /**
-   * Chooses between 1px lines (`"line"`) or thicker lines matching the base
-   * spacing (`"flat"`). Defaults to the theme’s baseline variant if not specified.
-   */
-  variant?: BaselineVariant
-} & ComponentsProps
+  /** Defines the visual variant of the baseline. */
+  variant?: BaselineVariant;
+  /** Optional explicit width for the baseline overlay (e.g., "1200px" or 1200). */
+  width?: number | string;
+  /** Optional explicit height for the baseline overlay (e.g., "100vh" or 800). */
+  height?: number | string;
+} & ComponentsProps;
 
 /**
  * Baseline - An overlay that draws horizontal lines from top to bottom,
@@ -48,91 +37,81 @@ export type BaselineProps = {
  */
 export const Baseline = memo(function Baseline({
   className,
+  debugging,
   style,
   variant: variantProp,
-  height,
-  width,
-  ...props
+  height: heightProp,
+  width: widthProp,
+  ...spacingProps
 }: BaselineProps) {
   const config = useConfig('baseline')
   const variant = variantProp ?? config.variant
-
-  // Determine if baseline lines should be shown
-  const { isShown } = useDebugging(props.debugging, config.debugging)
+  const { isShown } = useDebug(debugging, config.debugging)
 
   // Reference to measure the container's dimensions
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const { width: containerWidth, height: containerHeight } = useGuideDimensions(containerRef)
+  const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
 
-  // Resolve the final overlay height in px
-  const resolvedHeight = useMemo(() => {
-    if (height !== undefined) {
-      if (typeof height === 'number') {
-        return height
-      }
-      const px = convertToPixels(height)
-      return px ?? containerHeight
-    }
-    return containerHeight
-  }, [height, containerHeight])
+  // Normalize the provided width/height props against the measured container dimensions.
+  // We use our new normalizeValuePair function from the conversion module.
+  const [normWidth, normHeight] = useMemo(
+    () =>
+      normalizeValuePair(
+        [widthProp, heightProp],
+        [containerWidth, containerHeight],
+      ),
+    [widthProp, heightProp, containerWidth, containerHeight],
+  )
 
-  // Normalize block/inline spacing if provided
-  const spacing = useMemo(() => normalizeSpacing(props, config.base), [props, config.base])
+  // Parse spacing props (e.g. padding, block, inline) into an object with top, right, bottom, left.
+  const { top, right, bottom, left } = useMemo(() => parsePadding(spacingProps), [spacingProps])
 
-  // Calculate how many total rows we need to render
+  // Calculate the number of rows (lines) to render:
+  // Subtract vertical padding (top + bottom) from the normalized height.
   const rowCount = useMemo(() => {
-    const totalHeight = (resolvedHeight ?? 0) - (spacing.block[0] + spacing.block[1])
-    return Math.max(1, Math.ceil(totalHeight / config.base))
-  }, [resolvedHeight, spacing.block, config.base])
+    const totalHeight = (normHeight ?? 0) - (top + bottom)
+    // Use floor so that we get a consistent number of full rows.
+    return Math.max(1, Math.floor(totalHeight / config.base))
+  }, [normHeight, top, bottom, config.base])
 
-  // Use custom hook to identify which rows are visible in the viewport
-  const { start, end } = useGuideVisibleLines({
+  // Use virtual lines hook to determine which rows are visible.
+  const { start, end } = useVirtual({
     totalLines: rowCount,
     lineHeight: config.base,
     containerRef,
+    buffer: 160,
   })
 
-  // Normalize width if provided
-  const { width: cssWidth } = useNormalizedDimensions({
-    width,
-    height,
-    defaultWidth: containerWidth,
-    defaultHeight: containerHeight,
-    base: config.base,
-  })
+  // Choose the baseline color based on the variant.
+  const chosenColor = variant === 'line' ? config.colors.line : config.colors.flat
 
-  // Choose line color based on variant
-  const chosenColor = variant === 'line'
-    ? config.colors.line
-    : config.colors.flat
-
-  // Build container style object
+  // Build the container style, using our normalized dimensions and parsed padding.
   const containerStyles = useMemo(
     () =>
-      ({
-        '--pdd-baseline-width': cssWidth,
-        paddingBlock: `${spacing.block[0]}px ${spacing.block[1]}px`,
-        paddingInline: `${spacing.inline[0]}px ${spacing.inline[1]}px`,
+      cs({
+        '--pdd-baseline-width': normWidth,
+        padding: `${top}px ${right}px ${bottom}px ${left}px`,
         position: 'absolute',
         inset: 0,
         pointerEvents: 'none',
         overflow: 'hidden',
-        height: resolvedHeight ? `${resolvedHeight}px` : 'auto',
+        height: `${normHeight}px`,
         ...style,
-      } as CSSProperties),
-    [cssWidth, spacing, resolvedHeight, style],
+      }),
+    [normWidth, top, right, bottom, left, normHeight, style],
   )
 
-  // Compute style for each row of the baseline
+  // Compute the style for each row.
   const getRowStyle = useCallback(
-    (index: number): CSSProperties => ({
-      top: `${index * config.base}px`,
-      left: 0,
-      right: 0,
-      height: variant === 'line' ? '1px' : `${config.base}px`,
-      backgroundColor: chosenColor,
-      position: 'absolute',
-    }),
+    (index: number): CSSProperties =>
+      cs({
+        top: `${index * config.base}px`,
+        left: 0,
+        right: 0,
+        height: variant === 'line' ? '1px' : `${config.base}px`,
+        backgroundColor: chosenColor,
+        position: 'absolute',
+      }),
     [config.base, variant, chosenColor],
   )
 
@@ -140,25 +119,15 @@ export const Baseline = memo(function Baseline({
     <div
       ref={containerRef}
       data-testid="baseline"
-      className={[
-        styles.baseline,
-        isShown ? styles.visible : styles.hidden,
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={cx(styles.baseline, isShown ? styles.visible : styles.hidden, className)}
       style={containerStyles}
-      {...props}
+      {...spacingProps}
     >
       {isShown &&
         Array.from({ length: end - start }, (_, i) => {
           const rowIndex = i + start
           return (
-            <div
-              key={rowIndex}
-              data-row-index={rowIndex}
-              style={getRowStyle(rowIndex)}
-            />
+            <div key={rowIndex} data-row-index={rowIndex} style={getRowStyle(rowIndex)} />
           )
         })}
     </div>

@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react'
-import { useMeasurement } from '@hooks'
+import { useMeasure } from '@hooks'
 
 // Mock ResizeObserver if it's not natively available in your test env
 const observerMap = new Map<HTMLElement, ResizeObserverCallback>()
@@ -33,7 +33,7 @@ describe('useMeasurement', () => {
 
   it('returns initial width/height=0 if ref is null', () => {
     const ref = { current: null }
-    const { result } = renderHook(() => useMeasurement(ref as any))
+    const { result } = renderHook(() => useMeasure(ref as any))
     expect(result.current.width).toBe(0)
     expect(result.current.height).toBe(0)
   })
@@ -46,7 +46,7 @@ describe('useMeasurement', () => {
     })
     const ref = { current: element }
 
-    const { result } = renderHook(() => useMeasurement(ref))
+    const { result } = renderHook(() => useMeasure(ref))
     expect(result.current.width).toBe(100)
     expect(result.current.height).toBe(50)
   })
@@ -57,7 +57,7 @@ describe('useMeasurement', () => {
     element.getBoundingClientRect = vi.fn(() => rect)
 
     const ref = { current: element }
-    const { result } = renderHook(() => useMeasurement(ref))
+    const { result } = renderHook(() => useMeasure(ref))
 
     // Update rect and trigger observer
     rect = { width: 150, height: 75 }
@@ -85,7 +85,7 @@ describe('useMeasurement', () => {
     // Mount => 1 render
     const { rerender } = renderHook(() => {
       renderCount++
-      return useMeasurement(ref)
+      return useMeasure(ref)
     })
     expect(renderCount).toBe(1) // still at 0x0
 
@@ -104,7 +104,7 @@ describe('useMeasurement', () => {
       .mockReturnValue({ width: 100, height: 50 })
 
     const ref = { current: element }
-    const { result } = renderHook(() => useMeasurement(ref))
+    const { result } = renderHook(() => useMeasure(ref))
 
     expect(result.current.width).toBe(100)
     expect(result.current.height).toBe(50)
@@ -141,7 +141,7 @@ describe('Error Handling', () => {
     })
 
     const ref = { current: element }
-    renderHook(() => useMeasurement(ref)) // no need to store result if we only check final outcome
+    renderHook(() => useMeasure(ref)) // no need to store result if we only check final outcome
 
     shouldThrow = true
 

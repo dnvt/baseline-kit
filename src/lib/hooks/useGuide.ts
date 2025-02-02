@@ -1,11 +1,7 @@
 import { useMemo, RefObject } from 'react'
-import { useMeasurement } from './useMeasurement'
-import type { GuideConfig, GuideColumnsPattern } from '@components'
-import {
-  isValidGuidePattern,
-  parseCSSValue,
-  convertToPixels,
-} from '@utils'
+import { GuideConfig, GuideColumnsPattern, isValidGuidePattern } from '@components'
+import { formatValue, convertValue } from '@utils'
+import { useMeasure } from './useMeasure'
 
 /**
  * The result of a guide calculation.
@@ -22,10 +18,10 @@ export interface GuideResult {
  * based on measured container width (from `useMeasurement`).
  */
 export function useGuide(
-  ref: RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement | null>,
   config: GuideConfig,
 ): GuideResult {
-  const { width } = useMeasurement(ref)
+  const { width } = useMeasure(ref)
 
   return useMemo(() => {
     // Defaults
@@ -47,7 +43,7 @@ export function useGuide(
       switch (variant) {
       case 'line': {
         // line => columns of 1px repeated
-        // columns = floor(width / (gap+1))+1
+        // columns = floor(width / (gap+1)) + 1
         const columns = Math.max(1, Math.floor(width / (gap + 1)) + 1)
         return {
           template: `repeat(${columns}, 1px)`,
@@ -85,12 +81,13 @@ export function useGuide(
       }
 
       case 'fixed': {
-        const colCount = config.columns ?? 0
+        // Narrow config.columns to number:
+        const colCount = typeof config.columns === 'number' ? config.columns : 0
         if (colCount < 1) {
           throw new Error(`Invalid columns count: ${colCount}`)
         }
         const colWidth = config.columnWidth
-          ? parseCSSValue(config.columnWidth)
+          ? formatValue(config.columnWidth)
           : '1fr'
 
         return {
@@ -115,7 +112,7 @@ export function useGuide(
         const colWidthStr =
           typeof colWidth === 'number' ? `${colWidth}px` : colWidth.toString()
 
-        const pxVal = convertToPixels(colWidthStr) ?? 0
+        const pxVal = convertValue(colWidthStr) ?? 0
         const columns = pxVal > 0
           ? Math.max(1, Math.floor((width + gap) / (pxVal + gap)))
           : 1

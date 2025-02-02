@@ -3,8 +3,9 @@
  * @module hooks
  */
 
-export * from './guide'
-export * from './dimension'
-export * from './useDebugging'
+export * from './useBaseline'
 export * from './useConfig'
-export * from './core'
+export * from './useDebug'
+export * from './useGuide'
+export * from './useMeasure'
+export * from './useVirtual'

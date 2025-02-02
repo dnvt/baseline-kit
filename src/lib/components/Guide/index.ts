@@ -6,3 +6,4 @@
 
 export * from './Guide'
 export * from './types'
+export * from './validation'
