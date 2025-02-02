@@ -2,14 +2,6 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-}
-
-.visible {
-  opacity: 1;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.hidden {
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
+  top: 0;
+  bottom: 0;
 }

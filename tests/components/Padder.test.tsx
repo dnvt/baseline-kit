@@ -1,27 +1,40 @@
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { Padder } from '@components'
-import * as HooksModule from '@/hooks/useConfig' // mock if needed
+import { Config, Padder } from '@components'
+import * as HooksModule from '@hooks'
 
 describe('Padder', () => {
   beforeEach(() => {
-    // Mock "useConfig('padder')" if it returns { base, color, visibility }
-    // Also mock "useConfig('spacer')" if <Spacer> uses that
+    // Mock "useConfig"
     vi.spyOn(HooksModule, 'useConfig').mockImplementation((component: string) => {
       if (component === 'padder') {
-        return { base: 8, color: '#AA00AA', visibility: 'hidden' } as never
+        return { base: 8, color: '#AA00AA', debugging: 'hidden' } as never
       }
       if (component === 'spacer') {
         return {
           base: 8,
           variant: 'line',
-          visibility: 'hidden',
+          debugging: 'hidden',
           colors: {
-            line: 'red', flat: 'blue', indice: 'green',
+            line: 'red',
+            flat: 'blue',
+            indice: 'green',
           },
         } as any
       }
       return {} as any
+    })
+
+    // Mock useBaseline to return consistent adjusted padding values
+    vi.spyOn(HooksModule, 'useBaseline').mockReturnValue({
+      padding: {
+        top: 8,    // Adjusted from original 10
+        right: 16, // Adjusted from original 15
+        bottom: 24, // Adjusted from original 20
+        left: 8,   // Adjusted from original 5
+      },
+      isAligned: true,
+      height: 0,
     })
   })
 
@@ -32,7 +45,7 @@ describe('Padder', () => {
   it('defaults to hidden from config, no .visible class', () => {
     render(<Padder>Child</Padder>)
     const padder = screen.getByTestId('padder')
-    // We won't see "visible" class if "isShown"=false
+    // We won't see "visible" class if "isShown" = false
     expect(padder.className).not.toMatch(/visible/i)
     // And the style might have --pdd-padder-color: #AA00AA
     expect(padder.style.getPropertyValue('--pdd-padder-color')).toBe('#AA00AA')
@@ -41,8 +54,6 @@ describe('Padder', () => {
   it('renders as visible if prop=visible', () => {
     render(<Padder debugging="visible">Child</Padder>)
     const padder = screen.getByTestId('padder')
-    // We might see a hashed class: _visible_xxxx
-    // Just check for "visible" substring or do a data attr approach
     expect(padder.className).toMatch(/visible/i)
   })
 
@@ -74,7 +85,7 @@ describe('Padder', () => {
     expect(spacers.length).toBe(4)
   })
 
-  it('uses direct padding if visibility="none"', () => {
+  it('uses direct padding if debugging="none"', () => {
     render(
       <Padder block={[10, 20]} inline={[5, 15]} debugging="none">
         Child
@@ -83,10 +94,30 @@ describe('Padder', () => {
     const padder = screen.getByTestId('padder')
     // No <Spacer />
     expect(padder.querySelectorAll('[data-testid="spacer"]').length).toBe(0)
-    // Inspect inline style for "padding-block" & "padding-inline"
-    // Instead of toHaveStyle => do a substring check
+    // Inspect inline style for padding
     const styleAttr = padder.getAttribute('style') || ''
+    // Adjust your expectations based on the adjusted padding from useBaseline
     expect(styleAttr).toContain('padding-block: 8px 24px')
     expect(styleAttr).toContain('padding-inline: 8px 16px')
   })
 })
+
+
+it('doesnt normilize the paddings with base of 1', () => {
+  render(
+    <Config base={1}>
+      <Padder block={[10, 20]} inline={[5, 15]} debugging="none">
+        Child
+      </Padder>
+    </Config>,
+  )
+  const padder = screen.getByTestId('padder')
+  // No <Spacer />
+  expect(padder.querySelectorAll('[data-testid="spacer"]').length).toBe(0)
+  // Inspect inline style for padding
+  const styleAttr = padder.getAttribute('style') || ''
+  // Adjust your expectations based on the adjusted padding from useBaseline
+  expect(styleAttr).toContain('padding-block: 10px 20px')
+  expect(styleAttr).toContain('padding-inline: 5px 15px')
+})
+

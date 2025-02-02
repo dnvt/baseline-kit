@@ -1,10 +1,5 @@
-import {
-  RefObject,
-  useCallback,
-  useLayoutEffect,
-  useState,
-} from 'react'
 import { rafThrottle } from '@utils'
+import { RefObject, useCallback, useLayoutEffect, useState } from 'react'
 
 type Props = {
   /** Total lines for a horizontal guide (or total columns if you're using this vertically). */
@@ -18,12 +13,13 @@ type Props = {
 }
 
 /**
- * Hook to compute which lines in a "guide" are visible within (or near) the viewport.
+ *
+ * Hook to compute which lines in a "Baseline" are visible within (or near) the viewport.
  * Subscribes to scroll/resize events (and IntersectionObserver) to update in real time.
  *
  * @returns An object `{ start, end }` indicating the first and last visible line indices.
  */
-export function useGuideVisibleLines({
+export function useVirtual({
   totalLines,
   lineHeight,
   containerRef,
@@ -44,9 +40,7 @@ export function useGuideVisibleLines({
    */
   const calculateRange = useCallback(() => {
     const element = containerRef.current
-    if (!element) {
-      return { start: 0, end: totalLines }
-    }
+    if (!element) return { start: 0, end: totalLines }
 
     // If the element is inside a `.content-block`, we show all lines
     // (based on your existing condition). Possibly you only want partial coverage
@@ -58,24 +52,17 @@ export function useGuideVisibleLines({
     // Compute the container's position relative to the document
     const rect = element.getBoundingClientRect()
     const offsetTop = rect.top + window.scrollY
-
-    // The "viewport" in local coordinates of the container
     const viewportTop = Math.max(0, window.scrollY - offsetTop - numericBuffer)
     const viewportBottom = viewportTop + window.innerHeight + numericBuffer * 2
-
-    // Convert from pixel positions to line indices
     const start = Math.max(0, Math.floor(viewportTop / lineHeight))
     const end = Math.min(totalLines, Math.ceil(viewportBottom / lineHeight))
-
     return { start, end }
   }, [totalLines, lineHeight, containerRef, numericBuffer])
 
-  // Maintain the computed range in state
   const [visibleRange, setVisibleRange] = useState(calculateRange)
 
-  // A small helper hook so we don't duplicate scroll/resize subscription logic
+  // Subscribe to window events using a helper.
   useWindowEvents(['scroll', 'resize'], () => {
-    // Use rafThrottle to avoid too-frequent re-renders
     updateRangeThrottled()
   })
 

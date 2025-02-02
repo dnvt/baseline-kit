@@ -1,11 +1,4 @@
-import { PaddingValue, Spacing, SpacingProps } from '@utils'
-
-type Edges = {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-};
+import { Padding, PaddingValue, Spacing, SpacingProps } from '@utils'
 
 /**
  * Extract numeric top, right, bottom, left (in px) from `padding` or `block/inline`.
@@ -16,9 +9,9 @@ type Edges = {
  * - If `padding` is present, parse it fully (4 edges).
  * - Otherwise, parse `block` for top/bottom and `inline` for left/right.
  */
-export function extractPadd(spacing: SpacingProps): Edges {
+export function parsePadding(spacing: SpacingProps): Padding {
   if ('padding' in spacing && spacing.padding != null) {
-    return parsePadding(spacing.padding)
+    return parsePaddingValue(spacing.padding)
   }
 
   // Otherwise, parse block/inline separately
@@ -43,13 +36,11 @@ export function extractPadd(spacing: SpacingProps): Edges {
  *
  * @param padding - number | [block, inline] | [top, right, bottom, left] | { start?: number; end?: number; left?: number; right?: number }
  */
-function parsePadding(padding: PaddingValue): Edges {
-  // 1) If a single number => all edges
+function parsePaddingValue(padding: PaddingValue): Padding {
   if (typeof padding === 'number') {
     return { top: padding, right: padding, bottom: padding, left: padding }
   }
 
-  // 2) If it's an array
   if (Array.isArray(padding)) {
     // => [block, inline]
     if (padding.length === 2) {
@@ -68,7 +59,6 @@ function parsePadding(padding: PaddingValue): Edges {
     }
   }
 
-  // 3) If it's an object
   if (typeof padding === 'object' && !Array.isArray(padding)) {
     // possible keys: top, bottom, left, right, start, end
     // interpret start => top, end => bottom if you prefer
@@ -87,7 +77,7 @@ function parsePadding(padding: PaddingValue): Edges {
  * Parses `block` of various shapes to { top, bottom } in px.
  * @param block - number | [top, bottom] | { start?: number; end?: number }
  */
-function parseBlock(block: Spacing): Pick<Edges, 'top' | 'bottom'> {
+function parseBlock(block: Spacing): Pick<Padding, 'top' | 'bottom'> {
   if (typeof block === 'number') {
     return { top: block, bottom: block }
   }
@@ -116,7 +106,7 @@ function parseBlock(block: Spacing): Pick<Edges, 'top' | 'bottom'> {
  * Parses `inline` of various shapes to { left, right } in px.
  * @param inline - number | [left, right] | { start?: number; end?: number }
  */
-function parseInline(inline: Spacing): Pick<Edges, 'left' | 'right'> {
+function parseInline(inline: Spacing): Pick<Padding, 'left' | 'right'> {
   if (typeof inline === 'number') {
     return { left: inline, right: inline }
   }

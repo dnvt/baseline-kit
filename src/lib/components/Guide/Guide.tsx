@@ -1,12 +1,11 @@
 import { CSSProperties, memo, useMemo, useRef } from 'react'
 import {
   useConfig,
-  useGuideCalculations,
-  useGuideDimensions,
-  useDebugging,
-  useNormalizedDimensions,
+  useDebug,
+  useGuide,
+  useMeasure,
 } from '@hooks'
-import { cx, cs, normalizeSpacing } from '@utils'
+import { cx, cs, parsePadding } from '@utils'
 import { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
 import type { ComponentsProps } from '../types'
 import styles from './styles.module.css'
@@ -66,29 +65,18 @@ export const Guide = memo(function Guide({
   const variant = variantProp ?? config.variant
 
   // Determine if debug overlay should be shown
-  const { isShown } = useDebugging(debugging, config.debugging)
+  const { isShown } = useDebug(debugging, config.debugging)
 
   // Reference to measure container dimensions
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const { width: containerWidth, height: containerHeight } = useGuideDimensions(containerRef)
+  const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
 
   // Compute block/inline or padding offsets
-  const spacing = useMemo(() => normalizeSpacing(props, config.base), [props, config.base])
-
-  // Normalize the guide's container width/height if provided
-  const { normalizedWidth } = useNormalizedDimensions({
-    width,
-    height,
-    defaultWidth: containerWidth,
-    defaultHeight: containerHeight,
-    base: config.base,
-  })
+  const { top, right, bottom, left } = useMemo(() => parsePadding(props), [props])
 
   // Build the grid config object based on provided variant and column settings
   const gridConfig = useMemo(() => {
     const gapInPixels = (gap ?? 1) * config.base
-
-    // Create objects for each variant, picking the relevant one or falling back to "line"
     return (
       {
         line: {
@@ -132,13 +120,10 @@ export const Guide = memo(function Guide({
 
   // Calculate CSS grid settings (# of columns, template strings, etc.) based on container size
   const {
-    gridTemplateColumns,
+    template,
     columnsCount,
     calculatedGap,
-  } = useGuideCalculations({
-    containerWidth: normalizedWidth,
-    config: gridConfig,
-  })
+  } = useGuide(containerRef, gridConfig)
 
   // Build inline styles with CSS vars for color, spacing, alignment, etc.
   const containerStyles = useMemo(() => {
@@ -147,23 +132,15 @@ export const Guide = memo(function Guide({
       '--pdd-guide-justify': align,
       '--pdd-guide-color-line': config.colors.line,
       '--pdd-guide-color-pattern': config.colors.pattern,
-      '--pdd-guide-padding-block': `${spacing.block[0]}px ${spacing.block[1]}px`,
-      '--pdd-guide-padding-inline': `${spacing.inline[0]}px ${spacing.inline[1]}px`,
-      '--pdd-guide-template': gridTemplateColumns,
-      '--pdd-guide-width': '100vw',
-      '--pdd-guide-height': '100vh',
+      '--pdd-guide-padding-block': `${top}px ${bottom}px`,
+      '--pdd-guide-padding-inline': `${left}px ${right}px`,
+      '--pdd-guide-template': template,
+      '--pdd-guide-width': (width ?? containerWidth) || '100vw',
+      '--pdd-guide-height': (height ?? containerHeight) || '100vh',
     } as CSSProperties
+
     return cs(baseStyles, style)
-  }, [
-    calculatedGap,
-    align,
-    config.colors.line,
-    config.colors.pattern,
-    spacing.block,
-    spacing.inline,
-    gridTemplateColumns,
-    style,
-  ])
+  }, [calculatedGap, align, config.colors.line, config.colors.pattern, top, bottom, left, right, template, width, containerWidth, height, containerHeight, style])
 
   return (
     <div

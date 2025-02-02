@@ -1,6 +1,6 @@
 import { CSSProperties, memo, ReactNode, useMemo, useRef } from 'react'
-import { useConfig, useDebugging, useBaseline } from '@hooks'
-import { cx, cs, extractPadd } from '@utils'
+import { useConfig, useDebug, useBaseline } from '@hooks'
+import { cx, cs, parsePadding } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
@@ -52,14 +52,10 @@ export const Box = memo(function Box({
   ...spacingProps
 }: BoxProps) {
   const config = useConfig('box')
-  const { isShown } = useDebugging(debugging, config.debugging)
+  const { isShown } = useDebug(debugging, config.debugging)
 
-  // We'll measure & baseline-align this element
   const boxRef = useRef<HTMLDivElement | null>(null)
-
-  // Extract numeric top/bottom/left/right from your props
-  const { top, bottom, left, right } = extractPadd(spacingProps)
-
+  const { top, bottom, left, right } = parsePadding(spacingProps)
   const { padding } = useBaseline(boxRef, {
     base: config.base,
     snapping,
@@ -69,16 +65,14 @@ export const Box = memo(function Box({
 
   // Merging styles
   const boxStyles = useMemo(
-    () =>
-      cs(
-        {
-          '--pdd-box-width': width,
-          '--pdd-box-height': height,
-          '--pdd-box-base': `${config.base}px`,
-          '--pdd-box-color-line': config.colors.line,
-        } as CSSProperties,
-        style,
-      ),
+    () => cs({
+      '--pdd-box-width': width,
+      '--pdd-box-height': height,
+      '--pdd-box-base': `${config.base}px`,
+      '--pdd-box-color-line': config.colors.line,
+    } as CSSProperties,
+    style,
+    ),
     [config.base, config.colors.line, height, style, width],
   )
 

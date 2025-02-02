@@ -2,7 +2,6 @@ import { useReducer, useCallback, ReactNode } from 'react'
 import { GridControls } from './GridControls'
 import type { DemoGridAction, DemoGridState } from './types'
 import { usePageHeight } from '../hooks'
-
 import { Guide, DEFAULT_CONFIG, GuideColumnsPattern } from '../../dist'
 import { Baseline } from '@/components/Baseline'
 

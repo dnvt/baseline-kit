@@ -18,16 +18,6 @@
   padding: var(--pdd-guide-padding-block) var(--pdd-guide-padding-inline);
 }
 
-.visible {
-  opacity: 1;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.hidden {
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-}
-
 .columns {
   position: absolute;
   top: 0;

@@ -1,6 +1,6 @@
-import { CSSProperties, memo, ReactNode, useMemo } from 'react'
-import { useConfig, useDebugging } from '@hooks'
-import { cx, cs, CSSValue, normalizeSpacing } from '@utils'
+import { CSSProperties, memo, ReactNode, useMemo, useRef } from 'react'
+import { useConfig, useDebug, useBaseline } from '@hooks'
+import { cx, cs, CSSValue, parsePadding } from '@utils'
 import { ComponentsProps } from '../types'
 import { Spacer } from '../Spacer'
 import styles from './styles.module.css'
@@ -41,16 +41,27 @@ export const Padder = memo(function Padder({
 }: PadderProps) {
   const config = useConfig('padder')
 
-  // Normalize block/inline or padding props against the base unit
-  const spacing = useMemo(
-    () => normalizeSpacing(spacingProps, config.base),
-    [spacingProps, config.base],
+  // Use getPadding to extract initial padding values
+  const initialPadding = useMemo(
+    () => parsePadding(spacingProps),
+    [spacingProps],
   )
 
   // Determine debug state from prop or theme config
-  const { isShown, isNone } = useDebugging(debuggingProp, config.debugging)
+  const { isShown, isNone } = useDebug(debuggingProp, config.debugging)
+
   // If debugging is "none", we skip Spacer elements and use direct CSS padding
   const enableSpacers = !isNone
+
+
+  // Use useBaseline to adjust padding based on baseline grid
+  const padderRef = useRef<HTMLDivElement | null>(null)
+  const { padding: { top, left, bottom, right } } = useBaseline(padderRef, {
+    base: config.base,
+    snapping: 'height',
+    spacing: initialPadding,
+    warnOnMisalignment: !isNone,
+  })
 
   // Apply either direct padding (if none) or custom CSS variables for debug modes
   const containerStyles = useMemo(
@@ -62,32 +73,34 @@ export const Padder = memo(function Padder({
           '--pdd-padder-base': `${config.base}px`,
           '--pdd-padder-color': config.color,
 
-          // If we're skipping spacers, just apply real CSS padding
+          // Apply adjusted padding when spacers are disabled
           ...(enableSpacers
             ? {}
             : {
-              paddingBlock: `${spacing.block[0]}px ${spacing.block[1]}px`,
-              paddingInline: `${spacing.inline[0]}px ${spacing.inline[1]}px`,
+              paddingBlock: `${top}px ${bottom}px`,
+              paddingInline: `${left}px ${right}px`,
             }),
         } as CSSProperties,
         style,
       ),
-    [enableSpacers, spacing, width, height, config, style],
+    [width, height, config.base, config.color, enableSpacers, top, right, bottom, left, style],
   )
 
-  /**
-   * Renders a Spacer for visual debugging or hidden placeholders.
-   * If debugging is "none," no spacers are added at all.
-   */
+  // Function to render Spacer components
   const renderSpacer = (width: CSSValue, height: CSSValue) => (
-    <Spacer width={width} height={height} debugging={isShown ? 'visible' : 'hidden'} />
+    <Spacer
+      width={width}
+      height={height}
+      debugging={isShown ? 'visible' : 'hidden'}
+    />
   )
 
   return (
     <div
+      ref={padderRef}
       className={cx(
         styles.padder,
-        isShown && styles.visible, // Show padder highlights if debugging is visible
+        isShown && styles.visible,
         className,
       )}
       data-testid="padder"
@@ -95,9 +108,8 @@ export const Padder = memo(function Padder({
     >
       {enableSpacers && (
         <>
-          {/* Top/Left spacing */}
-          {spacing.inline[0] > 0 && renderSpacer(spacing.inline[0], '100%')}
-          {spacing.block[0] > 0 && renderSpacer('100%', spacing.block[0])}
+          {top > 0 && renderSpacer('100%', top)}
+          {left > 0 && renderSpacer(left, '100%')}
         </>
       )}
 
@@ -105,9 +117,8 @@ export const Padder = memo(function Padder({
 
       {enableSpacers && (
         <>
-          {/* Bottom/Right spacing */}
-          {spacing.block[1] > 0 && renderSpacer('100%', spacing.block[1])}
-          {spacing.inline[1] > 0 && renderSpacer(spacing.inline[1], '100%')}
+          {bottom > 0 && renderSpacer('100%', bottom)}
+          {right > 0 && renderSpacer(right, '100%')}
         </>
       )}
     </div>

@@ -11,72 +11,56 @@ vi.mock('@hooks', async () => {
     ...originalModule,
 
     // We force the container to measure 1024×768
-    useGuideDimensions: () => ({
+    useMeasurement: () => ({
       width: 1024,
       height: 768,
+      refresh: vi.fn(),
     }),
 
-    // A minimal mock that returns the passed gap as `--pdd-guide-gap: XXpx`
-    // plus a little variant logic for columns & template.
-    useGuideCalculations: ({ config }: any) => {
-      // If the user did not pass config.gap, default to "8px"
-      const gap = config.gap ?? 1
+    // Mock useGuide to return predictable values based on the config
+    useGuide: (ref: any, config: any) => {
       const variant = config.variant
+      const base = config.base ?? 8
+      const gap = config.gap ?? base
+      const calculatedGap = gap
 
       if (variant === 'line') {
-        // e.g. 64 columns of 1px each
-        return {
-          gridTemplateColumns: 'repeat(64,1px)',
-          columnsCount: 64,
-          calculatedGap: gap,
-        }
+        const columnsCount = 64
+        const template = 'repeat(64, 1px)'
+        return { template, columnsCount, calculatedGap }
       }
       if (variant === 'auto') {
-        // e.g. container=1024 => columnWidth=100 => columns=10
-        const cw = typeof config.columnWidth === 'number' ? config.columnWidth : 100
-        const count = Math.floor(1024 / cw)
-        return {
-          gridTemplateColumns: `repeat(auto-fit, minmax(${cw}px, 1fr))`,
-          columnsCount: count,
-          calculatedGap: gap,
-        }
+        const columnWidth = typeof config.columnWidth === 'number' ? config.columnWidth : 100
+        const columnsCount = Math.floor(1024 / columnWidth)
+        const template = `repeat(auto-fit, minmax(${columnWidth}px, 1fr))`
+        return { template, columnsCount, calculatedGap }
       }
       if (variant === 'pattern') {
-        // e.g. columns=[ '1fr','2fr','3fr' ]
-        const arr = Array.isArray(config.columns) ? config.columns : []
-        return {
-          gridTemplateColumns: arr.join(' '),
-          columnsCount: arr.length,
-          calculatedGap: gap,
-        }
+        const columnsArray = Array.isArray(config.columns) ? config.columns : []
+        const columnsCount = columnsArray.length
+        const template = columnsArray.join(' ')
+        return { template, columnsCount, calculatedGap }
       }
       if (variant === 'fixed') {
-        // e.g. columns=5 => "repeat(5, 120px)"
-        const c = typeof config.columns === 'number' ? config.columns : 3
-        const cw = config.columnWidth ?? '1fr'
-        return {
-          gridTemplateColumns: `repeat(${c}, ${cw})`,
-          columnsCount: c,
-          calculatedGap: gap,
-        }
+        const columns = typeof config.columns === 'number' ? config.columns : 3
+        const columnWidth = config.columnWidth ?? '1fr'
+        const columnsCount = columns
+        const template = `repeat(${columns}, ${columnWidth})`
+        return { template, columnsCount, calculatedGap }
       }
-
-      // fallback
+      // Fallback for unknown variants
       return {
-        gridTemplateColumns: 'none',
+        template: 'none',
         columnsCount: 0,
         calculatedGap: 0,
       }
     },
 
-    // Make the guide config "visible" by default
-    // and define minimal colors for each variant
+    // Mock useConfig as before
     useConfig: (component: string) => {
       if (component === 'guide') {
         return {
           base: 8,
-          variant: 'line',    // default
-          visibility: 'visible',
           colors: {
             line: 'rgba(255,0,0,0.3)',
             pattern: 'rgba(0,255,0,0.3)',
@@ -85,26 +69,9 @@ vi.mock('@hooks', async () => {
           },
         }
       }
-      // If other components also call useConfig
-      // just return something minimal
+      // Return empty object for other components
       return {}
     },
-
-    // If your Guide uses useNormalizedDimensions
-    useNormalizedDimensions: () => ({
-      width: 'auto',
-      height: 'auto',
-      normalizedWidth: 800,
-      normalizedHeight: 600,
-      cssProps: {
-        '--dimension-width': 'auto',
-        '--dimension-height': 'auto',
-      },
-      dimensions: {
-        width: 'auto',
-        height: 'auto',
-      },
-    }),
   }
 })
 
