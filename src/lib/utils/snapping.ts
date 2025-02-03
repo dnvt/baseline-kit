@@ -1,5 +1,5 @@
-import { SnappingMode } from '@components'
-import { Padding } from '@utils'
+import { SnappingMode, Padding, PaddingValue } from '@components'
+import { parsePadding } from '@/utils/padding'
 
 /**
  * Calculates the snapped spacing for an element given its measured height,
@@ -17,14 +17,11 @@ import { Padding } from '@utils'
 export function calculateSnappedSpacing(
   height: number,
   base: number,
-  initial: Padding,
+  initial: PaddingValue,
   snapping: SnappingMode,
 ): Padding {
-  // If initial is a number, convert it to an object.
-  const pad: Padding =
-    typeof initial === 'number'
-      ? { top: initial, right: initial, bottom: initial, left: initial }
-      : { ...initial }
+  // Convert the incoming initial spacing to a complete Padding object.
+  const pad: Padding = parsePadding({ padding: initial })
 
   // If no snapping, simply return the initial spacing.
   if (snapping === 'none') {

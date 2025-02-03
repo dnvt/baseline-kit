@@ -1,25 +1,22 @@
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
-
 import { Baseline } from '@/components/Baseline'
 
-// We'll store IntersectionObserver callbacks in a map, keyed by element:
+// We'll store IntersectionObserver callbacks in a map, keyed by element.
 const observerMap = new Map<Element, IntersectionObserverCallback>()
 
 // Mock IntersectionObserver
-const mockIntersectionObserver = vi.fn((callback: IntersectionObserverCallback) => {
-  return {
-    observe: (element: Element) => {
-      observerMap.set(element, callback)
-    },
-    unobserve: (element: Element) => {
-      observerMap.delete(element)
-    },
-    disconnect: () => {
-      observerMap.clear()
-    },
-  }
-})
+const mockIntersectionObserver = vi.fn((callback: IntersectionObserverCallback) => ({
+  observe: (element: Element) => {
+    observerMap.set(element, callback)
+  },
+  unobserve: (element: Element) => {
+    observerMap.delete(element)
+  },
+  disconnect: () => {
+    observerMap.clear()
+  },
+}))
 
 // For ResizeObserver
 type ResizeObserverCallback = (entries: ResizeObserverEntry[], observer: ResizeObserver) => void
@@ -46,12 +43,10 @@ const mockResizeObserver = vi.fn((callback: ResizeObserverCallback) => ({
 describe('Baseline', () => {
   beforeAll(() => {
     vi.useFakeTimers()
-
-    // Mock the observers
     vi.stubGlobal('IntersectionObserver', mockIntersectionObserver)
     vi.stubGlobal('ResizeObserver', mockResizeObserver)
 
-    // Set up window dimensions
+    // Set up window dimensions (these are optional if your tests rely on them).
     Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true })
     Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true })
   })
@@ -66,7 +61,7 @@ describe('Baseline', () => {
     observerMap.clear()
   })
 
-  // Helper to simulate intersection
+  // Helper to simulate intersection events.
   const triggerIntersection = (
     element: Element,
     isIntersecting = true,
@@ -99,39 +94,26 @@ describe('Baseline', () => {
     }
   }
 
-  it('renders hidden by default if config says hidden', () => {
-    // If your real code uses config=hidden by default, or you pass visibility="hidden"
+  it('renders hidden by default if debugging="hidden"', () => {
     render(<Baseline debugging="hidden" />)
-    // Because it's hidden => we do still create the element, but your code might hide lines
-    // or if your code returns null when hidden, adapt accordingly:
     const baseline = screen.getByTestId('baseline')
-    // Usually you'd see "hidden" class
     expect(baseline.className).toMatch(/hidden/i)
   })
 
-  it('renders lines when visible', () => {
+  it('renders lines when debugging is "visible" with numeric height', () => {
     render(<Baseline debugging="visible" height={100} />)
     const baseline = screen.getByTestId('baseline')
     expect(baseline.className).toMatch(/visible/i)
-
-    // Once we measure the container (via ResizeObserver),
-    // rowCount = 100 / base=8 => 13 lines
-    // But the code might just do an immediate measure of 768 if height was `'100%'`.
-    // Because we forced height=100 => let's see if it does 12 or 13 lines:
-    // We can confirm the .map => rowCount = ceiling(100/8)=13
+    // For height=100 and base=8, Math.ceil(100/8)=13 lines are expected.
     const lines = baseline.querySelectorAll('[data-row-index]')
     expect(lines.length).toBe(13)
   })
 
   it('handles variant="flat"', () => {
-    // variant=flat => each row's height= base px
     render(<Baseline debugging="visible" variant="flat" height={64} />)
     const baseline = screen.getByTestId('baseline')
     const lines = baseline.querySelectorAll('[data-row-index]')
-    // 64 / base(8)=8 lines
     expect(lines.length).toBe(8)
-
-    // The first line => style.height= "8px"
     const firstLine = lines[0] as HTMLElement
     expect(firstLine.style.height).toBe('8px')
   })
@@ -139,46 +121,39 @@ describe('Baseline', () => {
   it('respects custom numeric height', () => {
     render(<Baseline debugging="visible" height={200} />)
     const baseline = screen.getByTestId('baseline')
-    // 200 / 8 => 25 lines
     const lines = baseline.querySelectorAll('[data-row-index]')
     expect(lines.length).toBe(25)
   })
 
   it('respects custom string height e.g. "50vh"', () => {
-    // e.g. "50vh" => ~384 px if innerHeight=768
     render(<Baseline debugging="visible" height="50vh" />)
     const baseline = screen.getByTestId('baseline')
-    // 384 / 8 => 48 lines
     const lines = baseline.querySelectorAll('[data-row-index]')
     expect(lines.length).toBe(48)
   })
 
   it('applies top/bottom spacing if provided', () => {
-    // e.g. block=[10,20]
-    // Then total leftover = height(100)- (10+20)=70 => rowCount=70/8 => 9 lines
-    render(
-      <Baseline
-        debugging="visible"
-        height={100}
-        block={[10, 20]}
-      />,
-    )
+    render(<Baseline debugging="visible" height={100} block={[10, 20]} />)
     const baseline = screen.getByTestId('baseline')
     const lines = baseline.querySelectorAll('[data-row-index]')
-    // 70 / 8 => 8.75 => ceiling => 9
     expect(lines.length).toBe(9)
   })
 
-  it('mocks intersection if your code partial-renders lines (if so)', () => {
-    // If you do partial or lazy rendering based on intersection, you'd do:
-    // For demonstration we'll just do:
+  it('mocks intersection to update rendered lines (if using lazy rendering)', () => {
     render(<Baseline debugging="visible" height={300} />)
     const baseline = screen.getByTestId('baseline')
-    // Simulate intersection
     triggerIntersection(baseline)
-    // etc. if your code updates after intersection, check lines
     const lines = baseline.querySelectorAll('[data-row-index]')
-    // should be 300/8 => 38 lines
+    // For height=300 and base=8, Math.ceil(300/8) = 38 rows.
     expect(lines.length).toBe(38)
+  })
+
+  it('applies custom className, style props, and renders children', () => {
+    render(
+      <Baseline debugging="visible" className="custom-class" style={{ background: 'red' }} />,
+    )
+    const baseline = screen.getByTestId('baseline')
+    expect(baseline).toHaveClass('custom-class')
+    expect(baseline).toHaveStyle({ background: 'red' })
   })
 })

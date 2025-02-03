@@ -1,4 +1,4 @@
-import { convertValue, CSSValue } from './index'
+import { convertValue } from './index'
 
 /**
  * Returns the modulo (remainder) of a CSSValue when divided by a base.
@@ -9,7 +9,7 @@ import { convertValue, CSSValue } from './index'
  * @returns A string representing the remainder in pixels (e.g. "6px").
  */
 export function moduloize(
-  value: CSSValue | undefined,
+  value: number | string | undefined,
   base: number,
   options?: { round?: boolean },
 ): string {

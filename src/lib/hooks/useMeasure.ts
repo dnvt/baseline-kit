@@ -11,7 +11,7 @@ export interface Dimensions {
 }
 
 /**
- * useMeasurement
+ * useMeasure
  *
  * A React hook that observes the dimensions of a DOM element.
  * It leverages ResizeObserver for updates and throttles measurements

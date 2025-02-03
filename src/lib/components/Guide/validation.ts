@@ -1,5 +1,11 @@
-import { GRID_ALIGNMENTS, GridAlignment, GuideColumnsPattern, GuideColumnValue, GuideConfig } from '@components'
-import { CSSValue, ABSOLUTE_UNIT_CONVERSIONS, RELATIVE_UNITS } from '@utils'
+import {
+  GRID_ALIGNMENTS,
+  GridAlignment,
+  GuideColumnsPattern,
+  GuideColumnValue,
+  GuideConfig,
+} from '@components'
+import { ABSOLUTE_UNIT_CONVERSIONS, RELATIVE_UNITS } from '@utils'
 
 const UNIT_PATTERN = /^\d*\.?\d+(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/
 
@@ -30,14 +36,14 @@ export const isValidGuidePattern = (pattern: unknown): pattern is GuideColumnsPa
  * @param value - The value to validate.
  * @returns `true` if the value is a valid CSS grid value, otherwise `false`.
  */
-export const isGuideValue = (value: unknown): value is CSSValue => {
-  const CSS_UNITS = [...Object.keys(ABSOLUTE_UNIT_CONVERSIONS), ...RELATIVE_UNITS];
+export const isGuideValue = (value: unknown) => {
+  const CSS_UNITS = [...Object.keys(ABSOLUTE_UNIT_CONVERSIONS), ...RELATIVE_UNITS]
 
   return (
     typeof value === 'number' ||
     (typeof value === 'string' && CSS_UNITS.some(unit => value.endsWith(unit)))
-  );
-};
+  )
+}
 
 /**
  * Validates if the given value is a valid grid alignment.

@@ -96,8 +96,9 @@ export const Baseline = memo(function Baseline({
         pointerEvents: 'none',
         overflow: 'hidden',
         height: `${normHeight}px`,
-        ...style,
-      }),
+      } as CSSProperties,
+      style,
+      ),
     [normWidth, top, right, bottom, left, normHeight, style],
   )
 

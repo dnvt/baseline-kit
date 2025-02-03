@@ -1,5 +1,3 @@
-import { CSSValue } from './index'
-
 /**
  * Parses a CSS unit string into its numeric value and unit.
  * @param value - A string like "100px", "1.5rem", etc.
@@ -22,7 +20,7 @@ export function parseUnit(value: string): { value: number; unit: string } | null
  * @param defaultValue - An optional default numeric value if value is undefined.
  * @returns A formatted CSS string.
  */
-export function formatValue(value: CSSValue | undefined, defaultValue?: number): string {
+export function formatValue(value: string | number | undefined, defaultValue?: number): string {
   if (value === undefined && defaultValue !== undefined) return `${defaultValue}px`
   if (value === 'auto' || (typeof value === 'string' && (/^(auto|100%|0|.*(fr|vh|vw|vmin|vmax|rem))$/).test(value))) {
     return String(value)

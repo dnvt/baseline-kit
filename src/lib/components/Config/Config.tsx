@@ -31,6 +31,14 @@ export type Config = {
     debugging: DebuggingMode
     colors: Record<BaselineVariant, string>
   }
+  flex: {
+    colors: Colors
+    debugging: DebuggingMode
+  },
+  layout: {
+    colors: Colors
+    debugging: DebuggingMode
+  },
   spacer: {
     variant: SpacerVariant
     debugging: DebuggingMode
@@ -55,6 +63,8 @@ type ConfigProps = {
   children: ReactNode
   base?: number
   baseline?: Partial<Config['baseline']>
+  flex?: Partial<Config['flex']>
+  layout?: Partial<Config['layout']>
   guide?: Partial<Config['guide']>
   spacer?: Partial<Config['spacer']>
   box?: Partial<Config['box']>
@@ -65,7 +75,9 @@ const createCSSVariables = ({
   base,
   baseline,
   guide,
+  flex,
   spacer,
+  layout,
   box,
   padder,
 }: Config): Record<string, string> => ({
@@ -92,6 +104,16 @@ const createCSSVariables = ({
   '--pdd-box-color-flat': box.colors.flat,
   '--pdd-box-color-indice': box.colors.indice,
 
+  // Flex Colors
+  '--pdd-flex-color-line': flex.colors.line,
+  '--pdd-flex-color-flat': flex.colors.flat,
+  '--pdd-flex-color-indice': flex.colors.indice,
+
+  // Layout Colors
+  '--pdd-layout-color-line': layout.colors.line,
+  '--pdd-layout-color-flat': layout.colors.flat,
+  '--pdd-layout-color-indice': layout.colors.indice,
+
   // Padder Color
   '--pdd-padder-color': padder.color,
 })
@@ -99,8 +121,10 @@ const createCSSVariables = ({
 export function Config({
   children,
   base,
+  flex,
   baseline,
   guide,
+  layout,
   spacer,
   box,
   padder,
@@ -114,6 +138,8 @@ export function Config({
       guide: { ...parentConfig.guide, ...guide },
       spacer: { ...parentConfig.spacer, ...spacer },
       box: { ...parentConfig.box, ...box },
+      flex: { ...parentConfig.flex, ...flex },
+      layout: { ...parentConfig.layout, ...layout },
       padder: { ...parentConfig.padder, ...padder },
     }
 
@@ -121,7 +147,7 @@ export function Config({
       ...newConfig,
       cssVariables: createCSSVariables(newConfig),
     }
-  }, [base, parentConfig.base, parentConfig.baseline, parentConfig.guide, parentConfig.spacer, parentConfig.box, parentConfig.padder, baseline, guide, spacer, box, padder])
+  }, [base, parentConfig.base, parentConfig.baseline, parentConfig.guide, parentConfig.layout, parentConfig.spacer, parentConfig.box, parentConfig.flex, parentConfig.padder, baseline, guide, spacer, box, flex, padder])
 
   return (
     <ConfigContext.Provider value={value}>

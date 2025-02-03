@@ -1,6 +1,6 @@
 /**
  * Guide Component
- * Horizontal and Vertical based Guide component.
+ * Column Grid overlays component.
  * @module Guide
  */
 

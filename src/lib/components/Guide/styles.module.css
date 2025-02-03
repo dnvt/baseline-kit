@@ -18,6 +18,10 @@
   padding: var(--pdd-guide-padding-block) var(--pdd-guide-padding-inline);
 }
 
+.line {
+  left: -0.5px;
+}
+
 .columns {
   position: absolute;
   top: 0;

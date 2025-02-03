@@ -1,4 +1,4 @@
-import { CSSValue, parseUnit } from './index'
+import { parseUnit } from './index'
 
 export interface ConversionContext {
   parentSize?: number;
@@ -27,14 +27,13 @@ export const ABSOLUTE_UNIT_CONVERSIONS: Record<string, number> = {
 
 export const RELATIVE_UNITS: string[] = ['em', 'rem', 'vh', 'vw', 'vmin', 'vmax', '%']
 
-
 /**
  * Converts a CSSValue to a pixel number.
  * @param value - A numeric value or a string (e.g. "100px", "1em", etc.)
  * @param context - Optional conversion context for relative units.
  * @returns The numeric pixel value, or null if conversion fails.
  */
-export function convertValue(value: CSSValue, context?: ConversionContext): number | null {
+export function convertValue(value: number | string | undefined, context?: ConversionContext): number | null {
   if (typeof value === 'number') return value
   if (typeof value !== 'string') return null
   const parsed = parseUnit(value)

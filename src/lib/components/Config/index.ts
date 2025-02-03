@@ -1,6 +1,6 @@
 /**
  * Config Component
- * Config Provider to the padded environment
+ * Config Provider to the Baseline kit environment
  * @module Config
  */
 

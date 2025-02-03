@@ -1,6 +1,6 @@
 /**
  * Padder Component
- * Component wrapper that holds the padding visibility strategy
+ * Component wrapper that holds the padding debugging strategy
  * @module Padder
  */
 
