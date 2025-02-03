@@ -10,7 +10,7 @@
   height: var(--pdd-padder-height);
 }
 
-.padder::after {
+.visible::after {
   content: '';
   position: absolute;
   inset: 0;

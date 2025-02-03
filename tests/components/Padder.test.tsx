@@ -102,7 +102,6 @@ describe('Padder', () => {
   })
 })
 
-
 it('doesnt normilize the paddings with base of 1', () => {
   render(
     <Config base={1}>
@@ -112,11 +111,9 @@ it('doesnt normilize the paddings with base of 1', () => {
     </Config>,
   )
   const padder = screen.getByTestId('padder')
-  // No <Spacer />
   expect(padder.querySelectorAll('[data-testid="spacer"]').length).toBe(0)
-  // Inspect inline style for padding
   const styleAttr = padder.getAttribute('style') || ''
-  // Adjust your expectations based on the adjusted padding from useBaseline
+
   expect(styleAttr).toContain('padding-block: 10px 20px')
   expect(styleAttr).toContain('padding-inline: 5px 15px')
 })

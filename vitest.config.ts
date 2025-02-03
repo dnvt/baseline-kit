@@ -1,7 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import { resolve } from 'path'
-
-const resolvePath = (...paths: string[]) => resolve(__dirname, ...paths)
+import { alias } from './alias.config'
 
 export default defineConfig({
   test: {
@@ -15,26 +13,21 @@ export default defineConfig({
       exclude: [
         'demo/**/*',
         'src/**/index.ts',
-        '**/production.js',
+        'tests/matchers.ts',
+        'tests/mocks.ts',
+        'tests/render.ts',
+        'tests/utils.tsx',
+        'node_modules/**/*',
         '**/*.d.ts',
         '**/*.js',
         '.eslintrc.cjs',
         'index.ts',
         'vite.config.mts',
         'vitest.config.ts',
-        '**/react-jsx-runtime.production.js',
+        'alias.config.ts',
       ],
     },
     include: ['tests/**/*.test.{ts,tsx}'],
   },
-  resolve: {
-    alias: {
-      '@': resolvePath('src/lib'),
-      '@components': resolvePath('src/lib/components'),
-      '@context': resolvePath('src/lib/context'),
-      '@hooks': resolvePath('src/lib/hooks'),
-      '@types': resolvePath('src/lib/types'),
-      '@utils': resolvePath('src/lib/utils'),
-    },
-  },
+  resolve: { alias },
 })

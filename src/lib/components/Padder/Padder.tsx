@@ -1,6 +1,6 @@
 import { CSSProperties, memo, ReactNode, useMemo, useRef } from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { cx, cs, CSSValue, parsePadding } from '@utils'
+import { cx, cs, parsePadding } from '@utils'
 import { ComponentsProps } from '../types'
 import { Spacer } from '../Spacer'
 import styles from './styles.module.css'
@@ -87,7 +87,7 @@ export const Padder = memo(function Padder({
   )
 
   // Function to render Spacer components
-  const renderSpacer = (width: CSSValue, height: CSSValue) => (
+  const renderSpacer = (width: CSSProperties['width'], height: CSSProperties['height']) => (
     <Spacer
       width={width}
       height={height}

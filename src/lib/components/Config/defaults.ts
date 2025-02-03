@@ -24,6 +24,18 @@ const BOX_COLORS = {
   indice: 'var(--pdd-box-color-indice-theme)',
 }
 
+const FLEX_COLORS = {
+  line: 'var(--pdd-flex-color-line-theme)',
+  flat: 'var(--pdd-flex-color-flat-theme)',
+  indice: 'var(--pdd-flex-color-indice-theme)',
+}
+
+const LAYOUT_COLORS = {
+  line: 'var(--pdd-layout-color-line-theme)',
+  flat: 'var(--pdd-layout-color-flat-theme)',
+  indice: 'var(--pdd-layout-color-indice-theme)',
+}
+
 const PADDER_COLOR = 'var(--pdd-padder-color-theme)'
 
 export const DEFAULT_CONFIG: Config = {
@@ -46,6 +58,14 @@ export const DEFAULT_CONFIG: Config = {
   box: {
     debugging: 'hidden',
     colors: BOX_COLORS,
+  },
+  flex: {
+    debugging: 'hidden',
+    colors: FLEX_COLORS,
+  },
+  layout: {
+    debugging: 'hidden',
+    colors: LAYOUT_COLORS,
   },
   padder: {
     debugging: 'hidden',

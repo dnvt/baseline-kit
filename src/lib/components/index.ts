@@ -1,5 +1,5 @@
 /**
- * Grid System Components
+ * Baseline Kit Components
  * @module components
  */
 
@@ -9,6 +9,8 @@ export * from './Baseline'
 export * from './Box'
 export * from './Config'
 export * from './Guide'
+export * from './Flex'
+export * from './Layout'
 export * from './Padder'
 export * from './Spacer'
 export * from './types'

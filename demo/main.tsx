@@ -4,6 +4,7 @@ import { GridSetups, Indice } from './components'
 
 import '../dist/styles.css'
 import { Spacer, Box, Config, Baseline } from '../dist'
+import { Layout } from '@components'
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -23,19 +24,17 @@ function Content({ showBaseline }: ContentProps) {
 
   return (
     <>
-      <Spacer height={42} debugging={visibility} indicatorNode={Indice} />
-      <Box block={[6, 10]} debugging={visibility}>
-        <h1 className="demo-title">Padded Playground</h1>
-      </Box>
-      <Box block={[6, 10]} debugging="visible" snapping="height">
-        <p>
-          This is a comprehensive demo showcasing the grid system capabilities.
-          Use the controls to experiment with different grid configurations.
-        </p>
-      </Box>
-
-      <Spacer height={24} debugging={visibility} indicatorNode={Indice} />
-
+      <Layout block={[42, 24]} columns={9} debugging="visible" width="100vw">
+        <Box block={[6, 10]} debugging={visibility} colSpan={5}>
+          <h1 className="demo-title">Padded Playground</h1>
+        </Box>
+        <Box block={[6, 10]} debugging="visible" snapping="height" colSpan={5}>
+          <p>
+            This is a comprehensive demo showcasing the grid system capabilities.
+            Use the controls to experiment with different grid configurations.
+          </p>
+        </Box>
+      </Layout>
       {Array.from({ length: 100 }).map((_, i) => {
         return (
           <Fragment key={i}>

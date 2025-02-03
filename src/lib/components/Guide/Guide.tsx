@@ -149,6 +149,7 @@ export const Guide = memo(function Guide({
         styles.guide,
         className,
         isShown ? styles.visible : styles.hidden,
+        variant === 'line' && styles.line,
       )}
       data-testid="guide"
       data-variant={variant}

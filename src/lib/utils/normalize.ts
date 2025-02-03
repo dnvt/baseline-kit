@@ -1,4 +1,4 @@
-import { clamp, convertValue, CSSValue } from './index'
+import { clamp, convertValue } from './index'
 
 export interface NormalizationOptions {
   /** Base unit for normalization (default: 8) */
@@ -24,7 +24,7 @@ export interface NormalizationOptions {
  * @param options - Normalization options.
  * @returns The normalized number.
  */
-export function normalizeValue(value: CSSValue, options: NormalizationOptions = {}): number {
+export function normalizeValue(value: string | number | undefined, options: NormalizationOptions = {}): number {
   const { base = 8, round: doRound = true, clamp: clampOptions, suppressWarnings = false } = options
   if (value === 'auto') return base
   let num: number | null = null
@@ -61,7 +61,7 @@ export function normalizeValue(value: CSSValue, options: NormalizationOptions = 
  * @returns A tuple of two normalized numbers.
  */
 export function normalizeValuePair(
-  values: [CSSValue?, CSSValue?] | undefined,
+  values: [string | number | undefined, string | number | undefined] | undefined,
   defaults: [number, number],
   options?: NormalizationOptions,
 ): [number, number] {
@@ -95,7 +95,7 @@ export function normalizeRect(
  * @param base - The base unit (default: 8).
  * @returns True if the value is normalized, false otherwise.
  */
-export function isNormalized(value: CSSValue, base: number = 8): boolean {
+export function isNormalized(value: string | number | undefined, base: number = 8): boolean {
   if (value === 'auto') return true
   const normalized = normalizeValue(value, { base, suppressWarnings: true })
   let num: number | null = null

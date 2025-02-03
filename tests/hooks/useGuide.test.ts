@@ -1,4 +1,3 @@
-// tests/hooks/useGuide.test.ts
 import { renderHook } from '@testing-library/react'
 import * as measurementModule from '@/hooks/useMeasure'
 import { useGuide } from '@hooks'
@@ -8,6 +7,10 @@ describe('useGuide', () => {
 
   beforeEach(() => {
     useMeasureSpy = vi.spyOn(measurementModule, 'useMeasure')
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('handles line variant with known width', () => {
@@ -20,7 +23,6 @@ describe('useGuide', () => {
         base: 8,
       }),
     )
-    // e.g. "repeat(12, 1px)" should be part of the template, and isValid=true
     expect(result.current.template).toMatch(/repeat/)
     expect(result.current.isValid).toBe(true)
   })
@@ -28,7 +30,6 @@ describe('useGuide', () => {
   it('pattern variant success', () => {
     useMeasureSpy.mockReturnValue({ width: 400, height: 200 })
     const ref = { current: document.createElement('div') }
-
     const { result } = renderHook(() =>
       useGuide(ref, {
         variant: 'pattern',
@@ -36,15 +37,13 @@ describe('useGuide', () => {
         gap: 4,
       }),
     )
-
     expect(result.current.template).toBe('10px 2fr auto')
     expect(result.current.isValid).toBe(true)
   })
 
-  it('auto variant calculates columns count', () => {
+  it('auto variant calculates columns count with numeric columnWidth', () => {
     useMeasureSpy.mockReturnValue({ width: 400, height: 200 })
     const ref = { current: document.createElement('div') }
-
     const { result } = renderHook(() =>
       useGuide(ref, {
         variant: 'auto',
@@ -52,16 +51,59 @@ describe('useGuide', () => {
         gap: 8,
       }),
     )
-    // For a container width of 400, with a columnWidth of 100 and gap=8,
-    // the calculation should yield a valid configuration with "auto-fit" in the template.
     expect(result.current.isValid).toBe(true)
     expect(result.current.template).toContain('auto-fit')
   })
 
+  it('auto variant returns default template when columnWidth is "auto"', () => {
+    useMeasureSpy.mockReturnValue({ width: 500, height: 200 })
+    const ref = { current: document.createElement('div') }
+    const { result } = renderHook(() =>
+      useGuide(ref, {
+        variant: 'auto',
+        columnWidth: 'auto',
+        gap: 10,
+      }),
+    )
+    expect(result.current.template).toBe('repeat(auto-fit, minmax(0, 1fr))')
+    expect(result.current.columnsCount).toBe(1)
+    expect(result.current.isValid).toBe(true)
+  })
+
+  it('fixed variant calculates template correctly', () => {
+    useMeasureSpy.mockReturnValue({ width: 500, height: 200 })
+    const ref = { current: document.createElement('div') }
+    const { result } = renderHook(() =>
+      useGuide(ref, {
+        variant: 'fixed',
+        columns: 3,
+        columnWidth: 100,
+        gap: 10,
+      }),
+    )
+    expect(result.current.template).toBe('repeat(3, 100px)')
+    expect(result.current.columnsCount).toBe(3)
+    expect(result.current.calculatedGap).toBe(10)
+    expect(result.current.isValid).toBe(true)
+  })
+
+it('returns an invalid config for fixed variant if columns count is less than 1', () => {
+  useMeasureSpy.mockReturnValue({ width: 500, height: 200 })
+  const ref = { current: document.createElement('div') }
+  const { result } = renderHook(() =>
+    useGuide(ref, {
+      variant: 'fixed',
+      columns: 0,
+      gap: 10,
+    }),
+  )
+  expect(result.current.isValid).toBe(false)
+  expect(result.current.template).toBe('none')
+})
+
   it('returns isValid=false if container width=0', () => {
     useMeasureSpy.mockReturnValue({ width: 0, height: 50 })
     const ref = { current: document.createElement('div') }
-
     const { result } = renderHook(() =>
       useGuide(ref, { variant: 'line' }),
     )

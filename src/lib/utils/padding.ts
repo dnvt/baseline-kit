@@ -1,4 +1,4 @@
-import { Padding, PaddingValue, Spacing, SpacingProps } from '@utils'
+import { Padding, PaddingValue, Spacing, SpacingProps } from '@components'
 
 /**
  * Extract numeric top, right, bottom, left (in px) from `padding` or `block/inline`.

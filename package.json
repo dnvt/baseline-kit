@@ -31,6 +31,9 @@
     "layout",
     "typescript",
     "baseline",
+    "guide",
+    "box",
+    "layout",
     "typography",
     "spacing",
     "stack",
@@ -70,7 +73,7 @@
     "vite-plugin-static-copy": "^2.2.0",
     "vitest": "^2.1.8"
   },
-  "name": "padded-grid",
+  "name": "baseline-kit",
   "version": "1.1.2",
   "type": "module",
   "homepage": "https://github.com/dnvt/padded-grid#readme",
@@ -102,5 +105,5 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": "Francois Denavaut",
-  "description": "A comprehensive toolkit for maintaining consistent typography and spacing in React applications. Featuring debug overlays for grids and baselines, stack components for vertical rhythm, and spacing utilities that help ensure precise typography and layout during development."
+  "description": "Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, flexible spacing components, and theme-aware configuration—all optimized for performance and built with TypeScript."
 }

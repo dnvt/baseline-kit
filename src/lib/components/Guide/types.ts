@@ -1,5 +1,5 @@
-import { CSSValue } from '@utils'
 import { GuideColumnsPattern } from '../types'
+import { CSSProperties } from 'react'
 
 /**
  * Shared fields for guide configurations.
@@ -63,7 +63,7 @@ export type FixedConfig = BaseGuideConfig & {
   /** Total number of columns to render. */
   columns: number;
   /** Optional fixed width for each column (e.g., "100px", "8rem"). */
-  columnWidth?: CSSValue;
+  columnWidth?: CSSProperties['width'];
 };
 
 /**
@@ -85,7 +85,7 @@ export type FixedConfig = BaseGuideConfig & {
 export type AutoConfig = BaseGuideConfig & {
   variant: 'auto';
   /** Width for each column, leaving the guide to calculate how many fit. */
-  columnWidth: CSSValue;
+  columnWidth: CSSProperties['columnWidth'];
   /** `columns` is not used in auto mode. */
   columns?: never;
 };

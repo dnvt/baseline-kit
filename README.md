@@ -1,337 +1,206 @@
-# Padded Grid
+# Baseline Kit
 
-Padded Grid is a lightweight, debugging / dev-tool library for visualizing and maintaining consistent grid systems in
-React applications. Inspired by tools like Figma, it provides powerful, customizable grid overlays and spacing utilities
-to ensure precise alignment and spacing during development.
+Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, flexible layout components, and theme-aware configuration—all optimized for performance and built with TypeScript.
 
 ![Demo visual](demo/padded-demo.png)
 
 ## Features
 
-- 🎯 **Interactive Grid Overlays:** Toggleable grids for development.
-- 📏 **Column Grid Visualization:** Perfect for layout alignment.
-- 📐 **Baseline Grid Support:** Align typography and spacing.
-- 🧩 **Flexible Spacer Component:** Simplify spacing with adjustable dimensions.
-- 🎨 **Customizable:** Colors, opacity, and grid configurations.
-- ⚡ **Performance Optimized:** Zero runtime dependencies, tree-shakeable, and modern browser support.
-- 🔧 **TypeScript-First:** Comprehensive typings for better DX.
+-  🎯 **Interactive Guide Overlays:** Easily toggle grid overlays (both horizontal and vertical) to ensure precise alignment in your layouts.
+-  📏 **Dynamic Layout Components:** Flexible components like Layout, Flex, Box, and Padder provide consistent spacing and alignment.
+-  🧩 **Grid System Components:** New Layout component for CSS Grid-based layouts with automatic column calculations.
+-  📐 **Flex Layout Support:** Flex component for flexible box layouts with built-in baseline alignment.
+-  🔄 **Responsive Design:** Components automatically adapt to container dimensions and base unit configuration.
+-  🎨 **Configurable & Themed:** Leverage the Config component and hooks such as useConfig to easily override default settings.
 
 ## Installation
 
-Install via npm or yarn:
-
 ```shell
-npm install padded-grid
+npm install baseline-kit
+
 ```
 
 ## Quick Start
 
-Add padded-grid to your React project to visualize grids and manage spacing during development:
+Below is an example that demonstrates how to integrate Baseline Kit into your React application for both grid overlays
+and spacing management:
 
 ```tsx
-import { XGrid, YGrid, Spacer } from 'padded-grid';
-import 'padded-grid/styles.css';
+import React from 'react'
+import { Config, Guide, Baseline, Box, Spacer } from 'baseline-kit'
+import 'baseline-kit/styles.css'
 
 function App() {
-  const showGrid = process.env.NODE_ENV === 'development';
+  const isDev = process.env.NODE_ENV === 'development'
+  const debugMode = isDev ? 'visible' : 'hidden'
 
   return (
-    <div>
-      {/* Baseline grid for typography alignment */}
-      <YGrid
-        config={{
-          base: 8,
-          height: "100%",
-        }}
-        visibility={showGrid ? 'visible' : 'hidden'}
+    <Config>
+      {/* Baseline Grid for typography alignment */}
+      <Baseline config={{ base: 8, height: "100vh" }} debugging={debugMode} />
+
+      {/* Column Grid Overlay */}
+      <Guide
+        variant="pattern"
+        columns={['100px', '200px', '100px']}
+        gap={2}
+        debugging={debugMode}
+        align="center"
+        width="1200px"
       />
 
-      {/* Column grid overlay */}
-      <XGrid
-        config={{
-          columns: 12,
-          gap: 16,
-          maxWidth: "1200px",
-        }}
-        visibility={showGrid ? 'visible' : 'hidden'}
-      />
+      {/* Box container that aligns its children to the baseline grid */}
+      <Box debugging="visible" block={[16, 16]} inline={8}>
+        <h1>Content Aligned to the Grid</h1>
+        <p>This box uses a consistent baseline spacing.</p>
+      </Box>
 
-      {/* Spacer for dynamic spacing */}
+      {/* Spacer component for dynamic spacing */}
       <Spacer
         height="16px"
         width="100%"
-        config={{
-          base: 8,
-          color: "#ff0000",
-        }}
+        config={{ base: 8, color: "#ff0000" }}
         visibility="visible"
       />
 
-      <main>Your content...</main>
-    </div>
-  );
+      <main>Your main content goes here...</main>
+    </Config>
+  )
 }
+
+export default App
 ```
 
----
+## Components & API
 
-## Components
+### Config
 
-### XGrid (Horizontal Grid)
+The **Config** component provides a theme context for all Baseline Kit components. It allows you to override default
+values such as the base unit, colors, and debugging modes.
 
-The XGrid component provides column-based grid overlays for layout visualization.
-
-#### Props
-
-```typescript
-interface XGConfig {
-  columns?: number | GridColumnsPattern; // Fixed number or pattern of columns
-  columnWidth?: CSSValue;               // For auto-calculated columns
-  gap?: CSSValue;                       // Gap between columns
-  align?: 'start' | 'center' | 'end';   // Grid alignment
-  color?: CSSProperties['color'];       // Guide color
-  maxWidth?: CSSValue;                  // Maximum grid width
-  padding?: CSSProperties['padding'];   // Grid padding
-  variant?: 'line';                     // Optional line variant
-  zIndex?: number;                      // Z-index for grid
-}
-
-interface XGProps {
-  config: XGConfig;
-  visibility?: 'hidden' | 'visible';
-  className?: string;
-  style?: Partial<XGStyles>;
-}
-```
-
-#### Examples
+#### Usage
 
 ```tsx
-// Fixed columns
-<XGrid
-  config={{
-    columns: 12,
-    gap: 16,
-    maxWidth: "1200px",
-  }}
-  visibility="visible"
-/>
-
-// Custom column pattern
-<XGrid
-  config={{
-    columns: ['64px', '1fr', '2fr', '1fr', '64px'],
-    gap: 24,
-    color: "#0000ff1a",
-  }}
-  visibility="visible"
-/>
+<Config base={16} guide={{ debugging: 'visible' }}>
+  {/* Components that consume the config */}
+  <Guide />
+  <Baseline />
+</Config>
 ```
 
----
+All configuration hooks (e.g. useConfig) will pull values from this context.
 
-### YGrid (Vertical Grid)
+### Guide
 
-The YGrid component provides baseline grid overlays for typography alignment.
+The **Guide** component overlays a vertical grid to help you visualize column-based layouts.
 
-#### Props
+#### Variants
 
-```typescript
-interface YGConfig {
-  base?: number;                   // Base unit for spacing (default: 8)
-  height?: CSSValue;                   // Grid height (default: '100%')
-  variant?: 'line' | 'flat';           // Grid style variant (default: "line")
-  color?: CSSProperties['color'];      // Guide color
-  zIndex?: number;                     // Z-index for layering
-}
+- **line**: Renders evenly spaced vertical lines.
+- **pattern**: Uses a custom array of column widths (e.g. ['1fr', '2fr', '1fr']).
+- **fixed**: Renders a fixed number of columns.
+- **auto**: Automatically calculates columns based on a given column width.
 
-interface YGProps {
-  config: YGConfig;
-  visibility?: 'hidden' | 'visible';
-  className?: string;
-  style?: Partial<YGStyles>;
-}
-```
-
-#### Examples
+#### Props Example
 
 ```tsx
-// Basic baseline grid
-<YGrid
-  config={{
-    base: 8,
-    height: "100%",
-  }}
-  visibility="visible"
-/>
-
-// Custom variant and color
-<YGrid
-  config={{
-    base: 8,
-    variant: "flat",
-    color: "rgba(255,0,0,0.1)",
-  }}
-  visibility="visible"
+<Guide
+  variant="pattern"
+  columns={['100px', '200px', '100px']}
+  gap={2}
+  debugging="visible"
+  align="center"
+  width="1200px"
 />
 ```
 
----
+Internally, the Guide component calculates the CSS grid template, gap, and column count based on container size and the
+provided configuration.
+
+### Baseline
+
+The **Baseline** component overlays an horizontal grid for aligning typography and vertical spacing.
+
+#### Props Example
+
+```tsx
+<Baseline
+  config={{ base: 8, height: "100vh" }}
+  debugging="visible"
+/>
+```
+
+### Box
+
+The **Box** component is a container component that aligns its content to the baseline grid. It leverages both the
+useBaseline hook and the global configuration.
+
+#### Props Example
+
+```tsx
+<Box debugging="visible" block={[11, 5]}>
+  <p>Content aligned to the baseline grid!</p>
+</Box>
+```
+
+### Padder
+
+The **Padder** component applies consistent spacing (or padding) around its children. In debug mode, it renders visual
+indicators for the padding boundaries.
+
+#### Props Example
+
+```tsx
+<Padder block={16} inline={8} debugging="visible">
+  <p>Inside a padded area.</p>
+</Padder>
+```
 
 ### Spacer
 
-The Spacer component provides a flexible way to add spacing in your layouts.
-It adjusts its dimensions dynamically and supports optional measurement indicators for development.
+The **Spacer** component provides flexible space between elements. It adjusts its dimensions based on the configured
+base unit and can optionally display measurement indicators in debug mode.
 
-Use Spacer to manage dynamic spacing between elements, instead of wrapping your Stacks with useless noisy paddings.
-
-#### Props
-
-```typescript
-interface SpacerProps {
-  height?: CSSValue;                      // Height of the spacer
-  width?: CSSValue;                       // Width of the spacer
-  config?: {
-    base?: number;                    // Base unit for spacing (default: 8)
-    variant?: 'line';                     // Style variant for the spacer
-    color?: CSSProperties['color'];       // Color of the spacer
-    zIndex?: number;                      // Z-index for layering
-  };
-  indicatorNode?: (value: number, dimension: 'width' | 'height') => ReactNode; // Custom indicator renderer
-  visibility?: 'hidden' | 'visible';      // Visibility of the spacer
-  className?: string;                     // Additional class names
-  style?: CSSProperties;                  // Inline styles
-}
-```
-
-#### Examples
+#### Props Example
 
 ```tsx
-// Simple spacer
 <Spacer
   height="16px"
   width="100%"
-  visibility="visible"
-/>
-
-// Spacer with custom configuration
-<Spacer
-  height="32px"
-  config={{
-    base: 8,
-    color: "#ff0000",
-  }}
-  visibility="visible"
-/>
-
-// Spacer with measurement indicators
-<Spacer
-  height="16px"
-  indicatorNode={(value, dimension) => (
-    <div>{`${dimension}: ${value}px`}</div>
-  )}
-  visibility="visible"
+  config={{ base: 8, color: "#ff0000" }}
+  debugging="visible"
 />
 ```
-
----
-
-### Spacer
-
-#### Props
-
-```typescript
-type StackProps = {
-  // Dimension Properties
-  width?: CSSValue | `${number}/${number}` | 'fit-content' | 'fill-available'
-  height?: CSSValue | `${number}/${number}` | 'fit-content' | 'fill-available'
-  block?: number | [number, number] | { start: number; end: number }
-  inline?: number | [number, number] | { start: number; end: number }
-  gap?: number
-
-  // Config Properties
-  config?: {
-    variant?: PaddedVariant | 'pattern'
-    border?: boolean
-    max?: {
-      width?: CSSValue
-      height?: CSSValue
-    }
-    base?: number
-    zIndex?: string | number
-    color?: string
-  }
-
-  // Component Properties (from ComponentsProps)
-  className?: string
-  style?: React.CSSProperties
-  visibility?: 'visible' | 'hidden' | 'none'
-  children?: ReactNode
-
-  // Layout Properties (Exclusive choice between flex and grid)
-  flex?: {
-    direction?: 'row' | 'column'
-    align?: 'start' | 'end' | 'center' | 'baseline' | 'stretch'
-    justify?: 'start' | 'end' | 'center' | 'between' | 'around' | 'evenly'
-    grow?: boolean
-  }
-  grid?: {
-    direction?: 'row' | 'column'
-    align?: 'start' | 'end' | 'center' | 'baseline' | 'stretch'
-    justify?: 'start' | 'end' | 'center' | 'stretch'
-    columns?: number
-    gap?: number
-    template?: string
-  }
-} & ExclusiveProps<{
-  flex?: FlexLayout
-  grid?: GridLayout
-}, 'flex' | 'grid'>
-```
-
----
 
 ## Core Concepts
 
 ### Grid Calculations
 
-#### 1. Fixed Columns:
+**Baseline Kit** supports various methods of grid calculation:
 
-- Define a fixed number of equally-sized columns.
-- Example: columns: 12.
+- **Fixed Columns:** Define a fixed number of equally-sized columns.
+- **Pattern Columns:** Use an array of column widths to define a repeating pattern.
+- **Auto-Calculated Columns:** Automatically determine the number of columns based on container width and a specified
+  column width.
+- **Line Variant:** Renders single-pixel lines for precise alignment.
 
-#### 2. Pattern Columns:
+## Debugging Modes
 
-- Specify custom column widths.
-- Example: columns: ['64px', '1fr', '2fr'].
+The library supports three debugging modes:
 
-#### 3. Auto-Calculated Columns:
+- **visible:** Overlays and debug visuals are fully rendered.
+- **hidden:** Debug elements are present but not visible.
+- **none:** Debugging is disabled; no extra elements are rendered.
 
-- Automatically calculate the number of columns based on container width and column width.
-- Example: columnWidth: '240px'.
+These modes can be toggled via component props or via the global configuration.
 
-#### 4. Line Variant:
+## Performance & Compatibility
 
-- Single-pixel lines for precise alignment.
-- Example: variant: 'line'.
-
----
-
-## Development Tips
-
-- **Color Usage:** Use low-opacity colors (e.g., rgba(255,0,0,0.1)) for better visibility.
-- **Performance:** Toggle grid visibility when not needed to avoid rendering overhead.
-- **Multiple Grids:** Combine XGrid, YGrid, and Spacer for comprehensive layout visualization.
-- **Debugging:** Use browser dev tools to inspect alignment and spacing.
-
----
-
-## Browser Support
-
-- Modern browsers (Chrome, Firefox, Safari, Edge).
-- Requires CSS Grid Layout and CSS Custom Properties support.
-
----
+- **Performance:** All grid calculations and measurements are throttled and optimized using requestAnimationFrame to
+  minimize reflows and ensure smooth rendering.
+- **Browser Support:** Baseline Kit works in modern browsers (Chrome, Firefox, Safari, Edge) with support for CSS Grid
+  Layout and CSS Custom Properties.
+- **Tree-Shakeable:** The library is optimized for modern bundlers and supports tree-shaking.
 
 ## License
 
