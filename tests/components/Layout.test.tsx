@@ -1,7 +1,5 @@
-import React from 'react'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { vi } from 'vitest'
 import { CSSProperties } from 'react'
 import { Layout } from '@components'
 import * as hooks from '@hooks'
@@ -17,8 +15,8 @@ vi.mock('@hooks', () => ({
 }))
 vi.mock('@utils', () => ({
   parsePadding: vi.fn(),
-  cs: (...args: any[]) => Object.assign({}, ...args),
-  cx: (...classes: any[]) => classes.filter(Boolean).join(' '),
+  mergeStyles: (...args: any[]) => Object.assign({}, ...args),
+  mergeClasses: (...classes: any[]) => classes.filter(Boolean).join(' '),
 }))
 vi.mock('@components/Padder', () => ({
   Padder: ({ children, width, height }: { children: React.ReactNode; width?: string; height?: string }) => (

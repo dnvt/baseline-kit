@@ -1,9 +1,10 @@
-import { Fragment, StrictMode } from 'react'
+import { Fragment, StrictMode, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import { GridSetups, Indice } from './components'
 
 import { Spacer, Box, Config, Baseline, Layout, Stack } from '../dist'
 import '../dist/styles.css'
+import { useMeasure } from '@hooks'
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -20,6 +21,11 @@ root.render(
 
 function Content({ showBaseline }: ContentProps) {
   const visibility = showBaseline ? 'visible' : 'hidden'
+  const box1 = useRef<HTMLDivElement>(null)
+  const box2 = useRef<HTMLDivElement>(null)
+
+  const { height: box1Height } = useMeasure(box1)
+  const { height: box2Height } = useMeasure(box2)
 
   return (
     <>
@@ -37,15 +43,17 @@ function Content({ showBaseline }: ContentProps) {
         debugging="visible"
         indicatorNode={Indice}
       >
-        <Box block={[6, 10]} span={5} debugging={'visible'}>
+        <Box ref={box1} block={[6, 10]} span={5} debugging={'visible'}>
           <h1 className="demo-title">This is Baseline Kit library Playground. So let us play with it!</h1>
         </Box>
-        <Box block={[6, 10]} snapping="height" span={5} debugging={'visible'}>
+        <Spacer variant="flat" style={{ gridColumn: 'span 4' }} debugging="visible" height={box1Height} />
+        <Box ref={box2} block={[6, 10]} snapping="height" span={5} debugging={'visible'}>
           <p>
             This is a comprehensive demo showcasing the grid system capabilities.
             Use the controls to experiment with different grid configurations.
           </p>
         </Box>
+        <Spacer variant="flat" style={{ gridColumn: 'span 4' }} debugging="visible" height={box2Height} />
       </Layout>
       {Array.from({ length: 100 }).map((_, i) => {
         return (
