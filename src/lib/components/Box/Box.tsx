@@ -91,10 +91,10 @@ export const Box = React.memo(function Box({
   // Merging styles
   const boxStyles = React.useMemo(
     () => cs({
-      '--pdd-box-width': width,
-      '--pdd-box-height': height,
-      '--pdd-box-base': `${config.base}px`,
-      '--pdd-box-color-line': config.colors.line,
+      '--bk-box-width': width,
+      '--bk-box-height': height,
+      '--bk-box-base': `${config.base}px`,
+      '--bk-box-color-line': config.colors.line,
     } as React.CSSProperties, style),
     [config.base, config.colors.line, height, style, width],
   )
@@ -111,9 +111,9 @@ export const Box = React.memo(function Box({
         spacer={{
           variant: 'flat',
           colors: {
-            flat: 'var(--pdd-box-color-flat-theme)',
-            line: 'var(--pdd-box-color-line-theme)',
-            indice: 'var(--pdd-box-color-indice-theme)',
+            flat: 'var(--bk-box-color-flat-theme)',
+            line: 'var(--bk-box-color-line-theme)',
+            indice: 'var(--bk-box-color-indice-theme)',
           },
         }}
       >

@@ -24,7 +24,7 @@ vi.mock('@components/Padder', () => ({
   Padder: ({ children, width, height }: { children: React.ReactNode; width?: string; height?: string }) => (
     <div
       data-testid="layout"
-      style={{ '--pdd-padder-width': width || '100%', '--pdd-padder-height': height || '100%' } as CSSProperties}
+      style={{ '--bk-padder-width': width || '100%', '--bk-padder-height': height || '100%' } as CSSProperties}
     >
       {children}
     </div>
@@ -124,8 +124,8 @@ describe('Layout Component', () => {
     const padder = screen.getByTestId('layout')
     expect(padder).toBeInTheDocument()
     expect(padder).toHaveStyle({
-      '--pdd-padder-width': '100%',
-      '--pdd-padder-height': '100%',
+      '--bk-padder-width': '100%',
+      '--bk-padder-height': '100%',
     })
   })
 

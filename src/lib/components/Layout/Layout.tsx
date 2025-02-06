@@ -114,9 +114,9 @@ export function Layout({
       alignContent,
       width,
       height,
-      '--pdd-layout-color-line': config.colors.line,
-      '--pdd-layout-debug-outline': isShown
-        ? '1px solid var(--pdd-layout-color-line)'
+      '--bk-layout-color-line': config.colors.line,
+      '--bk-layout-debug-outline': isShown
+        ? '1px solid var(--bk-layout-color-line)'
         : 'none',
     } as React.CSSProperties,
     style,

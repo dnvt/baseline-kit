@@ -97,12 +97,12 @@ export const Spacer = React.memo(function Spacer({
   // Compose container styles using normalized values and theme config
   const containerStyles = React.useMemo(() => {
     const styleObject = {
-      '--pdd-spacer-height': cssHeight,
-      '--pdd-spacer-width': cssWidth,
-      '--pdd-spacer-base': `${config.base}px`,
-      '--pdd-spacer-color-indice': config.colors.indice,
-      '--pdd-spacer-color-line': config.colors.line,
-      '--pdd-spacer-color-flat': config.colors.flat,
+      '--bk-spacer-height': cssHeight,
+      '--bk-spacer-width': cssWidth,
+      '--bk-spacer-base': `${config.base}px`,
+      '--bk-spacer-color-indice': config.colors.indice,
+      '--bk-spacer-color-line': config.colors.line,
+      '--bk-spacer-color-flat': config.colors.flat,
     } as React.CSSProperties
     return cs(styleObject, style)
   }, [cssHeight, cssWidth, config, style])

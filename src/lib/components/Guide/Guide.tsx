@@ -128,15 +128,15 @@ export const Guide = memo(function Guide({
   // Build inline styles with CSS vars for color, spacing, alignment, etc.
   const containerStyles = useMemo(() => {
     const baseStyles = {
-      '--pdd-guide-gap': `${calculatedGap}px`,
-      '--pdd-guide-justify': align,
-      '--pdd-guide-color-line': config.colors.line,
-      '--pdd-guide-color-pattern': config.colors.pattern,
-      '--pdd-guide-padding-block': `${top}px ${bottom}px`,
-      '--pdd-guide-padding-inline': `${left}px ${right}px`,
-      '--pdd-guide-template': template,
-      '--pdd-guide-width': (width ?? containerWidth) || '100vw',
-      '--pdd-guide-height': (height ?? containerHeight) || '100vh',
+      '--bk-guide-gap': `${calculatedGap}px`,
+      '--bk-guide-justify': align,
+      '--bk-guide-color-line': config.colors.line,
+      '--bk-guide-color-pattern': config.colors.pattern,
+      '--bk-guide-padding-block': `${top}px ${bottom}px`,
+      '--bk-guide-padding-inline': `${left}px ${right}px`,
+      '--bk-guide-template': template,
+      '--bk-guide-width': (width ?? containerWidth) || '100vw',
+      '--bk-guide-height': (height ?? containerHeight) || '100vh',
     } as CSSProperties
 
     return cs(baseStyles, style)

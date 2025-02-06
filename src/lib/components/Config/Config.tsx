@@ -82,40 +82,40 @@ const createCSSVariables = ({
   padder,
 }: Config): Record<string, string> => ({
   // Always set your base unit
-  '--pdd-base': `${base}px`,
+  '--bk-base': `${base}px`,
 
   // Baseline Colors
-  '--pdd-baseline-color-line': baseline.colors.line,
-  '--pdd-baseline-color-flat': baseline.colors.flat,
+  '--bk-baseline-color-line': baseline.colors.line,
+  '--bk-baseline-color-flat': baseline.colors.flat,
 
   // Guide Colors (matching the variant keys in your config)
-  '--pdd-guide-color-line': guide.colors.line,
-  '--pdd-guide-color-pattern': guide.colors.pattern,
-  '--pdd-guide-color-auto': guide.colors.auto,
-  '--pdd-guide-color-fixed': guide.colors.fixed,
+  '--bk-guide-color-line': guide.colors.line,
+  '--bk-guide-color-pattern': guide.colors.pattern,
+  '--bk-guide-color-auto': guide.colors.auto,
+  '--bk-guide-color-fixed': guide.colors.fixed,
 
   // Spacer Colors
-  '--pdd-spacer-color-line': spacer.colors.line,
-  '--pdd-spacer-color-flat': spacer.colors.flat,
-  '--pdd-spacer-color-indice': spacer.colors.indice,
+  '--bk-spacer-color-line': spacer.colors.line,
+  '--bk-spacer-color-flat': spacer.colors.flat,
+  '--bk-spacer-color-indice': spacer.colors.indice,
 
   // Box Colors
-  '--pdd-box-color-line': box.colors.line,
-  '--pdd-box-color-flat': box.colors.flat,
-  '--pdd-box-color-indice': box.colors.indice,
+  '--bk-box-color-line': box.colors.line,
+  '--bk-box-color-flat': box.colors.flat,
+  '--bk-box-color-indice': box.colors.indice,
 
   // Flex Colors
-  '--pdd-flex-color-line': flex.colors.line,
-  '--pdd-flex-color-flat': flex.colors.flat,
-  '--pdd-flex-color-indice': flex.colors.indice,
+  '--bk-flex-color-line': flex.colors.line,
+  '--bk-flex-color-flat': flex.colors.flat,
+  '--bk-flex-color-indice': flex.colors.indice,
 
   // Layout Colors
-  '--pdd-layout-color-line': layout.colors.line,
-  '--pdd-layout-color-flat': layout.colors.flat,
-  '--pdd-layout-color-indice': layout.colors.indice,
+  '--bk-layout-color-line': layout.colors.line,
+  '--bk-layout-color-flat': layout.colors.flat,
+  '--bk-layout-color-indice': layout.colors.indice,
 
   // Padder Color
-  '--pdd-padder-color': padder.color,
+  '--bk-padder-color': padder.color,
 })
 
 export function Config({

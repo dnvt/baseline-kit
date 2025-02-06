@@ -6,71 +6,71 @@
    ─────────────────────────────────────────────────────── */
 
    /* Black */
-   --pdd-black-primary: 0, 0%, 10%; /* #1A1A1A (dimm) */
-   --pdd-black-secondary: 0, 10%, 30%; /* #544545 (bright) */
+   --bk-black-primary: 0, 0%, 10%; /* #1A1A1A (dimm) */
+   --bk-black-secondary: 0, 10%, 30%; /* #544545 (bright) */
 
    /* White */
-   --pdd-white-primary: 0, 100%, 90%; /* #FFCCCC (dimm) */
-   --pdd-white-secondary: 0, 0%, 90%; /* #E6E6E6 (bright) */
+   --bk-white-primary: 0, 100%, 90%; /* #FFCCCC (dimm) */
+   --bk-white-secondary: 0, 0%, 90%; /* #E6E6E6 (bright) */
 
    /* Pink */
-   --pdd-pink-primary: 300, 60%, 40%; /* #A329A3 (dimm) */
-   --pdd-pink-secondary: 260, 100%, 70%; /* #9966FF (bright) */
+   --bk-pink-primary: 300, 60%, 40%; /* #A329A3 (dimm) */
+   --bk-pink-secondary: 260, 100%, 70%; /* #9966FF (bright) */
 
    /* Purple */
-   --pdd-purple-primary: 270, 60%, 40%; /* #6629A3 (dimm) */
-   --pdd-purple-secondary: 230, 100%, 70%; /* #6680FF (bright) */
+   --bk-purple-primary: 270, 60%, 40%; /* #6629A3 (dimm) */
+   --bk-purple-secondary: 230, 100%, 70%; /* #6680FF (bright) */
 
    /* Blue */
-   --pdd-blue-primary: 240, 60%, 40%; /* #2929A3 (dimm) */
-   --pdd-blue-secondary: 200, 100%, 70%; /* #66CCFF (bright) */
+   --bk-blue-primary: 240, 60%, 40%; /* #2929A3 (dimm) */
+   --bk-blue-secondary: 200, 100%, 70%; /* #66CCFF (bright) */
 
    /* Cyan */
-   --pdd-cyan-primary: 200, 60%, 40%; /* #297AA3 (dimm) */
-   --pdd-cyan-secondary: 160, 100%, 70%; /* #66FFCC (bright) */
+   --bk-cyan-primary: 200, 60%, 40%; /* #297AA3 (dimm) */
+   --bk-cyan-secondary: 160, 100%, 70%; /* #66FFCC (bright) */
 
    /* Green */
-   --pdd-green-primary: 160, 60%, 40%; /* #29A37A (dimm) */
-   --pdd-green-secondary: 110, 100%, 70%; /* #80FF66 (bright) */
+   --bk-green-primary: 160, 60%, 40%; /* #29A37A (dimm) */
+   --bk-green-secondary: 110, 100%, 70%; /* #80FF66 (bright) */
 
    /* Yellow */
-   --pdd-yellow-primary: 30, 60%, 40%; /* #A36629 (dimm) */
-   --pdd-yellow-secondary: 70, 100%, 70%; /* #A36629 (bright) */
+   --bk-yellow-primary: 30, 60%, 40%; /* #A36629 (dimm) */
+   --bk-yellow-secondary: 70, 100%, 70%; /* #A36629 (bright) */
 
    /* Orange */
-   --pdd-orange-primary: 10, 60%, 40%; /* #A33D29 (dimm) */
-   --pdd-orange-secondary: 30, 100%, 70%; /* #FFB266 (bright) */
+   --bk-orange-primary: 10, 60%, 40%; /* #A33D29 (dimm) */
+   --bk-orange-secondary: 30, 100%, 70%; /* #FFB266 (bright) */
 
    /* Red */
-   --pdd-red-primary: 330, 60%, 40%; /* #A32966 (dimm) */
-   --pdd-red-secondary: 0, 100%, 70%; /* #FF6666 (bright) */
+   --bk-red-primary: 330, 60%, 40%; /* #A32966 (dimm) */
+   --bk-red-secondary: 0, 100%, 70%; /* #FF6666 (bright) */
 
    /* System Colors - using complete HSL strings */
-   --pdd-guide-color-line-theme: hsla(var(--pdd-blue-primary), 0.15);
-   --pdd-guide-color-pattern-theme: hsla(var(--pdd-purple-secondary), 0.2);
-   --pdd-guide-color-auto-theme: hsla(var(--pdd-blue-secondary), 0.15);
-   --pdd-guide-color-fixed-theme: hsla(var(--pdd-blue-secondary), 0.15);
+   --bk-guide-color-line-theme: hsla(var(--bk-blue-primary), 0.15);
+   --bk-guide-color-pattern-theme: hsla(var(--bk-purple-secondary), 0.2);
+   --bk-guide-color-auto-theme: hsla(var(--bk-blue-secondary), 0.15);
+   --bk-guide-color-fixed-theme: hsla(var(--bk-blue-secondary), 0.15);
 
-   --pdd-baseline-color-line-theme: hsla(var(--pdd-blue-primary), 0.15);
-   --pdd-baseline-color-flat-theme: hsla(var(--pdd-purple-secondary), 0.2);
+   --bk-baseline-color-line-theme: hsla(var(--bk-blue-primary), 0.15);
+   --bk-baseline-color-flat-theme: hsla(var(--bk-purple-secondary), 0.2);
 
-   --pdd-spacer-color-line-theme: hsla(var(--pdd-purple-primary), 0.6);
-   --pdd-spacer-color-flat-theme: hsla(var(--pdd-purple-secondary), 0.2);
-   --pdd-spacer-color-indice-theme: hsla(var(--pdd-purple-primary), 1);
+   --bk-spacer-color-line-theme: hsla(var(--bk-purple-primary), 0.6);
+   --bk-spacer-color-flat-theme: hsla(var(--bk-purple-secondary), 0.2);
+   --bk-spacer-color-indice-theme: hsla(var(--bk-purple-primary), 1);
 
-   --pdd-box-color-line-theme: hsla(var(--pdd-pink-primary), 0.6);
-   --pdd-box-color-flat-theme: hsla(var(--pdd-pink-secondary), 0.2);
-   --pdd-box-color-indice-theme: hsla(var(--pdd-pink-secondary), 0.9);
+   --bk-box-color-line-theme: hsla(var(--bk-pink-primary), 0.6);
+   --bk-box-color-flat-theme: hsla(var(--bk-pink-secondary), 0.2);
+   --bk-box-color-indice-theme: hsla(var(--bk-pink-secondary), 0.9);
 
-   --pdd-flex-color-line-theme: hsla(var(--pdd-red-primary), 0.6);
-   --pdd-flex-color-flat-theme: hsla(var(--pdd-red-secondary), 0.2);
-   --pdd-flex-color-indice-theme: hsla(var(--pdd-red-secondary), 0.9);
+   --bk-flex-color-line-theme: hsla(var(--bk-red-primary), 0.6);
+   --bk-flex-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
+   --bk-flex-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
 
-   --pdd-layout-color-line-theme: hsla(var(--pdd-red-primary), 0.6);
-   --pdd-layout-color-flat-theme: hsla(var(--pdd-red-secondary), 0.2);
-   --pdd-layout-color-indice-theme: hsla(var(--pdd-red-secondary), 0.9);
+   --bk-layout-color-line-theme: hsla(var(--bk-red-primary), 0.6);
+   --bk-layout-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
+   --bk-layout-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
 
-   --pdd-padder-color-theme: hsla(var(--pdd-purple-primary), 0.6);
+   --bk-padder-color-theme: hsla(var(--bk-purple-primary), 0.6);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -82,44 +82,44 @@
       ─────────────────────────────────────────────────────── */
 
       /* Black */
-      --pdd-black-primary: 0, 10%, 30%; /* #544545 (bright) */
-      --pdd-black-secondary: 0, 0%, 10%; /* #1A1A1A (dimm) */
+      --bk-black-primary: 0, 10%, 30%; /* #544545 (bright) */
+      --bk-black-secondary: 0, 0%, 10%; /* #1A1A1A (dimm) */
 
       /* White */
-      --pdd-white-primary: 0, 0%, 90%; /* #E6E6E6 (bright) */
-      --pdd-white-secondary: 0, 100%, 90%; /* #FFCCCC (dimm) */
+      --bk-white-primary: 0, 0%, 90%; /* #E6E6E6 (bright) */
+      --bk-white-secondary: 0, 100%, 90%; /* #FFCCCC (dimm) */
 
       /* Pink */
-      --pdd-pink-primary: 260, 100%, 70%; /* #9966FF (bright) */
-      --pdd-pink-secondary: 300, 60%, 40%; /* #A329A3 (dimm) */
+      --bk-pink-primary: 260, 100%, 70%; /* #9966FF (bright) */
+      --bk-pink-secondary: 300, 60%, 40%; /* #A329A3 (dimm) */
 
       /* Purple */
-      --pdd-purple-primary: 230, 100%, 70%; /* #6680FF (bright) */
-      --pdd-purple-secondary: 270, 60%, 40%; /* #6629A3 (dimm) */
+      --bk-purple-primary: 230, 100%, 70%; /* #6680FF (bright) */
+      --bk-purple-secondary: 270, 60%, 40%; /* #6629A3 (dimm) */
 
       /* Blue */
-      --pdd-blue-primary: 200, 100%, 70%; /* #66CCFF (bright) */
-      --pdd-blue-secondary: 240, 60%, 40%; /* #2929A3 (dimm) */
+      --bk-blue-primary: 200, 100%, 70%; /* #66CCFF (bright) */
+      --bk-blue-secondary: 240, 60%, 40%; /* #2929A3 (dimm) */
 
       /* Cyan */
-      --pdd-cyan-primary: 160, 100%, 70%; /* #66FFCC (bright) */
-      --pdd-cyan-secondary: 200, 60%, 40%; /* #297AA3 (dimm) */
+      --bk-cyan-primary: 160, 100%, 70%; /* #66FFCC (bright) */
+      --bk-cyan-secondary: 200, 60%, 40%; /* #297AA3 (dimm) */
 
       /* Green */
-      --pdd-green-primary: 110, 100%, 70%; /* #80FF66 (bright) */
-      --pdd-green-secondary: 160, 60%, 40%; /* #29A37A (dimm) */
+      --bk-green-primary: 110, 100%, 70%; /* #80FF66 (bright) */
+      --bk-green-secondary: 160, 60%, 40%; /* #29A37A (dimm) */
 
       /* Yellow */
-      --pdd-yellow-primary: 70, 100%, 70%; /* #A36629 (bright) */
-      --pdd-yellow-secondary: 30, 60%, 40%; /* #A36629 (dimm) */
+      --bk-yellow-primary: 70, 100%, 70%; /* #A36629 (bright) */
+      --bk-yellow-secondary: 30, 60%, 40%; /* #A36629 (dimm) */
 
       /* Orange */
-      --pdd-orange-primary: 30, 100%, 70%; /* #FFB266 (bright) */
-      --pdd-orange-secondary: 10, 60%, 40%; /* #A33D29 (dimm) */
+      --bk-orange-primary: 30, 100%, 70%; /* #FFB266 (bright) */
+      --bk-orange-secondary: 10, 60%, 40%; /* #A33D29 (dimm) */
 
       /* Red */
-      --pdd-red-primary: 0, 100%, 70%; /* #FF6666 (bright) */
-      --pdd-red-secondary: 330, 60%, 40%; /* #A32966 (dimm) */
+      --bk-red-primary: 0, 100%, 70%; /* #FF6666 (bright) */
+      --bk-red-secondary: 330, 60%, 40%; /* #A32966 (dimm) */
    }
 }
 

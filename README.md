@@ -177,6 +177,82 @@ base unit and can optionally display measurement indicators in debug mode.
 />
 ```
 
+### Stack
+
+The **Stack** component is a flexible flex container that ensures consistent spacing based on your baseline
+configuration. Like the Box and Layout components, it does not rely on DOM measurements and defaults to "fit-content"
+for width and height when no values are passed. You can still specify fixed dimensions if needed.
+
+#### Key Features
+
+- **Flex Layout:** Arrange children in a horizontal (default “row”) or vertical (“column”) direction.
+- **Default Sizing:** When no width or height is explicitly specified, the Stack component will render with a width and
+  height of "fit-content" (similar to Box and Layout).
+- **Direct Padding for Debugging:** When the debugging mode is set to `"none"`, the component applies its computed
+  baseline padding directly via inline styles.
+- **Customizable:** Supports custom class names, inline styles, gap, justification, and alignment properties.
+
+#### Props Example
+
+```tsx
+// Without explicit width/height, Stack defaults to "fit-content".
+<Stack debugging="visible" block={[16, 16]} inline={8}>
+  <p>This content is aligned to the flex container’s baseline.</p>
+</Stack>
+
+// You can also force fixed dimensions:
+<Stack width="500px" height="300px" direction="column" justify="center" align="center">
+  <p>Content</p>
+</Stack>
+```
+
+Internally, the Stack component uses the baseline configuration (via the ⁠useBaseline hook) to resolve spacing and
+alignment, while ignoring any DOM measurements. This makes its behavior consistent with the Box and Layout components.
+
+### Layout
+
+The **Layout** component is designed for CSS Grid-based layouts. It automatically calculates grid templates based on the
+provided column definitions, while also managing consistent spacing with baseline configuration. Like the Box and Stack
+components, Layout does not rely on DOM measurements and defaults to using "fit-content" for width and height when no
+explicit values are provided.
+
+#### Key Features
+
+- **Grid Overlay:** Automatically computes grid templates, whether using fixed columns, patterns, or auto-calculated
+  columns.
+- **Default Sizing:** If no `width` or `height` is specified, the Layout component defaults to "fit-content", ensuring
+  it adapts to its content size.
+- **Direct Integration with Padder:** Uses the Padder component internally to handle computed baseline padding and
+  spacing.
+- **Customizable:** Accepts custom class names, inline styles, gap, and alignment properties.
+
+#### Props Example
+
+```tsx
+// Without explicit width/height, Layout defaults to "fit-content".
+<Layout
+  columns={['100px', '200px', '100px']}
+  gap="16px"
+  debugging="visible"
+>
+  <p>Your grid content goes here.</p>
+</Layout>
+
+// You can also force fixed dimensions:
+<Layout
+  columns={3}
+  width="1200px"
+  height="800px"
+  justifyItems="center"
+  alignItems="stretch"
+>
+  <Box span={1}>Content laid out in a CSS Grid.</Box>
+</Layout>
+```
+
+Internally, Layout leverages the baseline configuration (via the ⁠useBaseline hook) to resolve spacing and alignment,
+ensuring that layout behavior is consistent with the rest of the Baseline Kit components.
+
 ## Core Concepts
 
 ### Grid Calculations
