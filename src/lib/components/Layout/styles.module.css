@@ -7,7 +7,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--pdd-layout-color-line);
+  border: 1px solid var(--bk-layout-color-line);
   pointer-events: none;
-  z-index: var(--pdd-flex-z-index);
+  z-index: var(--bk-flex-z-index);
 }

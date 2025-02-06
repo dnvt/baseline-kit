@@ -1,14 +1,14 @@
 .box {
   position: relative;
-  width: var(--pdd-box-width);
-  height: var(--pdd-box-height);
+  width: var(--bk-box-width);
+  height: var(--bk-box-height);
 }
 
 .visible::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--pdd-box-color-line);
+  border: 1px solid var(--bk-box-color-line);
   pointer-events: none;
-  z-index: var(--pdd-box-z-index);
+  z-index: var(--bk-box-z-index);
 }

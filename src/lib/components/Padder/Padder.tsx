@@ -83,10 +83,10 @@ export const Padder = React.memo(
     // Apply either direct padding (if none) or custom CSS variables for debug modes
     const containerStyles = React.useMemo(
       () => cs({
-        '--pdd-padder-width': width ?? 'fit-content',
-        '--pdd-padder-height': height ?? 'fit-content',
-        '--pdd-padder-base': `${config.base}px`,
-        '--pdd-padder-color': config.color,
+        '--bk-padder-width': width ?? 'fit-content',
+        '--bk-padder-height': height ?? 'fit-content',
+        '--bk-padder-base': `${config.base}px`,
+        '--bk-padder-color': config.color,
 
         // Apply adjusted padding when spacers are disabled
         ...(enableSpacers

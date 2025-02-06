@@ -21,7 +21,7 @@ vi.mock('@components/Padder', () => ({
         <div
           key={`v-${i}`}
           data-testid="spacer"
-          style={{ '--pdd-spacer-height': height, '--pdd-spacer-width': '100%' } as CSSProperties}
+          style={{ '--bk-spacer-height': height, '--bk-spacer-width': '100%' } as CSSProperties}
         />
       )))}
       {children}
@@ -30,7 +30,7 @@ vi.mock('@components/Padder', () => ({
         <div
           key={`h-${i}`}
           data-testid="spacer"
-          style={{ '--pdd-spacer-width': width, '--pdd-spacer-height': '100%' } as CSSProperties}
+          style={{ '--bk-spacer-width': width, '--bk-spacer-height': '100%' } as CSSProperties}
         />
       )))}
     </div>
@@ -139,27 +139,27 @@ describe('<Box /> component', () => {
 
     // Filter based on style attribute values (as strings).
     const verticalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--pdd-spacer-width: 100%'),
+      s.getAttribute('style')?.includes('--bk-spacer-width: 100%'),
     )
     const horizontalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--pdd-spacer-height: 100%'),
+      s.getAttribute('style')?.includes('--bk-spacer-height: 100%'),
     )
 
     // For our mock, in clamp mode, vertical spacers should be set to 6.
     expect(verticalSpacers[0]).toHaveAttribute(
       'style',
-      expect.stringContaining('--pdd-spacer-height: 6'),
+      expect.stringContaining('--bk-spacer-height: 6'),
     )
     expect(verticalSpacers[1]).toHaveAttribute(
       'style',
-      expect.stringContaining('--pdd-spacer-height: 6'),
+      expect.stringContaining('--bk-spacer-height: 6'),
     )
 
     // For horizontal spacers, if inline=10, the mock returns 10 (or a desired value).
     horizontalSpacers.forEach(spacer => {
       expect(spacer).toHaveAttribute(
         'style',
-        expect.stringContaining('--pdd-spacer-width: 10'),
+        expect.stringContaining('--bk-spacer-width: 10'),
       )
     })
   })
@@ -173,25 +173,25 @@ describe('<Box /> component', () => {
     const spacers = screen.getAllByTestId('spacer')
 
     const verticalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--pdd-spacer-width: 100%'),
+      s.getAttribute('style')?.includes('--bk-spacer-width: 100%'),
     )
     const horizontalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--pdd-spacer-height: 100%'),
+      s.getAttribute('style')?.includes('--bk-spacer-height: 100%'),
     )
 
     // Based on our mock for "none" mode, we expect:
     expect(verticalSpacers[0]).toHaveAttribute(
       'style',
-      expect.stringContaining('--pdd-spacer-height: 16'),
+      expect.stringContaining('--bk-spacer-height: 16'),
     )
     expect(verticalSpacers[1]).toHaveAttribute(
       'style',
-      expect.stringContaining('--pdd-spacer-height: 24'),
+      expect.stringContaining('--bk-spacer-height: 24'),
     )
     horizontalSpacers.forEach(spacer => {
       expect(spacer).toHaveAttribute(
         'style',
-        expect.stringContaining('--pdd-spacer-width: 8'),
+        expect.stringContaining('--bk-spacer-width: 8'),
       )
     })
   })
@@ -204,16 +204,16 @@ describe('<Box /> component', () => {
     )
     const spacers = screen.getAllByTestId('spacer')
     const verticalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--pdd-spacer-width: 100%'),
+      s.getAttribute('style')?.includes('--bk-spacer-width: 100%'),
     )
     // For our "height" mode mock, we expect top to be 8 and bottom to be 16.
     expect(verticalSpacers[0]).toHaveAttribute(
       'style',
-      expect.stringContaining('--pdd-spacer-height: 8'),
+      expect.stringContaining('--bk-spacer-height: 8'),
     )
     expect(verticalSpacers[1]).toHaveAttribute(
       'style',
-      expect.stringContaining('--pdd-spacer-height: 16'),
+      expect.stringContaining('--bk-spacer-height: 16'),
     )
   })
 

@@ -2,14 +2,14 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  width: var(--pdd-padder-width);
-  height: var(--pdd-padder-height);
+  width: var(--bk-padder-width);
+  height: var(--bk-padder-height);
 }
 
 .visible::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--pdd-padder-color);
+  border: 1px solid var(--bk-padder-color);
   pointer-events: none;
 }

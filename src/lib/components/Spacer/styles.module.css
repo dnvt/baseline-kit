@@ -1,7 +1,7 @@
 .spacer {
   position: relative;
-  width: var(--pdd-spacer-width);
-  height: var(--pdd-spacer-height);
+  width: var(--bk-spacer-width);
+  height: var(--bk-spacer-height);
   flex-shrink: 0;  
 }
 
@@ -9,9 +9,9 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--pdd-spacer-color-line);
+  border: 1px solid var(--bk-spacer-color-line);
 }
 
 .flat {
-  background-color: var(--pdd-spacer-color-flat);
+  background-color: var(--bk-spacer-color-flat);
 }

@@ -79,7 +79,7 @@ describe('Guide component', () => {
       render(<Guide variant="line" gap={10} debugging="visible" data-testid="guide" />)
       const guideEl = screen.getByTestId('guide')
       // For gap=10 and base=8, gapInPixels = 10 * 8 = 80; our mock subtracts 1, so expect 79px.
-      expect(guideEl.getAttribute('style')).toContain('--pdd-guide-gap: 79px')
+      expect(guideEl.getAttribute('style')).toContain('--bk-guide-gap: 79px')
     })
 
     it('handles "auto" variant with numeric columnWidth', () => {
@@ -98,7 +98,7 @@ describe('Guide component', () => {
       const columns = guideEl.querySelectorAll('[data-column-index]')
       expect(columns.length).toBe(10)
       const expectedGap = 16 * 8 // 128px
-      expect(guideEl.getAttribute('style')).toContain(`--pdd-guide-gap: ${expectedGap}px`)
+      expect(guideEl.getAttribute('style')).toContain(`--bk-guide-gap: ${expectedGap}px`)
     })
 
     it('handles "pattern" variant with array columns', () => {
@@ -115,9 +115,9 @@ describe('Guide component', () => {
       expect(guideEl.dataset.variant).toBe('pattern')
       const cols = guideEl.querySelectorAll('[data-column-index]')
       expect(cols.length).toBe(3)
-      expect(guideEl.getAttribute('style')).toContain('--pdd-guide-template: 1fr 2fr 3fr')
+      expect(guideEl.getAttribute('style')).toContain('--bk-guide-template: 1fr 2fr 3fr')
       const expectedGap = 10 * 8
-      expect(guideEl.getAttribute('style')).toContain(`--pdd-guide-gap: ${expectedGap}px`)
+      expect(guideEl.getAttribute('style')).toContain(`--bk-guide-gap: ${expectedGap}px`)
     })
 
     it('handles "fixed" variant with 5 columns', () => {
@@ -136,8 +136,8 @@ describe('Guide component', () => {
       const cols = guideEl.querySelectorAll('[data-column-index]')
       expect(cols.length).toBe(5)
       const expectedGap = 12 * 8
-      expect(guideEl.getAttribute('style')).toContain(`--pdd-guide-gap: ${expectedGap}px`)
-      expect(guideEl.getAttribute('style')).toContain('--pdd-guide-template: repeat(5, 120px)')
+      expect(guideEl.getAttribute('style')).toContain(`--bk-guide-gap: ${expectedGap}px`)
+      expect(guideEl.getAttribute('style')).toContain('--bk-guide-template: repeat(5, 120px)')
     })
   })
 

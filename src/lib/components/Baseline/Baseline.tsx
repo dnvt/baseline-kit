@@ -89,7 +89,7 @@ export const Baseline = memo(function Baseline({
   const containerStyles = useMemo(
     () =>
       cs({
-        '--pdd-baseline-width': normWidth,
+        '--bk-baseline-width': normWidth,
         padding: `${top}px ${right}px ${bottom}px ${left}px`,
         position: 'absolute',
         inset: 0,

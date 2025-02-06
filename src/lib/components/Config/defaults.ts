@@ -1,42 +1,42 @@
 import type { Config } from './Config'
 
 const GUIDE_COLORS = {
-  line: 'var(--pdd-guide-color-line-theme)',
-  pattern: 'var(--pdd-guide-color-pattern-theme)',
-  auto: 'var(--pdd-guide-color-auto-theme)',
-  fixed: 'var(--pdd-guide-color-fixed-theme)',
+  line: 'var(--bk-guide-color-line-theme)',
+  pattern: 'var(--bk-guide-color-pattern-theme)',
+  auto: 'var(--bk-guide-color-auto-theme)',
+  fixed: 'var(--bk-guide-color-fixed-theme)',
 }
 
 const BASELINE_COLORS = {
-  line: 'var(--pdd-baseline-color-line-theme)',
-  flat: 'var(--pdd-baseline-color-flat-theme)',
+  line: 'var(--bk-baseline-color-line-theme)',
+  flat: 'var(--bk-baseline-color-flat-theme)',
 }
 
 const SPACER_COLORS = {
-  line: 'var(--pdd-spacer-color-line-theme)',
-  flat: 'var(--pdd-spacer-color-flat-theme)',
-  indice: 'var(--pdd-spacer-color-indice-theme)',
+  line: 'var(--bk-spacer-color-line-theme)',
+  flat: 'var(--bk-spacer-color-flat-theme)',
+  indice: 'var(--bk-spacer-color-indice-theme)',
 }
 
 const BOX_COLORS = {
-  line: 'var(--pdd-box-color-line-theme)',
-  flat: 'var(--pdd-box-color-flat-theme)',
-  indice: 'var(--pdd-box-color-indice-theme)',
+  line: 'var(--bk-box-color-line-theme)',
+  flat: 'var(--bk-box-color-flat-theme)',
+  indice: 'var(--bk-box-color-indice-theme)',
 }
 
 const FLEX_COLORS = {
-  line: 'var(--pdd-flex-color-line-theme)',
-  flat: 'var(--pdd-flex-color-flat-theme)',
-  indice: 'var(--pdd-flex-color-indice-theme)',
+  line: 'var(--bk-flex-color-line-theme)',
+  flat: 'var(--bk-flex-color-flat-theme)',
+  indice: 'var(--bk-flex-color-indice-theme)',
 }
 
 const LAYOUT_COLORS = {
-  line: 'var(--pdd-layout-color-line-theme)',
-  flat: 'var(--pdd-layout-color-flat-theme)',
-  indice: 'var(--pdd-layout-color-indice-theme)',
+  line: 'var(--bk-layout-color-line-theme)',
+  flat: 'var(--bk-layout-color-flat-theme)',
+  indice: 'var(--bk-layout-color-indice-theme)',
 }
 
-const PADDER_COLOR = 'var(--pdd-padder-color-theme)'
+const PADDER_COLOR = 'var(--bk-padder-color-theme)'
 
 export const DEFAULT_CONFIG: Config = {
   base: 8,

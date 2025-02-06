@@ -2,7 +2,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  padding: var(--pdd-guide-padding-block) var(--pdd-guide-padding-inline);
+  padding: var(--bk-guide-padding-block) var(--bk-guide-padding-inline);
 }
 
 .line {
@@ -17,9 +17,9 @@
   left: 0;
 
   display: grid;
-  gap: var(--pdd-guide-gap);
-  grid-template-columns: var(--pdd-guide-template);
-  justify-content: var(--pdd-guide-justify);
+  gap: var(--bk-guide-gap);
+  grid-template-columns: var(--bk-guide-template);
+  justify-content: var(--bk-guide-justify);
 
   width: 100%;
   height: 100%;
@@ -33,17 +33,17 @@
 
 .column[data-variant="line"] {
   width: 1px;
-  background-color: var(--pdd-guide-color-line);
+  background-color: var(--bk-guide-color-line);
 }
 
 .column[data-variant="pattern"] {
-  background-color: var(--pdd-guide-color-pattern);
+  background-color: var(--bk-guide-color-pattern);
 }
 
 .column[data-variant="auto"] {
-  background-color: var(--pdd-guide-color-auto);
+  background-color: var(--bk-guide-color-auto);
 }
 
 .column[data-variant="fixed"] {
-  background-color: var(--pdd-guide-color-fixed);
+  background-color: var(--bk-guide-color-fixed);
 }
