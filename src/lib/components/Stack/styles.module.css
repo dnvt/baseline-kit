@@ -1,13 +1,14 @@
-.layout {
+.stack {
   position: relative;
-  box-sizing: border-box;
+  width: 100%;
+  height: fit-content;
 }
 
-.visible::after {
+.visibile::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--pdd-layout-color-line);
+  border: 1px solid var(--pdd-flex-color-line);
   pointer-events: none;
   z-index: var(--pdd-flex-z-index);
 }

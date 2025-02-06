@@ -4,4 +4,4 @@
  * @module Flex
  */
 
-export * from './Flex'
+export * from './Stack'

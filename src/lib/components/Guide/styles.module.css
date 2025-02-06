@@ -1,17 +1,4 @@
 .guide {
-  --pdd-guide-width: 100vw;
-  --pdd-guide-height: 100vh;
-  --pdd-guide-gap: 8px;
-  --pdd-guide-justify: start;
-  --pdd-guide-template: auto;
-  --pdd-guide-padding-block: 0;
-  --pdd-guide-padding-inline: 0;
-
-  --pdd-guide-color-line: var(--pdd-guide-color-line-theme);
-  --pdd-guide-color-pattern: var(--pdd-guide-color-pattern-theme);
-  --pdd-guide-color-auto: var(--pdd-guide-color-auto-theme);
-  --pdd-guide-color-fixed: var(--pdd-guide-color-fixed-theme);
-
   position: absolute;
   inset: 0;
   pointer-events: none;

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { CSSProperties } from 'react'
-import { Guide } from '@components/Guide'
+import { Guide } from '@components'
 
 // Our tests rely on predictable values from our hook mocks,
 // so we override certain hooks via vi.mock.

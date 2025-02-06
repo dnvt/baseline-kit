@@ -1,17 +1,22 @@
 # Baseline Kit
 
-Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, flexible layout components, and theme-aware configuration—all optimized for performance and built with TypeScript.
+Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React
+applications. It provides configurable overlays for both column-based and baseline grids, flexible layout components,
+and theme-aware configuration—all optimized for performance and built with TypeScript.
 
 ![Demo visual](demo/padded-demo.png)
 
 ## Features
 
--  🎯 **Interactive Guide Overlays:** Easily toggle grid overlays (both horizontal and vertical) to ensure precise alignment in your layouts.
--  📏 **Dynamic Layout Components:** Flexible components like Layout, Flex, Box, and Padder provide consistent spacing and alignment.
--  🧩 **Grid System Components:** New Layout component for CSS Grid-based layouts with automatic column calculations.
--  📐 **Flex Layout Support:** Flex component for flexible box layouts with built-in baseline alignment.
--  🔄 **Responsive Design:** Components automatically adapt to container dimensions and base unit configuration.
--  🎨 **Configurable & Themed:** Leverage the Config component and hooks such as useConfig to easily override default settings.
+- 🎯 **Interactive Guide Overlays:** Easily toggle grid overlays (both horizontal and vertical) to ensure precise
+  alignment in your layouts.
+- 📏 **Dynamic Layout Components:** Flexible components like Layout, Stack, Box, and Padder provide consistent spacing
+  and alignment.
+- 🧩 **Grid System Components:** New Layout component for CSS Grid-based layouts with automatic column calculations.
+- 📐 **Flex Layout Support:** Flex component for flexible box layouts with built-in baseline alignment.
+- 🔄 **Responsive Design:** Components automatically adapt to container dimensions and base unit configuration.
+- 🎨 **Configurable & Themed:** Leverage the Config component and hooks such as useConfig to easily override default
+  settings.
 
 ## Installation
 

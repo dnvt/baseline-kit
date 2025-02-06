@@ -2,9 +2,8 @@ import { Fragment, StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { GridSetups, Indice } from './components'
 
+import { Spacer, Box, Config, Baseline, Layout, Stack } from '../dist'
 import '../dist/styles.css'
-import { Spacer, Box, Config, Baseline } from '../dist'
-import { Layout } from '@components'
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -24,11 +23,24 @@ function Content({ showBaseline }: ContentProps) {
 
   return (
     <>
-      <Layout block={[42, 24]} columns={9} debugging="visible" width="100vw">
-        <Box block={[6, 10]} debugging={visibility} colSpan={5}>
-          <h1 className="demo-title">Padded Playground</h1>
+      <Stack gap={12} debugging="visible">
+        <Box block={[6, 10]} debugging="visible"><p>Menu 1</p></Box>
+        <Box block={[6, 10]} debugging="visible"><p>Menu 2</p></Box>
+        <Box block={[6, 10]} debugging="visible"><p>Menu 3</p></Box>
+        <Box block={[6, 10]} debugging="visible"><p>Menu 4</p></Box>
+      </Stack>
+      <Spacer height={24} debugging="visible" indicatorNode={Indice} />
+      <Layout
+        block={[0, 24]}
+        columns={9}
+        columnGap={8}
+        debugging="visible"
+        indicatorNode={Indice}
+      >
+        <Box block={[6, 10]} span={5} debugging={'visible'}>
+          <h1 className="demo-title">This is Baseline Kit library Playground. So let us play with it!</h1>
         </Box>
-        <Box block={[6, 10]} debugging="visible" snapping="height" colSpan={5}>
+        <Box block={[6, 10]} snapping="height" span={5} debugging={'visible'}>
           <p>
             This is a comprehensive demo showcasing the grid system capabilities.
             Use the controls to experiment with different grid configurations.
@@ -39,7 +51,7 @@ function Content({ showBaseline }: ContentProps) {
         return (
           <Fragment key={i}>
             {!!i && <Spacer height={8} debugging={visibility} variant="flat" />}
-            <Box debugging={visibility} block={[0, 2]} width="100%">
+            <Box debugging={'visible'} block={[0, 2]} width="100%">
               <Config base={8}>
                 <div className="content-block">
                   <Baseline

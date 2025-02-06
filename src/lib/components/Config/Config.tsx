@@ -1,4 +1,4 @@
-import { createContext, use, useMemo, type ReactNode } from 'react'
+import * as React from 'react'
 import { BaselineVariant } from '@components'
 import { DEFAULT_CONFIG } from './defaults'
 import type { SpacerVariant } from '../Spacer'
@@ -54,13 +54,13 @@ export type Config = {
   }
 }
 
-const ConfigContext = createContext<Config | null>(null)
+const ConfigContext = React.createContext<Config | null>(null)
 ConfigContext.displayName = 'ConfigContext'
 
-export const useDefaultConfig = () => use(ConfigContext) ?? DEFAULT_CONFIG
+export const useDefaultConfig = () => React.use(ConfigContext) ?? DEFAULT_CONFIG
 
 type ConfigProps = {
-  children: ReactNode
+  children: React.ReactNode
   base?: number
   baseline?: Partial<Config['baseline']>
   flex?: Partial<Config['flex']>
@@ -131,7 +131,7 @@ export function Config({
 }: ConfigProps) {
   const parentConfig = useDefaultConfig()
 
-  const value = useMemo(() => {
+  const value = React.useMemo(() => {
     const newConfig: Config = {
       base: base ?? parentConfig.base,
       baseline: { ...parentConfig.baseline, ...baseline },
@@ -147,7 +147,7 @@ export function Config({
       ...newConfig,
       cssVariables: createCSSVariables(newConfig),
     }
-  }, [base, parentConfig.base, parentConfig.baseline, parentConfig.guide, parentConfig.layout, parentConfig.spacer, parentConfig.box, parentConfig.flex, parentConfig.padder, baseline, guide, spacer, box, flex, padder])
+  }, [base, parentConfig.base, parentConfig.baseline, parentConfig.guide, parentConfig.spacer, parentConfig.box, parentConfig.flex, parentConfig.layout, parentConfig.padder, baseline, guide, spacer, box, flex, layout, padder])
 
   return (
     <ConfigContext.Provider value={value}>

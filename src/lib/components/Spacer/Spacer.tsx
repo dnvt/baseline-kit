@@ -1,4 +1,4 @@
-import { memo, useMemo, CSSProperties, ReactNode, useRef } from 'react'
+import * as React from 'react'
 import { useConfig, useDebug } from '@hooks'
 import { cs, cx, formatValue, normalizeValuePair } from '@utils'
 import { ComponentsProps } from '../types'
@@ -15,7 +15,10 @@ export type SpacerDimension = 'width' | 'height'
  * @param dimension - The dimension type: 'width' or 'height'.
  * @returns A ReactNode representing the indicator to be displayed.
  */
-export type IndicatorNode = (value: number, dimension: SpacerDimension) => ReactNode
+export type IndicatorNode = (
+  value: number,
+  dimension: SpacerDimension,
+) => React.ReactNode
 
 export type SpacerProps = {
   /** Function that renders a custom indicator (e.g., a label) showing the spacer's measured dimensions */
@@ -46,7 +49,7 @@ export type SpacerProps = {
  * />
  * ```
  */
-export const Spacer = memo(function Spacer({
+export const Spacer = React.memo(function Spacer({
   height,
   width,
   indicatorNode,
@@ -56,7 +59,7 @@ export const Spacer = memo(function Spacer({
   style,
   ...props
 }: SpacerProps) {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = React.useRef<HTMLDivElement>(null)
   const config = useConfig('spacer')
 
   const { isShown } = useDebug(debugging, config.debugging)
@@ -74,7 +77,7 @@ export const Spacer = memo(function Spacer({
   const cssHeight = formatValue(normHeight || '100%')
 
   // Measurement indicators for debug mode
-  const measurements = useMemo(() => {
+  const measurements = React.useMemo(() => {
     if (!isShown || !indicatorNode) return null
 
     return [
@@ -92,7 +95,7 @@ export const Spacer = memo(function Spacer({
   }, [isShown, indicatorNode, normHeight, normWidth])
 
   // Compose container styles using normalized values and theme config
-  const containerStyles = useMemo(() => {
+  const containerStyles = React.useMemo(() => {
     const styleObject = {
       '--pdd-spacer-height': cssHeight,
       '--pdd-spacer-width': cssWidth,
@@ -100,7 +103,7 @@ export const Spacer = memo(function Spacer({
       '--pdd-spacer-color-indice': config.colors.indice,
       '--pdd-spacer-color-line': config.colors.line,
       '--pdd-spacer-color-flat': config.colors.flat,
-    } as CSSProperties
+    } as React.CSSProperties
     return cs(styleObject, style)
   }, [cssHeight, cssWidth, config, style])
 
@@ -109,8 +112,7 @@ export const Spacer = memo(function Spacer({
       ref={ref}
       className={cx(
         styles.spacer,
-        styles[variant],
-        isShown ? styles.visible : styles.hidden,
+        isShown && styles[variant],
         className,
       )}
       data-testid="spacer"

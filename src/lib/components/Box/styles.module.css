@@ -1,18 +1,10 @@
 .box {
-  --pdd-box-base: var(--pdd-base, 8px);
-  --pdd-box-z-index: var(--pdd-z-index, 0);
-  --pdd-box-width: fit-content;
-  --pdd-box-height: fit-content;
-  --pdd-box-color-line: var(--pdd-box-color-line-theme);
-  --pdd-box-color-flat: var(--pdd-box-color-flat-theme);
-  --pdd-box-color-indice: var(--pdd-box-color-indice-theme);
-
   position: relative;
   width: var(--pdd-box-width);
   height: var(--pdd-box-height);
 }
 
-.visibile::after {
+.visible::after {
   content: '';
   position: absolute;
   inset: 0;
