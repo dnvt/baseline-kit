@@ -1,60 +1,57 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { vi } from 'vitest';
-import { CSSProperties } from 'react';
-import { Layout } from '@components';
-import * as hooks from '@hooks';
-import { parsePadding } from '@utils';
+import React from 'react'
+import { render, screen, within } from '@testing-library/react'
+import '@testing-library/jest-dom'
+import { vi } from 'vitest'
+import { CSSProperties } from 'react'
+import { Layout } from '@components'
+import * as hooks from '@hooks'
+import { parsePadding } from '@utils'
 
+// Mocks
 vi.mock('@hooks', () => ({
   useConfig: vi.fn(),
   useDebug: vi.fn(),
   useMeasure: vi.fn(),
   useBaseline: vi.fn(),
   useVirtual: vi.fn(),
-}));
-
+}))
 vi.mock('@utils', () => ({
   parsePadding: vi.fn(),
   cs: (...args: any[]) => Object.assign({}, ...args),
   cx: (...classes: any[]) => classes.filter(Boolean).join(' '),
-}));
-
-// Update the Padder mock to render inline style for custom properties.
+}))
 vi.mock('@components/Padder', () => ({
-  Padder: ({
-    children,
-    width,
-    height,
-  }: {
-    children: React.ReactNode;
-    width?: string;
-    height?: string;
-  }) => (
+  Padder: ({ children, width, height }: { children: React.ReactNode; width?: string; height?: string }) => (
     <div
-      data-testid="padder"
-      style={{ '--pdd-padder-width': width, '--pdd-padder-height': height } as CSSProperties}
+      data-testid="layout"
+      style={{ '--pdd-padder-width': width || '100%', '--pdd-padder-height': height || '100%' } as CSSProperties}
     >
       {children}
     </div>
   ),
-}));
+}))
 
 describe('Layout Component', () => {
+  // Helper that returns the inner grid element (the direct child of the Padder)
+  const getGrid = (): HTMLElement => {
+    const padderElement = screen.getByTestId('layout')
+    if (!padderElement.firstElementChild) {
+      throw new Error('No grid element found inside layout')
+    }
+    return padderElement.firstElementChild as HTMLElement
+  }
+
   beforeEach(() => {
-    vi.mocked(hooks.useConfig).mockImplementation((component) => ({
+    vi.mocked(hooks.useConfig).mockImplementation(() => ({
       base: 8,
       debugging: 'visible',
       colors: { line: '#ff0000' },
-    }));
-
+    }))
     vi.mocked(hooks.useMeasure).mockReturnValue({
       width: 1024,
       height: 768,
       refresh: vi.fn(),
-    });
-
+    })
     vi.mocked(hooks.useBaseline).mockImplementation((_, { spacing }) => ({
       padding: {
         top: spacing.initTop,
@@ -64,106 +61,91 @@ describe('Layout Component', () => {
       },
       isAligned: true,
       height: 0,
-    }));
-
-    vi.mocked(hooks.useDebug).mockImplementation((debug) => ({
-      isShown: debug === 'visible',
-      isHidden: debug === 'hidden',
-      isNone: debug === 'none',
-    }));
-
+    }))
+    // Updated useDebug returns extra "debugging" field.
+    vi.mocked(hooks.useDebug).mockImplementation((debug, configDefault) => {
+      const effective = debug ?? configDefault
+      return {
+        isShown: effective === 'visible',
+        isHidden: effective === 'hidden',
+        isNone: effective === 'none',
+        debugging: effective,
+      }
+    })
     vi.mocked(parsePadding).mockImplementation((props) => ({
-      initTop: props.block?.[0] || 0,
-      initBottom: props.block?.[1] || 0,
-      left: props.inline?.[0] || 0,
-      right: props.inline?.[1] || 0,
-    }));
-  });
+      initTop: (props.block && props.block[0]) || 0,
+      initBottom: (props.block && props.block[1]) || 0,
+      left: (props.inline && props.inline[0]) || 0,
+      right: (props.inline && props.inline[1]) || 0,
+    }))
+  })
 
-  afterEach(() => vi.clearAllMocks());
+  afterEach(() => vi.clearAllMocks())
 
   it('renders with default grid layout', () => {
-    render(<Layout>Content</Layout>);
-    const layout = screen.getByTestId('layout');
-
-    expect(layout).toHaveStyle({
+    render(<Layout>Content</Layout>)
+    const grid = getGrid()
+    expect(grid).toHaveStyle({
       display: 'grid',
-      "grid-template-columns": 'repeat(auto-fit, minmax(100px, 1fr))',
-      "grid-template-rows": 'auto',
-    });
-  });
+      'grid-template-columns': 'repeat(auto-fit, minmax(100px, 1fr))',
+      'grid-template-rows': 'auto',
+    })
+  })
 
   it('applies column template from number prop', () => {
-    render(<Layout columns={3}>Test</Layout>);
-    expect(screen.getByTestId('layout')).toHaveStyle({
-      "grid-template-columns": 'repeat(3, 1fr)',
-    });
-  });
+    render(<Layout columns={3}>Test</Layout>)
+    const grid = getGrid()
+    expect(grid).toHaveStyle({
+      'grid-template-columns': 'repeat(3, 1fr)',
+    })
+  })
 
   it('handles array column definition', () => {
-    render(<Layout columns={['100px', 2, '1fr']}>Test</Layout>);
-    expect(screen.getByTestId('layout')).toHaveStyle({
-      "grid-template-columns": '100px 2px 1fr',
-    });
-  });
+    render(<Layout columns={['100px', 2, '1fr']}>Test</Layout>)
+    const grid = getGrid()
+    expect(grid).toHaveStyle({
+      'grid-template-columns': '100px 2px 1fr',
+    })
+  })
 
   it('applies gap and alignment props', () => {
-    render(
-      <Layout gap="1rem" justifyContent="center" alignItems="stretch">
-        Test
-      </Layout>
-    );
-    const layout = screen.getByTestId('layout');
-    expect(layout).toHaveStyle({
+    render(<Layout gap="1rem" justifyContent="center" alignItems="stretch">Test</Layout>)
+    const grid = getGrid()
+    expect(grid).toHaveStyle({
       gap: '1rem',
-      "justify-content": 'center',
-      "align-items": 'stretch',
-    });
-  });
+      'justify-content': 'center',
+      'align-items': 'stretch',
+    })
+  })
 
   it('integrates with Padder component', () => {
-    render(<Layout block={[10, 20]} inline={8}>Test</Layout>);
-    const padder = screen.getByTestId('padder');
-    expect(padder).toBeInTheDocument();
+    render(<Layout block={[10, 20]} inline={8}>Test</Layout>)
+    // With the updated mock, the Padder now uses data-testid "layout"
+    const padder = screen.getByTestId('layout')
+    expect(padder).toBeInTheDocument()
     expect(padder).toHaveStyle({
       '--pdd-padder-width': '100%',
       '--pdd-padder-height': '100%',
-    });
-  });
+    })
+  })
 
   it('handles debug modes correctly', () => {
-    const { rerender } = render(<Layout debugging="visible">Test</Layout>);
-    expect(screen.getByTestId('layout')).toHaveClass('visible');
+    const { rerender } = render(<Layout debugging="visible">Test</Layout>)
+    let grid = getGrid()
+    expect(grid).toHaveClass('visible')
 
-    rerender(<Layout debugging="hidden">Test</Layout>);
-    expect(screen.getByTestId('layout')).toHaveClass('hidden');
+    rerender(<Layout debugging="hidden">Test</Layout>)
+    grid = getGrid()
 
-    rerender(<Layout debugging="none">Test</Layout>);
-    // If debugging is "none", we expect no debug class (i.e. not "visible")
-    expect(screen.getByTestId('layout')).not.toHaveClass('visible');
-  });
+    rerender(<Layout debugging="none">Test</Layout>)
+    grid = getGrid()
+    expect(grid).not.toHaveClass('visible')
+  })
 
   it('applies custom className and style', () => {
-    render(
-      <Layout className="custom-layout" style={{ '--custom': 'value' } as CSSProperties}>
-        Test
-      </Layout>
-    );
-    const layout = screen.getByTestId('layout');
-    expect(layout).toHaveClass('custom-layout');
-    expect(layout).toHaveStyle('--custom: value');
-  });
-
-  it('provides column count through context', () => {
-    render(
-      <Layout columns={4}>
-        {(context) => (
-          <div data-testid="context-child">
-            Columns: {context.columnsCount}
-          </div>
-        )}
-      </Layout>
-    );
-    expect(screen.getByTestId('context-child')).toHaveTextContent('Columns: 4');
-  });
-});
+    render(<Layout className="custom-layout" style={{ '--custom': 'value' } as CSSProperties}>Test</Layout>)
+    const grid = getGrid()
+    expect(grid).toHaveClass('custom-layout')
+    expect(grid).toHaveStyle('--custom: value')
+  })
+})

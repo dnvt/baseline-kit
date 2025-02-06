@@ -8,6 +8,7 @@ describe('useDebug', () => {
       isShown: true,
       isHidden: false,
       isNone: false,
+      debugging: 'visible',
     })
   })
 
@@ -17,6 +18,7 @@ describe('useDebug', () => {
       isShown: false,
       isHidden: true,
       isNone: false,
+      debugging: 'hidden',
     })
   })
 
@@ -26,6 +28,7 @@ describe('useDebug', () => {
       isShown: false,
       isHidden: false,
       isNone: true,
+      debugging: 'none',
     })
   })
 
@@ -35,6 +38,7 @@ describe('useDebug', () => {
       isShown: true,
       isHidden: false,
       isNone: false,
+      debugging: 'visible',
     })
   })
 
@@ -44,6 +48,7 @@ describe('useDebug', () => {
       isShown: false,
       isHidden: true,
       isNone: false,
+      debugging: 'hidden',
     })
   })
 
@@ -53,6 +58,7 @@ describe('useDebug', () => {
       isShown: false,
       isHidden: false,
       isNone: false,
+      debugging: undefined,
     })
   })
 
@@ -62,6 +68,7 @@ describe('useDebug', () => {
       isShown: true,
       isHidden: false,
       isNone: false,
+      debugging: 'visible',
     })
   })
 

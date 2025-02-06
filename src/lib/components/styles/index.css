@@ -14,7 +14,51 @@
   --pdd-z-index: 0;
   --pdd-transition: 180ms ease;
 
-  /* Colors */
+  /* Baseline */
+
+  /* Box */
+  --pdd-box-base: var(--pdd-base, 8px);
+  --pdd-box-z-index: var(--pdd-z-index, 0);
+  --pdd-box-width: fit-content;
+  --pdd-box-height: fit-content;
+  --pdd-box-color-line: var(--pdd-box-color-line-theme);
+  --pdd-box-color-flat: var(--pdd-box-color-flat-theme);
+  --pdd-box-color-indice: var(--pdd-box-color-indice-theme);
+
+  /* Flex */
+  --pdd-flex-z-index: var(--pdd-z-index, 0);
+  --pdd-flex-color-line: var(--pdd-flex-color-line-theme);
+  --pdd-flex-color-flat: var(--pdd-flex-color-flat-theme);
+  --pdd-flex-color-indice: var(--pdd-flex-color-indice-theme);
+
+  /* Guide */
+  --pdd-guide-width: 100vw;
+  --pdd-guide-height: 100vh;
+  --pdd-guide-gap: 8px;
+  --pdd-guide-justify: start;
+  --pdd-guide-template: auto;
+  --pdd-guide-padding-block: 0;
+  --pdd-guide-padding-inline: 0;
+
+  --pdd-guide-color-line: var(--pdd-guide-color-line-theme);
+  --pdd-guide-color-pattern: var(--pdd-guide-color-pattern-theme);
+  --pdd-guide-color-auto: var(--pdd-guide-color-auto-theme);
+  --pdd-guide-color-fixed: var(--pdd-guide-color-fixed-theme);
+
+  /* Layout */
+  --pdd-layout-z-index: var(--pdd-z-index, 0);
+  --pdd-layout-color-line: var(--pdd-layout-color-line-theme);
+  --pdd-layout-color-flat: var(--pdd-layout-color-flat-theme);
+  --pdd-layout-color-indice: var(--pdd-layout-color-indice-theme);
+
+  /* Padder */
+  --pdd-padder-width: fit-content;
+  --pdd-padder-height: fit-content;
+  --pdd-padder-color: var(--pdd-padder-color-theme);
+
+  /* Spacer */
+  --pdd-spacer-width: 100%;
+  --pdd-spacer-height: 100%;
   --pdd-spacer-color-line: var(--pdd-spacer-color-line-theme);
   --pdd-spacer-color-flat: var(--pdd-spacer-color-flat-theme);
   --pdd-spacer-color-indice: var(--pdd-spacer-color-indice-theme);

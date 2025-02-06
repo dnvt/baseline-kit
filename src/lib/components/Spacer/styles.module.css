@@ -1,11 +1,8 @@
 .spacer {
-  --pdd-spacer-width: 100%;
-  --pdd-spacer-height: 100%;
-
   position: relative;
   width: var(--pdd-spacer-width);
   height: var(--pdd-spacer-height);
-  flex-shrink: 0;
+  flex-shrink: 0;  
 }
 
 .line::after {

@@ -1,42 +1,10 @@
-import {
-  Children,
-  cloneElement,
-  createContext,
-  CSSProperties,
-  isValidElement,
-  ReactElement,
-  ReactNode,
-  useContext,
-  useMemo,
-  useRef,
-} from 'react'
-import { cs, cx } from '@utils'
+import * as React from 'react'
+import { IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { parsePadding } from '@utils'
+import { cs, cx, parsePadding } from '@utils'
 import { ComponentsProps } from '../types'
-import { Config } from '../Config'
 import { Padder } from '../Padder'
 import styles from './styles.module.css'
-
-export type LayoutContextValue = {
-  columnsCount: number;
-};
-
-type GridItemProps = {
-  colSpan?: number;
-  rowSpan?: number;
-  style?: CSSProperties;
-}
-
-const LayoutContext = createContext<LayoutContextValue | null>(null)
-
-export const useLayoutContext = () => {
-  const context = useContext(LayoutContext)
-  if (!context) {
-    throw new Error('useLayoutContext must be used within a Layout')
-  }
-  return context
-}
 
 export type LayoutProps = {
   /**
@@ -52,26 +20,23 @@ export type LayoutProps = {
    * @default: 'auto';
    */
   rows?: number | string | Array<number | string>;
-  /** Overall gap between grid items (number uses base unit) */
-  gap?: number | string;
   /** Vertical gap between rows (overrides gap) */
   rowGap?: number | string;
   /** Horizontal gap between columns (overrides gap) */
   columnGap?: number | string;
+  /** When provided, it overrides rowGap and columnGap */
+  gap?: number | string;
+  /** Function that renders a custom indicator (e.g., a label) showing the spacer's measured dimensions */
+  indicatorNode?: IndicatorNode
   /** Item alignment along row axis (default: 'stretch') */
-  justifyItems?: CSSProperties['justifyItems'];
+  justifyItems?: React.CSSProperties['justifyItems'];
   /** Item alignment along column axis (default: 'stretch') */
-  alignItems?: CSSProperties['alignItems'];
+  alignItems?: React.CSSProperties['alignItems'];
   /** Content distribution along row axis */
-  justifyContent?: CSSProperties['justifyContent'];
+  justifyContent?: React.CSSProperties['justifyContent'];
   /** Content distribution along column axis */
-  alignContent?: CSSProperties['alignContent'];
-
-  /**
-   * Grid content or render prop function receiving:
-   * - columnsCount: Current number of columns
-   */
-  children?: ReactNode | ((context: LayoutContextValue) => ReactNode);
+  alignContent?: React.CSSProperties['alignContent'];
+  children?: React.ReactNode;
 } & ComponentsProps;
 
 function getGridTemplate(prop?: number | string | Array<number | string>) {
@@ -88,9 +53,12 @@ export function Layout({
   children,
   columns,
   rows,
-  gap,
   rowGap,
   columnGap,
+  gap,
+  height,
+  width,
+  indicatorNode,
   justifyItems,
   alignItems,
   justifyContent,
@@ -98,128 +66,80 @@ export function Layout({
   className,
   style,
   debugging,
-  ...props
+  ...spacingProps
 }: LayoutProps) {
   const config = useConfig('layout')
   const { isShown } = useDebug(debugging, config.debugging)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const layoutRef = React.useRef<HTMLDivElement>(null)
 
-  // Parse padding using the utility (e.g. from props like block/inline).
-  const initialPadding = parsePadding(props)
-  const { padding } = useBaseline(containerRef, {
+  const initialPadding = React.useMemo(
+    () => parsePadding(spacingProps),
+    [spacingProps],
+  )
+  const { padding } = useBaseline(layoutRef, {
     base: config.base,
     snapping: 'height',
     spacing: initialPadding,
+    warnOnMisalignment: true,
   })
 
-  const gridTemplateColumns = useMemo(
+  const gridTemplateColumns = React.useMemo(
     () => getGridTemplate(columns),
     [columns],
   )
 
-  const gridTemplateRows = useMemo(
+  const gridTemplateRows = React.useMemo(
     () => (rows ? getGridTemplate(rows) : 'auto'),
     [rows],
   )
 
-  const columnsCount = useMemo(() => {
-    if (typeof columns === 'number') return columns
-    if (typeof columns === 'string') return columns.split(/\s+/).length
-    if (Array.isArray(columns)) return columns.length
-    return 0
-  }, [columns])
+  const gridGapStyles = React.useMemo(() => {
+    const gapStyles: React.CSSProperties = {}
+    if (gap !== undefined) {
+      gapStyles.gap = gap
+    }
+    return gapStyles
+  }, [gap])
 
-  const contextValue = useMemo<LayoutContextValue>(
-    () => ({ columnsCount }),
-    [columnsCount],
-  )
-
-  const gridStyles = useMemo(() => {
-    return cs(
-      {
-        display: 'grid',
-        gridTemplateColumns,
-        gridTemplateRows,
-        gap,
-        rowGap,
-        columnGap,
-        justifyItems,
-        alignItems,
-        justifyContent,
-        alignContent,
-        '--pdd-layout-color-line': config.colors.line,
-        '--pdd-layout-debug-outline': isShown
-          ? '1px solid var(--pdd-layout-color-line)'
-          : 'none',
-      } as CSSProperties,
-      style,
-    )
-  }, [
-    gridTemplateColumns,
-    gridTemplateRows,
-    gap,
-    rowGap,
-    columnGap,
-    justifyItems,
-    alignItems,
-    justifyContent,
-    alignContent,
-    config.colors.line,
-    isShown,
+  const gridStyles = React.useMemo(() => {
+    return cs({
+      display: 'grid',
+      gridTemplateColumns,
+      gridTemplateRows,
+      rowGap,
+      columnGap,
+      justifyItems,
+      alignItems,
+      justifyContent,
+      alignContent,
+      width,
+      height,
+      '--pdd-layout-color-line': config.colors.line,
+      '--pdd-layout-debug-outline': isShown
+        ? '1px solid var(--pdd-layout-color-line)'
+        : 'none',
+    } as React.CSSProperties,
     style,
-  ])
-
-  // Process children. If children is a function, call it with the context.
-  const content = useMemo(
-    () =>
-      typeof children === 'function' ? children(contextValue) : children,
-    [children, contextValue],
-  )
-
-  // Automatically wrap each child with grid item props if provided.
-  const wrappedChildren = Children.map(content, child => {
-    if (!isValidElement(child)) return child
-
-    // Assert child is a ReactElement so we can destructure its props.
-    type ChildProps = GridItemProps & Record<string, unknown>;
-    const element = child as ReactElement<ChildProps>
-
-    const { colSpan, rowSpan, style: childStyle, ...rest } = element.props
-    const itemStyle = cs(
-      {
-        gridColumn: colSpan ? `span ${colSpan}` : undefined,
-        gridRow: rowSpan ? `span ${rowSpan}` : undefined,
-      },
-      childStyle,
     )
-    return cloneElement(element, { ...rest, style: itemStyle })
-  })
+  }, [gridTemplateColumns, gridTemplateRows, rowGap, columnGap, justifyItems, alignItems, justifyContent, alignContent, width, height, config.colors.line, isShown, style])
 
   return (
-    <Config base={config.base}>
-      <LayoutContext value={contextValue}>
-        <div
-          ref={containerRef}
-          className={cx(
-            styles.layout,
-            className,
-            isShown ? 'visible' : 'hidden',
-          )}
-          style={gridStyles}
-          data-testid="layout"
-          {...props}
-        >
-          <Padder
-            block={[padding.top, padding.bottom]}
-            inline={[padding.left, padding.right]}
-            debugging={debugging}
-            width="100%"
-            height="100%"
-          >
-            {wrappedChildren}
-          </Padder>
-        </div>
-      </LayoutContext>
-    </Config>
+    <Padder
+      ref={layoutRef}
+      data-testid="layout"
+      block={[padding.top, padding.bottom]}
+      indicatorNode={indicatorNode}
+      inline={[padding.left, padding.right]}
+      debugging={debugging}
+      width={width}
+      height={height}
+    >
+      <div
+        className={cx(styles.layout, className, isShown && 'visible')}
+        style={cs(gridStyles, gridGapStyles)}
+      >
+        {children}
+      </div>
+    </Padder>
   )
 }

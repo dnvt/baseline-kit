@@ -1,8 +1,4 @@
 .padder {
-  --pdd-padder-width: fit-content;
-  --pdd-padder-height: fit-content;
-  --pdd-padder-color: var(--pdd-padder-color-theme);
-
   position: relative;
   display: flex;
   flex-direction: column;

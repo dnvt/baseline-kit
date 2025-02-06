@@ -1,0 +1,14 @@
+.stack {
+  position: relative;
+  width: 100%;
+  height: fit-content;
+}
+
+.visibile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--pdd-flex-color-line);
+  pointer-events: none;
+  z-index: var(--pdd-flex-z-index);
+}
