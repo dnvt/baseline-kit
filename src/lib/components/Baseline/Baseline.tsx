@@ -1,7 +1,7 @@
 import { CSSProperties, memo, useCallback, useMemo, useRef } from 'react'
 import { ComponentsProps } from '@components'
 import { useConfig, useDebug, useVirtual, useMeasure } from '@hooks'
-import { cs, cx, parsePadding, normalizeValuePair } from '@utils'
+import { parsePadding, normalizeValuePair, mergeStyles, mergeClasses } from '@utils'
 import styles from './styles.module.css'
 
 export type BaselineVariant = 'line' | 'flat';
@@ -88,16 +88,16 @@ export const Baseline = memo(function Baseline({
   // Build the container style, using our normalized dimensions and parsed padding.
   const containerStyles = useMemo(
     () =>
-      cs({
-        '--bk-baseline-width': normWidth,
-        padding: `${top}px ${right}px ${bottom}px ${left}px`,
-        position: 'absolute',
-        inset: 0,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-        height: `${normHeight}px`,
-      } as CSSProperties,
-      style,
+      mergeStyles({
+          '--bk-baseline-width': normWidth,
+          padding: `${top}px ${right}px ${bottom}px ${left}px`,
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          overflow: 'hidden',
+          height: `${normHeight}px`,
+        } as CSSProperties,
+        style,
       ),
     [normWidth, top, right, bottom, left, normHeight, style],
   )
@@ -105,7 +105,7 @@ export const Baseline = memo(function Baseline({
   // Compute the style for each row.
   const getRowStyle = useCallback(
     (index: number): CSSProperties =>
-      cs({
+      mergeStyles({
         top: `${index * config.base}px`,
         left: 0,
         right: 0,
@@ -120,7 +120,7 @@ export const Baseline = memo(function Baseline({
     <div
       ref={containerRef}
       data-testid="baseline"
-      className={cx(styles.baseline, isShown ? styles.visible : styles.hidden, className)}
+      className={mergeClasses(styles.baseline, isShown ? styles.visible : styles.hidden, className)}
       style={containerStyles}
       {...spacingProps}
     >

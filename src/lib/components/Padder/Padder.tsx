@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { cx, cs, parsePadding } from '@utils'
+import { mergeClasses, mergeStyles, parsePadding, mergeRefs } from '@utils'
 import { ComponentsProps } from '../types'
 import { IndicatorNode, Spacer } from '../Spacer'
 import styles from './styles.module.css'
@@ -71,18 +71,11 @@ export const Padder = React.memo(
       warnOnMisalignment: !isNone,
     })
 
-    const setRefs = React.useCallback((node: HTMLDivElement | null) => {
-      internalRef.current = node
-      if (typeof ref === 'function') {
-        ref(node)
-      } else if (ref) {
-        ref.current = node
-      }
-    }, [ref])
+    const setRefs = mergeRefs(ref, internalRef)
 
     // Apply either direct padding (if none) or custom CSS variables for debug modes
     const containerStyles = React.useMemo(
-      () => cs({
+      () => mergeStyles({
         '--bk-padder-width': width ?? 'fit-content',
         '--bk-padder-height': height ?? 'fit-content',
         '--bk-padder-base': `${config.base}px`,
@@ -113,7 +106,7 @@ export const Padder = React.memo(
     return (
       <div
         ref={setRefs}
-        className={cx(
+        className={mergeClasses(
           styles.padder,
           isShown && styles.visible,
           className,

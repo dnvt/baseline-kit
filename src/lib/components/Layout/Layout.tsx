@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { cs, cx, parsePadding } from '@utils'
+import { mergeStyles, mergeClasses, parsePadding } from '@utils'
 import { ComponentsProps } from '../types'
 import { Padder } from '../Padder'
 import styles from './styles.module.css'
@@ -102,7 +102,7 @@ export function Layout({
   }, [gap])
 
   const gridStyles = React.useMemo(() => {
-    return cs({
+    return mergeStyles({
       display: 'grid',
       gridTemplateColumns,
       gridTemplateRows,
@@ -135,8 +135,8 @@ export function Layout({
       height={height}
     >
       <div
-        className={cx(styles.layout, className, isShown && 'visible')}
-        style={cs(gridStyles, gridGapStyles)}
+        className={mergeClasses(styles.layout, className, isShown && 'visible')}
+        style={mergeStyles(gridStyles, gridGapStyles)}
       >
         {children}
       </div>

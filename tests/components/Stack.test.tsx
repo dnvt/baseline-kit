@@ -17,8 +17,8 @@ vi.mock('@hooks', () => ({
 // Mock utilities from @utils
 vi.mock('@utils', () => ({
   parsePadding: vi.fn(),
-  cs: (...args: any[]) => Object.assign({}, ...args),
-  cx: (...classes: any[]) => classes.filter(Boolean).join(' '),
+  mergeStyles: (...args: any[]) => Object.assign({}, ...args),
+  mergeClasses: (...classes: any[]) => classes.filter(Boolean).join(' '),
   formatValue: (value: any, defaultValue: number | undefined) => {
     if (value === undefined && defaultValue !== undefined) {
       return `${defaultValue}px`

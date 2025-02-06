@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useConfig, useDebug } from '@hooks'
-import { cs, cx, formatValue, normalizeValuePair } from '@utils'
+import { mergeStyles, mergeClasses, formatValue, normalizeValuePair } from '@utils'
 import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
 
@@ -104,17 +104,18 @@ export const Spacer = React.memo(function Spacer({
       '--bk-spacer-color-line': config.colors.line,
       '--bk-spacer-color-flat': config.colors.flat,
     } as React.CSSProperties
-    return cs(styleObject, style)
+    return mergeStyles(styleObject, style)
   }, [cssHeight, cssWidth, config, style])
 
   return (
     <div
       ref={ref}
-      className={cx(
-        styles.spacer,
-        isShown && styles[variant],
-        className,
-      )}
+      className={
+        mergeClasses(
+          styles.spacer,
+          isShown && styles[variant],
+          className,
+        )}
       data-testid="spacer"
       data-variant={variant}
       style={containerStyles}

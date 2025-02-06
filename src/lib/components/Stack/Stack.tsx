@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { cs, cx, parsePadding } from '@utils'
+import { mergeClasses, mergeStyles, parsePadding } from '@utils'
 import { ComponentsProps } from '../types'
 import { Padder } from '../Padder'
 import styles from './styles.module.css'
@@ -67,7 +67,7 @@ export const Stack = React.memo(function Stack({
       width: width || 'fit-content',
       height: height || 'fit-content',
     }
-    return cs(baseStyles, flexGapStyles, style)
+    return mergeStyles(baseStyles, flexGapStyles, style)
   }, [direction, justify, align, width, height, flexGapStyles, style])
 
   const mergedContainerStyles =
@@ -92,7 +92,7 @@ export const Stack = React.memo(function Stack({
     >
       <div
         data-testid="stack-container"
-        className={cx(styles.stack, className, isShown && 'visible')}
+        className={mergeClasses(styles.stack, className, isShown && 'visible')}
         style={mergedContainerStyles}
         {...spacingProps}
       >

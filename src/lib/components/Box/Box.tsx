@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { cx, cs, parsePadding } from '@utils'
+import { mergeClasses, mergeStyles, parsePadding, mergeRefs } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
@@ -47,86 +47,92 @@ type BoxProps = {
  * </Box>
  * ```
  */
-export const Box = React.memo(function Box({
-  children,
-  snapping = 'clamp',
-  debugging: debuggingProp,
-  className,
-  colSpan,
-  rowSpan,
-  span,
-  width,
-  height,
-  style,
-  ...spacingProps
-}: BoxProps) {
-  const config = useConfig('box')
-  const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
-  const boxRef = React.useRef<HTMLDivElement | null>(null)
-  const { top, bottom, left, right } = parsePadding(spacingProps)
-  const { padding } = useBaseline(boxRef, {
-    base: config.base,
-    snapping,
-    spacing: { top, bottom, left, right },
-    warnOnMisalignment: debugging !== 'none',
-  })
+export const Box = React.memo(
+  React.forwardRef<HTMLDivElement, BoxProps>(function Box(
+    {
+      children,
+      snapping = 'clamp',
+      debugging: debuggingProp,
+      className,
+      colSpan,
+      rowSpan,
+      span,
+      width,
+      height,
+      style,
+      ...spacingProps
+    },
+    ref,
+  ) {
+    const config = useConfig('box')
+    const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
-  const gridSpanStyles = React.useMemo(() => {
-    const gridStyles: React.CSSProperties = {}
-    if (span !== undefined) {
-      gridStyles.gridColumn = `span ${span}`
-      gridStyles.gridRow = `span ${span}`
-    } else {
-      if (colSpan !== undefined) {
-        gridStyles.gridColumn = `span ${colSpan}`
+    const internalRef = React.useRef<HTMLDivElement | null>(null)
+    const { top, bottom, left, right } = parsePadding(spacingProps)
+    const { padding } = useBaseline(internalRef, {
+      base: config.base,
+      snapping,
+      spacing: { top, bottom, left, right },
+      warnOnMisalignment: debugging !== 'none',
+    })
+
+    const gridSpanStyles = React.useMemo(() => {
+      const gridStyles: React.CSSProperties = {}
+      if (span !== undefined) {
+        gridStyles.gridColumn = `span ${span}`
+        gridStyles.gridRow = `span ${span}`
+      } else {
+        if (colSpan !== undefined) {
+          gridStyles.gridColumn = `span ${colSpan}`
+        }
+        if (rowSpan !== undefined) {
+          gridStyles.gridRow = `span ${rowSpan}`
+        }
       }
-      if (rowSpan !== undefined) {
-        gridStyles.gridRow = `span ${rowSpan}`
-      }
-    }
-    return gridStyles
-  }, [colSpan, rowSpan, span])
+      return gridStyles
+    }, [colSpan, rowSpan, span])
 
-  // Merging styles
-  const boxStyles = React.useMemo(
-    () => cs({
-      '--bk-box-width': width,
-      '--bk-box-height': height,
-      '--bk-box-base': `${config.base}px`,
-      '--bk-box-color-line': config.colors.line,
-    } as React.CSSProperties, style),
-    [config.base, config.colors.line, height, style, width],
-  )
+    // Merging styles
+    const boxStyles = React.useMemo(
+      () => mergeStyles({
+        '--bk-box-width': width,
+        '--bk-box-height': height,
+        '--bk-box-base': `${config.base}px`,
+        '--bk-box-color-line': config.colors.line,
+      } as React.CSSProperties, style),
+      [config.base, config.colors.line, height, style, width],
+    )
 
-  return (
-    <div
-      ref={boxRef}
-      data-testid="box"
-      className={cx(styles.box, isShown && styles.visible, className)}
-      style={cs(boxStyles, gridSpanStyles)}
-    >
-      <Config
-        base={1}
-        spacer={{
-          variant: 'flat',
-          colors: {
-            flat: 'var(--bk-box-color-flat-theme)',
-            line: 'var(--bk-box-color-line-theme)',
-            indice: 'var(--bk-box-color-indice-theme)',
-          },
-        }}
+    return (
+      <div
+        ref={mergeRefs(ref, internalRef)}
+        data-testid="box"
+        className={mergeClasses(styles.box, isShown && styles.visible, className)}
+        style={mergeStyles(boxStyles, gridSpanStyles)}
       >
-        <Padder
-          block={[padding.top, padding.bottom]}
-          inline={[padding.left, padding.right]}
-          width={width}
-          height={height}
-          debugging={debugging}
+        <Config
+          base={1}
+          spacer={{
+            variant: 'flat',
+            colors: {
+              flat: 'var(--bk-box-color-flat-theme)',
+              line: 'var(--bk-box-color-line-theme)',
+              indice: 'var(--bk-box-color-indice-theme)',
+            },
+          }}
         >
-          {children}
-        </Padder>
-      </Config>
-    </div>
-  )
-})
+          <Padder
+            block={[padding.top, padding.bottom]}
+            inline={[padding.left, padding.right]}
+            width={width}
+            height={height}
+            debugging={debugging}
+          >
+            {children}
+          </Padder>
+        </Config>
+      </div>
+    )
+  }),
+)

@@ -5,7 +5,7 @@ import {
   useGuide,
   useMeasure,
 } from '@hooks'
-import { cx, cs, parsePadding } from '@utils'
+import { mergeClasses, mergeStyles, parsePadding } from '@utils'
 import { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
 import type { ComponentsProps } from '../types'
 import styles from './styles.module.css'
@@ -139,18 +139,19 @@ export const Guide = memo(function Guide({
       '--bk-guide-height': (height ?? containerHeight) || '100vh',
     } as CSSProperties
 
-    return cs(baseStyles, style)
+    return mergeStyles(baseStyles, style)
   }, [calculatedGap, align, config.colors.line, config.colors.pattern, top, bottom, left, right, template, width, containerWidth, height, containerHeight, style])
 
   return (
     <div
       ref={containerRef}
-      className={cx(
-        styles.guide,
-        className,
-        isShown ? styles.visible : styles.hidden,
-        variant === 'line' && styles.line,
-      )}
+      className={
+        mergeClasses(
+          styles.guide,
+          className,
+          isShown ? styles.visible : styles.hidden,
+          variant === 'line' && styles.line,
+        )}
       data-testid="guide"
       data-variant={variant}
       style={containerStyles}
