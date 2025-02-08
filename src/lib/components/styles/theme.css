@@ -62,9 +62,9 @@
    --bk-box-color-flat-theme: hsla(var(--bk-pink-secondary), 0.2);
    --bk-box-color-indice-theme: hsla(var(--bk-pink-secondary), 0.9);
 
-   --bk-flex-color-line-theme: hsla(var(--bk-red-primary), 0.6);
-   --bk-flex-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
-   --bk-flex-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
+   --bk-stack-color-line-theme: hsla(var(--bk-red-primary), 0.6);
+   --bk-stack-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
+   --bk-stack-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
 
    --bk-layout-color-line-theme: hsla(var(--bk-red-primary), 0.6);
    --bk-layout-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
@@ -120,6 +120,23 @@
       /* Red */
       --bk-red-primary: 0, 100%, 70%; /* #FF6666 (bright) */
       --bk-red-secondary: 330, 60%, 40%; /* #A32966 (dimm) */
+
+      /* System override */
+      --bk-baseline-color-line-theme: hsla(var(--bk-white-primary), 0.1);
+      --bk-baseline-color-flat-theme: hsla(var(--bk-white-secondary), 0.2);
+
+      --bk-guide-color-line-theme: hsla(var(--bk-white-primary), 0.1);
+      --bk-guide-color-pattern-theme: hsla(var(--bk-purple-secondary), 0.25);
+      --bk-guide-color-auto-theme: hsla(var(--bk-blue-secondary), 0.2);
+      --bk-guide-color-fixed-theme: hsla(var(--bk-blue-secondary), 0.2);
+
+      --bk-stack-color-line-theme: hsla(var(--bk-red-primary), 0.6);
+      --bk-stack-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
+      --bk-stack-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
+
+      --bk-layout-color-line-theme: hsla(var(--bk-red-primary), 0.6);
+      --bk-layout-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
+      --bk-layout-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
    }
 }
 

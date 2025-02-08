@@ -4,11 +4,11 @@
   height: fit-content;
 }
 
-.visibile::after {
+.visible::after {
+  border: 1px solid var(--bk-stack-color-line);
   content: '';
-  position: absolute;
   inset: 0;
-  border: 1px solid var(--bk-flex-color-line);
   pointer-events: none;
-  z-index: var(--bk-flex-z-index);
+  position: absolute;
+  z-index: calc(var(--bk-stack-z-index) + 1);
 }

@@ -2,8 +2,9 @@ import * as React from 'react'
 import { IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
 import { mergeStyles, mergeClasses, parsePadding } from '@utils'
-import { ComponentsProps } from '../types'
+import { Config } from '../Config'
 import { Padder } from '../Padder'
+import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
 export type LayoutProps = {
@@ -28,6 +29,8 @@ export type LayoutProps = {
   gap?: number | string;
   /** Function that renders a custom indicator (e.g., a label) showing the spacer's measured dimensions */
   indicatorNode?: IndicatorNode
+  /** Controls the visual style of the spacer */
+  variant?: Variant
   /** Item alignment along row axis (default: 'stretch') */
   justifyItems?: React.CSSProperties['justifyItems'];
   /** Item alignment along column axis (default: 'stretch') */
@@ -64,6 +67,7 @@ export function Layout({
   justifyContent,
   alignContent,
   className,
+  variant,
   style,
   debugging,
   ...spacingProps
@@ -115,31 +119,36 @@ export function Layout({
       width,
       height,
       '--bk-layout-color-line': config.colors.line,
-      '--bk-layout-debug-outline': isShown
-        ? '1px solid var(--bk-layout-color-line)'
-        : 'none',
+      '--bk-layout-color-flat': config.colors.flat,
+      '--bk-layout-color-indice': config.colors.indice,
     } as React.CSSProperties,
     style,
     )
-  }, [gridTemplateColumns, gridTemplateRows, rowGap, columnGap, justifyItems, alignItems, justifyContent, alignContent, width, height, config.colors.line, isShown, style])
+  }, [gridTemplateColumns, gridTemplateRows, rowGap, columnGap, justifyItems, alignItems, justifyContent, alignContent, width, height, config.colors.line, config.colors.flat, config.colors.indice, style])
 
   return (
-    <Padder
-      ref={layoutRef}
-      data-testid="layout"
-      block={[padding.top, padding.bottom]}
-      indicatorNode={indicatorNode}
-      inline={[padding.left, padding.right]}
-      debugging={debugging}
-      width={width}
-      height={height}
-    >
-      <div
-        className={mergeClasses(styles.layout, className, isShown && 'visible')}
-        style={mergeStyles(gridStyles, gridGapStyles)}
+    <Config spacer={{ variant }}>
+      <Padder
+        ref={layoutRef}
+        data-testid="layout"
+        block={[padding.top, padding.bottom]}
+        indicatorNode={indicatorNode}
+        inline={[padding.left, padding.right]}
+        debugging={debugging}
+        width={width}
+        height={height}
       >
-        {children}
-      </div>
-    </Padder>
+        <div
+          className={mergeClasses(
+            className,
+            styles.layout,
+            isShown && styles.visible,
+          )}
+          style={mergeStyles(gridStyles, gridGapStyles)}
+        >
+          {children}
+        </div>
+      </Padder>
+    </Config>
   )
 }

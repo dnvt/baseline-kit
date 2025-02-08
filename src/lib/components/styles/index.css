@@ -25,11 +25,11 @@
   --bk-box-color-flat: var(--bk-box-color-flat-theme);
   --bk-box-color-indice: var(--bk-box-color-indice-theme);
 
-  /* Flex */
-  --bk-flex-z-index: var(--bk-z-index, 0);
-  --bk-flex-color-line: var(--bk-flex-color-line-theme);
-  --bk-flex-color-flat: var(--bk-flex-color-flat-theme);
-  --bk-flex-color-indice: var(--bk-flex-color-indice-theme);
+  /* Stack */
+  --bk-stack-z-index: var(--bk-z-index, 0);
+  --bk-stack-color-line: var(--bk-stack-color-line-theme);
+  --bk-stack-color-flat: var(--bk-stack-color-flat-theme);
+  --bk-stack-color-indice: var(--bk-stack-color-indice-theme);
 
   /* Guide */
   --bk-guide-width: 100vw;

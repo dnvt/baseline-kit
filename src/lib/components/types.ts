@@ -78,3 +78,5 @@ export type PaddedBaseConfig = {
   color?: CSSProperties['color'] | CSSProperties['backgroundColor']
   zIndex?: CSSProperties['zIndex']
 }
+
+export type Variant = 'line' | 'flat' | 'pattern'

@@ -1,8 +1,7 @@
 import * as React from 'react'
 import { BaselineVariant } from '@components'
 import { DEFAULT_CONFIG } from './defaults'
-import type { SpacerVariant } from '../Spacer'
-import type { GuideVariant } from '../types'
+import type { GuideVariant, Variant } from '../types'
 
 /**
  * Controls the visual debugging features of this component or layout.
@@ -40,7 +39,7 @@ export type Config = {
     debugging: DebuggingMode
   },
   spacer: {
-    variant: SpacerVariant
+    variant: Variant
     debugging: DebuggingMode
     colors: Colors
   }
@@ -88,7 +87,7 @@ const createCSSVariables = ({
   '--bk-baseline-color-line': baseline.colors.line,
   '--bk-baseline-color-flat': baseline.colors.flat,
 
-  // Guide Colors (matching the variant keys in your config)
+  // Guide Colors
   '--bk-guide-color-line': guide.colors.line,
   '--bk-guide-color-pattern': guide.colors.pattern,
   '--bk-guide-color-auto': guide.colors.auto,
@@ -105,9 +104,9 @@ const createCSSVariables = ({
   '--bk-box-color-indice': box.colors.indice,
 
   // Flex Colors
-  '--bk-flex-color-line': flex.colors.line,
-  '--bk-flex-color-flat': flex.colors.flat,
-  '--bk-flex-color-indice': flex.colors.indice,
+  '--bk-stack-color-line': flex.colors.line,
+  '--bk-stack-color-flat': flex.colors.flat,
+  '--bk-stack-color-indice': flex.colors.indice,
 
   // Layout Colors
   '--bk-layout-color-line': layout.colors.line,
@@ -150,8 +149,8 @@ export function Config({
   }, [base, parentConfig.base, parentConfig.baseline, parentConfig.guide, parentConfig.spacer, parentConfig.box, parentConfig.flex, parentConfig.layout, parentConfig.padder, baseline, guide, spacer, box, flex, layout, padder])
 
   return (
-    <ConfigContext.Provider value={value}>
-      <div style={value.cssVariables}>{children}</div>
-    </ConfigContext.Provider>
+    <ConfigContext value={value}>
+      {children}
+    </ConfigContext>
   )
 }

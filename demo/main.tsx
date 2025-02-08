@@ -36,6 +36,7 @@ function Content({ showBaseline }: ContentProps) {
         <Box block={[6, 10]} debugging="visible"><p>Menu 4</p></Box>
       </Stack>
       <Spacer height={24} debugging="visible" indicatorNode={Indice} />
+
       <Layout
         block={[0, 24]}
         columns={9}
@@ -55,6 +56,7 @@ function Content({ showBaseline }: ContentProps) {
         </Box>
         <Spacer variant="flat" style={{ gridColumn: 'span 4' }} debugging="visible" height={box2Height} />
       </Layout>
+
       {Array.from({ length: 100 }).map((_, i) => {
         return (
           <Fragment key={i}>
