@@ -1,11 +1,8 @@
 import * as React from 'react'
 import { useConfig, useDebug } from '@hooks'
 import { mergeStyles, mergeClasses, formatValue, normalizeValuePair } from '@utils'
-import { ComponentsProps } from '../types'
+import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
-
-export type SpacerVariant = 'line' | 'flat' | 'pattern'
-export type SpacerDimension = 'width' | 'height'
 
 /**
  * Signature for a function that renders a custom indicator node
@@ -17,14 +14,14 @@ export type SpacerDimension = 'width' | 'height'
  */
 export type IndicatorNode = (
   value: number,
-  dimension: SpacerDimension,
+  dimension: 'width' | 'height',
 ) => React.ReactNode
 
 export type SpacerProps = {
   /** Function that renders a custom indicator (e.g., a label) showing the spacer's measured dimensions */
   indicatorNode?: IndicatorNode
   /** Controls the visual style of the spacer */
-  variant?: SpacerVariant
+  variant?: Variant
 } & ComponentsProps
 
 /**

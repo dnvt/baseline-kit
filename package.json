@@ -69,7 +69,7 @@
     "rollup": "^4.34.0",
     "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-visualizer": "^5.14.0",
-    "vite": "^6.0.11",
+    "vite": "^6.1.0",
     "vite-plugin-static-copy": "^2.2.0",
     "vitest": "^2.1.8"
   },
@@ -105,5 +105,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "author": "Francois Denavaut",
-  "description": "Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, flexible spacing components, and theme-aware configuration—all optimized for performance and built with TypeScript."
+  "description": "Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, flexible spacing components, and theme-aware configuration—all optimized for performance and built with TypeScript.",
+  "dependencies": {
+    "esbuild": "^0.24.2",
+    "postcss-preset-env": "^10.1.3"
+  }
 }

@@ -24,10 +24,10 @@ const BOX_COLORS = {
   indice: 'var(--bk-box-color-indice-theme)',
 }
 
-const FLEX_COLORS = {
-  line: 'var(--bk-flex-color-line-theme)',
-  flat: 'var(--bk-flex-color-flat-theme)',
-  indice: 'var(--bk-flex-color-indice-theme)',
+const STACK_COLORS = {
+  line: 'var(--bk-stack-color-line-theme)',
+  flat: 'var(--bk-stack-color-flat-theme)',
+  indice: 'var(--bk-stack-color-indice-theme)',
 }
 
 const LAYOUT_COLORS = {
@@ -61,7 +61,7 @@ export const DEFAULT_CONFIG: Config = {
   },
   flex: {
     debugging: 'hidden',
-    colors: FLEX_COLORS,
+    colors: STACK_COLORS,
   },
   layout: {
     debugging: 'hidden',

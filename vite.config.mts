@@ -22,7 +22,7 @@ export default defineConfig(({ command }) => ({
     cssCodeSplit: false,
     lib: {
       entry: resolve(__dirname, 'src/lib/index.ts'),
-      name: 'PaddedGrid',
+      name: 'BaselineKit',
       formats: ['es', 'cjs'],
       fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
     },

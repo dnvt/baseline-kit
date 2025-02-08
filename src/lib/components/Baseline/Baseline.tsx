@@ -2,9 +2,10 @@ import { CSSProperties, memo, useCallback, useMemo, useRef } from 'react'
 import { ComponentsProps } from '@components'
 import { useConfig, useDebug, useVirtual, useMeasure } from '@hooks'
 import { parsePadding, normalizeValuePair, mergeStyles, mergeClasses } from '@utils'
+import { Variant } from '../types'
 import styles from './styles.module.css'
 
-export type BaselineVariant = 'line' | 'flat';
+export type BaselineVariant = Exclude<Variant, 'pattern'>
 
 export type BaselineProps = {
   /** Defines the visual variant of the baseline. */
@@ -48,33 +49,23 @@ export const Baseline = memo(function Baseline({
   const variant = variantProp ?? config.variant
   const { isShown } = useDebug(debugging, config.debugging)
 
-  // Reference to measure the container's dimensions
   const containerRef = useRef<HTMLDivElement | null>(null)
   const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
 
-  // Normalize the provided width/height props against the measured container dimensions.
-  // We use our new normalizeValuePair function from the conversion module.
   const [normWidth, normHeight] = useMemo(
-    () =>
-      normalizeValuePair(
-        [widthProp, heightProp],
-        [containerWidth, containerHeight],
-      ),
+    () => normalizeValuePair([widthProp, heightProp], [containerWidth, containerHeight]),
     [widthProp, heightProp, containerWidth, containerHeight],
   )
 
-  // Parse spacing props (e.g. padding, block, inline) into an object with top, right, bottom, left.
   const { top, right, bottom, left } = useMemo(() => parsePadding(spacingProps), [spacingProps])
 
   // Calculate the number of rows (lines) to render:
   // Subtract vertical padding (top + bottom) from the normalized height.
   const rowCount = useMemo(() => {
     const totalHeight = (normHeight ?? 0) - (top + bottom)
-    // Use floor so that we get a consistent number of full rows.
     return Math.max(1, Math.floor(totalHeight / config.base))
   }, [normHeight, top, bottom, config.base])
 
-  // Use virtual lines hook to determine which rows are visible.
   const { start, end } = useVirtual({
     totalLines: rowCount,
     lineHeight: config.base,
@@ -82,27 +73,24 @@ export const Baseline = memo(function Baseline({
     buffer: 160,
   })
 
-  // Choose the baseline color based on the variant.
   const chosenColor = variant === 'line' ? config.colors.line : config.colors.flat
 
-  // Build the container style, using our normalized dimensions and parsed padding.
   const containerStyles = useMemo(
     () =>
       mergeStyles({
-          '--bk-baseline-width': normWidth,
-          padding: `${top}px ${right}px ${bottom}px ${left}px`,
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          overflow: 'hidden',
-          height: `${normHeight}px`,
-        } as CSSProperties,
-        style,
+        '--bk-baseline-width': normWidth,
+        padding: `${top}px ${right}px ${bottom}px ${left}px`,
+        position: 'absolute',
+        inset: 0,
+        pointerEvents: 'none',
+        overflow: 'hidden',
+        height: `${normHeight}px`,
+      } as CSSProperties,
+      style,
       ),
     [normWidth, top, right, bottom, left, normHeight, style],
   )
 
-  // Compute the style for each row.
   const getRowStyle = useCallback(
     (index: number): CSSProperties =>
       mergeStyles({

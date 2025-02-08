@@ -4,6 +4,7 @@ import type { DemoGridAction, DemoGridState } from './types'
 import { usePageHeight } from '../hooks'
 import { Guide, DEFAULT_CONFIG, GuideColumnsPattern } from '../../dist'
 import { Baseline } from '@/components/Baseline'
+import { Config } from '@components'
 
 
 // Custom reducer for the demo -------------------------------------------------
@@ -82,26 +83,28 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
   usePageHeight(handleHeightChange)
 
   return (
-    <div className="grid-playground">
-      <Baseline debugging={state.showGuides.columns ? 'visible' : 'hidden'} height={state.pageHeight} />
+    <Config>
+      <div className="grid-playground">
+        <Baseline debugging={state.showGuides.columns ? 'visible' : 'hidden'} height={state.pageHeight} />
 
-      <div className="demo-wrapper">
-        <Guide
-          debugging={state.showGuides.columns ? 'visible' : 'hidden'}
-          gap={state.columnConfig.gap}
-        />
-        <Guide
-          debugging={state.showGuides.columns ? 'visible' : 'hidden'}
-          variant="fixed"
-          gap={state.columnConfig.gap}
-          columns={9}
-        />
-        <div className="demo-content">
-          {contentNode(state.showGuides.baseline)}
+        <div className="demo-wrapper">
+          <Guide
+            debugging={state.showGuides.columns ? 'visible' : 'hidden'}
+            gap={state.columnConfig.gap}
+          />
+          <Guide
+            debugging={state.showGuides.columns ? 'visible' : 'hidden'}
+            variant="fixed"
+            gap={state.columnConfig.gap}
+            columns={9}
+          />
+          <div className="demo-content">
+            {contentNode(state.showGuides.baseline)}
+          </div>
         </div>
-      </div>
 
-      <GridControls state={state} dispatch={dispatch} />
-    </div>
+        <GridControls state={state} dispatch={dispatch} />
+      </div>
+    </Config>
   )
 }
