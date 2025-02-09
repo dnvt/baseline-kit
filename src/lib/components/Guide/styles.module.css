@@ -1,3 +1,8 @@
+/**
+ * Guide Component Styles
+ * Grid overlay system for layout alignment
+ */
+
 .guide {
   position: absolute;
   inset: 0;
@@ -6,31 +11,27 @@
 }
 
 .line {
-  left: -0.5px;
+  left: -0.5px; /* Alignment correction for line variant */
 }
 
 .columns {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-
+  inset: 0;
   display: grid;
   gap: var(--bk-guide-gap);
   grid-template-columns: var(--bk-guide-template);
   justify-content: var(--bk-guide-justify);
-
-  width: 100%;
-  height: 100%;
+  width: var(--bk-width-full);
+  height: var(--bk-height-full);
 }
 
 .column {
   min-width: 0;
-  width: 100%;
-  height: 100%;
+  width: var(--bk-width-full);
+  height: var(--bk-height-full);
 }
 
+/* Variant-specific styles */
 .column[data-variant="line"] {
   width: 1px;
   background-color: var(--bk-guide-color-line);

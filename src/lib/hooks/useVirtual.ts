@@ -1,82 +1,120 @@
+/**
+ * @file useVirtual Hook
+ * @description Manages virtual scrolling calculations
+ * @module hooks
+ */
+
 import { rafThrottle } from '@utils'
 import { RefObject, useCallback, useLayoutEffect, useState } from 'react'
 
-type Props = {
-  /** Total lines for a horizontal guide (or total columns if you're using this vertically). */
-  totalLines: number
-  /** Pixel size of each line "step." For a horizontal baseline guide, this is your line-height in px. */
-  lineHeight: number
-  /** The container whose offset on the page we track. Lines outside the viewport (plus an optional buffer) won't be rendered. */
-  containerRef: RefObject<HTMLDivElement | null>
-  /** Extra pixel buffer above/below the viewport for "pre-rendering" lines.  */
-  buffer?: number | string
+type VirtualResult = {
+  /** Total number of items/lines to virtualize */
+  totalLines: number;
+  /** Height of each item in pixels */
+  lineHeight: number;
+  /** Reference to the scrollable container */
+  containerRef: RefObject<HTMLDivElement | null>;
+  /** Additional items to render above/below viewport */
+  buffer?: number | string;
 }
 
 /**
+ * Hook for optimizing large lists through virtual scrolling.
  *
- * Hook to compute which lines in a "Baseline" are visible within (or near) the viewport.
- * Subscribes to scroll/resize events (and IntersectionObserver) to update in real time.
+ * @remarks
+ * This hook helps manage virtual scrolling by:
+ * - Calculating visible item ranges
+ * - Handling scroll events efficiently
+ * - Managing buffer zones for smooth scrolling
+ * - Supporting dynamic container sizes
  *
- * @returns An object `{ start, end }` indicating the first and last visible line indices.
+ * Performance optimizations:
+ * - RAF-based scroll handling
+ * - Intersection Observer for visibility
+ * - Buffer zones to prevent flicker
+ * - Efficient range calculations
+ *
+ * @param options - Virtual scrolling configuration
+ * @returns Object containing start and end indices of visible items
+ *
+ * @example
+ * ```tsx
+ * function VirtualList() {
+ *   const containerRef = useRef<HTMLDivElement>(null);
+ *   const { start, end } = useVirtual({
+ *     totalLines: 1000,
+ *     lineHeight: 30,
+ *     containerRef,
+ *     buffer: 5
+ *   });
+ *
+ *   return (
+ *     <div ref={containerRef} className="scroll-container">
+ *       <div style={{ height: 1000 * 30 }}>
+ *         {items.slice(start, end).map(item => (
+ *           <div key={item.id} style={{ height: 30 }}>
+ *             {item.content}
+ *           </div>
+ *         ))}
+ *       </div>
+ *     </div>
+ *   );
+ * }
+ * ```
  */
 export function useVirtual({
   totalLines,
   lineHeight,
   containerRef,
   buffer = 0,
-}: Props) {
-  // Convert the buffer to a numeric value (e.g. 200 or parseInt("200px")).
-  // If parsing fails, fallback to 0.
+}: VirtualResult) {
+  // Convert buffer to numeric value
   const numericBuffer = typeof buffer === 'number'
     ? buffer
     : parseInt(buffer, 10) || 0
 
   /**
-   * Calculates the currently visible range of lines, given:
-   * - The container element's offset in the document.
-   * - The current window scroll position.
-   * - The window's viewport height.
-   * - An optional numeric buffer above/below the viewport.
+   * Calculates the visible range of items based on scroll position
+   * and viewport dimensions.
    */
   const calculateRange = useCallback(() => {
     const element = containerRef.current
     if (!element) return { start: 0, end: totalLines }
 
-    // If the element is inside a `.content-block`, we show all lines
-    // (based on your existing condition). Possibly you only want partial coverage
-    // but we keep the original logic to avoid breaking existing usage.
+    // Show all lines if container is inside .content-block
     if (element.closest('.content-block')) {
       return { start: 0, end: totalLines }
     }
 
-    // Compute the container's position relative to the document
+    // Calculate visible range
     const rect = element.getBoundingClientRect()
     const offsetTop = rect.top + window.scrollY
     const viewportTop = Math.max(0, window.scrollY - offsetTop - numericBuffer)
     const viewportBottom = viewportTop + window.innerHeight + numericBuffer * 2
+
     const start = Math.max(0, Math.floor(viewportTop / lineHeight))
     const end = Math.min(totalLines, Math.ceil(viewportBottom / lineHeight))
+
     return { start, end }
   }, [totalLines, lineHeight, containerRef, numericBuffer])
 
   const [visibleRange, setVisibleRange] = useState(calculateRange)
 
-  // Subscribe to window events using a helper.
+  // Subscribe to window events using our helper
   useWindowEvents(['scroll', 'resize'], () => {
     updateRangeThrottled()
   })
 
-  // We throttle the callback that updates visibleRange
+  // Throttle updates for performance
   const updateRangeThrottled = rafThrottle(() => setVisibleRange(calculateRange()))
 
   useLayoutEffect(() => {
-    // IntersectionObserver used as an additional trigger for dimension changes
     const element = containerRef.current
     if (!element) return
 
+    // Use IntersectionObserver for visibility tracking
     const observer = new IntersectionObserver(updateRangeThrottled, { threshold: 0 })
     observer.observe(element)
-
     updateRangeThrottled()
 
     return () => {
@@ -87,10 +125,7 @@ export function useVirtual({
   return visibleRange
 }
 
-/**
- * Optional helper hook to subscribe a single callback to multiple window events
- * (scroll, resize, etc.) without repeating logic.
- */
+/** Helper hook to manage multiple window event listeners. */
 function useWindowEvents(events: string[], handler: EventListenerOrEventListenerObject) {
   useLayoutEffect(() => {
     events.forEach(evt => window.addEventListener(evt, handler, { passive: true }))

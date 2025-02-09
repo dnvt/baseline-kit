@@ -1,3 +1,9 @@
+/**
+ * @file Padder Component
+ * @description Low-level padding management with visual debugging
+ * @module components
+ */
+
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
 import { mergeClasses, mergeStyles, parsePadding, mergeRefs } from '@utils'
@@ -8,29 +14,51 @@ import styles from './styles.module.css'
 type RenderSpacerFn = (width: React.CSSProperties['width'], height: React.CSSProperties['height']) => React.ReactNode
 
 type PadderProps = {
-  /** Function that renders a custom indicator (e.g., a label) showing the spacer's measured dimensions */
-  indicatorNode?: IndicatorNode
-  children?: React.ReactNode
+  /** Render function for custom measurement indicators */
+  indicatorNode?: IndicatorNode;
+  children?: React.ReactNode;
 } & ComponentsProps
 
 /**
- * Padder - A low-level utility component for applying consistent spacing
- * around its children. In debug modes, it renders Spacer elements to
- * visually indicate padding boundaries.
+ * A foundational component that manages consistent padding with visual debugging.
  *
  * @remarks
- * - **Spacing**: Accepts either Block/Inline spacing or Padding props. Internally,
- *   this is normalized to pixel values based on the configured base unit.
- * - **Debugging**: If `debugging` is "none", `<Padder>` applies CSS padding directly.
- *   For "hidden" or "visible", it inserts `<Spacer>` elements in place of direct padding,
- *   letting you inspect or hide the padding boundaries.
- * - **Integration**: Often used inside components like `<Box>` or layout wrappers to
- *   manage interior spacing consistently with your design system.
+ * Padder is a low-level utility that:
+ * - Applies consistent padding around content
+ * - Supports visual debugging of spacing
+ * - Maintains baseline grid alignment
+ * - Uses Spacer components for visual padding representation
+ *
+ * When debugging is enabled (`"visible"` or `"hidden"`), padding is represented
+ * using Spacer components. When debugging is `"none"`, direct CSS padding is
+ * applied for better performance.
  *
  * @example
  * ```tsx
- * <Padder block={16} inline={8} debugging="visible">
- *   <Text />
+ * // Basic usage
+ * <Padder block={16} inline={8}>
+ *   <div>Content with consistent padding</div>
+ * </Padder>
+ *
+ * // With debug visuals and custom indicators
+ * <Padder
+ *   block={[8, 16]}
+ *   inline={[16, 24]}
+ *   debugging="visible"
+ *   indicatorNode={(value, dim) => (
+ *     <span className="text-sm">{dim}: {value}px</span>
+ *   )}
+ * >
+ *   <div>Content with visible padding guides</div>
+ * </Padder>
+ *
+ * // Direct padding mode
+ * <Padder
+ *   block={16}
+ *   inline={24}
+ *   debugging="none"
+ * >
+ *   <div>Content with direct CSS padding</div>
  * </Padder>
  * ```
  */
@@ -49,20 +77,13 @@ export const Padder = React.memo(
     ref,
   ) {
     const config = useConfig('padder')
-
-    // Use getPadding to extract initial padding values
     const initialPadding = React.useMemo(
       () => parsePadding(spacingProps),
       [spacingProps],
     )
-
-    // Determine debug state from prop or theme config
     const { isShown, isNone, debugging } = useDebug(debuggingProp, config.debugging)
-
-    // If debugging is "none", we skip Spacer elements and use direct CSS padding
     const enableSpacers = !isNone
 
-    // Use useBaseline to adjust padding based on baseline grid
     const internalRef = React.useRef<HTMLDivElement | null>(null)
     const { padding: { top, left, bottom, right } } = useBaseline(internalRef, {
       base: config.base,
@@ -73,7 +94,6 @@ export const Padder = React.memo(
 
     const setRefs = mergeRefs(ref, internalRef)
 
-    // Apply either direct padding (if none) or custom CSS variables for debug modes
     const containerStyles = React.useMemo(
       () => mergeStyles({
         '--bk-padder-width': width ?? 'fit-content',
@@ -81,7 +101,6 @@ export const Padder = React.memo(
         '--bk-padder-base': `${config.base}px`,
         '--bk-padder-color': config.color,
 
-        // Apply adjusted padding when spacers are disabled
         ...(enableSpacers
           ? {}
           : {

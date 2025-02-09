@@ -1,116 +1,153 @@
+/**
+ * @file types.ts
+ * @description Type definitions for Guide component configurations
+ * @module baseline-kit/components/Guide/types
+ */
+
 import { GuideColumnsPattern } from '../types'
 import { CSSProperties } from 'react'
 
 /**
- * Shared fields for guide configurations.
+ * Base configuration shared by all guide variants.
  *
- * @property gap - The multiplier for the base spacing unit.
- *   For example, if `gap = 2` and `base = 8`, the actual gap becomes `16px`.
- * @property base - The base spacing unit (in px). Usually derived from theme config.
+ * @example
+ * ```ts
+ * const baseConfig: BaseGuideConfig = {
+ *   gap: 2,     // Results in 16px gap (2 * 8px base)
+ *   base: 8     // 8px base unit
+ * }
+ * ```
  */
 type BaseGuideConfig = {
-  /** Multiplier for the base spacing unit (e.g., 2 => 2 * base). */
+  /**
+   * Gap multiplier applied to base unit.
+   * Final gap = gap * base (e.g., 2 * 8px = 16px)
+   */
   gap?: number;
-  /** The baseline spacing unit (in px). */
+
+  /**
+   * Base unit in pixels for spacing calculations.
+   * Typically inherited from theme configuration.
+   */
   base?: number;
 };
 
 /**
- * Pattern-based guide configuration.
- *
- * @remarks
- * Use this to define a repeating array of column widths.
- * For example, columns: [100, 200, 100] will cycle through widths in that order.
+ * Pattern-based grid configuration.
+ * Defines repeating column width patterns.
  *
  * @example
  * ```ts
- * const patternConfig: PatternConfig = {
+ * // Three-column pattern: 100px | 200px | 100px
+ * const pattern: PatternConfig = {
  *   variant: 'pattern',
- *   columns: [100, 200, 100],
- *   gap: 2, // gap * base => actual gap in px
- *   base: 8 // defaults if not overridden
- * };
+ *   columns: [100, '200px', '1fr'],
+ *   gap: 2
+ * }
+ *
+ * // Responsive pattern with mixed units
+ * const responsive: PatternConfig = {
+ *   variant: 'pattern',
+ *   columns: ['20%', '1fr', '200px'],
+ *   gap: 2
+ * }
  * ```
  */
 export type PatternConfig = BaseGuideConfig & {
+  /** Identifies this as a pattern-based configuration */
   variant: 'pattern';
-  /** An array of numeric widths or CSSValue strings, cycled through repeatedly. */
+  /** Array of column widths that repeat */
   columns: GuideColumnsPattern;
-  /** `columnWidth` is not used in pattern mode. */
+  /** Not applicable in pattern mode */
   columnWidth?: never;
 };
 
 /**
- * Fixed guide configuration.
- *
- * @remarks
- * Use this when you have a fixed number of columns. Optionally,
- * specify a columnWidth for each column, or omit it to let the guide calculate automatically.
+ * Fixed-column grid configuration.
+ * Specifies exact number of equal-width columns.
  *
  * @example
  * ```ts
- * const fixedConfig: FixedConfig = {
+ * // Basic 12-column grid
+ * const grid: FixedConfig = {
  *   variant: 'fixed',
  *   columns: 12,
- *   columnWidth: '80px',
- *   gap: 1,
- *   base: 8
- * };
+ *   gap: 2
+ * }
+ *
+ * // Fixed-width columns
+ * const fixed: FixedConfig = {
+ *   variant: 'fixed',
+ *   columns: 6,
+ *   columnWidth: '160px',
+ *   gap: 2
+ * }
  * ```
  */
 export type FixedConfig = BaseGuideConfig & {
+  /** Identifies this as a fixed-column configuration */
   variant: 'fixed';
-  /** Total number of columns to render. */
+  /** Number of columns to create */
   columns: number;
-  /** Optional fixed width for each column (e.g., "100px", "8rem"). */
+  /** Optional fixed width for all columns */
   columnWidth?: CSSProperties['width'];
 };
 
 /**
- * Auto guide configuration.
- *
- * @remarks
- * Allows an automatic number of columns based on a specified columnWidth.
+ * Auto-calculated grid configuration.
+ * Creates as many columns as will fit given a column width.
  *
  * @example
  * ```ts
- * const autoConfig: AutoConfig = {
+ * // Auto-fit columns of 200px
+ * const auto: AutoConfig = {
  *   variant: 'auto',
- *   columnWidth: '200px', // the guide will figure out how many columns fit
- *   gap: 2,
- *   base: 8
- * };
+ *   columnWidth: '200px',
+ *   gap: 2
+ * }
+ *
+ * // Responsive columns with minimum width
+ * const responsive: AutoConfig = {
+ *   variant: 'auto',
+ *   columnWidth: 'minmax(200px, 1fr)',
+ *   gap: 2
+ * }
  * ```
  */
 export type AutoConfig = BaseGuideConfig & {
+  /** Identifies this as an auto-calculated configuration */
   variant: 'auto';
-  /** Width for each column, leaving the guide to calculate how many fit. */
+  /** Desired width for each column */
   columnWidth: CSSProperties['columnWidth'];
-  /** `columns` is not used in auto mode. */
+  /** Not applicable in auto mode */
   columns?: never;
 };
 
 /**
- * Line-based guide configuration (default variant if not specified).
- *
- * @remarks
- * Draws evenly spaced vertical lines. The gap is multiplied by the base unit
- * to get the final pixel distance between lines.
+ * Simple line-based guide configuration.
+ * Creates evenly-spaced vertical lines.
  *
  * @example
  * ```ts
- * const lineConfig: LineConfig = {
+ * // Basic line guide
+ * const lines: LineConfig = {
  *   variant: 'line',
- *   gap: 1,
+ *   gap: 1
+ * }
+ *
+ * // Custom-spaced lines
+ * const wideLines: LineConfig = {
+ *   variant: 'line',
+ *   gap: 4,
  *   base: 8
- * };
+ * }
  * ```
  */
 export type LineConfig = BaseGuideConfig & {
-  /** The line variant if not explicitly stated defaults to 'line'. */
+  /** Optional variant identifier (defaults to 'line') */
   variant?: 'line';
-  /** No columns are used for line mode. */
+  /** Not applicable in line mode */
   columns?: never;
-  /** No columnWidth is used for line mode. */
+  /** Not applicable in line mode */
   columnWidth?: never;
 };

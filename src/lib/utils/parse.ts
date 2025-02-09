@@ -1,7 +1,29 @@
 /**
+ * @file parse.ts
+ * @description CSS value parsing utilities
+ * @module utils
+ */
+
+/**
  * Parses a CSS unit string into its numeric value and unit.
- * @param value - A string like "100px", "1.5rem", etc.
- * @returns An object { value, unit } or null if parsing fails.
+ *
+ * @remarks
+ * Handles:
+ * - Integer and decimal values
+ * - All CSS units (px, em, rem, etc.)
+ * - Percentage values
+ * - Sign prefixes (+ and -)
+ *
+ * @param value - CSS value string to parse
+ * @returns Object with value and unit, or null if parsing fails
+ *
+ * @example
+ * ```ts
+ * parseUnit('100px')    // => { value: 100, unit: 'px' }
+ * parseUnit('1.5rem')   // => { value: 1.5, unit: 'rem' }
+ * parseUnit('-20%')     // => { value: -20, unit: '%' }
+ * parseUnit('invalid')  // => null
+ * ```
  */
 export function parseUnit(value: string): { value: number; unit: string } | null {
   const match = value.trim().match(/^([+-]?[\d.]+)([a-zA-Z%]+)$/)
@@ -12,13 +34,25 @@ export function parseUnit(value: string): { value: number; unit: string } | null
 }
 
 /**
- * Formats a CSSValue as a valid CSS string.
- * Numeric values are suffixed with "px" (unless the value is zero).
- * Certain special strings (like "auto", "100%", "1fr", etc.) are returned as is.
+ * Formats a value as a valid CSS string.
  *
- * @param value - The CSS value to format.
- * @param defaultValue - An optional default numeric value if value is undefined.
- * @returns A formatted CSS string.
+ * @remarks
+ * Handles:
+ * - Numbers (adds px suffix)
+ * - Special values (auto, 100%, etc.)
+ * - Undefined values with defaults
+ *
+ * @param value - Value to format
+ * @param defaultValue - Optional default if value is undefined
+ * @returns Formatted CSS string
+ *
+ * @example
+ * ```ts
+ * formatValue(14)             // => "14px"
+ * formatValue('auto')         // => "auto"
+ * formatValue(undefined, 10)  // => "10px"
+ * formatValue('1fr')         // => "1fr"
+ * ```
  */
 export function formatValue(value: string | number | undefined, defaultValue?: number): string {
   if (value === undefined && defaultValue !== undefined) return `${defaultValue}px`

@@ -1,3 +1,9 @@
+/**
+ * @file Stack Component
+ * @description Flex container with baseline grid alignment
+ * @module components
+ */
+
 import * as React from 'react'
 import { IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
@@ -8,25 +14,76 @@ import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
 export type StackProps = {
-  /** Flex direction: 'row' (default) or 'column'. */
-  direction?: 'row' | 'column'
-  /** Justify content, e.g. 'flex-start', 'center', 'space-between'. */
-  justify?: React.CSSProperties['justifyContent']
-  /** Gap between children elements */
-  gap?: React.CSSProperties['gap']
-  /** Align items, e.g. 'flex-start', 'center', 'stretch'. */
-  align?: React.CSSProperties['alignItems']
-  /** Optionally, force a fixed width for the container. Defaults to "fit-content" when not provided */
-  width?: React.CSSProperties['width']
-  /** Optionally, force a fixed height for the container. Defaults to "fit-content" when not provided */
-  height?: React.CSSProperties['height']
-  /** Function that renders a custom indicator (e.g., a label) showing the spacer's measured dimensions */
-  indicatorNode?: IndicatorNode
-  /** Controls the visual style of the spacer */
-  variant?: Variant
-  children?: React.ReactNode
-} & ComponentsProps
+  /** Main axis orientation */
+  direction?: 'row' | 'column';
+  /** Distribution of space on main axis */
+  justify?: React.CSSProperties['justifyContent'];
+  /** Space between children */
+  gap?: React.CSSProperties['gap'];
+  /** Alignment on cross axis */
+  align?: React.CSSProperties['alignItems'];
+  /** Container width (defaults to "fit-content") */
+  width?: React.CSSProperties['width'];
+  /** Container height (defaults to "fit-content") */
+  height?: React.CSSProperties['height'];
+  /** Custom measurement indicator renderer */
+  indicatorNode?: IndicatorNode;
+  /** Visual style in debug mode */
+  variant?: Variant;
+  children?: React.ReactNode;
+} & ComponentsProps;
 
+/**
+ * A flexible container component aligning children to the baseline grid.
+ *
+ * @remarks
+ * Stack provides a flex container that:
+ * - Maintains baseline grid alignment
+ * - Supports both row and column layouts
+ * - Handles consistent spacing between items
+ * - Includes visual debug overlays
+ *
+ * Key features:
+ * - Automatic dimension management (defaults to fit-content)
+ * - Direct padding application in non-debug mode
+ * - Comprehensive alignment controls
+ * - Theme-aware debug visuals
+ *
+ * @example
+ * ```tsx
+ * // Basic horizontal stack
+ * <Stack gap={16}>
+ *   <div>Item 1</div>
+ *   <div>Item 2</div>
+ * </Stack>
+ *
+ * // Vertical stack with alignment
+ * <Stack
+ *   direction="column"
+ *   gap={24}
+ *   align="center"
+ *   justify="space-between"
+ *   debugging="visible"
+ * >
+ *   <div>Top</div>
+ *   <div>Middle</div>
+ *   <div>Bottom</div>
+ * </Stack>
+ *
+ * // Complex layout with padding
+ * <Stack
+ *   direction="row"
+ *   gap={32}
+ *   align="stretch"
+ *   block={[16, 24]}
+ *   inline={16}
+ *   debugging="visible"
+ * >
+ *   <div>Panel 1</div>
+ *   <div>Panel 2</div>
+ * </Stack>
+ * ```
+ */
 export const Stack = React.memo(function Stack({
   align = 'stretch',
   children,
@@ -54,13 +111,9 @@ export const Stack = React.memo(function Stack({
     warnOnMisalignment: true,
   })
 
-  const stackGapStyles = React.useMemo(() => {
-    const gapStyles: React.CSSProperties = {}
-    if (gap !== undefined) {
-      gapStyles.gap = gap
-    }
-    return gapStyles
-  }, [gap])
+  const stackGapStyles = React.useMemo(() => ({
+    gap: gap !== undefined ? gap : undefined,
+  }), [gap])
 
   const containerStyles = React.useMemo(() => {
     return mergeStyles({

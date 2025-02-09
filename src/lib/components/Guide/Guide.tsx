@@ -1,3 +1,9 @@
+/**
+ * @file Guide Component
+ * @description Visual grid overlay component for alignment and debugging
+ * @module components
+ */
+
 import { CSSProperties, memo, useMemo, useRef } from 'react'
 import {
   useConfig,
@@ -10,41 +16,57 @@ import { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
 import type { ComponentsProps } from '../types'
 import styles from './styles.module.css'
 
-/** Merged config types allowing variants for line, fixed columns, pattern, or auto column width. */
+/** Merged configuration types that support various grid layout strategies */
 export type GuideConfig = PatternConfig | AutoConfig | FixedConfig | LineConfig;
 
 export type GuideProps = {
   /**
-   * Horizontal alignment of the column set within the container.
+   * Controls horizontal alignment of columns within the container.
    * @default "start"
    */
   align?: 'start' | 'center' | 'end';
 } & ComponentsProps & GuideConfig;
 
 /**
- * Guide - A developer/debug overlay for visualizing vertical columns or line-based patterns.
+ * A developer tool component that provides visual grid overlays for alignment.
  *
  * @remarks
- * - **Usage**: Useful for checking alignment of layouts, especially if you have a grid-based design.
- * - **Variants**:
- *   - "line": Renders evenly spaced vertical lines (based on `gap` and `base`).
- *   - "auto": Dynamically calculates columns of a given `columnWidth`.
- *   - "pattern": Uses an array of column widths to build a repeating pattern.
- *   - "fixed": Renders a fixed number of columns (via `columns` and optional `columnWidth`).
- * - **Debugging**: If `debugging` is "visible", the columns or lines are rendered in the overlay.
- *   Otherwise, the overlay is hidden (`debugging="none"` or `"hidden"`).
- * - **Spacing**: Also accepts block/inline or padding props to offset the guide from edges or wrap within
- *   a larger container.
+ * Guide renders a configurable grid overlay that helps visualize:
+ * - Column layouts and spacing
+ * - Content alignment
+ * - Layout patterns
+ *
+ * The component supports multiple variants:
+ * - "line": Simple evenly-spaced vertical lines
+ * - "pattern": Custom repeating column width patterns
+ * - "fixed": Fixed number of equal or custom-width columns
+ * - "auto": Dynamically calculated columns based on container width
  *
  * @example
  * ```tsx
+ * // Basic column guide
+ * <Guide
+ *   variant="line"
+ *   gap={8}
+ *   debugging="visible"
+ * />
+ *
+ * // Custom column pattern
  * <Guide
  *   variant="pattern"
- *   columns={[100, 200, 100]}
- *   gap={2}
- *   debugging="visible"
+ *   columns={['100px', '1fr', '2fr']}
+ *   gap={16}
  *   align="center"
- *   width="1200px"
+ *   debugging="visible"
+ * />
+ *
+ * // Fixed columns with custom width
+ * <Guide
+ *   variant="fixed"
+ *   columns={12}
+ *   columnWidth="60px"
+ *   gap={8}
+ *   debugging="visible"
  * />
  * ```
  */
@@ -63,18 +85,11 @@ export const Guide = memo(function Guide({
 }: GuideProps) {
   const config = useConfig('guide')
   const variant = variantProp ?? config.variant
-
-  // Determine if debug overlay should be shown
   const { isShown } = useDebug(debugging, config.debugging)
-
-  // Reference to measure container dimensions
   const containerRef = useRef<HTMLDivElement | null>(null)
   const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
-
-  // Compute block/inline or padding offsets
   const { top, right, bottom, left } = useMemo(() => parsePadding(props), [props])
 
-  // Build the grid config object based on provided variant and column settings
   const gridConfig = useMemo(() => {
     const gapInPixels = (gap ?? 1) * config.base
     return (
@@ -118,14 +133,12 @@ export const Guide = memo(function Guide({
     )
   }, [variant, columns, columnWidth, gap, config.base])
 
-  // Calculate CSS grid settings (# of columns, template strings, etc.) based on container size
   const {
     template,
     columnsCount,
     calculatedGap,
   } = useGuide(containerRef, gridConfig)
 
-  // Build inline styles with CSS vars for color, spacing, alignment, etc.
   const containerStyles = useMemo(() => {
     const baseStyles = {
       '--bk-guide-gap': `${calculatedGap}px`,
@@ -140,18 +153,32 @@ export const Guide = memo(function Guide({
     } as CSSProperties
 
     return mergeStyles(baseStyles, style)
-  }, [calculatedGap, align, config.colors.line, config.colors.pattern, top, bottom, left, right, template, width, containerWidth, height, containerHeight, style])
+  }, [
+    calculatedGap,
+    align,
+    config.colors.line,
+    config.colors.pattern,
+    top,
+    bottom,
+    left,
+    right,
+    template,
+    width,
+    containerWidth,
+    height,
+    containerHeight,
+    style
+  ])
 
   return (
     <div
       ref={containerRef}
-      className={
-        mergeClasses(
-          styles.guide,
-          className,
-          isShown ? styles.visible : styles.hidden,
-          variant === 'line' && styles.line,
-        )}
+      className={mergeClasses(
+        styles.guide,
+        className,
+        isShown ? styles.visible : styles.hidden,
+        variant === 'line' && styles.line,
+      )}
       data-testid="guide"
       data-variant={variant}
       style={containerStyles}

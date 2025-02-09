@@ -1,12 +1,35 @@
 /**
- * Creates a debounced version of the provided function.
- * The function will only execute after the specified delay has passed since the last call.
- *
- * @param fn - The function to debounce.
- * @param delay - The delay in milliseconds.
- * @returns A debounced version of the function.
+ * @file timing.ts
+ * @description Performance optimization utilities
+ * @module utils
  */
-export const debounce = <T extends (...args: unknown[]) => void>(fn: T, delay: number): T => {
+
+/**
+ * Creates a debounced version of a function.
+ *
+ * @remarks
+ * Useful for:
+ * - Handling rapid event sequences
+ * - Limiting API calls
+ * - Performance optimization
+ *
+ * @param fn - Function to debounce
+ * @param delay - Delay in milliseconds
+ * @returns Debounced function
+ *
+ * @example
+ * ```ts
+ * const handleResize = debounce(() => {
+ *   // Expensive calculation
+ * }, 100);
+ *
+ * window.addEventListener('resize', handleResize);
+ * ```
+ */
+export const debounce = <T extends (...args: unknown[]) => void>(
+  fn: T,
+  delay: number,
+): T => {
   let timer: ReturnType<typeof setTimeout> | null = null
   return ((...args) => {
     if (timer) clearTimeout(timer)
@@ -15,13 +38,29 @@ export const debounce = <T extends (...args: unknown[]) => void>(fn: T, delay: n
 }
 
 /**
- * Creates a throttled version of the provided function using `requestAnimationFrame`.
- * Ensures the function is executed at most once per animation frame.
+ * Creates a requestAnimationFrame-based throttled function.
  *
- * @param fn - The function to throttle.
- * @returns A throttled version of the function.
+ * @remarks
+ * Optimizes performance by:
+ * - Limiting execution to animation frames
+ * - Preventing rapid-fire calls
+ * - Maintaining visual smoothness
+ *
+ * @param fn - Function to throttle
+ * @returns RAF-throttled function
+ *
+ * @example
+ * ```ts
+ * const updateScroll = rafThrottle(() => {
+ *   // Update scroll position
+ * });
+ *
+ * document.addEventListener('scroll', updateScroll);
+ * ```
  */
-export const rafThrottle = <T extends (...args: unknown[]) => void>(fn: T): T => {
+export const rafThrottle = <T extends (...args: unknown[]) => void>(
+  fn: T,
+): T => {
   let rafId: number | null = null
   return ((...args) => {
     if (rafId) return

@@ -1,40 +1,79 @@
-import { useMemo, RefObject } from 'react'
-import { useMeasure } from './useMeasure'
-import { SnappingMode } from '@components'
-import { calculateSnappedSpacing } from '@utils'
+/**
+ * @file useBaseline Hook
+ * @description Manages baseline grid alignment calculations
+ * @module hooks
+ */
 
-interface Spacing {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
+import { useMemo, RefObject } from 'react'
+import { SnappingMode, Padding } from '@components'
+import { calculateSnappedSpacing } from '@utils'
+import { useMeasure } from './useMeasure'
 
 export interface BaselineOptions {
-  /** The base multiple for alignment. Defaults to 8. */
+  /** Base unit for alignment calculations (default: 8) */
   base?: number;
-  /** The snapping strategy. Defaults to 'none'. */
+  /** Alignment strategy to apply (default: 'none') */
   snapping?: SnappingMode;
-  /** Initial spacing, either as a number (applied to all sides) or as a partial object. */
-  spacing?: Partial<Spacing> | number;
-  /** Logs a warning in dev mode if the final height isn’t aligned. */
+  /** Initial spacing configuration */
+  spacing?: Partial<Padding> | number;
+  /** Enable console warnings for misalignments */
   warnOnMisalignment?: boolean;
 }
 
 export interface BaselineResult {
-  /** The final snapped/adjusted padding values for each side. */
-  padding: Spacing;
-  /** True if the measured height is currently a multiple of `base`. */
+  /** Final adjusted padding values */
+  padding: Padding;
+  /** Whether the measured height is a multiple of base */
   isAligned: boolean;
-  /** The raw measured height of the element (without any forced 2nd pass). */
+  /** Raw measured height in pixels */
   height: number;
 }
 
 /**
- * useBaseline
+ * Hook for managing baseline grid alignment in components.
  *
- * This hook measures an element’s height and returns a padded spacing object
- * that is adjusted (snapped) according to the provided base unit and snapping mode.
+ * @remarks
+ * This hook handles the complex calculations needed to maintain baseline grid
+ * alignment, including:
+ * - Measuring element dimensions
+ * - Calculating padding adjustments
+ * - Snapping values to the grid
+ * - Warning about misalignments
+ *
+ * Different snapping modes affect how spacing is adjusted:
+ * - 'none': Uses raw spacing values without adjustment
+ * - 'height': Adjusts only the final height to align
+ * - 'clamp': Adjusts both height and spacing values
+ *
+ * @param ref - Reference to the DOM element to measure
+ * @param options - Configuration options for alignment behavior
+ * @returns Object containing adjusted padding, alignment status, and height
+ *
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const ref = useRef<HTMLDivElement>(null);
+ *   const { padding, isAligned } = useBaseline(ref, {
+ *     base: 8,
+ *     snapping: 'height',
+ *     spacing: { top: 10, bottom: 20 }
+ *   });
+ *
+ *   return (
+ *     <div
+ *       ref={ref}
+ *       style={{
+ *         paddingTop: padding.top,
+ *         paddingBottom: padding.bottom
+ *       }}
+ *     >
+ *       Content
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @throws {Error} if base is less than 1
  */
 export function useBaseline(
   ref: RefObject<HTMLElement | null>,
@@ -49,12 +88,11 @@ export function useBaseline(
     throw new Error('Base must be >= 1 for baseline alignment.')
   }
 
-  // Retrieve the element’s height via our consolidated measurement hook.
   const { height } = useMeasure(ref)
 
   return useMemo(() => {
-    // Normalize the incoming spacing: if it's a number, turn it into an object.
-    const pad: Spacing =
+    // Normalize spacing input to object form
+    const pad: Padding =
       typeof spacing === 'number'
         ? { top: spacing, right: spacing, bottom: spacing, left: spacing }
         : {
@@ -64,10 +102,10 @@ export function useBaseline(
           left: spacing.left ?? 0,
         }
 
-    // Check whether the element's height is aligned with the base.
+    // Check baseline alignment
     const isAligned = height % base === 0
 
-    // If snapping is "none", simply return the original spacing.
+    // Handle non-snapping case
     if (snapping === 'none') {
       if (!isAligned && warnOnMisalignment && process.env.NODE_ENV === 'development') {
         console.warn(`Element height (${height}px) is not a multiple of base (${base}px).`)
@@ -75,7 +113,7 @@ export function useBaseline(
       return { padding: pad, isAligned, height }
     }
 
-    // For snapping modes "height" and "clamp", use the extracted helper.
+    // Calculate adjusted padding for height/clamp modes
     const finalPadding =
       (snapping === 'height' || snapping === 'clamp')
         ? calculateSnappedSpacing(height, base, pad, snapping)

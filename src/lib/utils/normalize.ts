@@ -1,32 +1,70 @@
-import { clamp, convertValue } from './index'
+/**
+ * @file normalize.ts
+ * @description Value normalization and standardization utilities
+ * @module utils
+ */
+import { convertValue } from './convert'
+import { clamp } from './math'
 
 export interface NormalizationOptions {
-  /** Base unit for normalization (default: 8) */
+  /** Base unit for normalization */
   base?: number;
-  /** Whether to round to the nearest multiple of the base (default: true) */
+  /** Whether to round to nearest base multiple */
   round?: boolean;
-  /** Clamp configuration (optional) */
+  /** Optional value clamping */
   clamp?: { min?: number; max?: number };
-  /** If true, no warnings are logged when values are adjusted (default: false) */
+  /** Suppress warning messages */
   suppressWarnings?: boolean;
 }
 
 /**
- * Normalizes a CSSValue to a number based on a given base.
- * Rounds to the nearest multiple of the base by default.
+ * Normalizes CSS values to a consistent format based on base unit.
  *
- * Examples (with base = 8):
- * - 10 becomes 8 (Math.round(10/8) = 1 → 1×8 = 8)
- * - 13 becomes 16 (Math.round(13/8) = 2 → 2×8 = 16)
- * - "1rem" (assuming 16px) becomes 16.
+ * @remarks
+ * Handles:
+ * - CSS length values
+ * - Numeric values
+ * - Special values (auto)
+ * - Rounding to base unit
+ * - Value clamping
  *
- * @param value - The CSS value to normalize (e.g., 14, "14px", "1rem", or "auto").
- * @param options - Normalization options.
- * @returns The normalized number.
+ * @param value - Value to normalize
+ * @param options - Normalization configuration
+ * @returns Normalized numeric value
+ *
+ * @example
+ * ```ts
+ * // Base unit normalization
+ * normalizeValue(14, { base: 8 })  // => 16
+ *
+ * // With clamping
+ * normalizeValue(14, {
+ *   base: 8,
+ *   clamp: { min: 8, max: 24 }
+ * }) // => 16
+ *
+ * // Without rounding
+ * normalizeValue(14, {
+ *   base: 8,
+ *   round: false
+ * }) // => 14
+ * ```
  */
-export function normalizeValue(value: string | number | undefined, options: NormalizationOptions = {}): number {
-  const { base = 8, round: doRound = true, clamp: clampOptions, suppressWarnings = false } = options
+export function normalizeValue(
+  value: string | number | undefined,
+  options: NormalizationOptions = {},
+): number {
+  const {
+    base = 8,
+    round: doRound = true,
+    clamp: clampOptions,
+    suppressWarnings = false,
+  } = options
+
+  // Handle special cases
   if (value === 'auto') return base
+
+  // Convert to number
   let num: number | null = null
   if (typeof value === 'number') {
     num = value
@@ -42,23 +80,40 @@ export function normalizeValue(value: string | number | undefined, options: Norm
     }
   }
   if (num === null) num = base
+
+  // Apply normalization
   const normalized = doRound ? Math.round(num / base) * base : num
+
+  // Apply clamping if needed
   const clamped =
     clampOptions !== undefined
       ? clamp(normalized, clampOptions.min ?? -Infinity, clampOptions.max ?? Infinity)
       : normalized
+
+  // Warn about adjustments
   if (!suppressWarnings && clamped !== num) {
     console.warn(`Normalized ${num} to ${clamped} to match base ${base}px.`)
   }
+
   return clamped
 }
 
 /**
- * Normalizes a pair of CSSValues.
- * @param values - A tuple of two CSSValues (can be numbers or strings).
- * @param defaults - Defaults to use if a value is undefined.
- * @param options - Normalization options.
- * @returns A tuple of two normalized numbers.
+ * Normalizes a pair of CSS values.
+ *
+ * @param values - Tuple of values to normalize
+ * @param defaults - Default values if input is undefined
+ * @param options - Normalization options
+ * @returns Tuple of normalized values
+ *
+ * @example
+ * ```ts
+ * normalizeValuePair(
+ *   ['14px', '20px'],
+ *   [0, 0],
+ *   { base: 8 }
+ * ) // => [16, 24]
+ * ```
  */
 export function normalizeValuePair(
   values: [string | number | undefined, string | number | undefined] | undefined,
@@ -69,42 +124,4 @@ export function normalizeValuePair(
   const first = values[0] !== undefined ? normalizeValue(values[0], options) : defaults[0]
   const second = values[1] !== undefined ? normalizeValue(values[1], options) : defaults[1]
   return [first, second]
-}
-
-/**
- * Normalizes the dimensions of a DOMRect.
- * @param rect - The DOMRect to normalize.
- * @param options - Normalization options.
- * @returns An object with normalized width, height, top, and left.
- */
-export function normalizeRect(
-  rect: DOMRect,
-  options?: NormalizationOptions,
-): { width: number; height: number; top: number; left: number } {
-  return {
-    width: normalizeValue(rect.width, options),
-    height: normalizeValue(rect.height, options),
-    top: normalizeValue(rect.top, options),
-    left: normalizeValue(rect.left, options),
-  }
-}
-
-/**
- * Checks whether a CSSValue is already normalized to the given base.
- * @param value - The CSS value to check.
- * @param base - The base unit (default: 8).
- * @returns True if the value is normalized, false otherwise.
- */
-export function isNormalized(value: string | number | undefined, base: number = 8): boolean {
-  if (value === 'auto') return true
-  const normalized = normalizeValue(value, { base, suppressWarnings: true })
-  let num: number | null = null
-  if (typeof value === 'number') {
-    num = value
-  } else if (typeof value === 'string') {
-    const conv = convertValue(value)
-    if (conv === null) return false
-    num = conv
-  }
-  return num === normalized
 }

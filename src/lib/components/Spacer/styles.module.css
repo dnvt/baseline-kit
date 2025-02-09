@@ -1,3 +1,8 @@
+/**
+ * Spacer Component Styles
+ * Basic component with outline or background options
+ */
+
 .spacer {
   position: relative;
   width: var(--bk-spacer-width);
@@ -10,6 +15,8 @@
   position: absolute;
   inset: 0;
   border: 1px solid var(--bk-spacer-color-line);
+  z-index: calc(var(--bk-z-index-outline));
+
 }
 
 .flat {

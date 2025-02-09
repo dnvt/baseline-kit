@@ -1,21 +1,72 @@
+/**
+ * @file useGuide Hook
+ * @description Manages grid layout calculations for guide overlays
+ * @module hooks
+ */
+
 import { useMemo, RefObject } from 'react'
 import { GuideConfig, GuideColumnsPattern, isValidGuidePattern } from '@components'
 import { formatValue, convertValue } from '@utils'
 import { useMeasure } from './useMeasure'
 
-/**
- * The result of a guide calculation.
- */
 export interface GuideResult {
-  template: string;          // e.g. "repeat(12, 1px)" or "1fr 2fr auto"
-  columnsCount: number;      // number of columns we derived
-  calculatedGap: number;     // the gap used (in px)
-  isValid: boolean;          // whether the config was valid
+  /** CSS grid template string */
+  template: string;
+  /** Total number of columns */
+  columnsCount: number;
+  /** Final gap size in pixels */
+  calculatedGap: number;
+  /** Whether the configuration is valid */
+  isValid: boolean;
 }
 
 /**
- * Hook for calculating grid layouts (line/pattern/fixed/auto)
- * based on measured container width (from `useMeasurement`).
+ * Hook for calculating grid layout parameters based on container dimensions.
+ *
+ * @remarks
+ * This hook handles complex grid calculations for different layout variants:
+ * - 'line': Evenly spaced vertical lines
+ * - 'pattern': Custom repeating column patterns
+ * - 'fixed': Set number of columns with optional width
+ * - 'auto': Dynamic columns based on available space
+ *
+ * Key features:
+ * - Responsive grid calculations
+ * - Pattern validation
+ * - Gap management
+ * - Error handling
+ *
+ * @param ref - Reference to container element
+ * @param config - Grid configuration object
+ * @returns Grid calculation results
+ *
+ * @example
+ * ```tsx
+ * function GridOverlay() {
+ *   const ref = useRef<HTMLDivElement>(null);
+ *   const { template, columnsCount } = useGuide(ref, {
+ *     variant: 'fixed',
+ *     columns: 12,
+ *     gap: 16,
+ *     base: 8
+ *   });
+ *
+ *   return (
+ *     <div
+ *       ref={ref}
+ *       style={{
+ *         display: 'grid',
+ *         gridTemplateColumns: template,
+ *         gap: calculatedGap
+ *       }}
+ *     >
+ *       {Array(columnsCount).fill(null).map((_, i) => (
+ *         <div key={i} className="grid-line" />
+ *       ))}
+ *     </div>
+ *   );
+ * }
+ * ```
  */
 export function useGuide(
   ref: RefObject<HTMLElement | null>,
@@ -24,12 +75,12 @@ export function useGuide(
   const { width } = useMeasure(ref)
 
   return useMemo(() => {
-    // Defaults
+    // Default values
     const variant = config.variant ?? 'line'
     const base = config.base ?? 8
     const gap = config.gap ?? base
 
-    // If width=0 => not valid
+    // Return invalid result if no width
     if (!width) {
       return {
         template: 'none',
@@ -42,8 +93,7 @@ export function useGuide(
     try {
       switch (variant) {
       case 'line': {
-        // line => columns of 1px repeated
-        // columns = floor(width / (gap+1)) + 1
+        // Simple vertical lines
         const columns = Math.max(1, Math.floor(width / (gap + 1)) + 1)
         return {
           template: `repeat(${columns}, 1px)`,
@@ -54,6 +104,7 @@ export function useGuide(
       }
 
       case 'pattern': {
+        // Custom column pattern
         if (!isValidGuidePattern(config.columns)) {
           throw new Error('Invalid "pattern" columns array')
         }
@@ -62,7 +113,7 @@ export function useGuide(
           return col
         })
 
-        // Validate none is '0' or invalid
+        // Validate no zero widths
         if (columnsArr.some(c => c === '0' || c === '0px')) {
           return {
             template: 'none',
@@ -81,7 +132,7 @@ export function useGuide(
       }
 
       case 'fixed': {
-        // Narrow config.columns to number:
+        // Fixed number of columns
         const colCount = typeof config.columns === 'number' ? config.columns : 0
         if (colCount < 1) {
           throw new Error(`Invalid columns count: ${colCount}`)
@@ -99,7 +150,7 @@ export function useGuide(
       }
 
       case 'auto': {
-        // e.g. auto-fitting columns of a given colWidth, with fallback
+        // Auto-fitting columns
         const colWidth = config.columnWidth ?? 'auto'
         if (colWidth === 'auto') {
           return {
@@ -126,7 +177,7 @@ export function useGuide(
       }
 
       default: {
-        // If unknown variant => fallback to 'line'
+        // Fallback to line variant
         console.warn(
           `[useGuide] Unknown variant "${variant}". Falling back to "line".`,
         )

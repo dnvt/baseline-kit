@@ -1,3 +1,9 @@
+/**
+ * @file Baseline Component
+ * @description Horizontal grid overlay for baseline alignment
+ * @module components
+ */
+
 import { CSSProperties, memo, useCallback, useMemo, useRef } from 'react'
 import { ComponentsProps } from '@components'
 import { useConfig, useDebug, useVirtual, useMeasure } from '@hooks'
@@ -8,32 +14,56 @@ import styles from './styles.module.css'
 export type BaselineVariant = Exclude<Variant, 'pattern'>
 
 export type BaselineProps = {
-  /** Defines the visual variant of the baseline. */
+  /** Visual style variant for the baseline guides */
   variant?: BaselineVariant;
-  /** Optional explicit width for the baseline overlay (e.g., "1200px" or 1200). */
+  /** Explicit width for the overlay (e.g., "1200px" or 1200) */
   width?: number | string;
-  /** Optional explicit height for the baseline overlay (e.g., "100vh" or 800). */
+  /** Explicit height for the overlay (e.g., "100vh" or 800) */
   height?: number | string;
 } & ComponentsProps;
 
 /**
- * Baseline - An overlay that draws horizontal lines from top to bottom,
- * helping you visualize the baseline grid. Only the currently visible
- * lines are rendered, improving performance on large or scrolling pages.
+ * Renders horizontal guidelines for maintaining vertical rhythm and baseline alignment.
  *
  * @remarks
- * - **Variants**:
- *   - `"line"` => Each row is rendered as a 1px line.
- *   - `"flat"` => Each row is as tall as `base` px, providing a thicker guide.
- * - **Debugging**: If `debugging` is set to `"visible"`, the lines
- *   are displayed; otherwise, they remain hidden.
- * - **Layout**: Positioned absolutely so it won't affect your normal layout flow.
- * - **Spacing**: You can apply block/inline or padding props, ensuring the baseline
- *   aligns properly with your content’s spacing.
+ * Baseline provides horizontal guides that:
+ * - Help maintain consistent vertical spacing
+ * - Support visual verification of baseline alignment
+ * - Optimize performance through virtual rendering
+ * - Adapt to container dimensions
+ *
+ * The component offers two visual variants:
+ * - `line`: Thin lines (1px) at each base unit
+ * - `flat`: Full-height blocks showing the base unit grid
+ *
+ * Performance optimization:
+ * - Only renders guidelines visible in the viewport
+ * - Adds buffer zones for smooth scrolling
+ * - Uses virtual rendering for large layouts
  *
  * @example
  * ```tsx
- * <Baseline variant="line" debugging="visible" height="100vh" />
+ * // Basic baseline overlay
+ * <Baseline
+ *   debugging="visible"
+ *   height="100vh"
+ * />
+ *
+ * // Custom base unit with flat style
+ * <Baseline
+ *   variant="flat"
+ *   debugging="visible"
+ *   height="100vh"
+ *   block={[16, 0]}  // Top padding only
+ * />
+ *
+ * // Fixed dimensions with line style
+ * <Baseline
+ *   variant="line"
+ *   width="1200px"
+ *   height="800px"
+ *   debugging="visible"
+ * />
  * ```
  */
 export const Baseline = memo(function Baseline({
@@ -59,8 +89,6 @@ export const Baseline = memo(function Baseline({
 
   const { top, right, bottom, left } = useMemo(() => parsePadding(spacingProps), [spacingProps])
 
-  // Calculate the number of rows (lines) to render:
-  // Subtract vertical padding (top + bottom) from the normalized height.
   const rowCount = useMemo(() => {
     const totalHeight = (normHeight ?? 0) - (top + bottom)
     return Math.max(1, Math.floor(totalHeight / config.base))
