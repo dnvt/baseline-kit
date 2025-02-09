@@ -1,5 +1,11 @@
 # padded-grid
 
+## 2.0.0
+
+### Major Changes
+
+- 883f42d: API Refactor and added Stack Layout components
+
 ## 1.1.2
 
 ### Patch Changes
