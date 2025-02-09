@@ -1,32 +1,58 @@
+/**
+ * @file merge.ts
+ * @description Style and class merging utilities
+ * @module utils
+ */
+
 import * as React from 'react'
 
 /**
  * Combines class names, filtering out falsy values.
- * Useful for conditionally applying class names in React components.
  *
- * @param classes - An array of class names or falsy values (e.g., `null`, `undefined`, `false`).
- * @returns A single string of class names, separated by spaces.
+ * @remarks
+ * - Filters out false, null, undefined
+ * - Trims whitespace
+ * - Preserves order of classes
+ *
+ * @param classes - Array of potential class names
+ * @returns Combined class string
+ *
+ * @example
+ * ```ts
+ * mergeClasses('btn', isActive && 'active', undefined)
+ * // => "btn active"
+ * ```
  */
 export const mergeClasses = (
   ...classes: Array<string | boolean | undefined | null>
 ): string => classes.filter(Boolean).join(' ').trim()
 
 /**
- * Combines multiple style objects into one, ensuring type safety.
- * Useful for dynamically applying styles in React components.
+ * Combines multiple style objects with type safety.
  *
- * @param styles - An array of style objects or `undefined`.
- * @returns A single combined style object.
+ * @remarks
+ * - Preserves type information
+ * - Handles undefined values
+ * - Merges deeply nested styles
+ *
+ * @param styles - Array of style objects
+ * @returns Combined style object
+ *
+ * @example
+ * ```ts
+ * mergeStyles(
+ *   { color: 'red' },
+ *   isLarge && { fontSize: '2em' },
+ *   customStyles
+ * )
+ * ```
  */
-export const mergeStyles = <T extends React.CSSProperties>(...styles: Array<T | undefined>): T =>
-  Object.assign({}, ...styles.filter((style): style is T => style !== undefined))
-
+export const mergeStyles = <T extends React.CSSProperties>(
+  ...styles: Array<T | undefined>
+): T => Object.assign({}, ...styles.filter((style): style is T => style !== undefined))
 
 /**
- * Helper function for assigning a value to a ref.
- *
- * @param ref - A React ref (function or object) or `null`/`undefined`
- * @param node - The node to assign to the ref.
+ * Assigns a value to a React ref.
  */
 function assignRef<T>(ref: React.Ref<T> | null | undefined, node: T | null): void {
   if (!ref) return
@@ -42,10 +68,26 @@ function assignRef<T>(ref: React.Ref<T> | null | undefined, node: T | null): voi
 }
 
 /**
- * Merges multiple React refs (both callback refs and object refs) into a single ref callback.
+ * Merges multiple React refs into a single callback ref.
  *
- * @param refs - An array of React refs (either function refs or object refs) to merge.
- * @returns A merged ref callback that updates all provided refs.
+ * @remarks
+ * Handles:
+ * - Function refs
+ * - Object refs
+ * - Undefined/null refs
+ *
+ * @param refs - Array of refs to merge
+ * @returns Combined ref callback
+ *
+ * @example
+ * ```tsx
+ * const Component = React.forwardRef((props, ref) => {
+ *   const localRef = useRef(null);
+ *   const combinedRef = mergeRefs(ref, localRef);
+ *
+ *   return <div ref={combinedRef} />;
+ * });
+ * ```
  */
 export function mergeRefs<T>(
   ...refs: Array<React.Ref<T> | null | undefined>

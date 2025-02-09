@@ -1,17 +1,26 @@
 /**
- * Baseline Kit Components
- * @module components
+ * @file Component Exports (components/index.ts)
+ * @description Main entry point for baseline-kit components
+ * @module baseline-kit/components
  */
 
 import './styles/index.css'
 
-export * from './Baseline'
-export * from './Box'
-export * from './Config'
-export * from './Guide'
+// Layout Components
 export * from './Layout'
-export * from './Padder'
-export * from './Spacer'
+export * from './Box'
 export * from './Stack'
-export * from './types'
 
+// Grid Components
+export * from './Guide'
+export * from './Baseline'
+
+// Spacing Components
+export * from './Spacer'
+export * from './Padder'
+
+// Configuration
+export * from './Config'
+
+// Types
+export * from './types'

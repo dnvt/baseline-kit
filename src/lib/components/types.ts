@@ -1,15 +1,47 @@
 import type { CSSProperties } from 'react'
 import { DebuggingMode } from '@components'
 
-// Spacing & Padding -----------------------------------------------------------
+// Spacing Types  --------------------------------------------------------------
 
-/** Represents spacing values that can be provided in different formats. */
+/**
+ * Defines spacing as either a single value, start/end pair, or object with explicit edges.
+ * Used for block and inline spacing across components.
+ *
+ * @example
+ * ```tsx
+ * // Single value
+ * <Box block={8} />
+ *
+ * // Start/end pair
+ * <Box block={[8, 16]} />
+ *
+ * // Object with explicit values
+ * <Box block={{ start: 8, end: 16 }} />
+ * ```
+ */
 export type Spacing =
   | number
   | [number, number]
   | { start?: number; end?: number }
 
-/** A padding value can be provided as a number, an array, or an object. */
+/**
+ * Flexible padding definition that supports multiple formats for setting padding on all sides.
+ *
+ * @example
+ * ```tsx
+ * // Single value for all sides
+ * padding={8}
+ *
+ * // Block and inline pairs
+ * padding={[8, 16]}
+ *
+ * // Explicit values for each side
+ * padding={[8, 16, 8, 16]}
+ *
+ * // Object with named sides
+ * padding={{ top: 8, right: 16, bottom: 8, left: 16 }}
+ * ```
+ */
 export type PaddingValue =
   | number
   | [number, number]                    // [block, inline]
@@ -21,7 +53,7 @@ export type PaddingValue =
   right?: number;
 }
 
-/** A complete padding object with numeric values for all edges. */
+/** Resolved padding values for all edges after normalization. */
 export type Padding = {
   top: number;
   right: number;
@@ -29,54 +61,56 @@ export type Padding = {
   left: number;
 }
 
-/** Spacing props used in component interfaces. */
+/** Props interface for components that support spacing configuration. */
 export type SpacingProps = {
   padding?: PaddingValue;
   block?: Spacing;
   inline?: Spacing;
 }
 
-// Grid Column Types  ----------------------------------------------------------
+// Grid Types ------------------------------------------------------------------
 
-/** Valid variants for the guide/grid column. */
+/** Controls how columns are laid out in grid components. */
 export type GuideVariant = 'line' | 'pattern' | 'fixed' | 'auto'
 
-/** A grid column value may be a CSSValue or the string "auto". */
+/**
+ * Valid value types for grid columns. Can be a CSS length, fractional unit,
+ * or 'auto' for automatic sizing.
+ */
 export type GuideColumnValue = string | number | undefined | 'auto'
 
-/** A pattern for grid columns, defined as an array of GuideColumnValue. */
+/** Array of column definitions for pattern-based grid layouts. */
 export type GuideColumnsPattern = readonly GuideColumnValue[]
 
-// Grid Constants & Types  -----------------------------------------------------
+// === Grid Constants ===
 
+/** Valid grid alignment values. */
 export const GRID_ALIGNMENTS = ['start', 'center', 'end'] as const
 export type GridAlignment = typeof GRID_ALIGNMENTS[number]
 
+/** Valid component variants affecting visual style. */
 export const PADD_VARIANTS = ['line', 'flat'] as const
 export type PaddedVariant = typeof PADD_VARIANTS[number]
 
-// Common Component Types  -----------------------------------------------------
+// Component Base Types --------------------------------------------------------
 
 /**
- * Props common to all components in the library.
- * Includes spacing, sizing, and debugging controls.
+ * Common props shared across library components.
+ * Provides consistent sizing, spacing, styling, and debugging options.
  */
 export type ComponentsProps = {
-  /** Controls debug-related visibility and overlays. */
-  debugging?: DebuggingMode
-  className?: string
-  style?: CSSProperties
-  /** Component height (default: "fit-content") */
-  height?: CSSProperties['height']
-  /** Component width (default: "fit-content") */
-  width?: CSSProperties['width']
+  debugging?: DebuggingMode;
+  className?: string;
+  style?: CSSProperties;
+  height?: CSSProperties['height'];
+  width?: CSSProperties['width'];
 } & SpacingProps
 
-/** Base configuration for padded components. */
+/** Base configuration for components that support padding. */
 export type PaddedBaseConfig = {
-  base?: number
-  color?: CSSProperties['color'] | CSSProperties['backgroundColor']
-  zIndex?: CSSProperties['zIndex']
+  base?: number;
+  color?: CSSProperties['color'] | CSSProperties['backgroundColor'];
+  zIndex?: CSSProperties['zIndex'];
 }
 
 export type Variant = 'line' | 'flat' | 'pattern'

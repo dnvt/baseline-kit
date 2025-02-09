@@ -1,3 +1,9 @@
+/**
+ * @file Spacer Component
+ * @description Flexible spacing element with measurement indicators
+ * @module components
+ */
+
 import * as React from 'react'
 import { useConfig, useDebug } from '@hooks'
 import { mergeStyles, mergeClasses, formatValue, normalizeValuePair } from '@utils'
@@ -5,12 +11,11 @@ import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
 /**
- * Signature for a function that renders a custom indicator node
- * (e.g., measurement label) for the spacer's dimension in debug mode.
+ * Function signature for custom measurement indicators.
  *
- * @param value - The numerical measurement (in px) of the spacer's dimension.
- * @param dimension - The dimension type: 'width' or 'height'.
- * @returns A ReactNode representing the indicator to be displayed.
+ * @param value - The measurement in pixels
+ * @param dimension - Which dimension is being measured ('width' | 'height')
+ * @returns React node to display as the indicator
  */
 export type IndicatorNode = (
   value: number,
@@ -18,31 +23,45 @@ export type IndicatorNode = (
 ) => React.ReactNode
 
 export type SpacerProps = {
-  /** Function that renders a custom indicator (e.g., a label) showing the spacer's measured dimensions */
-  indicatorNode?: IndicatorNode
-  /** Controls the visual style of the spacer */
-  variant?: Variant
+  /** Render function for custom measurement display */
+  indicatorNode?: IndicatorNode;
+  /** Visual style when debugging is enabled */
+  variant?: Variant;
 } & ComponentsProps
 
 /**
- * Spacer - A flexible layout element that adds vertical or horizontal
- * space, optionally displaying measurement indicators in debug mode.
+ * A flexible layout element that adds precise vertical or horizontal spacing.
  *
  * @remarks
- * - **Dimension**: `width` and `height` can be any CSS unit (px, %, etc.).
- * - **Debugging**: Use the `indicatorNode` prop to show custom measurements
- *   when `debugging` is set to `"visible"` or `"hidden"`. For `"none"`, no debug
- *   visuals are rendered.
- * - **Variant**: Ties into theme styling with `"line"`, `"flat"`, or `"pattern"`
- *   to adapt how the spacer visually appears in debug mode.
+ * Spacer provides:
+ * - Consistent spacing in layouts
+ * - Optional measurement indicators for debugging
+ * - Multiple visual styles for different debugging needs
+ * - Automatic dimension normalization
+ *
+ * When no explicit dimensions are provided:
+ * - width defaults to "100%"
+ * - height defaults to "100%"
  *
  * @example
  * ```tsx
+ * // Basic vertical spacing
+ * <Spacer height="24px" />
+ *
+ * // Horizontal spacing with custom indicator
  * <Spacer
- *   height="8px"
- *   variant="line"
+ *   width="32px"
+ *   height="100%"
  *   debugging="visible"
- *   indicatorNode={(val, dim) => <>{dim}: {val}px</>}
+ *   indicatorNode={(value, dim) => `${dim}: ${value}px`}
+ * />
+ *
+ * // Custom variant with full dimensions
+ * <Spacer
+ *   variant="flat"
+ *   width="100%"
+ *   height="40px"
+ *   debugging="visible"
  * />
  * ```
  */
@@ -62,18 +81,15 @@ export const Spacer = React.memo(function Spacer({
   const { isShown } = useDebug(debugging, config.debugging)
   const variant = variantProp ?? config.variant
 
-  // Normalize both width and height using normalizeValuePair with fallback [0, 0]
   const [normWidth, normHeight] = normalizeValuePair(
     [width, height],
     [0, 0],
     { base: config.base, suppressWarnings: true },
   )
 
-  // Format CSS values but fallback to 100% if no value was passed
   const cssWidth = formatValue(normWidth || '100%')
   const cssHeight = formatValue(normHeight || '100%')
 
-  // Measurement indicators for debug mode
   const measurements = React.useMemo(() => {
     if (!isShown || !indicatorNode) return null
 
@@ -91,7 +107,6 @@ export const Spacer = React.memo(function Spacer({
     ].filter(Boolean)
   }, [isShown, indicatorNode, normHeight, normWidth])
 
-  // Compose container styles using normalized values and theme config
   const containerStyles = React.useMemo(() => {
     const styleObject = {
       '--bk-spacer-height': cssHeight,

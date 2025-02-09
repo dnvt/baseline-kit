@@ -1,12 +1,31 @@
-import { convertValue } from './index'
+/**
+ * @file math.ts
+ * @description Mathematical calculation utilities
+ * @module utils
+ */
+
+import { convertValue } from './convert'
 
 /**
- * Returns the modulo (remainder) of a CSSValue when divided by a base.
- * Useful for snapping logic.
- * @param value - The CSS value (number or string). If undefined, treated as 0.
- * @param base - The base unit.
- * @param options - Options controlling rounding (default: round=true).
- * @returns A string representing the remainder in pixels (e.g. "6px").
+ * Calculates the modulo (remainder) of a CSS value when divided by a base unit.
+ *
+ * @remarks
+ * Useful for:
+ * - Baseline grid alignment
+ * - Spacing calculations
+ * - Grid fitting
+ *
+ * @param value - Input value (number or CSS string)
+ * @param base - Base unit to calculate remainder against
+ * @param options - Optional calculation controls
+ * @returns Remainder in pixel units (e.g., "6px")
+ *
+ * @example
+ * ```ts
+ * moduloize(14, 8)      // => "6px"
+ * moduloize('14px', 8)  // => "6px"
+ * moduloize(14.3, 8, { round: false }) // => "6.3px"
+ * ```
  */
 export function moduloize(
   value: number | string | undefined,
@@ -26,22 +45,41 @@ export function moduloize(
 }
 
 /**
- * Clamps a number within the specified minimum and maximum.
- * @param value - The number to clamp.
- * @param min - The minimum allowable value.
- * @param max - The maximum allowable value.
- * @returns The clamped value.
+ * Constrains a number within a specified range.
+ *
+ * @param value - Number to clamp
+ * @param min - Minimum allowed value
+ * @param max - Maximum allowed value
+ * @returns Clamped value
+ *
+ * @example
+ * ```ts
+ * clamp(5, 0, 10)   // => 5
+ * clamp(-5, 0, 10)  // => 0
+ * clamp(15, 0, 10)  // => 10
+ * ```
  */
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
 
 /**
- * Rounds a number to the specified precision.
- * Supports negative precision (e.g. -1 rounds to the nearest 10).
- * @param value - The number to round.
- * @param precision - The number of decimal places to round to (default is 0).
- * @returns The rounded number.
+ * Rounds a number to specified precision.
+ *
+ * @remarks
+ * Supports:
+ * - Positive precision (decimal places)
+ * - Negative precision (powers of 10)
+ *
+ * @param value - Number to round
+ * @param precision - Decimal places (default: 0)
+ * @returns Rounded number
+ *
+ * @example
+ * ```ts
+ * round(1.234, 2)   // => 1.23
+ * round(123.4, -1)  // => 120
+ * ```
  */
 export function round(value: number, precision = 0): number {
   if (precision >= 0) {

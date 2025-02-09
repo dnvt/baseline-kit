@@ -1,3 +1,9 @@
+/**
+ * @file validation.ts
+ * @description Validation utilities for Guide component configurations
+ * @module baseline-kit/components/Guide/validation
+ */
+
 import {
   GRID_ALIGNMENTS,
   GridAlignment,
@@ -7,13 +13,22 @@ import {
 } from '@components'
 import { ABSOLUTE_UNIT_CONVERSIONS, RELATIVE_UNITS } from '@utils'
 
+/**
+ * Regular expression for valid CSS unit values.
+ * Matches numeric values with supported CSS units.
+ */
 const UNIT_PATTERN = /^\d*\.?\d+(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/
 
 /**
- * Validates if the given value is a valid grid column value.
+ * Validates individual grid column values.
  *
- * @param value - The value to validate.
- * @returns `true` if the value is a valid grid column value, otherwise `false`.
+ * @example
+ * ```ts
+ * isValidGuideColumnValue(100)     // true
+ * isValidGuideColumnValue('100px') // true
+ * isValidGuideColumnValue('auto')  // true
+ * isValidGuideColumnValue('foo')   // false
+ * ```
  */
 export const isValidGuideColumnValue = (value: unknown): value is GuideColumnValue => {
   if (typeof value === 'number') return Number.isFinite(value) && value >= 0
@@ -22,23 +37,31 @@ export const isValidGuideColumnValue = (value: unknown): value is GuideColumnVal
 }
 
 /**
- * Validates if the given pattern is a valid grid column pattern.
+ * Validates an array of column values as a grid pattern.
  *
- * @param pattern - The pattern to validate.
- * @returns `true` if the pattern is a valid grid column pattern, otherwise `false`.
+ * @example
+ * ```ts
+ * isValidGuidePattern(['100px', '1fr'])     // true
+ * isValidGuidePattern([100, 200])           // true
+ * isValidGuidePattern(['invalid'])          // false
+ * isValidGuidePattern([])                   // false
+ * ```
  */
 export const isValidGuidePattern = (pattern: unknown): pattern is GuideColumnsPattern =>
   Array.isArray(pattern) && pattern.length > 0 && pattern.every(isValidGuideColumnValue)
 
 /**
- * Validates if the given value is a valid CSS grid value.
+ * Validates CSS grid values against supported units.
  *
- * @param value - The value to validate.
- * @returns `true` if the value is a valid CSS grid value, otherwise `false`.
+ * @example
+ * ```ts
+ * isGuideValue('100px')   // true
+ * isGuideValue('2rem')    // true
+ * isGuideValue('foo')     // false
+ * ```
  */
 export const isGuideValue = (value: unknown) => {
   const CSS_UNITS = [...Object.keys(ABSOLUTE_UNIT_CONVERSIONS), ...RELATIVE_UNITS]
-
   return (
     typeof value === 'number' ||
     (typeof value === 'string' && CSS_UNITS.some(unit => value.endsWith(unit)))
@@ -46,40 +69,56 @@ export const isGuideValue = (value: unknown) => {
 }
 
 /**
- * Validates if the given value is a valid grid alignment.
+ * Validates grid alignment values.
  *
- * @param value - The value to validate.
- * @returns `true` if the value is a valid grid alignment, otherwise `false`.
+ * @example
+ * ```ts
+ * isGuideAlignment('start')   // true
+ * isGuideAlignment('center')  // true
+ * isGuideAlignment('foo')     // false
+ * ```
  */
 export const isGuideAlignment = (value: unknown): value is GridAlignment =>
   typeof value === 'string' && GRID_ALIGNMENTS.includes(value as GridAlignment)
 
+/**
+ * Type guard for object values.
+ */
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
 /**
- * Validates if the given configuration is a valid grid line configuration.
+ * Validates line-based guide configurations.
  *
- * @param config - The configuration to validate.
- * @returns `true` if the configuration is a valid grid line configuration, otherwise `false`.
+ * @example
+ * ```ts
+ * isGuideLineConfig({ variant: 'line' })           // true
+ * isGuideLineConfig({ variant: 'pattern' })        // false
+ * ```
  */
 export const isGuideLineConfig = (config: unknown): config is GuideConfig =>
   isObject(config) && config.variant === 'line'
 
 /**
- * Validates if the given configuration is a valid grid column configuration.
+ * Validates column-based guide configurations.
  *
- * @param config - The configuration to validate.
- * @returns `true` if the configuration is a valid grid column configuration, otherwise `false`.
+ * @example
+ * ```ts
+ * isGuideColumnConfig({ columns: 12 })             // true
+ * isGuideColumnConfig({ variant: 'line' })         // false
+ * ```
  */
 export const isGuideColumnConfig = (config: unknown): config is GuideConfig =>
   isObject(config) && 'columns' in config && !('variant' in config)
 
 /**
- * Validates if the given configuration is a valid auto-calculated grid configuration.
+ * Validates auto-calculated guide configurations.
  *
- * @param config - The configuration to validate.
- * @returns `true` if the configuration is a valid auto-calculated grid configuration, otherwise `false`.
+ * @example
+ * ```ts
+ * isAutoCalculatedGuide({ columnWidth: '200px' })  // true
+ * isAutoCalculatedGuide({ columns: 12 })           // false
+ * ```
  */
 export const isAutoCalculatedGuide = (config: unknown): config is GuideConfig =>
   isObject(config) &&

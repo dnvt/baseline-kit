@@ -1,18 +1,37 @@
+/**
+ * @file snapping.ts
+ * @description Baseline grid snapping utilities
+ * @module utils
+ */
+
 import { SnappingMode, Padding, PaddingValue } from '@components'
 import { parsePadding } from '@/utils/padding'
 
 /**
- * Calculates the snapped spacing for an element given its measured height,
- * a base unit, the initial spacing, and a snapping mode.
+ * Calculates spacing adjustments to maintain baseline grid alignment.
  *
- * @param height - The measured height of the element (in pixels).
- * @param base - The base grid unit (must be >= 1).
- * @param initial - The initial spacing values (either a number or an object).
- * @param snapping - The snapping mode:
- *   - 'none': No snapping.
- *   - 'height': Adjusts only the bottom padding.
- *   - 'clamp': Clamps both top and bottom padding.
- * @returns The adjusted spacing.
+ * @remarks
+ * Provides different snapping behaviors:
+ * - none: No adjustments
+ * - height: Adjusts bottom padding only
+ * - clamp: Adjusts both top and bottom padding
+ *
+ * @param height - Measured element height
+ * @param base - Grid base unit
+ * @param initial - Initial spacing values
+ * @param snapping - Snapping mode to apply
+ * @returns Adjusted spacing values
+ *
+ * @example
+ * ```ts
+ * // Height snapping mode
+ * calculateSnappedSpacing(46, 8, { top: 10, bottom: 10 }, 'height')
+ * // => { top: 10, right: 0, bottom: 12, left: 0 }
+ *
+ * // Clamp mode
+ * calculateSnappedSpacing(45, 8, { top: 10, bottom: 6 }, 'clamp')
+ * // => { top: 2, right: 0, bottom: 1, left: 0 }
+ * ```
  */
 export function calculateSnappedSpacing(
   height: number,
@@ -20,15 +39,12 @@ export function calculateSnappedSpacing(
   initial: PaddingValue,
   snapping: SnappingMode,
 ): Padding {
-  // Convert the incoming initial spacing to a complete Padding object.
   const pad: Padding = parsePadding({ padding: initial })
 
-  // If no snapping, simply return the initial spacing.
   if (snapping === 'none') {
     return pad
   }
 
-  // For 'height' snapping, adjust only the bottom padding.
   if (snapping === 'height') {
     const remainder = height % base
     if (remainder !== 0) {
@@ -36,7 +52,6 @@ export function calculateSnappedSpacing(
     }
   }
 
-  // For 'clamp' snapping, clamp the top padding and adjust bottom accordingly.
   if (snapping === 'clamp') {
     pad.top = pad.top % base
     const remainder = height % base

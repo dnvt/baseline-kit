@@ -1,3 +1,9 @@
+/**
+ * @file Layout Component
+ * @description Grid-based layout component with baseline alignment
+ * @module components
+ */
+
 import * as React from 'react'
 import { IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
@@ -9,50 +15,82 @@ import styles from './styles.module.css'
 
 export type LayoutProps = {
   /**
-   * Grid column definition. Can be:
-   * - Number: Equal columns (3 → `repeat(3, 1fr)`)
-   * - String: Raw template (`"1fr auto 200px"`)
-   * - Array: Mix of numbers/strings ([100, '1fr'] → `"100px 1fr"`)
+   * Grid column definition. Supports:
+   * - Number: Equal columns (3 → repeat(3, 1fr))
+   * - String: Raw template ("1fr auto 200px")
+   * - Array: Mixed values ([100, '1fr'] → "100px 1fr")
    */
   columns?: number | string | Array<number | string>;
-
-  /**
-   * Grid row definition. Same format as columns.
-   * @default: 'auto';
-   */
+  /** Grid row definition (same format as columns) */
   rows?: number | string | Array<number | string>;
-  /** Vertical gap between rows (overrides gap) */
+  /** Vertical gap between rows */
   rowGap?: number | string;
-  /** Horizontal gap between columns (overrides gap) */
+  /** Horizontal gap between columns */
   columnGap?: number | string;
-  /** When provided, it overrides rowGap and columnGap */
+  /** When provided, overrides both rowGap and columnGap */
   gap?: number | string;
-  /** Function that renders a custom indicator (e.g., a label) showing the spacer's measured dimensions */
-  indicatorNode?: IndicatorNode
-  /** Controls the visual style of the spacer */
-  variant?: Variant
-  /** Item alignment along row axis (default: 'stretch') */
+  /** Controls item alignment along column axis */
   justifyItems?: React.CSSProperties['justifyItems'];
-  /** Item alignment along column axis (default: 'stretch') */
+  /** Controls item alignment along row axis */
   alignItems?: React.CSSProperties['alignItems'];
-  /** Content distribution along row axis */
+  /** Controls content distribution along row axis */
   justifyContent?: React.CSSProperties['justifyContent'];
-  /** Content distribution along column axis */
+  /** Controls content distribution along column axis */
   alignContent?: React.CSSProperties['alignContent'];
+  /** Custom measurement indicator renderer */
+  indicatorNode?: IndicatorNode;
+  /** Visual style in debug mode */
+  variant?: Variant;
   children?: React.ReactNode;
-} & ComponentsProps;
+} & ComponentsProps
 
+/** Parses grid template definitions into CSS grid-template values. */
 function getGridTemplate(prop?: number | string | Array<number | string>) {
   if (typeof prop === 'number') return `repeat(${prop}, 1fr)`
   if (typeof prop === 'string') return prop
   if (Array.isArray(prop)) {
     return prop.map(p => (typeof p === 'number' ? `${p}px` : p)).join(' ')
   }
-  // Default value if prop is undefined.
   return 'repeat(auto-fit, minmax(100px, 1fr))'
 }
 
-export function Layout({
+/**
+ * A grid-based layout component with baseline alignment and responsive columns.
+ *
+ * @remarks
+ * Layout provides a CSS Grid container that:
+ * - Supports flexible column definitions
+ * - Maintains baseline grid alignment
+ * - Includes gap management
+ * - Offers comprehensive alignment controls
+ * - Provides debug overlays for visual verification
+ *
+ * When no explicit dimensions are provided, Layout defaults to "fit-content"
+ * for both width and height.
+ *
+ * @example
+ * ```tsx
+ * // Basic equal columns
+ * <Layout columns={3} gap={16}>
+ *   <div>Column 1</div>
+ *   <div>Column 2</div>
+ *   <div>Column 3</div>
+ * </Layout>
+ *
+ * // Mixed column widths with alignment
+ * <Layout
+ *   columns={['200px', '1fr', '2fr']}
+ *   gap={24}
+ *   alignItems="center"
+ *   justifyContent="space-between"
+ * >
+ *   <div>Fixed</div>
+ *   <div>Flexible</div>
+ *   <div>Double width</div>
+ * </Layout>
+ * ```
+ */
+export const Layout = React.memo(function Layout({
   children,
   columns,
   rows,
@@ -151,4 +189,5 @@ export function Layout({
       </Padder>
     </Config>
   )
-}
+},
+)

@@ -1,142 +1,136 @@
+/**
+ * Baseline Kit Theme System
+ *
+ * Organization:
+ * 1. Color Palette (HSL values)
+ * 2. Component Theme Colors
+ * 3. Dark Mode Overrides
+ */
+
 :root {
    /* ───────────────────────────────────────────────────────
-      LIGHT THEME
-      Primary = dimmed
-      Secondary = bright
+      Color Palette - Light Theme
+      - Primary: More muted/dimmed colors
+      - Secondary: Brighter, more vibrant colors
    ─────────────────────────────────────────────────────── */
 
-   /* Black */
-   --bk-black-primary: 0, 0%, 10%; /* #1A1A1A (dimm) */
-   --bk-black-secondary: 0, 10%, 30%; /* #544545 (bright) */
+   /* Neutral Colors */
+   --bk-color-black-primary: 0, 0%, 10%; /* #1A1A1A */
+   --bk-color-black-secondary: 0, 10%, 30%; /* #544545 */
+   --bk-color-white-primary: 0, 100%, 90%; /* #FFCCCC */
+   --bk-color-white-secondary: 0, 0%, 90%; /* #E6E6E6 */
 
-   /* White */
-   --bk-white-primary: 0, 100%, 90%; /* #FFCCCC (dimm) */
-   --bk-white-secondary: 0, 0%, 90%; /* #E6E6E6 (bright) */
+   /* Brand Colors */
+   --bk-color-pink-primary: 300, 60%, 40%; /* #A329A3 */
+   --bk-color-pink-secondary: 260, 100%, 70%; /* #9966FF */
+   --bk-color-purple-primary: 270, 60%, 40%; /* #6629A3 */
+   --bk-color-purple-secondary: 230, 100%, 70%; /* #6680FF */
+   --bk-color-blue-primary: 240, 60%, 40%; /* #2929A3 */
+   --bk-color-blue-secondary: 200, 100%, 70%; /* #66CCFF */
 
-   /* Pink */
-   --bk-pink-primary: 300, 60%, 40%; /* #A329A3 (dimm) */
-   --bk-pink-secondary: 260, 100%, 70%; /* #9966FF (bright) */
+   /* Supporting Colors */
+   --bk-color-cyan-primary: 200, 60%, 40%; /* #297AA3 */
+   --bk-color-cyan-secondary: 160, 100%, 70%; /* #66FFCC */
+   --bk-color-green-primary: 160, 60%, 40%; /* #29A37A */
+   --bk-color-green-secondary: 110, 100%, 70%; /* #80FF66 */
+   --bk-color-yellow-primary: 30, 60%, 40%; /* #A36629 */
+   --bk-color-yellow-secondary: 70, 100%, 70%; /* #A36629 */
+   --bk-color-orange-primary: 10, 60%, 40%; /* #A33D29 */
+   --bk-color-orange-secondary: 30, 100%, 70%; /* #FFB266 */
+   --bk-color-red-primary: 330, 60%, 40%; /* #A32966 */
+   --bk-color-red-secondary: 0, 100%, 70%; /* #FF6666 */
 
-   /* Purple */
-   --bk-purple-primary: 270, 60%, 40%; /* #6629A3 (dimm) */
-   --bk-purple-secondary: 230, 100%, 70%; /* #6680FF (bright) */
+   /* ───────────────────────────────────────────────────────
+      Component Theme Colors - Light
+      Using consistent alpha values:
+      - Line: 0.6 (borders)
+      - Flat: 0.2 (backgrounds)
+      - Indice: 0.9-1.0 (indicators)
+   ─────────────────────────────────────────────────────── */
 
-   /* Blue */
-   --bk-blue-primary: 240, 60%, 40%; /* #2929A3 (dimm) */
-   --bk-blue-secondary: 200, 100%, 70%; /* #66CCFF (bright) */
+   /* Guide Component Theme */
+   --bk-guide-color-line-theme: hsla(var(--bk-color-white-primary), 0.15);
+   --bk-guide-color-pattern-theme: hsla(var(--bk-color-purple-secondary), 0.2);
+   --bk-guide-color-auto-theme: hsla(var(--bk-color-blue-secondary), 0.15);
+   --bk-guide-color-fixed-theme: hsla(var(--bk-color-blue-secondary), 0.15);
 
-   /* Cyan */
-   --bk-cyan-primary: 200, 60%, 40%; /* #297AA3 (dimm) */
-   --bk-cyan-secondary: 160, 100%, 70%; /* #66FFCC (bright) */
+   /* Baseline Component Theme */
+   --bk-baseline-color-line-theme: hsla(var(--bk-color-blue-primary), 0.15);
+   --bk-baseline-color-flat-theme: hsla(var(--bk-color-purple-secondary), 0.2);
 
-   /* Green */
-   --bk-green-primary: 160, 60%, 40%; /* #29A37A (dimm) */
-   --bk-green-secondary: 110, 100%, 70%; /* #80FF66 (bright) */
+   /* Spacer Component Theme */
+   --bk-spacer-color-line-theme: hsla(var(--bk-color-purple-primary), 0.6);
+   --bk-spacer-color-flat-theme: hsla(var(--bk-color-purple-secondary), 0.2);
+   --bk-spacer-color-indice-theme: hsla(var(--bk-color-purple-primary), 1);
 
-   /* Yellow */
-   --bk-yellow-primary: 30, 60%, 40%; /* #A36629 (dimm) */
-   --bk-yellow-secondary: 70, 100%, 70%; /* #A36629 (bright) */
+   /* Box Component Theme */
+   --bk-box-color-line-theme: hsla(var(--bk-color-pink-primary), 0.6);
+   --bk-box-color-flat-theme: hsla(var(--bk-color-pink-secondary), 0.2);
+   --bk-box-color-indice-theme: hsla(var(--bk-color-pink-secondary), 0.9);
 
-   /* Orange */
-   --bk-orange-primary: 10, 60%, 40%; /* #A33D29 (dimm) */
-   --bk-orange-secondary: 30, 100%, 70%; /* #FFB266 (bright) */
+   /* Stack Component Theme */
+   --bk-stack-color-line-theme: hsla(var(--bk-color-red-primary), 0.6);
+   --bk-stack-color-flat-theme: hsla(var(--bk-color-red-secondary), 0.2);
+   --bk-stack-color-indice-theme: hsla(var(--bk-color-red-secondary), 0.9);
 
-   /* Red */
-   --bk-red-primary: 330, 60%, 40%; /* #A32966 (dimm) */
-   --bk-red-secondary: 0, 100%, 70%; /* #FF6666 (bright) */
+   /* Layout Component Theme */
+   --bk-layout-color-line-theme: hsla(var(--bk-color-red-primary), 0.6);
+   --bk-layout-color-flat-theme: hsla(var(--bk-color-red-secondary), 0.2);
+   --bk-layout-color-indice-theme: hsla(var(--bk-color-red-secondary), 0.9);
 
-   /* System Colors - using complete HSL strings */
-   --bk-guide-color-line-theme: hsla(var(--bk-blue-primary), 0.15);
-   --bk-guide-color-pattern-theme: hsla(var(--bk-purple-secondary), 0.2);
-   --bk-guide-color-auto-theme: hsla(var(--bk-blue-secondary), 0.15);
-   --bk-guide-color-fixed-theme: hsla(var(--bk-blue-secondary), 0.15);
-
-   --bk-baseline-color-line-theme: hsla(var(--bk-blue-primary), 0.15);
-   --bk-baseline-color-flat-theme: hsla(var(--bk-purple-secondary), 0.2);
-
-   --bk-spacer-color-line-theme: hsla(var(--bk-purple-primary), 0.6);
-   --bk-spacer-color-flat-theme: hsla(var(--bk-purple-secondary), 0.2);
-   --bk-spacer-color-indice-theme: hsla(var(--bk-purple-primary), 1);
-
-   --bk-box-color-line-theme: hsla(var(--bk-pink-primary), 0.6);
-   --bk-box-color-flat-theme: hsla(var(--bk-pink-secondary), 0.2);
-   --bk-box-color-indice-theme: hsla(var(--bk-pink-secondary), 0.9);
-
-   --bk-stack-color-line-theme: hsla(var(--bk-red-primary), 0.6);
-   --bk-stack-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
-   --bk-stack-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
-
-   --bk-layout-color-line-theme: hsla(var(--bk-red-primary), 0.6);
-   --bk-layout-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
-   --bk-layout-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
-
-   --bk-padder-color-theme: hsla(var(--bk-purple-primary), 0.6);
+   /* Padder Component Theme */
+   --bk-padder-color-theme: hsla(var(--bk-color-purple-primary), 0.6);
 }
+
+/* ───────────────────────────────────────────────────────
+   Dark Theme
+   - Inverts Primary/Secondary relationships
+   - Adjusts alpha values for better contrast
+─────────────────────────────────────────────────────── */
 
 @media (prefers-color-scheme: dark) {
    :root {
-      /* ───────────────────────────────────────────────────────
-         DARK THEME
-         Primary = bright
-         Secondary = dimmed
-      ─────────────────────────────────────────────────────── */
+      /* Neutral Colors - Dark */
+      --bk-color-black-primary: 0, 10%, 30%; /* #544545 */
+      --bk-color-black-secondary: 0, 0%, 10%; /* #1A1A1A */
+      --bk-color-white-primary: 0, 0%, 90%; /* #E6E6E6 */
+      --bk-color-white-secondary: 0, 100%, 90%; /* #FFCCCC */
 
-      /* Black */
-      --bk-black-primary: 0, 10%, 30%; /* #544545 (bright) */
-      --bk-black-secondary: 0, 0%, 10%; /* #1A1A1A (dimm) */
+      /* Brand Colors - Dark */
+      --bk-color-pink-primary: 260, 100%, 70%; /* #9966FF */
+      --bk-color-pink-secondary: 300, 60%, 40%; /* #A329A3 */
+      --bk-color-purple-primary: 230, 100%, 70%; /* #6680FF */
+      --bk-color-purple-secondary: 270, 60%, 40%; /* #6629A3 */
+      --bk-color-blue-primary: 200, 100%, 70%; /* #66CCFF */
+      --bk-color-blue-secondary: 240, 60%, 40%; /* #2929A3 */
 
-      /* White */
-      --bk-white-primary: 0, 0%, 90%; /* #E6E6E6 (bright) */
-      --bk-white-secondary: 0, 100%, 90%; /* #FFCCCC (dimm) */
+      /* Supporting Colors - Dark */
+      --bk-color-cyan-primary: 160, 100%, 70%; /* #66FFCC */
+      --bk-color-cyan-secondary: 200, 60%, 40%; /* #297AA3 */
+      --bk-color-green-primary: 110, 100%, 70%; /* #80FF66 */
+      --bk-color-green-secondary: 160, 60%, 40%; /* #29A37A */
+      --bk-color-yellow-primary: 70, 100%, 70%; /* #A36629 */
+      --bk-color-yellow-secondary: 30, 60%, 40%; /* #A36629 */
+      --bk-color-orange-primary: 30, 100%, 70%; /* #FFB266 */
+      --bk-color-orange-secondary: 10, 60%, 40%; /* #A33D29 */
+      --bk-color-red-primary: 0, 100%, 70%; /* #FF6666 */
+      --bk-color-red-secondary: 330, 60%, 40%; /* #A32966 */
 
-      /* Pink */
-      --bk-pink-primary: 260, 100%, 70%; /* #9966FF (bright) */
-      --bk-pink-secondary: 300, 60%, 40%; /* #A329A3 (dimm) */
+      /* Component Theme Overrides - Dark */
+      --bk-baseline-color-line-theme: hsla(var(--bk-color-white-primary), 0.1);
+      --bk-baseline-color-flat-theme: hsla(var(--bk-color-white-secondary), 0.2);
 
-      /* Purple */
-      --bk-purple-primary: 230, 100%, 70%; /* #6680FF (bright) */
-      --bk-purple-secondary: 270, 60%, 40%; /* #6629A3 (dimm) */
+      --bk-guide-color-line-theme: hsla(var(--bk-color-white-primary), 0.1);
+      --bk-guide-color-pattern-theme: hsla(var(--bk-color-purple-secondary), 0.25);
+      --bk-guide-color-auto-theme: hsla(var(--bk-color-blue-secondary), 0.2);
+      --bk-guide-color-fixed-theme: hsla(var(--bk-color-blue-secondary), 0.2);
 
-      /* Blue */
-      --bk-blue-primary: 200, 100%, 70%; /* #66CCFF (bright) */
-      --bk-blue-secondary: 240, 60%, 40%; /* #2929A3 (dimm) */
+      --bk-stack-color-line-theme: hsla(var(--bk-color-red-primary), 0.6);
+      --bk-stack-color-flat-theme: hsla(var(--bk-color-red-secondary), 0.2);
+      --bk-stack-color-indice-theme: hsla(var(--bk-color-red-secondary), 0.9);
 
-      /* Cyan */
-      --bk-cyan-primary: 160, 100%, 70%; /* #66FFCC (bright) */
-      --bk-cyan-secondary: 200, 60%, 40%; /* #297AA3 (dimm) */
-
-      /* Green */
-      --bk-green-primary: 110, 100%, 70%; /* #80FF66 (bright) */
-      --bk-green-secondary: 160, 60%, 40%; /* #29A37A (dimm) */
-
-      /* Yellow */
-      --bk-yellow-primary: 70, 100%, 70%; /* #A36629 (bright) */
-      --bk-yellow-secondary: 30, 60%, 40%; /* #A36629 (dimm) */
-
-      /* Orange */
-      --bk-orange-primary: 30, 100%, 70%; /* #FFB266 (bright) */
-      --bk-orange-secondary: 10, 60%, 40%; /* #A33D29 (dimm) */
-
-      /* Red */
-      --bk-red-primary: 0, 100%, 70%; /* #FF6666 (bright) */
-      --bk-red-secondary: 330, 60%, 40%; /* #A32966 (dimm) */
-
-      /* System override */
-      --bk-baseline-color-line-theme: hsla(var(--bk-white-primary), 0.1);
-      --bk-baseline-color-flat-theme: hsla(var(--bk-white-secondary), 0.2);
-
-      --bk-guide-color-line-theme: hsla(var(--bk-white-primary), 0.1);
-      --bk-guide-color-pattern-theme: hsla(var(--bk-purple-secondary), 0.25);
-      --bk-guide-color-auto-theme: hsla(var(--bk-blue-secondary), 0.2);
-      --bk-guide-color-fixed-theme: hsla(var(--bk-blue-secondary), 0.2);
-
-      --bk-stack-color-line-theme: hsla(var(--bk-red-primary), 0.6);
-      --bk-stack-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
-      --bk-stack-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
-
-      --bk-layout-color-line-theme: hsla(var(--bk-red-primary), 0.6);
-      --bk-layout-color-flat-theme: hsla(var(--bk-red-secondary), 0.2);
-      --bk-layout-color-indice-theme: hsla(var(--bk-red-secondary), 0.9);
+      --bk-layout-color-line-theme: hsla(var(--bk-color-red-primary), 0.6);
+      --bk-layout-color-flat-theme: hsla(var(--bk-color-red-secondary), 0.2);
+      --bk-layout-color-indice-theme: hsla(var(--bk-color-red-secondary), 0.9);
    }
 }
-

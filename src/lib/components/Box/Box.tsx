@@ -1,3 +1,9 @@
+/**
+ * @file Box Component
+ * @description A fundamental layout container with baseline grid alignment
+ * @module components
+ */
+
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
 import { mergeClasses, mergeStyles, parsePadding, mergeRefs } from '@utils'
@@ -7,47 +13,57 @@ import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
 
 /**
- * Determines how the component snaps its layout to the base spacing unit.
+ * Determines how the Box component aligns to the baseline grid.
  *
- * - **"none"**: No snapping; the component uses raw spacing values as provided.
- * - **"height"**: Only the container's height is snapped to the nearest multiple of the base unit (often adjusted by padding-bottom).
- * - **"clamp"**: Both container height **and** any spacing/padding props are snapped to the nearest multiple of the base unit.
+ * @remarks
+ * - `none`: No snapping; uses raw spacing values as provided
+ * - `height`: Only container height snaps to base unit multiples
+ * - `clamp`: Both height and spacing values snap to base unit multiples
  */
 export type SnappingMode = 'none' | 'height' | 'clamp';
 
 type BoxProps = {
-  /** Sets the number of columns to span in a grid layout */
+  /** Number of columns to span in a grid layout */
   colSpan?: number;
-  /** Sets the number of rows to span in a grid layout */
+  /** Number of rows to span in a grid layout */
   rowSpan?: number;
-  /** If using a single span prop, it applies to both columns and rows. When provided, colSpan and rowSpan will be ignored. */
+  /** Shorthand for equal column and row span. Takes precedence over individual spans */
   span?: number;
-  /** Defines how the box snaps spacing to the base grid: */
+  /** Controls baseline grid alignment behavior */
   snapping?: SnappingMode;
   children?: React.ReactNode
 } & ComponentsProps
 
 /**
- * Box - A fundamental container that ensures consistent spacing
- * in alignment with the base grid unit. By default, it clamps
- * any spacing (block/inline) to multiples of the configured base.
+ * A foundational container component that ensures consistent spacing and baseline alignment.
  *
  * @remarks
- * - **Debugging**: You can toggle debug modes to visualize
- *   or hide underlying spacing elements for development.
- * - **Snapping**: You can toggle snapping modes to ensure your
- *   box's spacing conforms to the baseline unit.
- * - **Integration**: Internally uses <Padder> to apply spacing,
- *   and ties into your global config for base units and colors.
+ * Box provides a layout container that:
+ * - Ensures consistent spacing aligned to the baseline grid
+ * - Supports grid layout integration through span props
+ * - Offers configurable snapping modes for fine-grained alignment control
+ * - Includes debug overlays for visual alignment verification
+ *
+ * By default, Box uses "fit-content" for both width and height unless explicitly specified.
  *
  * @example
  * ```tsx
- * <Box block={16} inline={8} snapping="clamp" debugging="visible">
- *   <p>Content aligned to the baseline grid!</p>
+ * // Basic usage with spacing
+ * <Box block={16} inline={8}>
+ *   <p>Content aligned to baseline</p>
+ * </Box>
+ *
+ * // With grid spanning and custom snapping
+ * <Box
+ *   colSpan={2}
+ *   rowSpan={1}
+ *   snapping="height"
+ *   debugging="visible"
+ * >
+ *   <p>Grid-integrated content</p>
  * </Box>
  * ```
  */
-
 export const Box = React.memo(
   React.forwardRef<HTMLDivElement, BoxProps>(function Box(
     {

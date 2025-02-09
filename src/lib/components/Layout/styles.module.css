@@ -1,13 +1,20 @@
+/**
+ * Layout Component Styles
+ * Grid-based layout with baseline alignment
+ */
+
 .layout {
   position: relative;
   box-sizing: border-box;
+  width: var(--bk-layout-width, fit-content);
+  height: var(--bk-layout-height, fit-content);
 }
 
 .visible::after {
-  border: 1px solid var(--bk-layout-color-line);
   content: '';
-  inset: 0;
-  pointer-events: none;
   position: absolute;
-  z-index: calc(var(--bk-stack-z-index) + 1);
+  inset: 0;
+  border: 1px solid var(--bk-layout-color-line);
+  pointer-events: none;
+  z-index: var(--bk-z-index-overlay);
 }
