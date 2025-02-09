@@ -39,7 +39,7 @@ vi.mock('@components/Padder', () => ({
     [key: string]: any
   }) => (
     // Render a wrapping div (e.g. with data-testid="padder") that simply renders its children.
-    // In your actual Stack component, you should assign the inner container a test id like "stack-container".
+    // In your actual Stack component, you should assign the inner container a test id like "stack".
     <div {...rest} data-testid="padder">
       {children}
     </div>
@@ -101,8 +101,7 @@ describe('StackComponent', () => {
 
   it('renders with default props', () => {
     render(<Stack>Content</Stack>)
-    // Query for the inner container (it has data-testid="stack-container")
-    const container = screen.getByTestId('stack-container')
+    const container = screen.getByTestId('stack') // Changed from 'stack-container'
     expect(container).toHaveStyle({
       display: 'flex',
       'flex-direction': 'row',
@@ -119,7 +118,7 @@ describe('StackComponent', () => {
         Test
       </Stack>,
     )
-    const container = screen.getByTestId('stack-container')
+    const container = screen.getByTestId('stack') // Changed from 'stack-container'
     expect(container).toHaveStyle({
       'flex-direction': 'column',
       'justify-content': 'center',
@@ -133,13 +132,12 @@ describe('StackComponent', () => {
         Test
       </Stack>,
     )
-    const container = screen.getByTestId('stack-container')
+    const container = screen.getByTestId('stack') // Changed from 'stack-container'
     expect(container.className).toContain('custom')
     expect(container).toHaveStyle('background: red')
   })
 
   it('applies direct padding when debugging="none"', () => {
-    // Override useDebug so that debugging is "none".
     vi.mocked(hooks.useDebug).mockImplementation(() => ({
       isShown: false,
       isHidden: false,
@@ -151,10 +149,7 @@ describe('StackComponent', () => {
         Test
       </Stack>,
     )
-    const container = screen.getByTestId('stack-container')
-    // When debugging is "none", the Stack should merge direct padding:
-    // Based on our useBaseline mock, padding is { top:8, bottom:16, left:8, right:16 }.
-    // Expect inline style to include:
+    const container = screen.getByTestId('stack') // Changed from 'stack-container'
     expect(container).toHaveStyle({
       'padding-block': '8px 16px',
       'padding-inline': '8px 16px',

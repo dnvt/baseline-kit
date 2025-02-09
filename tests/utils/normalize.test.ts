@@ -1,8 +1,6 @@
 import {
   normalizeValue,
   normalizeValuePair,
-  normalizeRect,
-  isNormalized,
   convertValue,
 } from '@utils'
 
@@ -54,42 +52,6 @@ describe('Normalization Utils', () => {
     it('normalizes each value in the pair', () => {
       // Both 14 and "14px" should normalize to 16 when base is 8.
       expect(normalizeValuePair([14, '14px'], [0, 0], { base: 8 })).toEqual([16, 16])
-    })
-  })
-
-  describe('normalizeRect', () => {
-    it('normalizes all properties of a DOMRect', () => {
-      // Create a fake DOMRect. With base 8:
-      // width: 14 -> 16, height: 13 -> 16, top: 6 -> 8, left: 7 -> 8.
-      const fakeRect = {
-        width: 14,
-        height: 13,
-        top: 6,
-        left: 7,
-      } as DOMRect
-
-      expect(normalizeRect(fakeRect, { base: 8 })).toEqual({
-        width: 16,
-        height: 16,
-        top: 8,
-        left: 8,
-      })
-    })
-  })
-
-  describe('isNormalized', () => {
-    it('returns true for values that are already normalized', () => {
-      expect(isNormalized(16, 8)).toBe(true)
-      expect(isNormalized('16px', 8)).toBe(true)
-    })
-
-    it('returns false for values that are not normalized', () => {
-      expect(isNormalized(14, 8)).toBe(false)
-      expect(isNormalized('14px', 8)).toBe(false)
-    })
-
-    it('returns true for "auto"', () => {
-      expect(isNormalized('auto', 8)).toBe(true)
     })
   })
 

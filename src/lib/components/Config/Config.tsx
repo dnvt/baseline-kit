@@ -99,7 +99,7 @@ type ConfigProps = {
 }
 
 /** Creates CSS variables from the configuration object. */
-const createCSSVariables = ({
+export const createCSSVariables = ({
   base,
   baseline,
   guide,
@@ -237,8 +237,8 @@ export function Config({
   ])
 
   return (
-    <ConfigContext.Provider value={value}>
+    <ConfigContext value={value}>
       {children}
-    </ConfigContext.Provider>
+    </ConfigContext>
   )
 }
