@@ -1,4 +1,4 @@
-# padded-grid
+# baseline-kit
 
 ## 2.0.0
 
