@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import * as React from 'react'
 import { DebuggingMode } from '@components'
 
 // Spacing Types  --------------------------------------------------------------
@@ -101,16 +101,27 @@ export type PaddedVariant = typeof PADD_VARIANTS[number]
 export type ComponentsProps = {
   debugging?: DebuggingMode;
   className?: string;
-  style?: CSSProperties;
-  height?: CSSProperties['height'];
-  width?: CSSProperties['width'];
+  style?: React.CSSProperties;
+  height?: React.CSSProperties['height'];
+  width?: React.CSSProperties['width'];
 } & SpacingProps
 
 /** Base configuration for components that support padding. */
 export type PaddedBaseConfig = {
   base?: number;
-  color?: CSSProperties['color'] | CSSProperties['backgroundColor'];
-  zIndex?: CSSProperties['zIndex'];
+  color?: React.CSSProperties['color'] | React.CSSProperties['backgroundColor'];
+  zIndex?: React.CSSProperties['zIndex'];
 }
 
 export type Variant = 'line' | 'flat' | 'pattern'
+
+export type Gaps = {
+  gap?: React.CSSProperties['gap']
+  rowGap?: never
+  columnGap?: never
+} | {
+  /** When using separate gaps, omit unified gap */
+  gap?: never
+  rowGap?: React.CSSProperties['rowGap']
+  columnGap?: React.CSSProperties['columnGap']
+}

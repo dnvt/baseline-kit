@@ -4,7 +4,6 @@ import { GridSetups, Indice } from './components'
 
 import { Spacer, Box, Config, Baseline, Layout, Stack } from '../dist'
 import '../dist/styles.css'
-import { useMeasure } from '@hooks'
 
 export interface ContentProps {
   showBaseline?: boolean;
@@ -24,21 +23,16 @@ function Content({ showBaseline }: ContentProps) {
   const box1 = useRef<HTMLDivElement>(null)
   const box2 = useRef<HTMLDivElement>(null)
 
-  const { height: box1Height } = useMeasure(box1)
-  const { height: box2Height } = useMeasure(box2)
-
   return (
     <>
-      <Stack gap={12} debugging="visible">
+      <Stack gap={12} block={8} debugging="visible">
         <Box block={[6, 10]} debugging="visible"><p>Menu 1</p></Box>
         <Box block={[6, 10]} debugging="visible"><p>Menu 2</p></Box>
         <Box block={[6, 10]} debugging="visible"><p>Menu 3</p></Box>
         <Box block={[6, 10]} debugging="visible"><p>Menu 4</p></Box>
       </Stack>
-      <Spacer height={24} debugging="visible" indicatorNode={Indice} />
-
       <Layout
-        block={[0, 24]}
+        block={24}
         columns={9}
         columnGap={8}
         debugging="visible"
@@ -47,34 +41,36 @@ function Content({ showBaseline }: ContentProps) {
         <Box ref={box1} block={[6, 10]} span={5} debugging={'visible'}>
           <h1 className="demo-title">This is Baseline Kit library Playground. So let us play with it!</h1>
         </Box>
-        <Spacer variant="flat" style={{ gridColumn: 'span 4' }} debugging="visible" height={box1Height} />
+        {/*<Spacer variant="flat" style={{ gridColumn: 'span 4' }} debugging="visible" height={box1Height} />*/}
         <Box ref={box2} block={[6, 10]} snapping="height" span={5} debugging={'visible'}>
           <p>
             This is a comprehensive demo showcasing the grid system capabilities.
             Use the controls to experiment with different grid configurations.
           </p>
         </Box>
-        <Spacer variant="flat" style={{ gridColumn: 'span 4' }} debugging="visible" height={box2Height} />
+        {/*<Spacer variant="flat" style={{ gridColumn: 'span 4' }} debugging="visible" height={box2Height} />*/}
       </Layout>
 
-      {Array.from({ length: 100 }).map((_, i) => {
-        return (
-          <Fragment key={i}>
-            {!!i && <Spacer height={8} debugging={visibility} variant="flat" />}
-            <Box debugging={'visible'} block={[0, 2]} width="100%">
-              <Config base={8}>
-                <div className="content-block">
-                  <Baseline
-                    height={56}
-                    debugging={visibility}
-                  />
-                  Content Block {i + 1}
-                </div>
-              </Config>
-            </Box>
-          </Fragment>
-        )
-      })}
+      {
+        Array.from({ length: 100 }).map((_, i) => {
+          return (
+            <Fragment key={i}>
+              {!!i && <Spacer height={8} debugging={visibility} variant="flat" />}
+              <Box debugging={'visible'} block={[0, 2]} width="100%">
+                <Config base={8}>
+                  <div className="content-block">
+                    <Baseline
+                      height={56}
+                      debugging={visibility}
+                    />
+                    Content Block {i + 1}
+                  </div>
+                </Config>
+              </Box>
+            </Fragment>
+          )
+        })
+      }
 
       <Spacer height={40} debugging={visibility} indicatorNode={Indice} />
     </>

@@ -46,7 +46,7 @@ export type Config = {
     colors: Record<BaselineVariant, string>;
   };
   /** Stack component configuration */
-  flex: {
+  stack: {
     colors: Colors;
     debugging: DebuggingMode;
   };
@@ -85,7 +85,7 @@ type ConfigProps = {
   /** Baseline component overrides */
   baseline?: Partial<Config['baseline']>;
   /** Flex component overrides */
-  flex?: Partial<Config['flex']>;
+  stack?: Partial<Config['stack']>;
   /** Layout component overrides */
   layout?: Partial<Config['layout']>;
   /** Guide component overrides */
@@ -103,7 +103,7 @@ export const createCSSVariables = ({
   base,
   baseline,
   guide,
-  flex,
+  stack,
   spacer,
   layout,
   box,
@@ -132,9 +132,9 @@ export const createCSSVariables = ({
   '--bk-box-color-indice': box.colors.indice,
 
   // Flex Colors
-  '--bk-stack-color-line': flex.colors.line,
-  '--bk-stack-color-flat': flex.colors.flat,
-  '--bk-stack-color-indice': flex.colors.indice,
+  '--bk-stack-color-line': stack.colors.line,
+  '--bk-stack-color-flat': stack.colors.flat,
+  '--bk-stack-color-indice': stack.colors.indice,
 
   // Layout Colors
   '--bk-layout-color-line': layout.colors.line,
@@ -191,7 +191,7 @@ export const createCSSVariables = ({
 export function Config({
   children,
   base,
-  flex,
+  stack,
   baseline,
   guide,
   layout,
@@ -208,7 +208,7 @@ export function Config({
       guide: { ...parentConfig.guide, ...guide },
       spacer: { ...parentConfig.spacer, ...spacer },
       box: { ...parentConfig.box, ...box },
-      flex: { ...parentConfig.flex, ...flex },
+      stack: { ...parentConfig.stack, ...stack },
       layout: { ...parentConfig.layout, ...layout },
       padder: { ...parentConfig.padder, ...padder },
     }
@@ -224,16 +224,16 @@ export function Config({
     parentConfig.guide,
     parentConfig.spacer,
     parentConfig.box,
-    parentConfig.flex,
+    parentConfig.stack,
     parentConfig.layout,
     parentConfig.padder,
     baseline,
     guide,
     spacer,
     box,
-    flex,
+    stack,
     layout,
-    padder
+    padder,
   ])
 
   return (

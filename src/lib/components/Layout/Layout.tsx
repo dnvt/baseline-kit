@@ -5,7 +5,7 @@
  */
 
 import * as React from 'react'
-import { IndicatorNode } from '@components'
+import type { Gaps, IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
 import { mergeStyles, mergeClasses, parsePadding } from '@utils'
 import { Config } from '../Config'
@@ -23,12 +23,6 @@ export type LayoutProps = {
   columns?: number | string | Array<number | string>;
   /** Grid row definition (same format as columns) */
   rows?: number | string | Array<number | string>;
-  /** Vertical gap between rows */
-  rowGap?: number | string;
-  /** Horizontal gap between columns */
-  columnGap?: number | string;
-  /** When provided, overrides both rowGap and columnGap */
-  gap?: number | string;
   /** Controls item alignment along column axis */
   justifyItems?: React.CSSProperties['justifyItems'];
   /** Controls item alignment along row axis */
@@ -42,7 +36,7 @@ export type LayoutProps = {
   /** Visual style in debug mode */
   variant?: Variant;
   children?: React.ReactNode;
-} & ComponentsProps
+} & ComponentsProps & Gaps
 
 /** Parses grid template definitions into CSS grid-template values. */
 function getGridTemplate(prop?: number | string | Array<number | string>) {
@@ -135,13 +129,11 @@ export const Layout = React.memo(function Layout({
     [rows],
   )
 
-  const gridGapStyles = React.useMemo(() => {
-    const gapStyles: React.CSSProperties = {}
-    if (gap !== undefined) {
-      gapStyles.gap = gap
-    }
-    return gapStyles
-  }, [gap])
+  const gridGapStyles = React.useMemo(() => ({
+    rowGap,
+    columnGap,
+    ...(gap !== undefined && { gap }),
+  }), [rowGap, columnGap, gap])
 
   const gridStyles = React.useMemo(() => {
     return mergeStyles({

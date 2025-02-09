@@ -49,7 +49,7 @@
    ─────────────────────────────────────────────────────── */
 
    /* Guide Component Theme */
-   --bk-guide-color-line-theme: hsla(var(--bk-color-white-primary), 0.15);
+   --bk-guide-color-line-theme: hsla(var(--bk-color-blue-primary), 0.15);
    --bk-guide-color-pattern-theme: hsla(var(--bk-color-purple-secondary), 0.2);
    --bk-guide-color-auto-theme: hsla(var(--bk-color-blue-secondary), 0.15);
    --bk-guide-color-fixed-theme: hsla(var(--bk-color-blue-secondary), 0.15);

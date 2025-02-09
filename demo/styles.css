@@ -95,6 +95,7 @@ section {
   color: var(--demo-text);
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px var(--demo-shadow);
+  z-index: 999;
 }
 
 .divider {

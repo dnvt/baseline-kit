@@ -132,7 +132,7 @@ export const DEFAULT_CONFIG: Config = {
   },
 
   /** Stack/Flex component configuration */
-  flex: {
+  stack: {
     debugging: 'hidden',
     colors: STACK_COLORS,
   },
