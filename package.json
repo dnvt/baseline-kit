@@ -74,7 +74,7 @@
     "vitest": "^2.1.8"
   },
   "name": "baseline-kit",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "type": "module",
   "homepage": "https://github.com/dnvt/padded-grid#readme",
   "types": "dist/index.d.ts",
