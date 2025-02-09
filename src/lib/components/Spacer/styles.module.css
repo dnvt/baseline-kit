@@ -1,89 +1,24 @@
-:root {
-  /* Component Variables */
-  --padd-spacer: 100%;
-  --padd-spacer-width: 100%;
-  --padd-spacer-height: 100%;
-  --padd-spacer-border-width: 1px;
-  --padd-spacer-border-style: solid;
+/**
+ * Spacer Component Styles
+ * Basic component with outline or background options
+ */
 
-  /* Variant Colors */
-  --padd-spacer-color: var(--padd-spacer-color-line);
-  --padd-spacer-color-line: hsla(var(--blue), 0.75);
-  --padd-spacer-color-flat: hsla(var(--blue), 0.3);
-  --padd-spacer-color-indice: hsla(var(--blue), 1);
-}
-
-/* Dark Mode Variables */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --padd-spacer-color-line: hsla(var(--blue), 0.8);
-    --padd-spacer-color-flat: hsla(var(--blue), 0.4);
-    --padd-spacer-color-indice: hsla(var(--blue), 1);
-  }
-}
-
-/* Base Component Styles */
 .spacer {
-  opacity: 0;
-  visibility: hidden;
-  width: var(--padd-spacer-width);
-  height: var(--padd-spacer-height);
-  box-sizing: border-box;
   position: relative;
-  pointer-events: none;
-  --padd-base-unit: var(--padd-base-unit, 8px);
+  width: var(--bk-spacer-width);
+  height: var(--bk-spacer-height);
+  flex-shrink: 0;  
 }
 
-/* Variant Styles */
-.spacer[data-variant="line"]::after {
-  border: var(--padd-spacer-border-width)
-    var(--padd-spacer-border-style)
-    var(--padd-spacer-color);
+.line::after {
   content: '';
   position: absolute;
   inset: 0;
+  border: 1px solid var(--bk-spacer-color-line);
+  z-index: calc(var(--bk-z-index-outline));
+
 }
 
-.spacer[data-variant="flat"] {
-  background-color: var(--padd-spacer-color);
-}
-
-.spacer[data-variant="line"] {
-  --padd-spacer-color: var(--padd-spacer-color-line);
-}
-
-.spacer[data-variant="flat"] {
-  --padd-spacer-color: var(--padd-spacer-color-flat);
-}
-
-/* Dimension Styles */
-.height {
-  --padd-spacer-height: var(--padd-spacer);
-}
-
-.width {
-  --padd-spacer-width: var(--padd-spacer);
-}
-
-/* State Styles */
-.visible {
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 180ms ease,
-    visibility 0ms linear;
-}
-
-.hidden {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 180ms ease,
-    visibility 0ms linear 180ms;
-}
-
-/* Media Queries */
-@media (prefers-reduced-motion: reduce) {
-  .visible,
-  .hidden {
-    transition: none;
-  }
+.flat {
+  background-color: var(--bk-spacer-color-flat);
 }

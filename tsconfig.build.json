@@ -2,13 +2,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    // Add this line
     "declaration": true,
     "declarationDir": "dist",
     "emitDeclarationOnly": true,
     "outDir": "dist",
     "stripInternal": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "module": "ESNext",
     "noEmit": false
   },

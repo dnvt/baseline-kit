@@ -1,19 +1,86 @@
-/* Base styles */
-@import 'src/lib/components/styles/reset.css';
-@import 'src/lib/components/styles/theme.css';
+/* Theme must come first to establish CSS variables */
+@import './theme.css';
+@import './reset.css';
 
-/* Component styles */
-@import 'src/lib/components/Grid/styles.module.css';
-@import 'src/lib/components/Spacer/styles.module.css';
+/* Component-specific styles */
+@import '../Box/styles.module.css';
+@import '../Guide/styles.module.css';
+@import '../Padder/styles.module.css';
+@import '../Spacer/styles.module.css';
 
+/* Base root variables */
 :root {
-  /* Padded system base values */
-  --padd-base-unit: 8px;
-  --padd-z-index: 0;
+  /* Core System Variables */
+  --bk-base: 8px;
+  --bk-z-index-outline: 1;
+  --bk-z-index-overlay: 2;
+  --bk-transition-base: 180ms ease;
 
-  /* Padded system measurements */
-  --padd-gap: var(--padd-base-unit);
-  --padd-width: 100%;
-  --padd-height: 100%;
-  --padd-padding: 0;
+  /* Default Dimensions */
+  --bk-width-default: fit-content;
+  --bk-height-default: fit-content;
+  --bk-width-full: 100%;
+  --bk-height-full: 100%;
+
+  /* Box Component */
+  --bk-box-base: var(--bk-base);
+  --bk-box-width: var(--bk-width-default);
+  --bk-box-height: var(--bk-height-default);
+  --bk-box-color-line: var(--bk-box-color-line-theme, hsla(var(--bk-color-pink-primary), 0.6));
+  --bk-box-color-flat: var(--bk-box-color-flat-theme, hsla(var(--bk-color-pink-secondary), 0.2));
+  --bk-box-color-indice: var(--bk-box-color-indice-theme, hsla(var(--bk-color-pink-secondary), 0.9));
+
+  /* Stack Component */
+  --bk-stack-width: var(--bk-width-full);
+  --bk-stack-height: var(--bk-height-default);
+  --bk-stack-color-line: var(--bk-stack-color-line-theme, hsla(var(--bk-color-red-primary), 0.6));
+  --bk-stack-color-flat: var(--bk-stack-color-flat-theme, hsla(var(--bk-color-red-secondary), 0.2));
+  --bk-stack-color-indice: var(--bk-stack-color-indice-theme, hsla(var(--bk-color-red-secondary), 0.9));
+
+  /* Guide Component */
+  --bk-guide-width: 100vw;
+  --bk-guide-height: 100vh;
+  --bk-guide-gap: var(--bk-base);
+  --bk-guide-justify: start;
+  --bk-guide-template: auto;
+  --bk-guide-padding-block: 0;
+  --bk-guide-padding-inline: 0;
+  --bk-guide-color-line: var(--bk-guide-color-line-theme, hsla(var(--bk-color-blue-primary), 0.15));
+  --bk-guide-color-pattern: var(--bk-guide-color-pattern-theme, hsla(var(--bk-color-purple-secondary), 0.2));
+  --bk-guide-color-auto: var(--bk-guide-color-auto-theme, hsla(var(--bk-color-blue-secondary), 0.15));
+  --bk-guide-color-fixed: var(--bk-guide-color-fixed-theme, hsla(var(--bk-color-blue-secondary), 0.15));
+
+  /* Layout Component */
+  --bk-layout-width: var(--bk-width-default);
+  --bk-layout-height: var(--bk-height-default);
+  --bk-layout-color-line: var(--bk-layout-color-line-theme, hsla(var(--bk-color-red-primary), 0.6));
+  --bk-layout-color-flat: var(--bk-layout-color-flat-theme, hsla(var(--bk-color-red-secondary), 0.2));
+  --bk-layout-color-indice: var(--bk-layout-color-indice-theme, hsla(var(--bk-color-red-secondary), 0.9));
+
+  /* Padder Component */
+  --bk-padder-width: var(--bk-width-default);
+  --bk-padder-height: var(--bk-height-default);
+  --bk-padder-color: var(--bk-padder-color-theme, hsla(var(--bk-color-purple-primary), 0.6));
+
+  /* Spacer Component */
+  --bk-spacer-width: var(--bk-width-full);
+  --bk-spacer-height: var(--bk-height-full);
+  --bk-spacer-color-line: var(--bk-spacer-color-line-theme, hsla(var(--bk-color-purple-primary), 0.6));
+  --bk-spacer-color-flat: var(--bk-spacer-color-flat-theme, hsla(var(--bk-color-purple-secondary), 0.2));
+  --bk-spacer-color-indice: var(--bk-spacer-color-indice-theme, hsla(var(--bk-color-purple-primary), 1));
+}
+
+/* Utility classes */
+.visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--bk-transition-base),
+    visibility 0ms linear;
+}
+
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--bk-transition-base),
+    visibility 0ms linear 180ms;
 }

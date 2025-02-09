@@ -1,8 +1,7 @@
-import { cx } from '@utils'
-import { SpacerDimension } from '@/components/Spacer/types'
+import { mergeClasses } from '@utils'
 
-export function Indice(value: number, measurement: SpacerDimension) {
-  return <div className={cx('indice', measurement)}>
+export function Indice(value: number, measurement: 'width' | 'height') {
+  return <div className={mergeClasses('indice', measurement)}>
     {value}
   </div>
 }

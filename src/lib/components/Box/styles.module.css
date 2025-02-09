@@ -1,0 +1,19 @@
+/**
+ * Box Component Styles
+ * Basic container with baseline grid alignment
+ */
+
+.box {
+  position: relative;
+  width: var(--bk-box-width, fit-content);
+  height: var(--bk-box-height, fit-content);
+}
+
+.visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--bk-box-color-line);
+  pointer-events: none;
+  z-index: var(--bk-z-index-outline);
+}

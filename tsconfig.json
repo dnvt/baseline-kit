@@ -6,7 +6,7 @@
       "node"
     ],
     "jsx": "react-jsx",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "module": "ESNext",
     "skipLibCheck": true,
     "target": "ES2020",
@@ -23,14 +23,14 @@
       "@components": [
         "src/lib/components/index.ts"
       ],
-      "@config": [
-        "src/lib/config/index.ts"
-      ],
       "@hooks": [
         "src/lib/hooks/index.ts"
       ],
       "@types": [
         "src/lib/types/index.ts"
+      ],
+      "@context": [
+        "src/lib/context/index.ts"
       ],
       "@utils": [
         "src/lib/utils/index.ts"

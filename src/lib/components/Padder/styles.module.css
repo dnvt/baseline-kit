@@ -1,0 +1,21 @@
+/**
+ * Padder Component Styles
+ * Spacing management with visual debugging
+ */
+
+.padder {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: var(--bk-padder-width, fit-content);
+  height: var(--bk-padder-height, fit-content);
+}
+
+.visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--bk-padder-color);
+  pointer-events: none;
+  z-index: var(--bk-z-index-outline);
+}

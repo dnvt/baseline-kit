@@ -1,52 +1,42 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import { alias } from './alias.config'
 import { resolve } from 'path'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-
-const resolvePath = (...paths: string[]) => resolve(__dirname, ...paths)
 
 export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     viteStaticCopy({
-      targets: [
-        {
-          src: resolvePath('README.md'), // Use an absolute path
-          dest: '.', // Copy to root of `dist`
-        },
-      ],
+      targets: [{ src: resolve(__dirname, 'README.md'), dest: '.' }],
     }),
   ],
-  resolve: {
-    alias: {
-      '@': resolvePath('src/lib'),
-      '@components': resolvePath('src/lib/components'),
-      '@config': resolvePath('src/lib/config'),
-      '@hooks': resolvePath('src/lib/hooks'),
-      '@types': resolvePath('src/lib/types'),
-      '@utils': resolvePath('src/lib/utils'),
+  resolve: { alias },
+  css: {
+    modules: {
+      localsConvention: 'camelCase',
+      generateScopedName: '[local]_[hash:base64:5]',
     },
   },
   build: {
+    cssCodeSplit: false,
     lib: {
-      entry: resolvePath('src/lib/index.ts'),
-      name: 'PaddedGrid',
+      entry: resolve(__dirname, 'src/lib/index.ts'),
+      name: 'BaselineKit',
       formats: ['es', 'cjs'],
       fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
     },
     rollupOptions: {
       external: ['react', 'react-dom'],
       output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        },
+        globals: { react: 'React', 'react-dom': 'ReactDOM' },
+        assetFileNames: (assetInfo) =>
+          assetInfo.name && assetInfo.name.endsWith('.css')
+            ? 'styles.css'
+            : assetInfo.name ?? '[name]-[hash][extname]',
       },
     },
     sourcemap: true,
   },
-  ...(command === 'serve' && {
-    root: 'demo', // Set the root to the `demo/` directory for development
-    base: '/',
-  }),
+  ...(command === 'serve' && { root: 'demo', base: '/' }),
 }))
