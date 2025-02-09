@@ -37,9 +37,6 @@ npm-debug.log*
 .env.*
 !.env.example
 
-# Changeset
-.changeset/
-
 # Temporary files
 *.tmp
 *.temp
