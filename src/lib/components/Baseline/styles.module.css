@@ -1,0 +1,12 @@
+/**
+ * Baseline Component Styles
+ * Absolute container to contain baselines
+ */
+
+.baseline {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  top: 0;
+  bottom: 0;
+}

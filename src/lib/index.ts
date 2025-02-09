@@ -1,15 +1,11 @@
 /**
- * Padded Grid System
- * A lightweight, flexible grid system for React applications.
- * @module padded-grid
+ * Baseline Kit
+ * Lightweight development tool for visualizing and debugging grid systems and spacing in React
+ * applications. It provides configurable overlays for both column-based and baseline grids, flexible spacing components,
+ * and theme-aware configuration—all optimized for performance and built with TypeScript.
+ * @module baseline-kit
  */
 
-// Export public components
-export { XGrid, YGrid } from './components'
-export type { XGProps, YGProps } from './components'
-
-// Export public hooks
-export { useGridDimensions, useGridCalculations } from './hooks'
-
-// Export public defaults
-export { Y_GRID, X_GRID } from './config'
+export * from './components'
+export * from './hooks'
+export * from './utils'

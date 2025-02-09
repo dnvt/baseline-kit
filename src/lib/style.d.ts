@@ -1,7 +1,4 @@
-import 'react'
-
-declare module 'react' {
-  interface CSSProperties {
-    [key: `--${string}`]: CSSProperties[number]
-  }
+declare module '*.module.css' {
+  const styles: { readonly [key: string]: string }
+  export default styles
 }

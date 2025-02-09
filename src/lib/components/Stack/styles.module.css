@@ -1,0 +1,19 @@
+/**
+ * Stack Component Styles
+ * Flex container with baseline grid alignment
+ */
+
+.stack {
+  position: relative;
+  width: var(--bk-stack-width, 100%);
+  height: var(--bk-stack-height, fit-content);
+}
+
+.visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--bk-stack-color-line);
+  pointer-events: none;
+  z-index: var(--bk-z-index-overlay)
+}

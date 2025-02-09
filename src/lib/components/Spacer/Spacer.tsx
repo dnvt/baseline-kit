@@ -1,101 +1,137 @@
-import { memo, useMemo, Fragment, CSSProperties } from 'react'
-import { SPACER } from '@config'
-import { useSpacerDimensions } from '@hooks'
-import { cs, cx } from '@utils'
+/**
+ * @file Spacer Component
+ * @description Flexible spacing element with measurement indicators
+ * @module components
+ */
 
-import { SpacerProps } from './types'
+import * as React from 'react'
+import { useConfig, useDebug } from '@hooks'
+import { mergeStyles, mergeClasses, formatValue, normalizeValuePair } from '@utils'
+import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
 /**
- * Spacer Component
- * A flexible spacer element that adjusts its dimensions based on provided height and width.
- * Optionally displays measurement indicators.
+ * Function signature for custom measurement indicators.
  *
- * @param height - The height of the spacer.
- * @param width - The width of the spacer.
- * @param config - Configuration object for the spacer.
- * @param indicatorNode - A function to render measurement indicators.
- * @param visibility - Visibility of the spacer ('visible' or 'hidden').
- * @param className - Additional class names for the container.
- * @param style - Additional inline styles for the container.
+ * @param value - The measurement in pixels
+ * @param dimension - Which dimension is being measured ('width' | 'height')
+ * @returns React node to display as the indicator
  */
-export const Spacer = memo(function Spacer({
+export type IndicatorNode = (
+  value: number,
+  dimension: 'width' | 'height',
+) => React.ReactNode
+
+export type SpacerProps = {
+  /** Render function for custom measurement display */
+  indicatorNode?: IndicatorNode;
+  /** Visual style when debugging is enabled */
+  variant?: Variant;
+  /** Base unit for measurements (defaults to theme value) */
+  base?: number;
+  /** Color override for visual indicators */
+  color?: string;
+} & ComponentsProps
+
+/**
+ * A flexible layout element that adds precise vertical or horizontal spacing.
+ *
+ * @remarks
+ * Spacer provides:
+ * - Consistent spacing in layouts
+ * - Optional measurement indicators for debugging
+ * - Multiple visual styles for different debugging needs
+ * - Automatic dimension normalization
+ *
+ * @example
+ * ```tsx
+ * // Basic vertical spacing
+ * <Spacer
+ *   height="24px"
+ *   base={8}
+ * />
+ *
+ * // Custom style with indicators
+ * <Spacer
+ *   width="32px"
+ *   height="100%"
+ *   base={4}
+ *   color="#ff0000"
+ *   debugging="visible"
+ *   indicatorNode={(value, dim) => `${dim}: ${value}px`}
+ * />
+ * ```
+ */
+export const Spacer = React.memo(function Spacer({
   height,
   width,
-  config = { variant: 'line' },
   indicatorNode,
-  visibility = SPACER.visibility,
-  className = '',
-  style = {},
+  debugging,
+  variant: variantProp,
+  base: baseProp,
+  color: colorProp,
+  className,
+  style,
+  ...props
 }: SpacerProps) {
-  const {
-    baseUnit = SPACER.baseUnit,
-    variant = SPACER.variant,
-    zIndex = SPACER.zIndex,
-    color: customColor,
-  } = config
+  const ref = React.useRef<HTMLDivElement>(null)
+  const config = useConfig('spacer')
 
-  const isShown = visibility === 'visible'
+  const { isShown } = useDebug(debugging, config.debugging)
+  const variant = variantProp ?? config.variant
+  const base = baseProp ?? config.base
 
-  // Calculate dimensions and normalize height/width
-  const { dimensions, normalizedHeight, normalizedWidth } = useSpacerDimensions({
-    height,
-    width,
-    baseUnit,
-  })
+  const [normWidth, normHeight] = normalizeValuePair(
+    [width, height],
+    [0, 0],
+    { base, suppressWarnings: true },
+  )
 
-  const measurements = useMemo(() => {
+  const cssWidth = formatValue(normWidth || '100%')
+  const cssHeight = formatValue(normHeight || '100%')
+
+  const measurements = React.useMemo(() => {
     if (!isShown || !indicatorNode) return null
 
-    const result = []
+    return [
+      normHeight !== 0 && (
+        <span key="height">
+          {indicatorNode(normHeight, 'height')}
+        </span>
+      ),
+      normWidth !== 0 && (
+        <span key="width">
+          {indicatorNode(normWidth, 'width')}
+        </span>
+      ),
+    ].filter(Boolean)
+  }, [isShown, indicatorNode, normHeight, normWidth])
 
-    if (normalizedHeight !== null) {
-      result.push(
-        <Fragment key="height">
-          {indicatorNode(normalizedHeight, 'height')}
-        </Fragment>,
-      )
-    }
-
-    if (normalizedWidth !== null) {
-      result.push(
-        <Fragment key="width">
-          {indicatorNode(normalizedWidth, 'width')}
-        </Fragment>,
-      )
-    }
-
-    return result
-  }, [isShown, indicatorNode, normalizedHeight, normalizedWidth])
-
-  const combinedStyles = useMemo(() => {
-    const baseStyles = {
-      '--padd-spacer-height': dimensions.height,
-      '--padd-spacer-width': dimensions.width,
-      '--padd-base-unit': baseUnit,
-      '--padd-z-index': zIndex,
-    } as CSSProperties
-
-    if (customColor) {
-      return cs({
-        ...baseStyles,
-        '--padd-spacer-color': customColor,
-      } as CSSProperties, style)
-    }
-
-    return cs(baseStyles, style)
-  }, [dimensions, baseUnit, zIndex, customColor, style])
+  const containerStyles = React.useMemo(() => {
+    const styleObject = {
+      '--bk-spacer-height': cssHeight,
+      '--bk-spacer-width': cssWidth,
+      '--bk-spacer-base': `${base}px`,
+      '--bk-spacer-color-indice': colorProp ?? config.colors.indice,
+      '--bk-spacer-color-line': colorProp ?? config.colors.line,
+      '--bk-spacer-color-flat': colorProp ?? config.colors.flat,
+    } as React.CSSProperties
+    return mergeStyles(styleObject, style)
+  }, [cssHeight, cssWidth, base, colorProp, config.colors, style])
 
   return (
     <div
-      className={cx(
-        styles.spacer,
-        className,
-        isShown ? styles.visible : styles.hidden,
-      )}
-      data-testid="spacer-container"
+      ref={ref}
+      className={
+        mergeClasses(
+          styles.spacer,
+          isShown && styles[variant],
+          className,
+        )}
+      data-testid="spacer"
       data-variant={variant}
-      style={combinedStyles}
+      style={containerStyles}
+      {...props}
     >
       {measurements}
     </div>
