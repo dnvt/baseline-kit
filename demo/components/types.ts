@@ -1,4 +1,4 @@
-import type { GridColumnsPattern } from '@types'
+import { GuideColumnsPattern } from '@components'
 
 interface PGConfig {
   base: number;
@@ -14,7 +14,7 @@ export interface DemoGridState {
   columnConfig: {
     count: number
     gap: number
-    pattern: GridColumnsPattern
+    pattern: GuideColumnsPattern
   }
   pageHeight: number
 }
