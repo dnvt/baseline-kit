@@ -27,6 +27,10 @@ export type SpacerProps = {
   indicatorNode?: IndicatorNode;
   /** Visual style when debugging is enabled */
   variant?: Variant;
+  /** Base unit for measurements (defaults to theme value) */
+  base?: number;
+  /** Color override for visual indicators */
+  color?: string;
 } & ComponentsProps
 
 /**
@@ -39,29 +43,22 @@ export type SpacerProps = {
  * - Multiple visual styles for different debugging needs
  * - Automatic dimension normalization
  *
- * When no explicit dimensions are provided:
- * - width defaults to "100%"
- * - height defaults to "100%"
- *
  * @example
  * ```tsx
  * // Basic vertical spacing
- * <Spacer height="24px" />
+ * <Spacer
+ *   height="24px"
+ *   base={8}
+ * />
  *
- * // Horizontal spacing with custom indicator
+ * // Custom style with indicators
  * <Spacer
  *   width="32px"
  *   height="100%"
+ *   base={4}
+ *   color="#ff0000"
  *   debugging="visible"
  *   indicatorNode={(value, dim) => `${dim}: ${value}px`}
- * />
- *
- * // Custom variant with full dimensions
- * <Spacer
- *   variant="flat"
- *   width="100%"
- *   height="40px"
- *   debugging="visible"
  * />
  * ```
  */
@@ -71,6 +68,8 @@ export const Spacer = React.memo(function Spacer({
   indicatorNode,
   debugging,
   variant: variantProp,
+  base: baseProp,
+  color: colorProp,
   className,
   style,
   ...props
@@ -80,11 +79,12 @@ export const Spacer = React.memo(function Spacer({
 
   const { isShown } = useDebug(debugging, config.debugging)
   const variant = variantProp ?? config.variant
+  const base = baseProp ?? config.base
 
   const [normWidth, normHeight] = normalizeValuePair(
     [width, height],
     [0, 0],
-    { base: config.base, suppressWarnings: true },
+    { base, suppressWarnings: true },
   )
 
   const cssWidth = formatValue(normWidth || '100%')
@@ -111,13 +111,13 @@ export const Spacer = React.memo(function Spacer({
     const styleObject = {
       '--bk-spacer-height': cssHeight,
       '--bk-spacer-width': cssWidth,
-      '--bk-spacer-base': `${config.base}px`,
-      '--bk-spacer-color-indice': config.colors.indice,
-      '--bk-spacer-color-line': config.colors.line,
-      '--bk-spacer-color-flat': config.colors.flat,
+      '--bk-spacer-base': `${base}px`,
+      '--bk-spacer-color-indice': colorProp ?? config.colors.indice,
+      '--bk-spacer-color-line': colorProp ?? config.colors.line,
+      '--bk-spacer-color-flat': colorProp ?? config.colors.flat,
     } as React.CSSProperties
     return mergeStyles(styleObject, style)
-  }, [cssHeight, cssWidth, config, style])
+  }, [cssHeight, cssWidth, base, colorProp, config.colors, style])
 
   return (
     <div

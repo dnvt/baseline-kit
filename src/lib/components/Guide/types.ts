@@ -4,8 +4,8 @@
  * @module baseline-kit/components/Guide/types
  */
 
+import * as React from 'react'
 import { GuideColumnsPattern } from '../types'
-import { CSSProperties } from 'react'
 
 /**
  * Base configuration shared by all guide variants.
@@ -13,17 +13,14 @@ import { CSSProperties } from 'react'
  * @example
  * ```ts
  * const baseConfig: BaseGuideConfig = {
- *   gap: 2,     // Results in 16px gap (2 * 8px base)
+ *   gap: 2,     // 2px gap
  *   base: 8     // 8px base unit
  * }
  * ```
  */
 type BaseGuideConfig = {
-  /**
-   * Gap multiplier applied to base unit.
-   * Final gap = gap * base (e.g., 2 * 8px = 16px)
-   */
-  gap?: number;
+  /** Gap between columnms. */
+  gap?: React.CSSProperties['gap'];
 
   /**
    * Base unit in pixels for spacing calculations.
@@ -90,7 +87,7 @@ export type FixedConfig = BaseGuideConfig & {
   /** Number of columns to create */
   columns: number;
   /** Optional fixed width for all columns */
-  columnWidth?: CSSProperties['width'];
+  columnWidth?: React.CSSProperties['width'];
 };
 
 /**
@@ -118,7 +115,7 @@ export type AutoConfig = BaseGuideConfig & {
   /** Identifies this as an auto-calculated configuration */
   variant: 'auto';
   /** Desired width for each column */
-  columnWidth: CSSProperties['columnWidth'];
+  columnWidth: React.CSSProperties['columnWidth'];
   /** Not applicable in auto mode */
   columns?: never;
 };

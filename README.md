@@ -8,280 +8,326 @@ and theme-aware configuration—all optimized for performance and built with Typ
 
 ## Features
 
-- 🎯 **Interactive Guide Overlays:** Easily toggle grid overlays (both horizontal and vertical) to ensure precise
-  alignment in your layouts.
-- 📏 **Dynamic Layout Components:** Flexible components like Layout, Stack, Box, and Padder provide consistent spacing
-  and alignment.
-- 🧩 **Grid System Components:** New Layout component for CSS Grid-based layouts with automatic column calculations.
-- 📐 **Flex Layout Support:** Flex component for flexible box layouts with built-in baseline alignment.
-- 🔄 **Responsive Design:** Components automatically adapt to container dimensions and base unit configuration.
-- 🎨 **Configurable & Themed:** Leverage the Config component and hooks such as useConfig to easily override default
-  settings.
+- 📏 **Baseline Grid:** Core system for maintaining vertical rhythm and consistent spacing across your layouts
+- 🎯 **Column Grid Guide:** Customizable overlay system for visualizing column-based layouts and alignment
+- 📦 **Box Component:** Basic container with configurable spacing that snaps to the baseline grid
+- 🧩 **Layout Component:** CSS Grid-based container with automatic column calculations and baseline alignment
+- 📐 **Stack Component:** Flex-based container that maintains consistent spacing and baseline alignment
+- 🎨 **Theme System:** Customizable colors and debug visuals through a centralized configuration
 
 ## Installation
 
 ```shell
+# Using npm
 npm install baseline-kit
 
+# Using yarn
+yarn add baseline-kit
+
+# Using pnpm
+pnpm add baseline-kit
 ```
+
+### TypeScript Support
+
+Baseline Kit is written in TypeScript and includes built-in type definitions. No additional packages are required.
 
 ## Quick Start
 
-Below is an example that demonstrates how to integrate Baseline Kit into your React application for both grid overlays
-and spacing management:
+Basic setup with debugging enabled during development:
 
 ```tsx
 import React from 'react'
-import { Config, Guide, Baseline, Box, Spacer } from 'baseline-kit'
+import { Config, Guide, Baseline, Box } from 'baseline-kit'
 import 'baseline-kit/styles.css'
 
 function App() {
   const isDev = process.env.NODE_ENV === 'development'
-  const debugMode = isDev ? 'visible' : 'hidden'
+  const debugging = isDev ? 'visible' : 'hidden'
 
   return (
-    <Config>
+    <Config
+      base={8}
+      baseline={{ debugging }}
+      box={{ debugging }}
+      guide={{ debugging }}
+      spacer={{ debugging }}
+    >
       {/* Baseline Grid for typography alignment */}
-      <Baseline config={{ base: 8, height: "100vh" }} debugging={debugMode} />
+      <Baseline
+        height="100vh"
+        debugging="visible"
+      />
 
-      {/* Column Grid Overlay */}
+      {/* Column Grid Guide */}
       <Guide
         variant="pattern"
         columns={['100px', '200px', '100px']}
-        gap={2}
-        debugging={debugMode}
+        gap={16}
         align="center"
         width="1200px"
       />
 
-      {/* Box container that aligns its children to the baseline grid */}
-      <Box debugging="visible" block={[16, 16]} inline={8}>
+      {/* Box with baseline alignment */}
+      <Box
+        block={[2, 5]}
+        inline={1}
+        debugging="visible"
+      >
         <h1>Content Aligned to the Grid</h1>
-        <p>This box uses a consistent baseline spacing.</p>
       </Box>
-
-      {/* Spacer component for dynamic spacing */}
-      <Spacer
-        height="16px"
-        width="100%"
-        config={{ base: 8, color: "#ff0000" }}
-        visibility="visible"
-      />
 
       <main>Your main content goes here...</main>
     </Config>
   )
 }
-
-export default App
 ```
 
-## Components & API
+## Core Concepts
 
-### Config
+### Base Unit
 
-The **Config** component provides a theme context for all Baseline Kit components. It allows you to override default
-values such as the base unit, colors, and debugging modes.
-
-#### Usage
+The base unit is the foundation of Baseline Kit's spacing system. All measurements are calculated as multiples of this
+unit:
 
 ```tsx
-<Config base={16} guide={{ debugging: 'visible' }}>
-  {/* Components that consume the config */}
-  <Guide />
-  <Baseline />
+<Config base={8}>     // Sets 8px as the base unit
+  <Layout
+    block={17}        // Will be rounded to 16px (2 * base)
+    inline={22}       // Will be rounded to 24px (3 * base)
+  >
+    {/* Content automatically aligned to the 8px grid */}
+  </Layout>
+
+  <Stack
+    block={[17, 25]}  // Top: 16px, Bottom: 24px
+    inline={22}       // Left/Right: 24px
+  >
+    {/* Padding automatically adjusted to base unit multiples */}
+  </Stack>
 </Config>
 ```
 
-All configuration hooks (e.g. useConfig) will pull values from this context.
+### Spacing Values
 
-### Guide
+Spacing props (`block`, `inline`, `gap`) accept values in three formats:
 
-The **Guide** component overlays a vertical grid to help you visualize column-based layouts.
+```
+// Single number (applies to both sides)
+block={16px}                  // 16px top and bottom
 
-#### Variants
+// Array [start, end]
+block={[2, 3]}                // 2px top, 3px bottom
 
-- **line**: Renders evenly spaced vertical lines.
-- **pattern**: Uses a custom array of column widths (e.g. ['1fr', '2fr', '1fr']).
-- **fixed**: Renders a fixed number of columns.
-- **auto**: Automatically calculates columns based on a given column width.
-
-#### Props Example
-
-```tsx
-<Guide
-  variant="pattern"
-  columns={['100px', '200px', '100px']}
-  gap={2}
-  debugging="visible"
-  align="center"
-  width="1200px"
-/>
+// Object with explicit values
+block={{ start: 2, end: 3 }}  // Same as above
 ```
 
-Internally, the Guide component calculates the CSS grid template, gap, and column count based on container size and the
-provided configuration.
+### Grid Snapping
+
+Components automatically adjust their spacing to maintain baseline grid alignment:
+
+- **Box**: Adjusts bottom padding to ensure total height aligns with base unit
+- **Stack**: Maintains baseline alignment in flex layouts
+- **Layout**: Ensures grid cells align with baseline
+
+### Debugging Modes
+
+Three modes are available for development and testing:
+
+```tsx
+debugging = "visible"        // Shows all grid lines and measurements
+debugging = "hidden"         // Elements exist but are invisible
+debugging = "none"           // Removes debug elements entirely
+```
+
+## Components
+
+### Component Hierarchy
+
+#### 1. Core Components
+
+- **`Box`** Basic container for text alignment
+- **`Stack`** Flex-based layouts (one-dimensional)
+- **`Layout`** Grid-based layouts (two-dimensional)
+
+#### 2. Development Tools
+
+- **`Baseline`** Horizontal grid overlay
+- **`Guide`** Vertical grid overlay
+- **`Spacer`** Precise spacing measurement
+
+#### 3. Configuration
+
+- **`Config`** Theme and settings provider
+- **`Padder`** Internal spacing utility
+
+### Config
+
+The Config component provides theme and debugging settings to all child components.
+
+```tsx
+<Config
+  base={8}                         // Base unit for calculations
+  baseline={{ debugging }}         // Baseline grid visibility
+  guide={{                         // Guide customization
+    debugging,
+    colors: {
+      line: 'rgba(0,0,255,0.1)'
+    }
+  }}
+>
+  {children}
+</Config>
+```
 
 ### Baseline
 
-The **Baseline** component overlays an horizontal grid for aligning typography and vertical spacing.
-
-#### Props Example
-
 ```tsx
 <Baseline
-  config={{ base: 8, height: "100vh" }}
-  debugging="visible"
+  base={8}                // Base unit (defaults to Config value)
+  height="100vh"          // Overlay height
+  variant="line"          // "line" or "flat"
+  debugging="visible"     // Show the grid overlay
+/>
+```
+
+### Guide
+
+```tsx
+<Guide
+  variant="pattern"                          // "line", "pattern", "fixed", or "auto"
+  columns={['100px', '1fr', '100px']}        // Column definition
+  gap={8}                                    // Gap value
+  align="center"                             // "start", "center", or "end"
+  width="1200px"                             // Container width
+  debugging="visible"                        // Show grid overlay
 />
 ```
 
 ### Box
 
-The **Box** component is a container component that aligns its content to the baseline grid. It leverages both the
-useBaseline hook and the global configuration.
-
-#### Props Example
-
 ```tsx
-<Box debugging="visible" block={[11, 5]}>
-  <p>Content aligned to the baseline grid!</p>
+<Box
+  block={[2, 5]}         // Vertical padding in base units (auto-adjusted for baseline)
+  inline={1}             // Horizontal padding in base units
+  span={2}               // Grid column span when used in Layout
+  snapping="height"      // "none", "height", or "clamp"
+  debugging="visible"    // Show alignment guides
+>
+  <p>Content aligned to baseline grid</p>
 </Box>
-```
-
-### Padder
-
-The **Padder** component applies consistent spacing (or padding) around its children. In debug mode, it renders visual
-indicators for the padding boundaries.
-
-#### Props Example
-
-```tsx
-<Padder block={16} inline={8} debugging="visible">
-  <p>Inside a padded area.</p>
-</Padder>
-```
-
-### Spacer
-
-The **Spacer** component provides flexible space between elements. It adjusts its dimensions based on the configured
-base unit and can optionally display measurement indicators in debug mode.
-
-#### Props Example
-
-```tsx
-<Spacer
-  height="16px"
-  width="100%"
-  config={{ base: 8, color: "#ff0000" }}
-  debugging="visible"
-/>
 ```
 
 ### Stack
 
-The **Stack** component is a flexible flex container that ensures consistent spacing based on your baseline
-configuration. Like the Box and Layout components, it does not rely on DOM measurements and defaults to "fit-content"
-for width and height when no values are passed. You can still specify fixed dimensions if needed.
-
-#### Key Features
-
-- **Flex Layout:** Arrange children in a horizontal (default “row”) or vertical (“column”) direction.
-- **Default Sizing:** When no width or height is explicitly specified, the Stack component will render with a width and
-  height of "fit-content" (similar to Box and Layout).
-- **Direct Padding for Debugging:** When the debugging mode is set to `"none"`, the component applies its computed
-  baseline padding directly via inline styles.
-- **Customizable:** Supports custom class names, inline styles, gap, justification, and alignment properties.
-
-#### Props Example
-
 ```tsx
-// Without explicit width/height, Stack defaults to "fit-content".
-<Stack debugging="visible" block={[16, 16]} inline={8}>
-  <p>This content is aligned to the flex container’s baseline.</p>
-</Stack>
-
-// You can also force fixed dimensions:
-<Stack width="500px" height="300px" direction="column" justify="center" align="center">
-  <p>Content</p>
+<Stack
+  direction="column"     // "row" or "column"
+  block={[8, 24]}        // Vertical padding (auto-snapping)
+  inline={16}            // Horizontal padding (auto-snapping)
+  gap={16}               // Gap value
+  justify="center"       // Flex justify-content
+  align="center"         // Flex align-items
+  debugging="visible"    // Show alignment guides
+>
+  <Box>Item 1</Box>
+  <Box>Item 2</Box>
 </Stack>
 ```
-
-Internally, the Stack component uses the baseline configuration (via the ⁠useBaseline hook) to resolve spacing and
-alignment, while ignoring any DOM measurements. This makes its behavior consistent with the Box and Layout components.
 
 ### Layout
 
-The **Layout** component is designed for CSS Grid-based layouts. It automatically calculates grid templates based on the
-provided column definitions, while also managing consistent spacing with baseline configuration. Like the Box and Stack
-components, Layout does not rely on DOM measurements and defaults to using "fit-content" for width and height when no
-explicit values are provided.
-
-#### Key Features
-
-- **Grid Overlay:** Automatically computes grid templates, whether using fixed columns, patterns, or auto-calculated
-  columns.
-- **Default Sizing:** If no `width` or `height` is specified, the Layout component defaults to "fit-content", ensuring
-  it adapts to its content size.
-- **Direct Integration with Padder:** Uses the Padder component internally to handle computed baseline padding and
-  spacing.
-- **Customizable:** Accepts custom class names, inline styles, gap, and alignment properties.
-
-#### Props Example
-
 ```tsx
-// Without explicit width/height, Layout defaults to "fit-content".
 <Layout
-  columns={['100px', '200px', '100px']}
-  gap="16px"
-  debugging="visible"
+  columns={3}            // Number of columns or pattern array
+  gap={16}               // Gap value
+  block={16}             // Vertical padding (auto-snapping)
+  inline={8}             // Horizontal padding (auto-snapping)
+  debugging="visible"    // Show grid guides
 >
-  <p>Your grid content goes here.</p>
-</Layout>
-
-// You can also force fixed dimensions:
-<Layout
-  columns={3}
-  width="1200px"
-  height="800px"
-  justifyItems="center"
-  alignItems="stretch"
->
-  <Box span={1}>Content laid out in a CSS Grid.</Box>
+  <Box span={2}>Wide content</Box>
+  <Box>Regular content</Box>
 </Layout>
 ```
 
-Internally, Layout leverages the baseline configuration (via the ⁠useBaseline hook) to resolve spacing and alignment,
-ensuring that layout behavior is consistent with the rest of the Baseline Kit components.
+## Theme System
 
-## Core Concepts
+### Color Customization
 
-### Grid Calculations
+The theme system allows customization of debugging visuals through the Config component:
 
-**Baseline Kit** supports various methods of grid calculation:
+```tsx
+<Config
+  base={8}
+  guide={{
+    colors: {
+      line: 'rgba(0,0,255,0.1)',
+      pattern: 'rgba(0,0,255,0.05)',
+      auto: 'rgba(0,0,255,0.05)',
+      fixed: 'rgba(0,0,255,0.05)'
+    }
+  }}
+  baseline={{
+    colors: {
+      line: 'rgba(255,0,0,0.1)',
+      flat: 'rgba(255,0,0,0.05)'
+    }
+  }}
+>
+  {children}
+</Config>
+```
 
-- **Fixed Columns:** Define a fixed number of equally-sized columns.
-- **Pattern Columns:** Use an array of column widths to define a repeating pattern.
-- **Auto-Calculated Columns:** Automatically determine the number of columns based on container width and a specified
-  column width.
-- **Line Variant:** Renders single-pixel lines for precise alignment.
+The library uses CSS custom properties for colors, which automatically respect the user's system dark mode preferences
+through CSS media queries. No additional configuration is required.
 
-## Debugging Modes
+## Development Setup
 
-The library supports three debugging modes:
+```shell
+# Clone the repository
+git clone https://github.com/dnvt/baseline-kit.git
 
-- **visible:** Overlays and debug visuals are fully rendered.
-- **hidden:** Debug elements are present but not visible.
-- **none:** Debugging is disabled; no extra elements are rendered.
+# Install dependencies
+bun install
 
-These modes can be toggled via component props or via the global configuration.
+# Start development server
+bun run dev
 
-## Performance & Compatibility
+# Run tests
+bun run test
 
-- **Performance:** All grid calculations and measurements are throttled and optimized using requestAnimationFrame to
-  minimize reflows and ensure smooth rendering.
-- **Browser Support:** Baseline Kit works in modern browsers (Chrome, Firefox, Safari, Edge) with support for CSS Grid
-  Layout and CSS Custom Properties.
-- **Tree-Shakeable:** The library is optimized for modern bundlers and supports tree-shaking.
+# Build package
+bun run build
+```
+
+## Server-Side Rendering
+
+Baseline Kit is compatible with SSR frameworks like Next.js and Gatsby. The overlay components automatically handle
+hydration mismatches.
+
+## Browser Support
+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Requires CSS Grid Layout support
+- Requires CSS Custom Properties (CSS Variables)
+- Falls back gracefully in unsupported browsers
+
+## Performance Considerations
+
+- Uses requestAnimationFrame for smooth animations
+- Virtualizes large grid overlays
+- Optimizes re-renders using React.memo
+- Supports tree-shaking for minimal bundle size
+
+## Contributing
+
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines on:
+
+- Development setup
+- Code style
+- Testing requirements
+- Pull request process
 
 ## License
 

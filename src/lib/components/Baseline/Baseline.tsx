@@ -20,6 +20,8 @@ export type BaselineProps = {
   width?: number | string;
   /** Explicit height for the overlay (e.g., "100vh" or 800) */
   height?: number | string;
+  /** Base unit for measurements (defaults to theme value) */
+  base?: number;
 } & ComponentsProps;
 
 /**
@@ -32,36 +34,21 @@ export type BaselineProps = {
  * - Optimize performance through virtual rendering
  * - Adapt to container dimensions
  *
- * The component offers two visual variants:
- * - `line`: Thin lines (1px) at each base unit
- * - `flat`: Full-height blocks showing the base unit grid
- *
- * Performance optimization:
- * - Only renders guidelines visible in the viewport
- * - Adds buffer zones for smooth scrolling
- * - Uses virtual rendering for large layouts
- *
  * @example
  * ```tsx
  * // Basic baseline overlay
  * <Baseline
- *   debugging="visible"
  *   height="100vh"
+ *   base={8}
+ *   debugging="visible"
  * />
  *
- * // Custom base unit with flat style
+ * // Custom variant with padding
  * <Baseline
  *   variant="flat"
- *   debugging="visible"
  *   height="100vh"
- *   block={[16, 0]}  // Top padding only
- * />
- *
- * // Fixed dimensions with line style
- * <Baseline
- *   variant="line"
- *   width="1200px"
- *   height="800px"
+ *   base={4}
+ *   block={[16, 0]}
  *   debugging="visible"
  * />
  * ```
@@ -73,10 +60,12 @@ export const Baseline = memo(function Baseline({
   variant: variantProp,
   height: heightProp,
   width: widthProp,
+  base: baseProp,
   ...spacingProps
 }: BaselineProps) {
   const config = useConfig('baseline')
   const variant = variantProp ?? config.variant
+  const base = baseProp ?? config.base
   const { isShown } = useDebug(debugging, config.debugging)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -91,12 +80,12 @@ export const Baseline = memo(function Baseline({
 
   const rowCount = useMemo(() => {
     const totalHeight = (normHeight ?? 0) - (top + bottom)
-    return Math.max(1, Math.floor(totalHeight / config.base))
-  }, [normHeight, top, bottom, config.base])
+    return Math.max(1, Math.floor(totalHeight / base))
+  }, [normHeight, top, bottom, base])
 
   const { start, end } = useVirtual({
     totalLines: rowCount,
-    lineHeight: config.base,
+    lineHeight: base,
     containerRef,
     buffer: 160,
   })
@@ -122,14 +111,14 @@ export const Baseline = memo(function Baseline({
   const getRowStyle = useCallback(
     (index: number): CSSProperties =>
       mergeStyles({
-        top: `${index * config.base}px`,
+        top: `${index * base}px`,
         left: 0,
         right: 0,
-        height: variant === 'line' ? '1px' : `${config.base}px`,
+        height: variant === 'line' ? '1px' : `${base}px`,
         backgroundColor: chosenColor,
         position: 'absolute',
       }),
-    [config.base, variant, chosenColor],
+    [base, variant, chosenColor],
   )
 
   return (

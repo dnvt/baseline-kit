@@ -5,7 +5,7 @@
  */
 
 import * as React from 'react'
-import { IndicatorNode } from '@components'
+import type { Gaps, IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
 import { mergeClasses, mergeStyles, parsePadding } from '@utils'
 import { Padder } from '../Padder'
@@ -18,8 +18,6 @@ export type StackProps = {
   direction?: 'row' | 'column';
   /** Distribution of space on main axis */
   justify?: React.CSSProperties['justifyContent'];
-  /** Space between children */
-  gap?: React.CSSProperties['gap'];
   /** Alignment on cross axis */
   align?: React.CSSProperties['alignItems'];
   /** Container width (defaults to "fit-content") */
@@ -31,7 +29,7 @@ export type StackProps = {
   /** Visual style in debug mode */
   variant?: Variant;
   children?: React.ReactNode;
-} & ComponentsProps;
+} & ComponentsProps & Gaps;
 
 /**
  * A flexible container component aligning children to the baseline grid.
@@ -88,18 +86,20 @@ export const Stack = React.memo(function Stack({
   align = 'stretch',
   children,
   className,
+  columnGap,
   debugging: debuggingProp,
   direction = 'row',
   gap,
   height,
   indicatorNode,
   justify = 'flex-start',
-  variant,
+  rowGap,
   style,
+  variant,
   width,
   ...spacingProps
 }: StackProps) {
-  const config = useConfig('flex')
+  const config = useConfig('stack')
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
   const stackRef = React.useRef<HTMLDivElement | null>(null)
 
@@ -112,8 +112,10 @@ export const Stack = React.memo(function Stack({
   })
 
   const stackGapStyles = React.useMemo(() => ({
-    gap: gap !== undefined ? gap : undefined,
-  }), [gap])
+    rowGap,
+    columnGap,
+    ...(gap !== undefined && { gap }),
+  }), [rowGap, columnGap, gap])
 
   const containerStyles = React.useMemo(() => {
     return mergeStyles({

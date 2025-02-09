@@ -6,7 +6,7 @@
 
 import { useMemo, RefObject } from 'react'
 import { GuideConfig, GuideColumnsPattern, isValidGuidePattern } from '@components'
-import { formatValue, convertValue } from '@utils'
+import { formatValue, convertValue, normalizeValue } from '@utils'
 import { useMeasure } from './useMeasure'
 
 export interface GuideResult {
@@ -77,8 +77,7 @@ export function useGuide(
   return useMemo(() => {
     // Default values
     const variant = config.variant ?? 'line'
-    const base = config.base ?? 8
-    const gap = config.gap ?? base
+    const gap = normalizeValue(config.gap ?? 0, {base: 1})
 
     // Return invalid result if no width
     if (!width) {

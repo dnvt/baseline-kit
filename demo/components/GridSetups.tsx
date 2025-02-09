@@ -53,7 +53,7 @@ export const DEMO: DemoGridState = {
   },
   columnConfig: {
     count: 9,
-    gap: 1,
+    gap: 8,
     pattern: [
       '24px',
       '24px',

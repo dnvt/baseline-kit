@@ -11,7 +11,7 @@ import {
   useGuide,
   useMeasure,
 } from '@hooks'
-import { mergeClasses, mergeStyles, parsePadding } from '@utils'
+import { mergeClasses, mergeStyles, normalizeValue, parsePadding } from '@utils'
 import { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
 import type { ComponentsProps } from '../types'
 import styles from './styles.module.css'
@@ -76,7 +76,7 @@ export const Guide = memo(function Guide({
   style,
   variant: variantProp,
   align = 'start',
-  gap,
+  gap: gapProp,
   height,
   width,
   columns,
@@ -91,19 +91,19 @@ export const Guide = memo(function Guide({
   const { top, right, bottom, left } = useMemo(() => parsePadding(props), [props])
 
   const gridConfig = useMemo(() => {
-    const gapInPixels = (gap ?? 1) * config.base
+    const gap = normalizeValue(gapProp)
     return (
       {
         line: {
           variant: 'line' as const,
-          gap: gapInPixels - 1,
+          gap: gap - 1,
           base: config.base,
         },
         auto: columnWidth
           ? {
             variant: 'auto' as const,
             columnWidth,
-            gap: gapInPixels,
+            gap,
             base: config.base,
           }
           : null,
@@ -111,7 +111,7 @@ export const Guide = memo(function Guide({
           ? {
             variant: 'pattern' as const,
             columns,
-            gap: gapInPixels,
+            gap,
             base: config.base,
           }
           : null,
@@ -121,17 +121,17 @@ export const Guide = memo(function Guide({
               variant: 'fixed' as const,
               columns,
               columnWidth,
-              gap: gapInPixels,
+              gap,
               base: config.base,
             }
             : null,
       }[variant] ?? {
         variant: 'line' as const,
-        gap: gapInPixels - 1,
+        gap: gap - 1,
         base: config.base,
       }
     )
-  }, [variant, columns, columnWidth, gap, config.base])
+  }, [gapProp, config.base, columnWidth, columns, variant])
 
   const {
     template,
@@ -167,7 +167,7 @@ export const Guide = memo(function Guide({
     containerWidth,
     height,
     containerHeight,
-    style
+    style,
   ])
 
   return (
