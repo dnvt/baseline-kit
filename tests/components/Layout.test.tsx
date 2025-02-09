@@ -130,14 +130,15 @@ describe('Layout Component', () => {
   it('handles debug modes correctly', () => {
     const { rerender } = render(<Layout debugging="visible">Test</Layout>)
     let grid = getGrid()
-    expect(grid).toHaveClass('visible')
+    expect(grid.className).toMatch(/visible/)
 
     rerender(<Layout debugging="hidden">Test</Layout>)
     grid = getGrid()
+    expect(grid.className).not.toMatch(/visible/)
 
     rerender(<Layout debugging="none">Test</Layout>)
     grid = getGrid()
-    expect(grid).not.toHaveClass('visible')
+    expect(grid.className).not.toMatch(/visible/)
   })
 
   it('applies custom className and style', () => {
