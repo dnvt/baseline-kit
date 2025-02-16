@@ -117,7 +117,7 @@ describe('<Box /> component', () => {
     const boxEl = screen.getByTestId('box')
     expect(boxEl).toBeInTheDocument()
     // Default debugging from our mock config for "box" is "visible".
-    expect(boxEl.className).toContain('visible')
+    expect(boxEl.className).toContain('v')
     expect(screen.getByText('Box content')).toBeInTheDocument()
   })
 

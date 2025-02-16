@@ -5,15 +5,15 @@
 
 .box {
   position: relative;
-  width: var(--bk-box-width, fit-content);
-  height: var(--bk-box-height, fit-content);
+  width: var(--bkxw);
+  height: var(--bkxh);
 }
 
-.visible::after {
+.v::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bk-box-color-line);
+  border: 1px solid var(--bkxcl);
   pointer-events: none;
-  z-index: var(--bk-z-index-outline);
+  z-index: var(--bkzi);
 }

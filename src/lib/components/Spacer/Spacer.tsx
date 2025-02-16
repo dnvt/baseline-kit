@@ -46,9 +46,7 @@ export const Spacer = React.memo(function Spacer({
   const base = baseProp ?? config.base
 
   const [normWidth, normHeight] = normalizeValuePair(
-    [width, height],
-    [0, 0],
-    { base, suppressWarnings: true },
+    [width, height], [0, 0], { base, suppressWarnings: true },
   )
 
   const measurements = React.useMemo(() => {
@@ -70,18 +68,18 @@ export const Spacer = React.memo(function Spacer({
 
   // IMPORTANT: Correct default key for spacer base, using "--bk-spacer-base"
   const defaultSpacerStyles: Record<string, string> = React.useMemo(() => ({
-    '--bk-spacer-height': 'var(--bk-height-full)',
-    '--bk-spacer-width': 'var(--bk-width-full)',
-    '--bk-spacer-base': `${config.base}px`,
-    '--bk-spacer-color-indice': 'var(--bk-spacer-color-indice-theme)',
-    '--bk-spacer-color-line': 'var(--bk-spacer-color-line-theme)',
-    '--bk-spacer-color-flat': 'var(--bk-spacer-color-flat-theme)',
+    '--bksh': '100%',
+    '--bksw': '100%',
+    '--bksb': `${config.base}px`,
+    '--bksci': 'var(--bk-spacer-color-indice-theme)',
+    '--bkscl': 'var(--bk-spacer-color-line-theme)',
+    '--bkscf': 'var(--bk-spacer-color-flat-theme)',
   }), [config.base])
 
   const getStyleOverride = React.useCallback(
     (key: string, value: string): Record<string, string | number> => {
       // For width/height, if the computed value is "100%" skip inline injection
-      if ((key === '--bk-spacer-width' || key === '--bk-spacer-height') && value === '100%') {
+      if ((key === '--bksw' || key === '--bksh') && value === '100%') {
         return {}
       }
       return value !== defaultSpacerStyles[key] ? { [key]: value } : {}
@@ -95,19 +93,19 @@ export const Spacer = React.memo(function Spacer({
     const baseValue = `${baseProp || config.base}px`
 
     const customStyles = {
-      ...getStyleOverride('--bk-spacer-height', heightValue),
-      ...getStyleOverride('--bk-spacer-width', widthValue),
-      ...getStyleOverride('--bk-spacer-base', baseValue),
+      ...getStyleOverride('--bksh', heightValue),
+      ...getStyleOverride('--bksw', widthValue),
+      ...getStyleOverride('--bksb', baseValue),
       ...getStyleOverride(
-        '--bk-spacer-color-indice',
+        '--bksci',
         colorProp ?? config.colors.indice,
       ),
       ...getStyleOverride(
-        '--bk-spacer-color-line',
+        '--bkscl',
         colorProp ?? config.colors.line,
       ),
       ...getStyleOverride(
-        '--bk-spacer-color-flat',
+        '--bkscf',
         colorProp ?? config.colors.flat,
       ),
     } as React.CSSProperties
@@ -119,8 +117,8 @@ export const Spacer = React.memo(function Spacer({
   return (
     <div
       ref={ref}
-      className={mergeClasses(styles.spacer, isShown && styles[variant], className)}
       data-testid="spacer"
+      className={mergeClasses(styles.spr, isShown && styles[variant], className)}
       data-variant={variant}
       style={containerStyles}
       {...props}

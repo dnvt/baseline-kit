@@ -97,13 +97,13 @@ describe('Baseline', () => {
   it('renders hidden by default if debugging="hidden"', () => {
     render(<Baseline debugging="hidden" />)
     const baseline = screen.getByTestId('baseline')
-    expect(baseline.className).toMatch(/hidden/i)
+    expect(baseline.className).toMatch(/h/i)
   })
 
   it('renders lines when debugging is "visible" with numeric height', () => {
     render(<Baseline debugging="visible" height={100} />)
     const baseline = screen.getByTestId('baseline')
-    expect(baseline.className).toMatch(/visible/i)
+    expect(baseline.className).toMatch(/v/i)
     // For height=100 and base=8, Math.ceil(100/8)=13 lines are expected.
     const lines = baseline.querySelectorAll('[data-row-index]')
     expect(lines.length).toBe(13)
@@ -115,7 +115,15 @@ describe('Baseline', () => {
     const lines = baseline.querySelectorAll('[data-row-index]')
     expect(lines.length).toBe(8)
     const firstLine = lines[0] as HTMLElement
-    expect(firstLine.style.height).toBe('8px')
+
+    // Either use getPropertyValue
+    expect(firstLine.style.getPropertyValue('--bkrt')).toBe('0px')
+    expect(firstLine.style.getPropertyValue('--bkrh')).toBe('8px')
+
+    // Or check the style attribute string
+    const styleAttr = firstLine.getAttribute('style') || ''
+    expect(styleAttr).toContain('--bkrt: 0px')
+    expect(styleAttr).toContain('--bkrh: 8px')
   })
 
   it('respects custom numeric height', () => {

@@ -3,48 +3,48 @@
  * Grid overlay system for layout alignment
  */
 
-.guide {
+.gde {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  padding: var(--bk-guide-padding-block) var(--bk-guide-padding-inline);
+  padding: var(--bkgpb) var(--bkgpi);
 }
 
 .line {
   left: -0.5px; /* Alignment correction for line variant */
 }
 
-.columns {
+.cols {
   position: absolute;
   inset: 0;
   display: grid;
-  gap: var(--bk-guide-gap);
-  grid-template-columns: var(--bk-guide-template);
-  justify-content: var(--bk-guide-justify);
-  width: var(--bk-width-full);
-  height: var(--bk-height-full);
+  gap: var(--bkgg);
+  grid-template-columns: var(--bkgt);
+  justify-content: var(--bkgj);
+  width: var(--bkwf);
+  height: var(--bkhf);
 }
 
-.column {
+.col {
   min-width: 0;
-  width: var(--bk-width-full);
-  height: var(--bk-height-full);
+  width: var(--bkwf);
+  height: var(--bkhf);
 }
 
 /* Variant-specific styles */
-.column[data-variant="line"] {
+.col[data-variant="line"] {
   width: 1px;
-  background-color: var(--bk-guide-color-line);
+  background-color: var(--bkgcl);
 }
 
-.column[data-variant="pattern"] {
-  background-color: var(--bk-guide-color-pattern);
+.col[data-variant="pattern"] {
+  background-color: var(--bkgcp);
 }
 
-.column[data-variant="auto"] {
-  background-color: var(--bk-guide-color-auto);
+.col[data-variant="auto"] {
+  background-color: var(--bkgca);
 }
 
-.column[data-variant="fixed"] {
-  background-color: var(--bk-guide-color-fixed);
+.col[data-variant="fixed"] {
+  background-color: var(--bkgcf);
 }
