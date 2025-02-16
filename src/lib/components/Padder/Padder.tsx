@@ -77,6 +77,7 @@ export const Padder = React.memo(
     ref,
   ) {
     const config = useConfig('padder')
+    const { variant } = useConfig('spacer')
     const initialPadding = React.useMemo(
       () => parsePadding(spacingProps),
       [spacingProps],
@@ -115,10 +116,11 @@ export const Padder = React.memo(
 
     const renderSpacer: RenderSpacerFn = (width, height) => (
       <Spacer
+        variant={variant}
         debugging={debugging}
         indicatorNode={indicatorNode}
-        height={height}
-        width={width}
+        height={height !== '100%' ? height : undefined}
+        width={width !== '100%' ? width : undefined}
       />
     )
 

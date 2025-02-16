@@ -10,13 +10,6 @@ import { mergeStyles, mergeClasses, formatValue, normalizeValuePair } from '@uti
 import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
-/**
- * Function signature for custom measurement indicators.
- *
- * @param value - The measurement in pixels
- * @param dimension - Which dimension is being measured ('width' | 'height')
- * @returns React node to display as the indicator
- */
 export type IndicatorNode = (
   value: number,
   dimension: 'width' | 'height',
@@ -33,35 +26,6 @@ export type SpacerProps = {
   color?: string;
 } & ComponentsProps
 
-/**
- * A flexible layout element that adds precise vertical or horizontal spacing.
- *
- * @remarks
- * Spacer provides:
- * - Consistent spacing in layouts
- * - Optional measurement indicators for debugging
- * - Multiple visual styles for different debugging needs
- * - Automatic dimension normalization
- *
- * @example
- * ```tsx
- * // Basic vertical spacing
- * <Spacer
- *   height="24px"
- *   base={8}
- * />
- *
- * // Custom style with indicators
- * <Spacer
- *   width="32px"
- *   height="100%"
- *   base={4}
- *   color="#ff0000"
- *   debugging="visible"
- *   indicatorNode={(value, dim) => `${dim}: ${value}px`}
- * />
- * ```
- */
 export const Spacer = React.memo(function Spacer({
   height,
   width,
@@ -87,9 +51,6 @@ export const Spacer = React.memo(function Spacer({
     { base, suppressWarnings: true },
   )
 
-  const cssWidth = formatValue(normWidth || '100%')
-  const cssHeight = formatValue(normHeight || '100%')
-
   const measurements = React.useMemo(() => {
     if (!isShown || !indicatorNode) return null
 
@@ -107,27 +68,58 @@ export const Spacer = React.memo(function Spacer({
     ].filter(Boolean)
   }, [isShown, indicatorNode, normHeight, normWidth])
 
+  // IMPORTANT: Correct default key for spacer base, using "--bk-spacer-base"
+  const defaultSpacerStyles: Record<string, string> = React.useMemo(() => ({
+    '--bk-spacer-height': 'var(--bk-height-full)',
+    '--bk-spacer-width': 'var(--bk-width-full)',
+    '--bk-spacer-base': `${config.base}px`,
+    '--bk-spacer-color-indice': 'var(--bk-spacer-color-indice-theme)',
+    '--bk-spacer-color-line': 'var(--bk-spacer-color-line-theme)',
+    '--bk-spacer-color-flat': 'var(--bk-spacer-color-flat-theme)',
+  }), [config.base])
+
+  const getStyleOverride = React.useCallback(
+    (key: string, value: string): Record<string, string | number> => {
+      // For width/height, if the computed value is "100%" skip inline injection
+      if ((key === '--bk-spacer-width' || key === '--bk-spacer-height') && value === '100%') {
+        return {}
+      }
+      return value !== defaultSpacerStyles[key] ? { [key]: value } : {}
+    },
+    [defaultSpacerStyles],
+  )
+
   const containerStyles = React.useMemo(() => {
-    const styleObject = {
-      '--bk-spacer-height': cssHeight,
-      '--bk-spacer-width': cssWidth,
-      '--bk-spacer-base': `${base}px`,
-      '--bk-spacer-color-indice': colorProp ?? config.colors.indice,
-      '--bk-spacer-color-line': colorProp ?? config.colors.line,
-      '--bk-spacer-color-flat': colorProp ?? config.colors.flat,
+    const heightValue = formatValue(normHeight || '100%')
+    const widthValue = formatValue(normWidth || '100%')
+    const baseValue = `${baseProp || config.base}px`
+
+    const customStyles = {
+      ...getStyleOverride('--bk-spacer-height', heightValue),
+      ...getStyleOverride('--bk-spacer-width', widthValue),
+      ...getStyleOverride('--bk-spacer-base', baseValue),
+      ...getStyleOverride(
+        '--bk-spacer-color-indice',
+        colorProp ?? config.colors.indice,
+      ),
+      ...getStyleOverride(
+        '--bk-spacer-color-line',
+        colorProp ?? config.colors.line,
+      ),
+      ...getStyleOverride(
+        '--bk-spacer-color-flat',
+        colorProp ?? config.colors.flat,
+      ),
     } as React.CSSProperties
-    return mergeStyles(styleObject, style)
-  }, [cssHeight, cssWidth, base, colorProp, config.colors, style])
+
+    return mergeStyles(customStyles, style)
+  }, [getStyleOverride, normHeight, normWidth, config.base, colorProp,
+    config.colors.indice, config.colors.line, config.colors.flat, style])
 
   return (
     <div
       ref={ref}
-      className={
-        mergeClasses(
-          styles.spacer,
-          isShown && styles[variant],
-          className,
-        )}
+      className={mergeClasses(styles.spacer, isShown && styles[variant], className)}
       data-testid="spacer"
       data-variant={variant}
       style={containerStyles}

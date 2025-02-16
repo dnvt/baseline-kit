@@ -71,7 +71,6 @@ function App() {
       {/* Box with baseline alignment */}
       <Box
         block={[2, 5]}
-        inline={1}
         debugging="visible"
       >
         <h1>Content Aligned to the Grid</h1>
@@ -91,7 +90,7 @@ The base unit is the foundation of Baseline Kit's spacing system. All measuremen
 unit:
 
 ```tsx
-<Config base={8}>     // Sets 8px as the base unit
+<Config base={8}> // Sets 8px as the base unit
   <Layout
     block={17}        // Will be rounded to 16px (2 * base)
     inline={22}       // Will be rounded to 24px (3 * base)
@@ -210,7 +209,6 @@ The Config component provides theme and debugging settings to all child componen
 ```tsx
 <Box
   block={[2, 5]}         // Vertical padding in base units (auto-adjusted for baseline)
-  inline={1}             // Horizontal padding in base units
   span={2}               // Grid column span when used in Layout
   snapping="height"      // "none", "height", or "clamp"
   debugging="visible"    // Show alignment guides

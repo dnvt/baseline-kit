@@ -4,8 +4,8 @@
  * @module hooks
  */
 
+import { RefObject, useCallback, useLayoutEffect, useMemo, useState } from 'react'
 import { rafThrottle } from '@utils'
-import { RefObject, useCallback, useLayoutEffect, useState } from 'react'
 
 type VirtualResult = {
   /** Total number of items/lines to virtualize */
@@ -69,9 +69,9 @@ export function useVirtual({
   buffer = 0,
 }: VirtualResult) {
   // Convert buffer to numeric value
-  const numericBuffer = typeof buffer === 'number'
-    ? buffer
-    : parseInt(buffer, 10) || 0
+  const numericBuffer = useMemo(() =>
+    typeof buffer === 'number' ? buffer : parseInt(buffer, 10) || 0
+  , [buffer])
 
   /**
    * Calculates the visible range of items based on scroll position
@@ -105,8 +105,16 @@ export function useVirtual({
     updateRangeThrottled()
   })
 
+
   // Throttle updates for performance
-  const updateRangeThrottled = rafThrottle(() => setVisibleRange(calculateRange()))
+  const updateRange = useCallback(() => {
+    setVisibleRange(prev => {
+      const next = calculateRange()
+      return prev.start !== next.start || prev.end !== next.end ? next : prev
+    })
+  }, [calculateRange])
+
+  const updateRangeThrottled = useMemo(() => rafThrottle(updateRange), [updateRange])
 
   useLayoutEffect(() => {
     const element = containerRef.current
@@ -126,12 +134,13 @@ export function useVirtual({
 }
 
 /** Helper hook to manage multiple window event listeners. */
-function useWindowEvents(events: string[], handler: EventListenerOrEventListenerObject) {
-  useLayoutEffect(() => {
-    events.forEach(evt => window.addEventListener(evt, handler, { passive: true }))
+function useWindowEvents(events: string[], handler: () => void) {
+  const stableHandler = useCallback(handler, [handler])
 
-    return () => {
-      events.forEach(evt => window.removeEventListener(evt, handler))
-    }
-  }, [events, handler])
+  useLayoutEffect(() => {
+    const wrappedHandler = () => stableHandler()
+    events.forEach(evt => window.addEventListener(evt, wrappedHandler))
+    return () => events.forEach(evt => window.removeEventListener(evt, wrappedHandler))
+  }, [events, stableHandler])
 }
+

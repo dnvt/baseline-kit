@@ -4,6 +4,7 @@
  */
 
 .layout {
+  display: grid;
   position: relative;
   box-sizing: border-box;
   width: var(--bk-layout-width, fit-content);

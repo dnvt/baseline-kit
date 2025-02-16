@@ -11,10 +11,12 @@ const mockIntersectionObserver = vi.fn((callback: IntersectionObserverCallback) 
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
+
 vi.stubGlobal('IntersectionObserver', mockIntersectionObserver)
 
 describe('useVirtual', () => {
   beforeEach(() => {
+    vi.useFakeTimers()
     vi.clearAllMocks()
     observerMap.clear()
 
@@ -28,6 +30,10 @@ describe('useVirtual', () => {
       value: 0,
       configurable: true,
     })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('calculates buffer zones correctly with default numeric buffer', () => {
