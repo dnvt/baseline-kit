@@ -88,36 +88,29 @@ describe('Layout Component', () => {
   it('renders with default grid layout', () => {
     render(<Layout>Content</Layout>)
     const grid = getGrid()
-    expect(grid).toHaveStyle({
-      'grid-template-columns': 'repeat(auto-fit, minmax(100px, 1fr))',
-      'grid-template-rows': 'auto',
-    })
+    // When using default values, the CSS variables should not be present
+    expect(grid.style.getPropertyValue('--bklgtc')).toBe('')  // Default values shouldn't be injected
+    expect(grid.style.getPropertyValue('--bklgtr')).toBe('')  // Default values shouldn't be injected
   })
 
   it('applies column template from number prop', () => {
     render(<Layout columns={3}>Test</Layout>)
     const grid = getGrid()
-    expect(grid).toHaveStyle({
-      'grid-template-columns': 'repeat(3, 1fr)',
-    })
+    expect(grid.style.getPropertyValue('--bklgtc')).toBe('repeat(3, 1fr)')
   })
 
   it('handles array column definition', () => {
     render(<Layout columns={['100px', 2, '1fr']}>Test</Layout>)
     const grid = getGrid()
-    expect(grid).toHaveStyle({
-      'grid-template-columns': '100px 2px 1fr',
-    })
+    expect(grid.style.getPropertyValue('--bklgtc')).toBe('100px 2px 1fr')
   })
 
   it('applies gap and alignment props', () => {
     render(<Layout gap="1rem" justifyContent="center" alignItems="stretch">Test</Layout>)
     const grid = getGrid()
-    expect(grid).toHaveStyle({
-      gap: '1rem',
-      'justify-content': 'center',
-      'align-items': 'stretch',
-    })
+    expect(grid.style.getPropertyValue('--bklg')).toBe('1rem')
+    expect(grid.style.getPropertyValue('--bkljc')).toBe('center')
+    expect(grid.style.getPropertyValue('--bklai')).toBe('stretch')
   })
 
   it('integrates with Padder component', () => {

@@ -3,19 +3,19 @@
  * Spacing management with visual debugging
  */
 
-.padder {
+.pad {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: var(--bk-padder-width, fit-content);
-  height: var(--bk-padder-height, fit-content);
+  width: var(--bkpw, fit-content);
+  height: var(--bkph, fit-content);
 }
 
-.visible::after {
+.v::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bk-padder-color);
+  border: 1px solid var(--bkpc, var(--bk-padder-color-theme));
   pointer-events: none;
-  z-index: var(--bk-z-index-outline);
+  z-index: var(--bkzi);
 }

@@ -152,7 +152,7 @@ section {
 .indice {
   font-size: 13px;
   padding-block: 2px 3px;
-  color: var(--bk-spacer-color-indice);
+  color: var(--bksci);
   position: absolute;
   right: 8px;
 }

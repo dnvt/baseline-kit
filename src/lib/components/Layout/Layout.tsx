@@ -129,24 +129,18 @@ export const Layout = React.memo(function Layout({
     [rows],
   )
 
-  const gridGapStyles = React.useMemo(() => ({
-    rowGap,
-    columnGap,
-    ...(gap !== undefined && { gap }),
-  }), [rowGap, columnGap, gap])
-
   const defaultLayoutStyles: Record<string, string> = React.useMemo(() => ({
-    '--bk-layout-width': 'var(--bk-width-default)',
-    '--bk-layout-height': 'var(--bk-height-default)',
-    '--bk-layout-color-line': config.colors.line,
-    '--bk-layout-color-flat': config.colors.flat,
-    '--bk-layout-color-indice': config.colors.indice,
+    '--bklw': '100%',
+    '--bklh': 'fit-content',
+    '--bklcl': config.colors.line,
+    '--bklcf': config.colors.flat,
+    '--bklci': config.colors.indice,
   }), [config.colors.line, config.colors.flat, config.colors.indice])
 
   const getLayoutStyleOverride = React.useCallback(
     (key: string, value: string): Record<string, string | number> => {
       // For width/height, if value is "fit-content" skip injection.
-      if ((key === '--bk-layout-width' || key === '--bk-layout-height') && value === 'fit-content') {
+      if ((key === '--bklw' || key === '--bklh') && value === 'fit-content') {
         return {}
       }
       return value !== defaultLayoutStyles[key] ? { [key]: value } : {}
@@ -158,47 +152,43 @@ export const Layout = React.memo(function Layout({
     const widthValue = formatValue(width || 'fit-content')
     const heightValue = formatValue(height || 'fit-content')
 
-    const customOverrides = {
-      ...getLayoutStyleOverride('--bk-layout-width', widthValue),
-      ...getLayoutStyleOverride('--bk-layout-height', heightValue),
-      ...getLayoutStyleOverride('--bk-layout-color-line', config.colors.line),
-      ...getLayoutStyleOverride('--bk-layout-color-flat', config.colors.flat),
-      ...getLayoutStyleOverride('--bk-layout-color-indice', config.colors.indice),
-    } as React.CSSProperties
+    return mergeStyles({
+      // Theme overrides
+      ...getLayoutStyleOverride('--bklw', widthValue),
+      ...getLayoutStyleOverride('--bklh', heightValue),
+      ...getLayoutStyleOverride('--bklcl', config.colors.line),
+      ...getLayoutStyleOverride('--bklcf', config.colors.flat),
+      ...getLayoutStyleOverride('--bklci', config.colors.indice),
 
-    // Merge our computed grid styles with any externally passed style.
-    const baseGridStyles = {
-      gridTemplateColumns,
-      gridTemplateRows,
-      rowGap,
-      columnGap,
-      justifyItems,
-      alignItems,
-      justifyContent,
-      alignContent,
-      width,
-      height,
-    } as React.CSSProperties
-
-    return mergeStyles(mergeStyles(baseGridStyles, customOverrides), gridGapStyles, style)
+      // Grid properties - only inject if different from defaults
+      ...(gap !== undefined && { '--bklg': formatValue(gap) }),
+      ...(gridTemplateColumns !== 'repeat(auto-fit, minmax(100px, 1fr))' && { '--bklgtc': gridTemplateColumns }),
+      ...(gridTemplateRows !== 'auto' && { '--bklgtr': gridTemplateRows }),
+      ...(columnGap !== undefined && { '--bklcg': formatValue(columnGap) }),
+      ...(rowGap !== undefined && { '--bklrg': formatValue(rowGap) }),
+      ...(justifyItems && { '--bklji': justifyItems }),
+      ...(alignItems && { '--bklai': alignItems }),
+      ...(justifyContent && { '--bkljc': justifyContent }),
+      ...(alignContent && { '--bklac': alignContent }),
+    } as React.CSSProperties, style)
   }, [
-    gridTemplateColumns, gridTemplateRows, rowGap, columnGap,
+    gridTemplateColumns, gridTemplateRows, gap, columnGap, rowGap,
     justifyItems, alignItems, justifyContent, alignContent,
     width, height, config.colors.line, config.colors.flat, config.colors.indice,
-    getLayoutStyleOverride, gridGapStyles, style,
+    getLayoutStyleOverride, style,
   ])
 
   return (
     <Config spacer={{
       variant: variant ?? 'line', colors: {
-        line: config.colors.indice,
+        line: config.colors.line,
         flat: config.colors.flat,
-        indice: config.colors.line,
+        indice: config.colors.indice,
       },
     }}>
       <Padder
         ref={layoutRef}
-        className={isShown ? styles.visible : ''}
+        className={isShown ? styles.v : ''}
         block={[padding.top, padding.bottom]}
         indicatorNode={indicatorNode}
         inline={[padding.left, padding.right]}
@@ -208,7 +198,7 @@ export const Layout = React.memo(function Layout({
       >
         <div
           data-testid="layout"
-          className={mergeClasses(className, styles.layout)}
+          className={mergeClasses(className, styles.lay)}
           style={containerStyles}
         >
           {children}

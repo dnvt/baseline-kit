@@ -3,10 +3,10 @@
  * Basic component with outline or background options
  */
 
-.spacer {
+.spr {
   position: relative;
-  width: var(--bk-spacer-width);
-  height: var(--bk-spacer-height);
+  width: var(--bksw);
+  height: var(--bksh);
   flex-shrink: 0;  
 }
 
@@ -14,11 +14,11 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bk-spacer-color-line);
-  z-index: calc(var(--bk-z-index-outline));
+  border: 1px solid var(--bkscl);
+  z-index: calc(var(--bkzi));
 
 }
 
 .flat {
-  background-color: var(--bk-spacer-color-flat);
+  background-color: var(--bkscf);
 }

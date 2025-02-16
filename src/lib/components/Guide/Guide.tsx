@@ -140,19 +140,19 @@ export const Guide = React.memo(function Guide({
   } = useGuide(containerRef, gridConfig)
 
   const defaultGuideStyles: Record<string, string> = React.useMemo(() => ({
-    '--bk-guide-gap': `${calculatedGap}px`,
-    '--bk-guide-justify': 'start',
-    '--bk-guide-color-line': config.colors.line,
-    '--bk-guide-color-pattern': config.colors.pattern,
-    '--bk-guide-width': '100vw',
-    '--bk-guide-height': '100vh',
+    '--bkgg': `${calculatedGap}px`,
+    '--bkgj': 'start',
+    '--bkgcl': config.colors.line,
+    '--bkgcp': config.colors.pattern,
+    '--bkgw': '100vw',
+    '--bkgh': '100vh',
   }), [calculatedGap, config.colors.line, config.colors.pattern])
 
   const getGuideStyleOverride = React.useCallback(
     (key: string, value: string): Record<string, string> => {
       if (
-        ((key === '--bk-guide-width') && value === '100vw') ||
-        ((key === '--bk-guide-height') && value === '100vh')
+        ((key === '--bkgw') && value === '100vw') ||
+        ((key === '--bkgh') && value === '100vh')
       ) {
         return {}
       }
@@ -163,24 +163,24 @@ export const Guide = React.memo(function Guide({
 
   // Build base styles (all as string values)
   const baseStyles: Record<string, string> = {
-    '--bk-guide-gap': `${calculatedGap}px`,
-    '--bk-guide-justify': align,
-    '--bk-guide-color-line': config.colors.line,
-    '--bk-guide-color-pattern': config.colors.pattern,
-    '--bk-guide-padding-block': `${top}px ${bottom}px`,
-    '--bk-guide-padding-inline': `${left}px ${right}px`,
-    '--bk-guide-template': template,
-    '--bk-guide-width': formatValue(width ?? containerWidth, 0) || '100vw',
-    '--bk-guide-height': formatValue(height ?? containerHeight, 0) || '100vh',
+    '--bkgg': `${calculatedGap}px`,
+    '--bkgj': align,
+    '--bkgcl': config.colors.line,
+    '--bkgcp': config.colors.pattern,
+    '--bkgpb': `${top}px ${bottom}px`,
+    '--bkgpi': `${left}px ${right}px`,
+    '--bkgt': template,
+    '--bkgw': formatValue(width ?? containerWidth, 0) || '100vw',
+    '--bkgh': formatValue(height ?? containerHeight, 0) || '100vh',
   }
 
   const customOverrides: Record<string, string> = {
-    ...getGuideStyleOverride('--bk-guide-width', baseStyles['--bk-guide-width']),
-    ...getGuideStyleOverride('--bk-guide-height', baseStyles['--bk-guide-height']),
-    ...getGuideStyleOverride('--bk-guide-justify', align),
-    ...getGuideStyleOverride('--bk-guide-color-line', config.colors.line),
-    ...getGuideStyleOverride('--bk-guide-color-pattern', config.colors.pattern),
-    ...getGuideStyleOverride('--bk-guide-gap', `${calculatedGap}px`),
+    ...getGuideStyleOverride('--bkgw', baseStyles['--bkgw']),
+    ...getGuideStyleOverride('--bkgh', baseStyles['--bkgh']),
+    ...getGuideStyleOverride('--bkgj', align),
+    ...getGuideStyleOverride('--bkgcl', config.colors.line),
+    ...getGuideStyleOverride('--bkgcp', config.colors.pattern),
+    ...getGuideStyleOverride('--bkgg', `${calculatedGap}px`),
   }
 
   const containerStyles: Record<string, string> = mergeStyles(baseStyles, customOverrides, style as Record<string, string>)
@@ -188,26 +188,26 @@ export const Guide = React.memo(function Guide({
   return (
     <div
       ref={containerRef}
+      data-testid="guide"
       className={mergeClasses(
-        styles.guide,
+        styles.gde,
         className,
-        isShown ? styles.visible : styles.hidden,
+        isShown ? styles.v : styles.h,
         variant === 'line' && styles.line,
       )}
-      data-testid="guide"
       data-variant={variant}
       style={containerStyles}
       {...props}
     >
       {isShown && (
-        <div className={styles.columns} data-variant={variant}>
+        <div className={styles.cols} data-variant={variant}>
           {Array.from({ length: columnsCount }, (_, i) => {
             const colColor =
               config.colors[variant as keyof typeof config.colors] ?? config.colors.line
             return (
               <div
                 key={i}
-                className={styles.column}
+                className={styles.col}
                 data-column-index={i}
                 data-variant={variant}
                 style={{ backgroundColor: colColor }}

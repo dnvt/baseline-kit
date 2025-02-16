@@ -110,16 +110,16 @@ export const Box = React.memo(
     }, [colSpan, rowSpan, span])
 
     const defaultBoxStyles: Record<string, string> = React.useMemo(() => ({
-      '--bk-box-width': 'var(--bk-width-default)',
-      '--bk-box-height': 'var(--bk-height-default)',
-      '--bk-box-base': `${config.base}px`,
-      '--bk-box-color-line': config.colors.line,
+      '--bkxw': 'var(--bk-width-default)',
+      '--bkxh': 'var(--bk-height-default)',
+      '--bkxb': `${config.base}px`,
+      '--bkxcl': config.colors.line,
     }), [config.base, config.colors.line])
 
     // Helper: for width/height, skip if "fit-content"
     const getBoxStyleOverride = React.useCallback(
       (key: string, value: string): Record<string, string | number> => {
-        if ((key === '--bk-box-width' || key === '--bk-box-height') && value === 'fit-content') {
+        if ((key === '--bkxw' || key === '--bkxh') && value === 'fit-content') {
           return {}
         }
         return value !== defaultBoxStyles[key] ? { [key]: value } : {}
@@ -133,10 +133,10 @@ export const Box = React.memo(
       const heightValue = formatValue(height || 'fit-content')
 
       const customStyles = {
-        ...getBoxStyleOverride('--bk-box-width', widthValue),
-        ...getBoxStyleOverride('--bk-box-height', heightValue),
-        ...getBoxStyleOverride('--bk-box-base', `${config.base}px`),
-        ...getBoxStyleOverride('--bk-box-color-line', config.colors.line),
+        ...getBoxStyleOverride('--bkxw', widthValue),
+        ...getBoxStyleOverride('--bkxh', heightValue),
+        ...getBoxStyleOverride('--bkxb', `${config.base}px`),
+        ...getBoxStyleOverride('--bkxcl', config.colors.line),
       } as React.CSSProperties
 
       return mergeStyles(customStyles, style)
@@ -146,7 +146,7 @@ export const Box = React.memo(
       <div
         ref={mergeRefs(ref, internalRef)}
         data-testid="box"
-        className={mergeClasses(styles.box, isShown && styles.visible, className)}
+        className={mergeClasses(styles.box, isShown && styles.v, className)}
         style={mergeStyles(boxStyles, gridSpanStyles)}
       >
         <Config

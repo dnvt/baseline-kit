@@ -6,7 +6,7 @@
 
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeClasses, mergeStyles, parsePadding, mergeRefs } from '@utils'
+import { mergeClasses, mergeStyles, parsePadding, mergeRefs, formatValue } from '@utils'
 import { ComponentsProps } from '../types'
 import { IndicatorNode, Spacer } from '../Spacer'
 import styles from './styles.module.css'
@@ -95,24 +95,40 @@ export const Padder = React.memo(
 
     const setRefs = mergeRefs(ref, internalRef)
 
-    const containerStyles = React.useMemo(
-      () => mergeStyles({
-        '--bk-padder-width': width ?? 'fit-content',
-        '--bk-padder-height': height ?? 'fit-content',
-        '--bk-padder-base': `${config.base}px`,
-        '--bk-padder-color': config.color,
+    const containerStyles = React.useMemo(() => {
+      const styles: Record<string, string> = {}
 
-        ...(enableSpacers
-          ? {}
-          : {
-            paddingBlock: `${top}px ${bottom}px`,
-            paddingInline: `${left}px ${right}px`,
-          }),
-      } as React.CSSProperties,
-      style,
-      ),
-      [width, height, config.base, config.color, enableSpacers, top, right, bottom, left, style],
-    )
+      // Only inject width/height if they differ from defaults
+      if (width !== 'fit-content' && width !== undefined) {
+        styles['--bkpw'] = formatValue(width)
+      }
+      if (height !== 'fit-content' && height !== undefined) {
+        styles['--bkph'] = formatValue(height)
+      }
+      // Only inject base if it differs from theme
+      if (config.base !== 8) {
+        styles['--bkpb'] = `${config.base}px`
+      }
+      // Only inject color if it differs from theme
+      if (config.color !== 'var(--bk-padder-color-theme)') {
+        styles['--bkpc'] = config.color
+      }
+
+      // Padding styles when spacers are disabled
+      if (!enableSpacers) {
+        if (top > 0 || bottom > 0) {
+          styles.paddingBlock = `${top}px ${bottom}px`
+        }
+        if (left > 0 || right > 0) {
+          styles.paddingInline = `${left}px ${right}px`
+        }
+      }
+
+      return mergeStyles(styles as React.CSSProperties, style)
+    }, [
+      width, height, config.base, config.color,
+      enableSpacers, top, right, bottom, left, style,
+    ])
 
     const renderSpacer: RenderSpacerFn = (width, height) => (
       <Spacer
@@ -127,12 +143,12 @@ export const Padder = React.memo(
     return (
       <div
         ref={setRefs}
+        data-testid="padder"
         className={mergeClasses(
-          styles.padder,
-          isShown && styles.visible,
+          styles.pad,
+          isShown && styles.v,
           className,
         )}
-        data-testid="padder"
         style={containerStyles}
       >
         {enableSpacers && (

@@ -118,19 +118,19 @@ export const Stack = React.memo(function Stack({
   }), [rowGap, columnGap, gap])
 
   const defaultStackStyles: Record<string, string> = React.useMemo(() => ({
-    '--bk-stack-width': 'var(--bk-width-full)',
-    '--bk-stack-height': 'var(--bk-height-default)',
-    '--bk-stack-color-line': config.colors.line,
-    '--bk-stack-color-flat': config.colors.flat,
-    '--bk-stack-color-indice': config.colors.indice,
+    '--bkkw': '100%',
+    '--bkkh': 'fit-content',
+    '--bkkcl': config.colors.line,
+    '--bkkcf': config.colors.flat,
+    '--bkkci': config.colors.indice,
   }), [config.colors.line, config.colors.flat, config.colors.indice])
 
   const getStackStyleOverride = React.useCallback(
     (key: string, value: string): Record<string, string | number> => {
       // For width, if value equals "100%" then skip inline override.
-      if (key === '--bk-stack-width' && value === '100%') return {}
+      if (key === '--bkkw' && value === '100%') return {}
       // For height, if value equals "fit-content", skip override.
-      if (key === '--bk-stack-height' && value === 'fit-content') return {}
+      if (key === '--bkkh' && value === 'fit-content') return {}
       return value !== defaultStackStyles[key] ? { [key]: value } : {}
     },
     [defaultStackStyles],
@@ -141,11 +141,11 @@ export const Stack = React.memo(function Stack({
     const heightValue = formatValue(height || 'fit-content')
 
     const customOverrides = {
-      ...getStackStyleOverride('--bk-stack-width', widthValue),
-      ...getStackStyleOverride('--bk-stack-height', heightValue),
-      ...getStackStyleOverride('--bk-stack-color-line', config.colors.line),
-      ...getStackStyleOverride('--bk-stack-color-flat', config.colors.flat),
-      ...getStackStyleOverride('--bk-stack-color-indice', config.colors.indice),
+      ...getStackStyleOverride('--bkkw', widthValue),
+      ...getStackStyleOverride('--bkkh', heightValue),
+      ...getStackStyleOverride('--bkkcl', config.colors.line),
+      ...getStackStyleOverride('--bkkcf', config.colors.flat),
+      ...getStackStyleOverride('--bkkci', config.colors.indice),
     } as React.CSSProperties
 
     const baseStyles = {
@@ -174,14 +174,14 @@ export const Stack = React.memo(function Stack({
   return (
     <Config spacer={{
       variant: variant ?? 'line', colors: {
-        line: config.colors.indice,
+        line: config.colors.line,
         flat: config.colors.flat,
-        indice: config.colors.line,
+        indice: config.colors.indice,
       },
     }}>
       <Padder
         ref={stackRef}
-        className={isShown ? styles.visible : ''}
+        className={isShown ? styles.v : ''}
         block={[padding.top, padding.bottom]}
         inline={[padding.left, padding.right]}
         debugging={debugging}
@@ -191,7 +191,7 @@ export const Stack = React.memo(function Stack({
       >
         <div
           data-testid="stack"
-          className={mergeClasses(className, styles.stack)}
+          className={mergeClasses(className, styles.stk)}
           style={mergedContainerStyles}
           {...spacingProps}
         >
