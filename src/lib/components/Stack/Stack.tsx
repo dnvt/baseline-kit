@@ -7,7 +7,7 @@
 import * as React from 'react'
 import type { Gaps, IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeClasses, mergeStyles, parsePadding } from '@utils'
+import { mergeClasses, mergeStyles, parsePadding, formatValue } from '@utils'
 import { Padder } from '../Padder'
 import { Config } from '../Config'
 import { ComponentsProps, Variant } from '../types'
@@ -117,37 +117,71 @@ export const Stack = React.memo(function Stack({
     ...(gap !== undefined && { gap }),
   }), [rowGap, columnGap, gap])
 
+  const defaultStackStyles: Record<string, string> = React.useMemo(() => ({
+    '--bk-stack-width': 'var(--bk-width-full)',
+    '--bk-stack-height': 'var(--bk-height-default)',
+    '--bk-stack-color-line': config.colors.line,
+    '--bk-stack-color-flat': config.colors.flat,
+    '--bk-stack-color-indice': config.colors.indice,
+  }), [config.colors.line, config.colors.flat, config.colors.indice])
+
+  const getStackStyleOverride = React.useCallback(
+    (key: string, value: string): Record<string, string | number> => {
+      // For width, if value equals "100%" then skip inline override.
+      if (key === '--bk-stack-width' && value === '100%') return {}
+      // For height, if value equals "fit-content", skip override.
+      if (key === '--bk-stack-height' && value === 'fit-content') return {}
+      return value !== defaultStackStyles[key] ? { [key]: value } : {}
+    },
+    [defaultStackStyles],
+  )
+
   const containerStyles = React.useMemo(() => {
-    return mergeStyles({
-      display: 'flex',
+    const widthValue = formatValue(width || '100%')
+    const heightValue = formatValue(height || 'fit-content')
+
+    const customOverrides = {
+      ...getStackStyleOverride('--bk-stack-width', widthValue),
+      ...getStackStyleOverride('--bk-stack-height', heightValue),
+      ...getStackStyleOverride('--bk-stack-color-line', config.colors.line),
+      ...getStackStyleOverride('--bk-stack-color-flat', config.colors.flat),
+      ...getStackStyleOverride('--bk-stack-color-indice', config.colors.indice),
+    } as React.CSSProperties
+
+    const baseStyles = {
       flexDirection: direction,
       justifyContent: justify,
       alignItems: align,
-      width: width || 'fit-content',
-      height: height || 'fit-content',
-      '--bk-stack-color-line': config.colors.line,
-      '--bk-stack-color-flat': config.colors.flat,
-      '--bk-stack-color-indice': config.colors.indice,
-    } as React.CSSProperties,
-    stackGapStyles,
-    style,
-    )
-  }, [direction, justify, align, width, height, config.colors.line, config.colors.flat, config.colors.indice, stackGapStyles, style])
+      width,
+      height,
+    } as React.CSSProperties
 
-  const mergedContainerStyles =
-    debugging === 'none'
-      ? {
-        ...containerStyles,
-        paddingBlock: `${padding.top}px ${padding.bottom}px`,
-        paddingInline: `${padding.left}px ${padding.right}px`,
-      }
-      : containerStyles
+    return mergeStyles(baseStyles, stackGapStyles, customOverrides, style)
+  }, [
+    direction, justify, align, width, height,
+    config.colors.line, config.colors.flat, config.colors.indice,
+    getStackStyleOverride, stackGapStyles, style,
+  ])
+
+  const mergedContainerStyles = debugging === 'none'
+    ? {
+      ...containerStyles,
+      paddingBlock: `${padding.top}px ${padding.bottom}px`,
+      paddingInline: `${padding.left}px ${padding.right}px`,
+    }
+    : containerStyles
 
   return (
-    <Config spacer={{ variant }}>
+    <Config spacer={{
+      variant: variant ?? 'line', colors: {
+        line: config.colors.indice,
+        flat: config.colors.flat,
+        indice: config.colors.line,
+      },
+    }}>
       <Padder
         ref={stackRef}
-        data-testid="padder"
+        className={isShown ? styles.visible : ''}
         block={[padding.top, padding.bottom]}
         inline={[padding.left, padding.right]}
         debugging={debugging}
@@ -157,11 +191,7 @@ export const Stack = React.memo(function Stack({
       >
         <div
           data-testid="stack"
-          className={mergeClasses(
-            className,
-            styles.stack,
-            isShown && styles.visible,
-          )}
+          className={mergeClasses(className, styles.stack)}
           style={mergedContainerStyles}
           {...spacingProps}
         >

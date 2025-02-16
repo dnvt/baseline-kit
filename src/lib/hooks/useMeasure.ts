@@ -1,10 +1,4 @@
-/**
- * @file useMeasure Hook
- * @description Tracks element dimensions using ResizeObserver
- * @module hooks
- */
-
-import { useLayoutEffect, useState, useCallback, useRef, RefObject } from 'react'
+import * as React from 'react'
 import { rafThrottle } from '@utils'
 
 export interface MeasureResult {
@@ -19,18 +13,9 @@ export interface MeasureResult {
 /**
  * Hook for measuring and tracking DOM element dimensions.
  *
- * @remarks
- * Provides responsive element measurements using ResizeObserver, with:
- * - Performance optimization via RAF throttling
- * - Cache to prevent unnecessary updates
- * - Error handling and recovery
- * - Manual refresh capability
- *
- * The hook automatically:
- * - Initializes with 0x0 dimensions
- * - Updates on element resize
- * - Cleans up observers on unmount
- * - Rounds dimensions to whole pixels
+ * Provides responsive element measurements using ResizeObserver,
+ * with performance optimization (via RAF throttling), error handling,
+ * and a manual refresh method.
  *
  * @param ref - Reference to the DOM element to measure
  * @returns Current dimensions and refresh function
@@ -38,7 +23,7 @@ export interface MeasureResult {
  * @example
  * ```tsx
  * function ResponsiveBox() {
- *   const ref = useRef<HTMLDivElement>(null);
+ *   const ref = React.useRef<HTMLDivElement>(null);
  *   const { width, height, refresh } = useMeasure(ref);
  *
  *   return (
@@ -50,56 +35,45 @@ export interface MeasureResult {
  * }
  * ```
  */
-export function useMeasure(ref: RefObject<HTMLElement | null>): MeasureResult {
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-  const lastDimensions = useRef({ width: 0, height: 0 })
-  const hasError = useRef(false)
+export function useMeasure(ref: React.RefObject<HTMLElement | null>): MeasureResult {
+  const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 })
 
-  const measure = useCallback(() => {
-    if (!ref.current || hasError.current) return
+  // measure() reads getBoundingClientRect() from ref.current
+  const measure = React.useCallback(() => {
+    if (!ref.current) return
     try {
       const rect = ref.current.getBoundingClientRect()
       const next = {
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
+        width: rect ? Math.round(rect.width) : 0,
+        height: rect ? Math.round(rect.height) : 0,
       }
-
-      if (lastDimensions.current.width !== next.width ||
-        lastDimensions.current.height !== next.height) {
-        lastDimensions.current = next
-        setDimensions(next)
-      }
+      setDimensions(prev =>
+        prev.width === next.width && prev.height === next.height ? prev : next,
+      )
     } catch (error) {
-      hasError.current = true
-      console.error('Error measuring element:', error)
-      if (dimensions.width !== 0 || dimensions.height !== 0) {
-        setDimensions({ width: 0, height: 0 })
-      }
+      setDimensions({ width: 0, height: 0 })
     }
-  }, [ref, dimensions])
+  }, [ref])
 
-  const throttledMeasure = useRef(rafThrottle(measure))
+  // Create a throttled version of measure using RAF.
+  const refresh = React.useMemo(() => rafThrottle(measure), [measure])
 
-  useLayoutEffect(() => {
-    if (typeof window === 'undefined' || !ref.current) return
-
-    const observer = new ResizeObserver(() => {
-      throttledMeasure.current()
-    })
-
-    observer.observe(ref.current)
-    measure()
-
-    return () => {
-      observer.disconnect()
-      hasError.current = false
-    }
-  }, [ref, measure])
-
-  const refresh = useCallback(() => {
-    hasError.current = false
+  // On mount (or when ref changes) perform an immediate measurement.
+  React.useLayoutEffect(() => {
     measure()
   }, [measure])
+
+  // Set up a ResizeObserver on mount.
+  React.useLayoutEffect(() => {
+    if (!ref.current) return
+    const observer = new ResizeObserver(() => {
+      refresh()
+    })
+    observer.observe(ref.current)
+    return () => {
+      observer.disconnect()
+    }
+  }, [ref, refresh])
 
   return { ...dimensions, refresh }
 }

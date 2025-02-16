@@ -6,7 +6,7 @@
 
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeClasses, mergeStyles, parsePadding, mergeRefs } from '@utils'
+import { mergeClasses, mergeStyles, parsePadding, mergeRefs, formatValue } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
@@ -109,16 +109,38 @@ export const Box = React.memo(
       return gridStyles
     }, [colSpan, rowSpan, span])
 
-    // Merging styles
-    const boxStyles = React.useMemo(
-      () => mergeStyles({
-        '--bk-box-width': width,
-        '--bk-box-height': height,
-        '--bk-box-base': `${config.base}px`,
-        '--bk-box-color-line': config.colors.line,
-      } as React.CSSProperties, style),
-      [config.base, config.colors.line, height, style, width],
+    const defaultBoxStyles: Record<string, string> = React.useMemo(() => ({
+      '--bk-box-width': 'var(--bk-width-default)',
+      '--bk-box-height': 'var(--bk-height-default)',
+      '--bk-box-base': `${config.base}px`,
+      '--bk-box-color-line': config.colors.line,
+    }), [config.base, config.colors.line])
+
+    // Helper: for width/height, skip if "fit-content"
+    const getBoxStyleOverride = React.useCallback(
+      (key: string, value: string): Record<string, string | number> => {
+        if ((key === '--bk-box-width' || key === '--bk-box-height') && value === 'fit-content') {
+          return {}
+        }
+        return value !== defaultBoxStyles[key] ? { [key]: value } : {}
+      },
+      [defaultBoxStyles],
     )
+
+    const boxStyles = React.useMemo(() => {
+      // Using our formatDimension helper for width and height.
+      const widthValue = formatValue(width || 'fit-content')
+      const heightValue = formatValue(height || 'fit-content')
+
+      const customStyles = {
+        ...getBoxStyleOverride('--bk-box-width', widthValue),
+        ...getBoxStyleOverride('--bk-box-height', heightValue),
+        ...getBoxStyleOverride('--bk-box-base', `${config.base}px`),
+        ...getBoxStyleOverride('--bk-box-color-line', config.colors.line),
+      } as React.CSSProperties
+
+      return mergeStyles(customStyles, style)
+    }, [config.base, config.colors.line, width, height, getBoxStyleOverride, style])
 
     return (
       <div

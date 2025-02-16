@@ -92,20 +92,16 @@ export const Baseline = memo(function Baseline({
 
   const chosenColor = variant === 'line' ? config.colors.line : config.colors.flat
 
-  const containerStyles = useMemo(
-    () =>
-      mergeStyles({
-        '--bk-baseline-width': normWidth,
-        padding: `${top}px ${right}px ${bottom}px ${left}px`,
-        position: 'absolute',
-        inset: 0,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-        height: `${normHeight}px`,
-      } as CSSProperties,
-      style,
-      ),
-    [normWidth, top, right, bottom, left, normHeight, style],
+  const containerStyles = useMemo(() => mergeStyles({
+    '--bk-baseline-width': normWidth,
+    padding: `${top}px ${right}px ${bottom}px ${left}px`,
+    position: 'absolute',
+    inset: 0,
+    pointerEvents: 'none',
+    overflow: 'hidden',
+    height: `${normHeight}px`,
+  } as CSSProperties, style),
+  [normWidth, top, right, bottom, left, normHeight, style],
   )
 
   const getRowStyle = useCallback(

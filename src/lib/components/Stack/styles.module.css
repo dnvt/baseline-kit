@@ -4,6 +4,7 @@
  */
 
 .stack {
+  display: flex;
   position: relative;
   width: var(--bk-stack-width, 100%);
   height: var(--bk-stack-height, fit-content);

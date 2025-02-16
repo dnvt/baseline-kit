@@ -1,16 +1,20 @@
 import { GuideColumnsPattern } from '@components'
 
-interface PGConfig {
-  base: number;
-  zIndex: number;
+export type VisibilityState = {
+  baseline: boolean
+  guides: boolean
+  padder: boolean
+  spacer: boolean
+  box: boolean
+  stack: boolean
+  layout: boolean
 }
 
-export interface DemoGridState {
-  config: Partial<PGConfig>
-  showGuides: {
-    columns: boolean
-    baseline: boolean
+export type DemoGridState = {
+  config: {
+    base: number
   }
+  showGuides: VisibilityState
   columnConfig: {
     count: number
     gap: number
@@ -20,7 +24,7 @@ export interface DemoGridState {
 }
 
 export type DemoGridAction =
-  | { type: 'UPDATE_CONFIG'; payload: Partial<PGConfig> }
-  | { type: 'SET_PAGE_HEIGHT'; payload: number }
-  | { type: 'TOGGLE_GUIDE'; payload: { type: 'columns' | 'baseline'; value: boolean } }
+  | { type: 'UPDATE_CONFIG'; payload: Partial<DemoGridState['config']> }
+  | { type: 'TOGGLE_GUIDE'; payload: { component: keyof VisibilityState; value: boolean } }
   | { type: 'UPDATE_COLUMN_CONFIG'; payload: Partial<DemoGridState['columnConfig']> }
+  | { type: 'SET_PAGE_HEIGHT'; payload: number }

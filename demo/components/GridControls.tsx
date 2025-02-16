@@ -8,39 +8,39 @@ type GridControlsProps = {
   dispatch: Dispatch<DemoGridAction>
 }
 
-const GuideControls = ({ state, dispatch }: GridControlsProps) => (
-  <section className="visibility-section">
-    <h4>Grid Guides</h4>
-    <div className="checkbox-container">
-      <label className="toggle-label">
-        <input
-          type="checkbox"
-          checked={state.showGuides.columns}
-          onChange={(e) =>
-            dispatch({
-              type: 'TOGGLE_GUIDE',
-              payload: { type: 'columns', value: e.target.checked },
-            })
-          }
-        />
-        Columns
-      </label>
-      <label className="toggle-label">
-        <input
-          type="checkbox"
-          checked={state.showGuides.baseline}
-          onChange={(e) =>
-            dispatch({
-              type: 'TOGGLE_GUIDE',
-              payload: { type: 'baseline', value: e.target.checked },
-            })
-          }
-        />
-        Baseline
-      </label>
-    </div>
-  </section>
-)
+const GuideControls = ({ state, dispatch }: GridControlsProps) => {
+  const controls = [
+    { key: 'baseline', label: 'Baseline' },
+    { key: 'guides', label: 'Guides' },
+    { key: 'spacer', label: 'Spacer' },
+    { key: 'box', label: 'Box' },
+    { key: 'stack', label: 'Stack' },
+    { key: 'layout', label: 'Layout' },
+  ] as const
+
+  return (
+    <section className="visibility-section">
+      <h4>Component Visibility</h4>
+      <div className="checkbox-container">
+        {controls.map(({ key, label }) => (
+          <label key={key} className="toggle-label">
+            <input
+              type="checkbox"
+              checked={state.showGuides[key]}
+              onChange={(e) =>
+                dispatch({
+                  type: 'TOGGLE_GUIDE',
+                  payload: { component: key, value: e.target.checked },
+                })
+              }
+            />
+            {label}
+          </label>
+        ))}
+      </div>
+    </section>
+  )
+}
 
 const RangeControl = ({
   label,

@@ -2,10 +2,10 @@ import { useReducer, useCallback, ReactNode } from 'react'
 import { GridControls } from './GridControls'
 import type { DemoGridAction, DemoGridState } from './types'
 import { usePageHeight } from '../hooks'
+import {Content} from "./Content"
 import { Guide, DEFAULT_CONFIG, GuideColumnsPattern } from '../../dist'
 import { Baseline } from '@/components/Baseline'
 import { Config } from '@components'
-
 
 // Custom reducer for the demo -------------------------------------------------
 
@@ -13,31 +13,31 @@ import { Config } from '@components'
 // to prevent prop drilling and state conflicts
 function demoGridReducer(state: DemoGridState, action: DemoGridAction): DemoGridState {
   switch (action.type) {
-  case 'UPDATE_CONFIG':
-    return {
-      ...state,
-      config: { ...state.config, ...action.payload },
-    }
-  case 'TOGGLE_GUIDE':
-    return {
-      ...state,
-      showGuides: {
-        ...state.showGuides,
-        [action.payload.type]: action.payload.value,
-      },
-    }
-  case 'UPDATE_COLUMN_CONFIG':
-    return {
-      ...state,
-      columnConfig: { ...state.columnConfig, ...action.payload },
-    }
-  case 'SET_PAGE_HEIGHT':
-    return {
-      ...state,
-      pageHeight: action.payload,
-    }
-  default:
-    return state
+    case 'UPDATE_CONFIG':
+      return {
+        ...state,
+        config: { ...state.config, ...action.payload },
+      }
+    case 'TOGGLE_GUIDE':
+      return {
+        ...state,
+        showGuides: {
+          ...state.showGuides,
+          [action.payload.component]: action.payload.value,
+        },
+      }
+    case 'UPDATE_COLUMN_CONFIG':
+      return {
+        ...state,
+        columnConfig: { ...state.columnConfig, ...action.payload },
+      }
+    case 'SET_PAGE_HEIGHT':
+      return {
+        ...state,
+        pageHeight: action.payload,
+      }
+    default:
+      return state
   }
 }
 
@@ -48,8 +48,13 @@ export const DEMO: DemoGridState = {
     base: DEFAULT_CONFIG.base,
   },
   showGuides: {
-    columns: true,
     baseline: true,
+    guides: true,
+    padder: true,
+    spacer: true,
+    box: true,
+    stack: true,
+    layout: true
   },
   columnConfig: {
     count: 9,
@@ -69,9 +74,10 @@ export const DEMO: DemoGridState = {
   pageHeight: 0,
 }
 
+
 // Grid demo setup -------------------------------------------------------------
 
-export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolean) => ReactNode }) {
+export function GridSetups() {
   const [state, dispatch] = useReducer(demoGridReducer, DEMO)
 
   const handleHeightChange = useCallback((height: number) => {
@@ -85,21 +91,24 @@ export function GridSetups({ contentNode }: { contentNode: (showBaseline: boolea
   return (
     <Config>
       <div className="grid-playground">
-        <Baseline debugging={state.showGuides.columns ? 'visible' : 'hidden'} height={state.pageHeight} />
+        <Baseline
+          debugging={state.showGuides.baseline ? 'visible' : 'hidden'}
+          height={state.pageHeight}
+        />
 
         <div className="demo-wrapper">
           <Guide
-            debugging={state.showGuides.columns ? 'visible' : 'hidden'}
+            debugging={state.showGuides.guides ? 'visible' : 'hidden'}
             gap={state.columnConfig.gap}
           />
           <Guide
-            debugging={state.showGuides.columns ? 'visible' : 'hidden'}
+            debugging={state.showGuides.guides ? 'visible' : 'hidden'}
             variant="fixed"
             gap={state.columnConfig.gap}
             columns={9}
           />
           <div className="demo-content">
-            {contentNode(state.showGuides.baseline)}
+            <Content state={state} />
           </div>
         </div>
 

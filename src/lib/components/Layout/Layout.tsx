@@ -7,7 +7,7 @@
 import * as React from 'react'
 import type { Gaps, IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeStyles, mergeClasses, parsePadding } from '@utils'
+import { mergeStyles, mergeClasses, parsePadding, formatValue } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
 import { ComponentsProps, Variant } from '../types'
@@ -135,9 +135,39 @@ export const Layout = React.memo(function Layout({
     ...(gap !== undefined && { gap }),
   }), [rowGap, columnGap, gap])
 
-  const gridStyles = React.useMemo(() => {
-    return mergeStyles({
-      display: 'grid',
+  const defaultLayoutStyles: Record<string, string> = React.useMemo(() => ({
+    '--bk-layout-width': 'var(--bk-width-default)',
+    '--bk-layout-height': 'var(--bk-height-default)',
+    '--bk-layout-color-line': config.colors.line,
+    '--bk-layout-color-flat': config.colors.flat,
+    '--bk-layout-color-indice': config.colors.indice,
+  }), [config.colors.line, config.colors.flat, config.colors.indice])
+
+  const getLayoutStyleOverride = React.useCallback(
+    (key: string, value: string): Record<string, string | number> => {
+      // For width/height, if value is "fit-content" skip injection.
+      if ((key === '--bk-layout-width' || key === '--bk-layout-height') && value === 'fit-content') {
+        return {}
+      }
+      return value !== defaultLayoutStyles[key] ? { [key]: value } : {}
+    },
+    [defaultLayoutStyles],
+  )
+
+  const containerStyles = React.useMemo(() => {
+    const widthValue = formatValue(width || 'fit-content')
+    const heightValue = formatValue(height || 'fit-content')
+
+    const customOverrides = {
+      ...getLayoutStyleOverride('--bk-layout-width', widthValue),
+      ...getLayoutStyleOverride('--bk-layout-height', heightValue),
+      ...getLayoutStyleOverride('--bk-layout-color-line', config.colors.line),
+      ...getLayoutStyleOverride('--bk-layout-color-flat', config.colors.flat),
+      ...getLayoutStyleOverride('--bk-layout-color-indice', config.colors.indice),
+    } as React.CSSProperties
+
+    // Merge our computed grid styles with any externally passed style.
+    const baseGridStyles = {
       gridTemplateColumns,
       gridTemplateRows,
       rowGap,
@@ -148,19 +178,27 @@ export const Layout = React.memo(function Layout({
       alignContent,
       width,
       height,
-      '--bk-layout-color-line': config.colors.line,
-      '--bk-layout-color-flat': config.colors.flat,
-      '--bk-layout-color-indice': config.colors.indice,
-    } as React.CSSProperties,
-    style,
-    )
-  }, [gridTemplateColumns, gridTemplateRows, rowGap, columnGap, justifyItems, alignItems, justifyContent, alignContent, width, height, config.colors.line, config.colors.flat, config.colors.indice, style])
+    } as React.CSSProperties
+
+    return mergeStyles(mergeStyles(baseGridStyles, customOverrides), gridGapStyles, style)
+  }, [
+    gridTemplateColumns, gridTemplateRows, rowGap, columnGap,
+    justifyItems, alignItems, justifyContent, alignContent,
+    width, height, config.colors.line, config.colors.flat, config.colors.indice,
+    getLayoutStyleOverride, gridGapStyles, style,
+  ])
 
   return (
-    <Config spacer={{ variant }}>
+    <Config spacer={{
+      variant: variant ?? 'line', colors: {
+        line: config.colors.indice,
+        flat: config.colors.flat,
+        indice: config.colors.line,
+      },
+    }}>
       <Padder
         ref={layoutRef}
-        data-testid="layout"
+        className={isShown ? styles.visible : ''}
         block={[padding.top, padding.bottom]}
         indicatorNode={indicatorNode}
         inline={[padding.left, padding.right]}
@@ -169,17 +207,13 @@ export const Layout = React.memo(function Layout({
         height={height}
       >
         <div
-          className={mergeClasses(
-            className,
-            styles.layout,
-            isShown && styles.visible,
-          )}
-          style={mergeStyles(gridStyles, gridGapStyles)}
+          data-testid="layout"
+          className={mergeClasses(className, styles.layout)}
+          style={containerStyles}
         >
           {children}
         </div>
       </Padder>
     </Config>
   )
-},
-)
+})
