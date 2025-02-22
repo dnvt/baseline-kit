@@ -46,15 +46,15 @@ describe('Padder', () => {
     render(<Padder>Child</Padder>)
     const padder = screen.getByTestId('padder')
     // We won't see "visible" class if "isShown" = false
-    expect(padder.className).not.toMatch(/visible/i)
+    expect(padder.className).not.toMatch(/v/i)
     // And the style might have --bk-padder-color: #AA00AA
-    expect(padder.style.getPropertyValue('--bk-padder-color')).toBe('#AA00AA')
+    expect(padder.style.getPropertyValue('--bkpc')).toBe('#AA00AA')
   })
 
   it('renders as visible if prop=visible', () => {
     render(<Padder debugging="visible">Child</Padder>)
     const padder = screen.getByTestId('padder')
-    expect(padder.className).toMatch(/visible/i)
+    expect(padder.className).toMatch(/v/i)
   })
 
   it('sets width/height via custom properties', () => {
@@ -64,8 +64,8 @@ describe('Padder', () => {
       </Padder>,
     )
     const padder = screen.getByTestId('padder')
-    expect(padder.style.getPropertyValue('--bk-padder-width')).toBe('200px')
-    expect(padder.style.getPropertyValue('--bk-padder-height')).toBe('auto')
+    expect(padder.style.getPropertyValue('--bkpw')).toBe('200px')
+    expect(padder.style.getPropertyValue('--bkph')).toBe('auto')
   })
 
   it('renders children', () => {

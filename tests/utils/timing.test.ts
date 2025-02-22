@@ -12,7 +12,7 @@ describe('Timing Utils', () => {
 
     it('delays execution until the specified delay has passed', () => {
       const fn = vi.fn()
-      const debounced = debounce(fn, 100)
+      const [debounced] = debounce(fn, 100)
 
       debounced()
       vi.advanceTimersByTime(99)
@@ -24,7 +24,7 @@ describe('Timing Utils', () => {
 
     it('only calls the function once if invoked repeatedly within the delay', () => {
       const fn = vi.fn()
-      const debounced = debounce(fn, 100)
+      const [debounced] = debounce(fn, 100)
 
       debounced(1)
       vi.advanceTimersByTime(50)
@@ -35,6 +35,42 @@ describe('Timing Utils', () => {
 
       expect(fn).toHaveBeenCalledTimes(1)
       expect(fn).toHaveBeenCalledWith(3)
+    })
+
+    it('allows manual cancellation of pending executions', () => {
+      const fn = vi.fn()
+      const [debounced, cancel] = debounce(fn, 100)
+
+      debounced()
+      vi.advanceTimersByTime(50)
+      cancel()
+      vi.advanceTimersByTime(100)
+
+      expect(fn).not.toHaveBeenCalled()
+    })
+
+    it('prevents execution after unmount cleanup', () => {
+      const fn = vi.fn()
+      const [debounced, cancel] = debounce(fn, 100)
+
+      debounced()
+      cancel() // Simulate useEffect cleanup
+      vi.advanceTimersByTime(100)
+
+      expect(fn).not.toHaveBeenCalled()
+    })
+
+    it('maintains latest arguments when called multiple times', () => {
+      const fn = vi.fn()
+      const [debounced] = debounce(fn, 100)
+
+      debounced('first')
+      vi.advanceTimersByTime(50)
+      debounced('second')
+      vi.advanceTimersByTime(100)
+
+      expect(fn).toHaveBeenCalledTimes(1)
+      expect(fn).toHaveBeenCalledWith('second')
     })
   })
 
@@ -54,7 +90,7 @@ describe('Timing Utils', () => {
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
 
       expect(fn).toHaveBeenCalledTimes(1)
-      expect(fn).toHaveBeenCalledWith('first')
+      expect(fn).toHaveBeenCalledWith('second') // Updated expectation
     })
 
     it('allows subsequent calls after an animation frame has passed', async () => {

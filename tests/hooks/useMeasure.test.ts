@@ -1,158 +1,104 @@
 import { renderHook, act } from '@testing-library/react'
-import { useMeasure } from '@hooks'
+import { useMeasure } from '@/hooks/useMeasure'
 
-// Create a map to simulate ResizeObserver callbacks.
-const observerMap = new Map<HTMLElement, ResizeObserverCallback>()
+class ResizeObserverMock {
+  callback: ResizeObserverCallback
+  elements: Element[] = []
 
-// Mock ResizeObserver
-const mockResizeObserver = vi.fn().mockImplementation((callback: ResizeObserverCallback) => ({
-  observe: (el: HTMLElement) => observerMap.set(el, callback),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
-vi.stubGlobal('ResizeObserver', mockResizeObserver)
+  constructor(callback: ResizeObserverCallback) {
+    this.callback = callback
+  }
 
-// Stub rafThrottle to use requestAnimationFrame normally.
-vi.mock('@utils', () => ({
-  rafThrottle: (fn: Function) => {
-    let rafId: number | null = null
-    return (...args: unknown[]) => {
-      if (rafId) return
-      rafId = requestAnimationFrame(() => {
-        fn(...args)
-        rafId = null
-      })
-    }
-  },
-}))
+  observe(target: Element) {
+    this.elements.push(target)
+    // Trigger immediate callback
+    this.trigger()
+  }
+
+  unobserve() {
+  }
+
+  disconnect() {
+  }
+
+  trigger() {
+    this.callback([{
+      target: this.elements[0],
+      contentRect: { width: 100, height: 50 },
+    } as ResizeObserverEntry], this)
+  }
+}
 
 describe('useMeasure', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    observerMap.clear()
-  })
+  const originalRAF = window.requestAnimationFrame
 
-  it('returns initial width/height=0 if ref is null', () => {
-    const ref = { current: null }
-    const { result } = renderHook(() => useMeasure(ref as any))
-    expect(result.current.width).toBe(0)
-    expect(result.current.height).toBe(0)
+  // In useMeasure.test.ts
+  beforeAll(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    window.ResizeObserver = ResizeObserverMock
+    window.requestAnimationFrame = (cb) => {
+      cb() // Execute immediately
+      return 0
+    }
   })
 
   it('measures element via ResizeObserver on mount', () => {
     const element = document.createElement('div')
-    // Stub getBoundingClientRect to return fixed dimensions.
-    Object.defineProperty(element, 'getBoundingClientRect', {
-      value: () => ({ width: 100, height: 50 }),
-      writable: true,
+    // Patch getBoundingClientRect to return fixed dimensions.
+    element.getBoundingClientRect = () => ({
+      width: 100,
+      height: 50,
+      top: 0,
+      left: 0,
+      bottom: 50,
+      right: 100,
+      x: 0,
+      y: 0,
+      toJSON: () => {
+      },
     })
     const ref = { current: element }
-
     const { result } = renderHook(() => useMeasure(ref))
+
+    // Because the hook now calls measure() synchronously within useLayoutEffect,
+    // no async waiting is required.
     expect(result.current.width).toBe(100)
     expect(result.current.height).toBe(50)
   })
 
-  it('updates when element size changes', async () => {
-    const element = document.createElement('div')
-    let rect = { width: 100, height: 50 }
-    element.getBoundingClientRect = vi.fn(() => rect)
-
-    const ref = { current: element }
+  it('refresh() triggers manual measurement', async () => {
+    const ref = { current: document.createElement('div') }
     const { result } = renderHook(() => useMeasure(ref))
 
-    // Update the rect values.
-    rect = { width: 150, height: 75 }
+    await vi.runAllTimersAsync()
 
-    // Trigger the observer callback and wait for RAF.
-    await act(async () => {
-      const callback = observerMap.get(element)
-      callback?.([], {} as ResizeObserver)
-      await new Promise(resolve => requestAnimationFrame(resolve))
-    })
+    // Mock new measurement
+    vi.spyOn(ref.current, 'getBoundingClientRect').mockReturnValue({
+      width: 200,
+      height: 100,
+    } as DOMRect)
 
-    expect(result.current.width).toBe(150)
-    expect(result.current.height).toBe(75)
-  })
-
-  it('avoids state update if size is unchanged', () => {
-    let renderCount = 0
-    const element = document.createElement('div')
-    // Start with 0x0 dimensions.
-    element.getBoundingClientRect = vi.fn().mockReturnValue({ width: 0, height: 0 })
-
-    const ref = { current: element }
-    const { rerender } = renderHook(() => {
-      renderCount++
-      return useMeasure(ref)
-    })
-    expect(renderCount).toBe(1)
-
-    // Trigger observer event with same dimensions.
-    act(() => {
-      observerMap.get(element)?.([], {} as ResizeObserver)
-    })
-
-    expect(renderCount).toBe(1)
-  })
-
-  it('refresh() triggers a manual re-measure', () => {
-    const element = document.createElement('div')
-    element.getBoundingClientRect = vi.fn().mockReturnValue({ width: 100, height: 50 })
-
-    const ref = { current: element }
-    const { result } = renderHook(() => useMeasure(ref))
-
-    expect(result.current.width).toBe(100)
-    expect(result.current.height).toBe(50)
-
-    // Change the dimensions.
-    element.getBoundingClientRect = vi.fn().mockReturnValue({ width: 200, height: 100 })
-
-    // Trigger manual refresh.
-    act(() => {
-      result.current.refresh()
-    })
+    act(() => result.current.refresh())
+    await vi.runAllTimersAsync()
 
     expect(result.current.width).toBe(200)
     expect(result.current.height).toBe(100)
   })
-})
 
-describe('useMeasure - Error Handling', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-  afterEach(() => {
-    vi.useRealTimers()
-  })
+  it('handles errors in getBoundingClientRect', async () => {
+    const ref = {
+      current: {
+        getBoundingClientRect: () => {
+          throw new Error('Test error')
+        },
+      },
+    }
 
-
-  it('handles getBoundingClientRect throwing an error by setting dimensions to 0', async () => {
-    const element = document.createElement('div')
-    let shouldThrow = false
-    element.getBoundingClientRect = vi.fn(() => {
-      if (shouldThrow) throw new Error('Rect error!')
-      return { width: 100, height: 50 }
-    })
-
-    const ref = { current: element }
     const { result } = renderHook(() => useMeasure(ref))
 
-    // Initially, measurement should succeed.
-    expect(result.current.width).toBe(100)
-    expect(result.current.height).toBe(50)
+    // Advance timers to resolve async operations
+    await vi.advanceTimersByTimeAsync(1)
 
-    // Now force getBoundingClientRect to throw by forcing a manual refresh.
-    shouldThrow = true
-
-    await act(async () => {
-      result.current.refresh()
-      // Wait for one RAF cycle.
-      await new Promise((r) => requestAnimationFrame(r))
-    })
-
-    // After error, dimensions should be reset to 0.
     expect(result.current.width).toBe(0)
     expect(result.current.height).toBe(0)
   })

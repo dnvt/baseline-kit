@@ -29,12 +29,22 @@
 export const debounce = <T extends (...args: unknown[]) => void>(
   fn: T,
   delay: number,
-): T => {
+): [T, () => void] => {
   let timer: ReturnType<typeof setTimeout> | null = null
-  return ((...args) => {
-    if (timer) clearTimeout(timer)
+
+  const cancel = () => {
+    if (timer) {
+      clearTimeout(timer)
+      timer = null
+    }
+  }
+
+  const debounced = ((...args) => {
+    cancel()
     timer = setTimeout(() => fn(...args), delay)
   }) as T
+
+  return [debounced, cancel]
 }
 
 /**
@@ -58,15 +68,25 @@ export const debounce = <T extends (...args: unknown[]) => void>(
  * document.addEventListener('scroll', updateScroll);
  * ```
  */
-export const rafThrottle = <T extends (...args: unknown[]) => void>(
+export const rafThrottle = <T extends (...args: never[]) => void>(
   fn: T,
 ): T => {
   let rafId: number | null = null
-  return ((...args) => {
-    if (rafId) return
+  let lastArgs: Parameters<T> | null = null
+
+  const throttled = (...args: Parameters<T>) => {
+    lastArgs = args
+
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId)
+    }
+
     rafId = requestAnimationFrame(() => {
-      fn(...args)
+      fn(...lastArgs!)
       rafId = null
+      lastArgs = null
     })
-  }) as T
+  }
+
+  return throttled as T
 }

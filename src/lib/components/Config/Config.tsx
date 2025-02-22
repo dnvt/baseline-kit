@@ -26,7 +26,7 @@ type Colors = {
   /** Color for flat surface visuals */
   flat: string;
   /** Color for measurement indicators */
-  indice: string;
+  text: string;
 }
 
 /** Complete configuration schema for baseline-kit. */
@@ -109,40 +109,40 @@ export const createCSSVariables = ({
   box,
   padder,
 }: Config): Record<string, string> => ({
-  '--bk-base': `${base}px`,
+  '--bkb': `${base}px`,
 
   // Baseline Colors
-  '--bk-baseline-color-line': baseline.colors.line,
-  '--bk-baseline-color-flat': baseline.colors.flat,
+  '--bkbcl': baseline.colors.line,
+  '--bkbcf': baseline.colors.flat,
 
   // Guide Colors
-  '--bk-guide-color-line': guide.colors.line,
-  '--bk-guide-color-pattern': guide.colors.pattern,
-  '--bk-guide-color-auto': guide.colors.auto,
-  '--bk-guide-color-fixed': guide.colors.fixed,
+  '--bkgcl': guide.colors.line,
+  '--bkgcp': guide.colors.pattern,
+  '--bkgca': guide.colors.auto,
+  '--bkgcf': guide.colors.fixed,
 
   // Spacer Colors
-  '--bk-spacer-color-line': spacer.colors.line,
-  '--bk-spacer-color-flat': spacer.colors.flat,
-  '--bk-spacer-color-indice': spacer.colors.indice,
+  '--bkscl': spacer.colors.line,
+  '--bkscf': spacer.colors.flat,
+  '--bksci': spacer.colors.text,
 
   // Box Colors
-  '--bk-box-color-line': box.colors.line,
-  '--bk-box-color-flat': box.colors.flat,
-  '--bk-box-color-indice': box.colors.indice,
+  '--bkxcl': box.colors.line,
+  '--bkxcf': box.colors.flat,
+  '--bkxci': box.colors.text,
 
   // Flex Colors
-  '--bk-stack-color-line': stack.colors.line,
-  '--bk-stack-color-flat': stack.colors.flat,
-  '--bk-stack-color-indice': stack.colors.indice,
+  '--bkkcl': stack.colors.line,
+  '--bkkcf': stack.colors.flat,
+  '--bkkci': stack.colors.text,
 
   // Layout Colors
-  '--bk-layout-color-line': layout.colors.line,
-  '--bk-layout-color-flat': layout.colors.flat,
-  '--bk-layout-color-indice': layout.colors.indice,
+  '--bklcl': layout.colors.line,
+  '--bklcf': layout.colors.flat,
+  '--bklci': layout.colors.text,
 
   // Padder Color
-  '--bk-padder-color': padder.color,
+  '--bkpc': padder.color,
 })
 
 /**

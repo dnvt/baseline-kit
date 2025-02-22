@@ -4,14 +4,14 @@
  * @module components
  */
 
-import { CSSProperties, memo, useMemo, useRef } from 'react'
+import * as React from 'react'
 import {
   useConfig,
   useDebug,
   useGuide,
   useMeasure,
 } from '@hooks'
-import { mergeClasses, mergeStyles, normalizeValue, parsePadding } from '@utils'
+import { formatValue, mergeClasses, mergeStyles, normalizeValue, parsePadding } from '@utils'
 import { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
 import type { ComponentsProps } from '../types'
 import styles from './styles.module.css'
@@ -70,7 +70,7 @@ export type GuideProps = {
  * />
  * ```
  */
-export const Guide = memo(function Guide({
+export const Guide = React.memo(function Guide({
   className,
   debugging,
   style,
@@ -86,11 +86,11 @@ export const Guide = memo(function Guide({
   const config = useConfig('guide')
   const variant = variantProp ?? config.variant
   const { isShown } = useDebug(debugging, config.debugging)
-  const containerRef = useRef<HTMLDivElement | null>(null)
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
   const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
-  const { top, right, bottom, left } = useMemo(() => parsePadding(props), [props])
+  const { top, right, bottom, left } = React.useMemo(() => parsePadding(props), [props])
 
-  const gridConfig = useMemo(() => {
+  const gridConfig = React.useMemo(() => {
     const gap = normalizeValue(gapProp)
     return (
       {
@@ -139,60 +139,75 @@ export const Guide = memo(function Guide({
     calculatedGap,
   } = useGuide(containerRef, gridConfig)
 
-  const containerStyles = useMemo(() => {
-    const baseStyles = {
-      '--bk-guide-gap': `${calculatedGap}px`,
-      '--bk-guide-justify': align,
-      '--bk-guide-color-line': config.colors.line,
-      '--bk-guide-color-pattern': config.colors.pattern,
-      '--bk-guide-padding-block': `${top}px ${bottom}px`,
-      '--bk-guide-padding-inline': `${left}px ${right}px`,
-      '--bk-guide-template': template,
-      '--bk-guide-width': (width ?? containerWidth) || '100vw',
-      '--bk-guide-height': (height ?? containerHeight) || '100vh',
-    } as CSSProperties
+  const defaultGuideStyles: Record<string, string> = React.useMemo(() => ({
+    '--bkgg': `${calculatedGap}px`,
+    '--bkgj': 'start',
+    '--bkgcl': config.colors.line,
+    '--bkgcp': config.colors.pattern,
+    '--bkgw': '100vw',
+    '--bkgh': '100vh',
+  }), [calculatedGap, config.colors.line, config.colors.pattern])
 
-    return mergeStyles(baseStyles, style)
-  }, [
-    calculatedGap,
-    align,
-    config.colors.line,
-    config.colors.pattern,
-    top,
-    bottom,
-    left,
-    right,
-    template,
-    width,
-    containerWidth,
-    height,
-    containerHeight,
-    style,
-  ])
+  const getGuideStyleOverride = React.useCallback(
+    (key: string, value: string): Record<string, string> => {
+      if (
+        ((key === '--bkgw') && value === '100vw') ||
+        ((key === '--bkgh') && value === '100vh')
+      ) {
+        return {}
+      }
+      return value !== defaultGuideStyles[key] ? { [key]: value } : {}
+    },
+    [defaultGuideStyles],
+  )
+
+  // Build base styles (all as string values)
+  const baseStyles: Record<string, string> = {
+    '--bkgg': `${calculatedGap}px`,
+    '--bkgj': align,
+    '--bkgcl': config.colors.line,
+    '--bkgcp': config.colors.pattern,
+    '--bkgpb': `${top}px ${bottom}px`,
+    '--bkgpi': `${left}px ${right}px`,
+    '--bkgt': template,
+    '--bkgw': formatValue(width ?? containerWidth, 0) || '100vw',
+    '--bkgh': formatValue(height ?? containerHeight, 0) || '100vh',
+  }
+
+  const customOverrides: Record<string, string> = {
+    ...getGuideStyleOverride('--bkgw', baseStyles['--bkgw']),
+    ...getGuideStyleOverride('--bkgh', baseStyles['--bkgh']),
+    ...getGuideStyleOverride('--bkgj', align),
+    ...getGuideStyleOverride('--bkgcl', config.colors.line),
+    ...getGuideStyleOverride('--bkgcp', config.colors.pattern),
+    ...getGuideStyleOverride('--bkgg', `${calculatedGap}px`),
+  }
+
+  const containerStyles: Record<string, string> = mergeStyles(baseStyles, customOverrides, style as Record<string, string>)
 
   return (
     <div
       ref={containerRef}
+      data-testid="guide"
       className={mergeClasses(
-        styles.guide,
+        styles.gde,
         className,
-        isShown ? styles.visible : styles.hidden,
+        isShown ? styles.v : styles.h,
         variant === 'line' && styles.line,
       )}
-      data-testid="guide"
       data-variant={variant}
       style={containerStyles}
       {...props}
     >
       {isShown && (
-        <div className={styles.columns} data-variant={variant}>
+        <div className={styles.cols} data-variant={variant}>
           {Array.from({ length: columnsCount }, (_, i) => {
             const colColor =
               config.colors[variant as keyof typeof config.colors] ?? config.colors.line
             return (
               <div
                 key={i}
-                className={styles.column}
+                className={styles.col}
                 data-column-index={i}
                 data-variant={variant}
                 style={{ backgroundColor: colColor }}

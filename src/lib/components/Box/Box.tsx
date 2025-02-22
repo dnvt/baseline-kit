@@ -6,7 +6,13 @@
 
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeClasses, mergeStyles, parsePadding, mergeRefs } from '@utils'
+import {
+  mergeClasses,
+  mergeStyles,
+  parsePadding,
+  mergeRefs,
+  formatValue,
+} from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
@@ -20,17 +26,17 @@ import styles from './styles.module.css'
  * - `height`: Only container height snaps to base unit multiples
  * - `clamp`: Both height and spacing values snap to base unit multiples
  */
-export type SnappingMode = 'none' | 'height' | 'clamp';
+export type SnappingMode = 'none' | 'height' | 'clamp'
 
 type BoxProps = {
   /** Number of columns to span in a grid layout */
-  colSpan?: number;
+  colSpan?: number
   /** Number of rows to span in a grid layout */
-  rowSpan?: number;
+  rowSpan?: number
   /** Shorthand for equal column and row span. Takes precedence over individual spans */
-  span?: number;
+  span?: number
   /** Controls baseline grid alignment behavior */
-  snapping?: SnappingMode;
+  snapping?: SnappingMode
   children?: React.ReactNode
 } & ComponentsProps
 
@@ -44,7 +50,7 @@ type BoxProps = {
  * - Offers configurable snapping modes for fine-grained alignment control
  * - Includes debug overlays for visual alignment verification
  *
- * By default, Box uses "fit-content" for both width and height unless explicitly specified.
+ * By default, Box uses "auto" for both width and height unless explicitly specified.
  *
  * @example
  * ```tsx
@@ -109,39 +115,63 @@ export const Box = React.memo(
       return gridStyles
     }, [colSpan, rowSpan, span])
 
-    // Merging styles
-    const boxStyles = React.useMemo(
-      () => mergeStyles({
-        '--bk-box-width': width,
-        '--bk-box-height': height,
-        '--bk-box-base': `${config.base}px`,
-        '--bk-box-color-line': config.colors.line,
-      } as React.CSSProperties, style),
-      [config.base, config.colors.line, height, style, width],
+    const defaultBoxStyles: Record<string, string> = React.useMemo(
+      () => ({
+        '--bkxw': 'fit-content',
+        '--bkxh': 'fit-content',
+        '--bkxb': `${config.base}px`,
+        '--bkxcl': config.colors.line,
+      }),
+      [config.base, config.colors.line],
     )
+
+    // Helper: for width/height, skip if "auto"
+    const getBoxStyleOverride = React.useCallback(
+      (key: string, value: string): Record<string, string | number> => {
+        if ((key === '--bkxw' || key === '--bkxh') && value === 'fit-content') {
+          return {}
+        }
+        return value !== defaultBoxStyles[key] ? { [key]: value } : {}
+      },
+      [defaultBoxStyles],
+    )
+
+    const boxStyles = React.useMemo(() => {
+      const widthValue = formatValue(width || 'fit-content')
+      const heightValue = formatValue(height || 'fit-content')
+
+      const customStyles = {
+        ...getBoxStyleOverride('--bkxw', widthValue),
+        ...getBoxStyleOverride('--bkxh', heightValue),
+        ...getBoxStyleOverride('--bkxb', `${config.base}px`),
+        ...getBoxStyleOverride('--bkxcl', config.colors.line),
+      } as React.CSSProperties
+
+      return mergeStyles(customStyles, style)
+    }, [
+      config.base,
+      config.colors.line,
+      width,
+      height,
+      getBoxStyleOverride,
+      style,
+    ])
 
     return (
       <div
         ref={mergeRefs(ref, internalRef)}
         data-testid="box"
-        className={mergeClasses(styles.box, isShown && styles.visible, className)}
+        className={mergeClasses(styles.box, isShown && styles.v, className)}
         style={mergeStyles(boxStyles, gridSpanStyles)}
       >
         <Config
           base={1}
-          spacer={{
-            variant: 'flat',
-            colors: {
-              flat: 'var(--bk-box-color-flat-theme)',
-              line: 'var(--bk-box-color-line-theme)',
-              indice: 'var(--bk-box-color-indice-theme)',
-            },
-          }}
+          spacer={{ variant: 'flat' }}
         >
           <Padder
             block={[padding.top, padding.bottom]}
             inline={[padding.left, padding.right]}
-            width={width}
+            width="fit-content"
             height={height}
             debugging={debugging}
           >

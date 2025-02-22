@@ -40,7 +40,7 @@ const SPACER_COLORS = {
   /** Color for flat/block spacers */
   flat: 'var(--bk-spacer-color-flat-theme)',
   /** Color for measurement indicators */
-  indice: 'var(--bk-spacer-color-indice-theme)',
+  text: 'var(--bk-spacer-color-text-theme)',
 } as const
 
 /**
@@ -52,7 +52,7 @@ const BOX_COLORS = {
   /** Background color for debug mode */
   flat: 'var(--bk-box-color-flat-theme)',
   /** Color for measurement indicators */
-  indice: 'var(--bk-box-color-indice-theme)',
+  text: 'var(--bk-box-color-text-theme)',
 } as const
 
 /**
@@ -64,7 +64,7 @@ const STACK_COLORS = {
   /** Background color for debug mode */
   flat: 'var(--bk-stack-color-flat-theme)',
   /** Color for measurement indicators */
-  indice: 'var(--bk-stack-color-indice-theme)',
+  text: 'var(--bk-stack-color-text-theme)',
 } as const
 
 /**
@@ -76,7 +76,7 @@ const LAYOUT_COLORS = {
   /** Background color for debug mode */
   flat: 'var(--bk-layout-color-flat-theme)',
   /** Color for measurement indicators */
-  indice: 'var(--bk-layout-color-indice-theme)',
+  text: 'var(--bk-layout-color-text-theme)',
 } as const
 
 /** CSS variable for Padder component color */
