@@ -8,13 +8,13 @@ import { clamp } from './math'
 
 export interface NormalizationOptions {
   /** Base unit for normalization */
-  base?: number;
+  base?: number
   /** Whether to round to nearest base multiple */
-  round?: boolean;
+  round?: boolean
   /** Optional value clamping */
-  clamp?: { min?: number; max?: number };
+  clamp?: { min?: number; max?: number }
   /** Suppress warning messages */
-  suppressWarnings?: boolean;
+  suppressWarnings?: boolean
 }
 
 /**
@@ -52,7 +52,7 @@ export interface NormalizationOptions {
  */
 export function normalizeValue(
   value: string | number | undefined,
-  options: NormalizationOptions = {},
+  options: NormalizationOptions = {}
 ): number {
   const {
     base = 8,
@@ -72,7 +72,9 @@ export function normalizeValue(
     const conv = convertValue(value)
     if (conv === null) {
       if (!suppressWarnings) {
-        console.error(`Failed to convert "${value}" to pixels. Falling back to base ${base}.`)
+        console.error(
+          `Failed to convert "${value}" to pixels. Falling back to base ${base}.`
+        )
       }
       num = base
     } else {
@@ -87,7 +89,11 @@ export function normalizeValue(
   // Apply clamping if needed
   const clamped =
     clampOptions !== undefined
-      ? clamp(normalized, clampOptions.min ?? -Infinity, clampOptions.max ?? Infinity)
+      ? clamp(
+          normalized,
+          clampOptions.min ?? -Infinity,
+          clampOptions.max ?? Infinity
+        )
       : normalized
 
   // Warn about adjustments
@@ -116,12 +122,21 @@ export function normalizeValue(
  * ```
  */
 export function normalizeValuePair(
-  values: [string | number | undefined, string | number | undefined] | undefined,
+  values:
+    | [string | number | undefined, string | number | undefined]
+    | undefined,
   defaults: [number, number],
-  options?: NormalizationOptions,
+  options?: NormalizationOptions
 ): [number, number] {
   if (!values) return defaults
-  const first = values[0] !== undefined ? normalizeValue(values[0], options) : defaults[0]
-  const second = values[1] !== undefined ? normalizeValue(values[1], options) : defaults[1]
+
+  if (values[0] === undefined && values[1] === undefined) {
+    return defaults
+  }
+
+  const first =
+    values[0] !== undefined ? normalizeValue(values[0], options) : defaults[0]
+  const second =
+    values[1] !== undefined ? normalizeValue(values[1], options) : defaults[1]
   return [first, second]
 }

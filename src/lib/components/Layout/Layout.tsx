@@ -7,7 +7,7 @@
 import * as React from 'react'
 import type { Gaps, IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeStyles, mergeClasses, parsePadding } from '@utils'
+import { mergeStyles, mergeClasses, parsePadding, formatValue } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
 import { ComponentsProps, Variant } from '../types'
@@ -20,30 +20,31 @@ export type LayoutProps = {
    * - String: Raw template ("1fr auto 200px")
    * - Array: Mixed values ([100, '1fr'] → "100px 1fr")
    */
-  columns?: number | string | Array<number | string>;
+  columns?: number | string | Array<number | string>
   /** Grid row definition (same format as columns) */
-  rows?: number | string | Array<number | string>;
+  rows?: number | string | Array<number | string>
   /** Controls item alignment along column axis */
-  justifyItems?: React.CSSProperties['justifyItems'];
+  justifyItems?: React.CSSProperties['justifyItems']
   /** Controls item alignment along row axis */
-  alignItems?: React.CSSProperties['alignItems'];
+  alignItems?: React.CSSProperties['alignItems']
   /** Controls content distribution along row axis */
-  justifyContent?: React.CSSProperties['justifyContent'];
+  justifyContent?: React.CSSProperties['justifyContent']
   /** Controls content distribution along column axis */
-  alignContent?: React.CSSProperties['alignContent'];
+  alignContent?: React.CSSProperties['alignContent']
   /** Custom measurement indicator renderer */
-  indicatorNode?: IndicatorNode;
+  indicatorNode?: IndicatorNode
   /** Visual style in debug mode */
-  variant?: Variant;
-  children?: React.ReactNode;
-} & ComponentsProps & Gaps
+  variant?: Variant
+  children?: React.ReactNode
+} & ComponentsProps &
+  Gaps
 
 /** Parses grid template definitions into CSS grid-template values. */
 function getGridTemplate(prop?: number | string | Array<number | string>) {
   if (typeof prop === 'number') return `repeat(${prop}, 1fr)`
   if (typeof prop === 'string') return prop
   if (Array.isArray(prop)) {
-    return prop.map(p => (typeof p === 'number' ? `${p}px` : p)).join(' ')
+    return prop.map((p) => (typeof p === 'number' ? `${p}px` : p)).join(' ')
   }
   return 'repeat(auto-fit, minmax(100px, 1fr))'
 }
@@ -59,7 +60,7 @@ function getGridTemplate(prop?: number | string | Array<number | string>) {
  * - Offers comprehensive alignment controls
  * - Provides debug overlays for visual verification
  *
- * When no explicit dimensions are provided, Layout defaults to "fit-content"
+ * When no explicit dimensions are provided, Layout defaults to "auto"
  * for both width and height.
  *
  * @example
@@ -129,38 +130,89 @@ export const Layout = React.memo(function Layout({
     [rows],
   )
 
-  const gridGapStyles = React.useMemo(() => ({
-    rowGap,
-    columnGap,
-    ...(gap !== undefined && { gap }),
-  }), [rowGap, columnGap, gap])
+  const defaultLayoutStyles: Record<string, string> = React.useMemo(
+    () => ({
+      '--bklw': 'auto',
+      '--bklh': 'auto',
+      '--bklcl': config.colors.line,
+      '--bklcf': config.colors.flat,
+      '--bklci': config.colors.text,
+    }),
+    [config.colors.line, config.colors.flat, config.colors.text],
+  )
 
-  const gridStyles = React.useMemo(() => {
-    return mergeStyles({
-      display: 'grid',
-      gridTemplateColumns,
-      gridTemplateRows,
-      rowGap,
-      columnGap,
-      justifyItems,
-      alignItems,
-      justifyContent,
-      alignContent,
-      width,
-      height,
-      '--bk-layout-color-line': config.colors.line,
-      '--bk-layout-color-flat': config.colors.flat,
-      '--bk-layout-color-indice': config.colors.indice,
-    } as React.CSSProperties,
-    style,
+  const getLayoutStyleOverride = React.useCallback(
+    (key: string, value: string): Record<string, string | number> => {
+      // For width/height, if value is "auto" skip injection.
+      if ((key === '--bklw' || key === '--bklh') && value === 'auto') {
+        return {}
+      }
+      return value !== defaultLayoutStyles[key] ? { [key]: value } : {}
+    },
+    [defaultLayoutStyles],
+  )
+
+  const gridGapStyles = React.useMemo(
+    () => ({
+      ...(gap !== undefined && { gap: formatValue(gap) }),
+      ...(rowGap !== undefined && { rowGap: formatValue(rowGap) }),
+      ...(columnGap !== undefined && { columnGap: formatValue(columnGap) }),
+    }),
+    [gap, rowGap, columnGap],
+  )
+
+  const containerStyles = React.useMemo(() => {
+    const widthValue = formatValue(width || 'auto')
+    const heightValue = formatValue(height || 'auto')
+
+    return mergeStyles(
+      {
+        // Theme overrides
+        ...getLayoutStyleOverride('--bklw', widthValue),
+        ...getLayoutStyleOverride('--bklh', heightValue),
+        ...getLayoutStyleOverride('--bklcl', config.colors.line),
+        ...getLayoutStyleOverride('--bklcf', config.colors.flat),
+        ...getLayoutStyleOverride('--bklci', config.colors.text),
+
+        // Grid properties - only inject if different from defaults
+        ...(gridTemplateColumns !== 'repeat(auto-fit, minmax(100px, 1fr))' && {
+          '--bklgtc': gridTemplateColumns,
+        }),
+        ...(gridTemplateRows !== 'auto' && { '--bklgtr': gridTemplateRows }),
+        ...(justifyItems && { '--bklji': justifyItems }),
+        ...(alignItems && { '--bklai': alignItems }),
+        ...(justifyContent && { '--bkljc': justifyContent }),
+        ...(alignContent && { '--bklac': alignContent }),
+
+        // Include gap styles
+        ...gridGapStyles,
+      } as React.CSSProperties,
+      style,
     )
-  }, [gridTemplateColumns, gridTemplateRows, rowGap, columnGap, justifyItems, alignItems, justifyContent, alignContent, width, height, config.colors.line, config.colors.flat, config.colors.indice, style])
+  }, [
+    gridTemplateColumns,
+    gridTemplateRows,
+    justifyItems,
+    alignItems,
+    justifyContent,
+    alignContent,
+    width,
+    height,
+    config.colors.line,
+    config.colors.flat,
+    config.colors.text,
+    getLayoutStyleOverride,
+    style,
+    gridGapStyles,
+  ])
 
   return (
-    <Config spacer={{ variant }}>
+    <Config
+      spacer={{ variant: variant ?? 'line' }}
+    >
       <Padder
         ref={layoutRef}
-        data-testid="layout"
+        className={isShown ? styles.v : ''}
         block={[padding.top, padding.bottom]}
         indicatorNode={indicatorNode}
         inline={[padding.left, padding.right]}
@@ -169,17 +221,13 @@ export const Layout = React.memo(function Layout({
         height={height}
       >
         <div
-          className={mergeClasses(
-            className,
-            styles.layout,
-            isShown && styles.visible,
-          )}
-          style={mergeStyles(gridStyles, gridGapStyles)}
+          data-testid="layout"
+          className={mergeClasses(className, styles.lay)}
+          style={containerStyles}
         >
           {children}
         </div>
       </Padder>
     </Config>
   )
-},
-)
+})

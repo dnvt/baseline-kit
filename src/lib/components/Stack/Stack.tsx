@@ -7,7 +7,7 @@
 import * as React from 'react'
 import type { Gaps, IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeClasses, mergeStyles, parsePadding } from '@utils'
+import { mergeClasses, mergeStyles, parsePadding, formatValue } from '@utils'
 import { Padder } from '../Padder'
 import { Config } from '../Config'
 import { ComponentsProps, Variant } from '../types'
@@ -15,21 +15,22 @@ import styles from './styles.module.css'
 
 export type StackProps = {
   /** Main axis orientation */
-  direction?: 'row' | 'column';
+  direction?: 'row' | 'column'
   /** Distribution of space on main axis */
-  justify?: React.CSSProperties['justifyContent'];
+  justify?: React.CSSProperties['justifyContent']
   /** Alignment on cross axis */
-  align?: React.CSSProperties['alignItems'];
-  /** Container width (defaults to "fit-content") */
-  width?: React.CSSProperties['width'];
-  /** Container height (defaults to "fit-content") */
-  height?: React.CSSProperties['height'];
+  align?: React.CSSProperties['alignItems']
+  /** Container width (defaults to "auto") */
+  width?: React.CSSProperties['width']
+  /** Container height (defaults to "auto") */
+  height?: React.CSSProperties['height']
   /** Custom measurement indicator renderer */
-  indicatorNode?: IndicatorNode;
+  indicatorNode?: IndicatorNode
   /** Visual style in debug mode */
-  variant?: Variant;
-  children?: React.ReactNode;
-} & ComponentsProps & Gaps;
+  variant?: Variant
+  children?: React.ReactNode
+} & ComponentsProps &
+  Gaps
 
 /**
  * A flexible container component aligning children to the baseline grid.
@@ -42,7 +43,7 @@ export type StackProps = {
  * - Includes visual debug overlays
  *
  * Key features:
- * - Automatic dimension management (defaults to fit-content)
+ * - Automatic dimension management (defaults to auto)
  * - Direct padding application in non-debug mode
  * - Comprehensive alignment controls
  * - Theme-aware debug visuals
@@ -83,7 +84,7 @@ export type StackProps = {
  * ```
  */
 export const Stack = React.memo(function Stack({
-  align = 'stretch',
+  align = 'flex-start',
   children,
   className,
   columnGap,
@@ -103,7 +104,10 @@ export const Stack = React.memo(function Stack({
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
   const stackRef = React.useRef<HTMLDivElement | null>(null)
 
-  const initialPadding = React.useMemo(() => parsePadding(spacingProps), [spacingProps])
+  const initialPadding = React.useMemo(
+    () => parsePadding(spacingProps),
+    [spacingProps],
+  )
   const { padding } = useBaseline(stackRef, {
     base: config.base,
     snapping: 'height',
@@ -111,28 +115,71 @@ export const Stack = React.memo(function Stack({
     warnOnMisalignment: true,
   })
 
-  const stackGapStyles = React.useMemo(() => ({
-    rowGap,
-    columnGap,
-    ...(gap !== undefined && { gap }),
-  }), [rowGap, columnGap, gap])
+  const stackGapStyles = React.useMemo(
+    () => ({
+      rowGap,
+      columnGap,
+      ...(gap !== undefined && { gap }),
+    }),
+    [rowGap, columnGap, gap],
+  )
+
+  const defaultStackStyles: Record<string, string> = React.useMemo(
+    () => ({
+      '--bkkw': 'auto',
+      '--bkkh': 'auto',
+      '--bkkcl': config.colors.line,
+      '--bkkcf': config.colors.flat,
+      '--bkkci': config.colors.text,
+    }),
+    [config.colors.line, config.colors.flat, config.colors.text],
+  )
+
+  const getStackStyleOverride = React.useCallback(
+    (key: string, value: string): Record<string, string | number> => {
+      // For width, if value equals "100%" then skip inline override.
+      if (key === '--bkkw' && value === 'auto') return {}
+      // For height, if value equals "auto", skip override.
+      if (key === '--bkkh' && value === 'auto') return {}
+      return value !== defaultStackStyles[key] ? { [key]: value } : {}
+    },
+    [defaultStackStyles],
+  )
 
   const containerStyles = React.useMemo(() => {
-    return mergeStyles({
-      display: 'flex',
+    const widthValue = formatValue(width || 'auto')
+    const heightValue = formatValue(height || 'auto')
+
+    const customOverrides = {
+      ...getStackStyleOverride('--bkkw', widthValue),
+      ...getStackStyleOverride('--bkkh', heightValue),
+      ...getStackStyleOverride('--bkkcl', config.colors.line),
+      ...getStackStyleOverride('--bkkcf', config.colors.flat),
+      ...getStackStyleOverride('--bkkci', config.colors.text),
+    } as React.CSSProperties
+
+    const baseStyles = {
       flexDirection: direction,
       justifyContent: justify,
       alignItems: align,
-      width: width || 'fit-content',
-      height: height || 'fit-content',
-      '--bk-stack-color-line': config.colors.line,
-      '--bk-stack-color-flat': config.colors.flat,
-      '--bk-stack-color-indice': config.colors.indice,
-    } as React.CSSProperties,
+      width,
+      height,
+    } as React.CSSProperties
+
+    return mergeStyles(baseStyles, stackGapStyles, customOverrides, style)
+  }, [
+    direction,
+    justify,
+    align,
+    width,
+    height,
+    config.colors.line,
+    config.colors.flat,
+    config.colors.text,
+    getStackStyleOverride,
     stackGapStyles,
     style,
-    )
-  }, [direction, justify, align, width, height, config.colors.line, config.colors.flat, config.colors.indice, stackGapStyles, style])
+  ])
 
   const mergedContainerStyles =
     debugging === 'none'
@@ -144,10 +191,12 @@ export const Stack = React.memo(function Stack({
       : containerStyles
 
   return (
-    <Config spacer={{ variant }}>
+    <Config
+      spacer={{ variant: variant ?? 'line' }}
+    >
       <Padder
         ref={stackRef}
-        data-testid="padder"
+        className={isShown ? styles.v : ''}
         block={[padding.top, padding.bottom]}
         inline={[padding.left, padding.right]}
         debugging={debugging}
@@ -157,11 +206,7 @@ export const Stack = React.memo(function Stack({
       >
         <div
           data-testid="stack"
-          className={mergeClasses(
-            className,
-            styles.stack,
-            isShown && styles.visible,
-          )}
+          className={mergeClasses(className, styles.stk)}
           style={mergedContainerStyles}
           {...spacingProps}
         >

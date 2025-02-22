@@ -3,18 +3,28 @@
  * Grid-based layout with baseline alignment
  */
 
-.layout {
+.lay {
+  display: grid;
   position: relative;
   box-sizing: border-box;
-  width: var(--bk-layout-width, fit-content);
-  height: var(--bk-layout-height, fit-content);
+  width: var(--bklw, auto);
+  height: var(--bklh, auto);
+  grid-template-columns: var(--bklgtc, repeat(auto-fit, minmax(100px, 1fr)));
+  grid-template-rows: var(--bklgtr, auto);
+  gap: var(--bklg);
+  column-gap: var(--bklcg);
+  row-gap: var(--bklrg);
+  justify-items: var(--bklji);
+  align-items: var(--bklai);
+  justify-content: var(--bkljc);
+  align-content: var(--bklac);
 }
 
-.visible::after {
+.v::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bk-layout-color-line);
+  border: 1px solid var(--bklcl);
   pointer-events: none;
-  z-index: var(--bk-z-index-overlay);
+  z-index: var(--bkzio);
 }

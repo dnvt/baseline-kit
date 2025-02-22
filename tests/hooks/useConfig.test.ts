@@ -20,7 +20,7 @@ const minimalSpacerStub: Config['spacer'] = {
   colors: {
     line: 'red',
     flat: 'blue',
-    indice: 'green',
+    text: 'green',
   },
 }
 
@@ -29,7 +29,7 @@ const minimalBoxStub: Config['box'] = {
   colors: {
     line: 'red',
     flat: 'blue',
-    indice: 'green',
+    text: 'green',
   },
 }
 
@@ -79,7 +79,7 @@ describe('useConfig', () => {
         colors: {
           line: 'pink',
           flat: 'yellow',
-          indice: 'cyan',
+          text: 'cyan',
         },
       },
       box: {
@@ -87,7 +87,7 @@ describe('useConfig', () => {
         colors: {
           line: 'black',
           flat: 'gray',
-          indice: 'white',
+          text: 'white',
         },
       },
       padder: {
@@ -119,7 +119,7 @@ describe('useConfig', () => {
       spacer: minimalSpacerStub,
       box: {
         debugging: 'visible',
-        colors: { line: 'red', flat: 'blue', indice: 'green' },
+        colors: { line: 'red', flat: 'blue', text: 'green' },
       },
       padder: minimalPadderStub,
       baseline: minimalBaselineStub,
@@ -133,7 +133,7 @@ describe('useConfig', () => {
     expect(result.current.colors).toEqual({
       line: 'red',
       flat: 'blue',
-      indice: 'green',
+      text: 'green',
     })
   })
 

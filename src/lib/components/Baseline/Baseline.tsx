@@ -4,10 +4,15 @@
  * @module components
  */
 
-import { CSSProperties, memo, useCallback, useMemo, useRef } from 'react'
+import * as React from 'react'
 import { ComponentsProps } from '@components'
 import { useConfig, useDebug, useVirtual, useMeasure } from '@hooks'
-import { parsePadding, normalizeValuePair, mergeStyles, mergeClasses } from '@utils'
+import {
+  parsePadding,
+  normalizeValuePair,
+  mergeStyles,
+  mergeClasses,
+} from '@utils'
 import { Variant } from '../types'
 import styles from './styles.module.css'
 
@@ -15,14 +20,14 @@ export type BaselineVariant = Exclude<Variant, 'pattern'>
 
 export type BaselineProps = {
   /** Visual style variant for the baseline guides */
-  variant?: BaselineVariant;
+  variant?: BaselineVariant
   /** Explicit width for the overlay (e.g., "1200px" or 1200) */
-  width?: number | string;
+  width?: number | string
   /** Explicit height for the overlay (e.g., "100vh" or 800) */
-  height?: number | string;
+  height?: number | string
   /** Base unit for measurements (defaults to theme value) */
-  base?: number;
-} & ComponentsProps;
+  base?: number
+} & ComponentsProps
 
 /**
  * Renders horizontal guidelines for maintaining vertical rhythm and baseline alignment.
@@ -53,7 +58,7 @@ export type BaselineProps = {
  * />
  * ```
  */
-export const Baseline = memo(function Baseline({
+export const Baseline = React.memo(function Baseline({
   className,
   debugging,
   style,
@@ -68,17 +73,23 @@ export const Baseline = memo(function Baseline({
   const base = baseProp ?? config.base
   const { isShown } = useDebug(debugging, config.debugging)
 
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+  const { width: containerWidth, height: containerHeight } =
+    useMeasure(containerRef)
 
-  const [normWidth, normHeight] = useMemo(
-    () => normalizeValuePair([widthProp, heightProp], [containerWidth, containerHeight]),
-    [widthProp, heightProp, containerWidth, containerHeight],
+  const [normWidth, normHeight] = React.useMemo(() => {
+    return normalizeValuePair(
+      [widthProp, heightProp],
+      [containerWidth, containerHeight]
+    )
+  }, [widthProp, heightProp, containerWidth, containerHeight])
+
+  const { top, right, bottom, left } = React.useMemo(
+    () => parsePadding(spacingProps),
+    [spacingProps]
   )
 
-  const { top, right, bottom, left } = useMemo(() => parsePadding(spacingProps), [spacingProps])
-
-  const rowCount = useMemo(() => {
+  const rowCount = React.useMemo(() => {
     const totalHeight = (normHeight ?? 0) - (top + bottom)
     return Math.max(1, Math.floor(totalHeight / base))
   }, [normHeight, top, bottom, base])
@@ -90,42 +101,58 @@ export const Baseline = memo(function Baseline({
     buffer: 160,
   })
 
-  const chosenColor = variant === 'line' ? config.colors.line : config.colors.flat
+  const chosenColor =
+    variant === 'line' ? config.colors.line : config.colors.flat
 
-  const containerStyles = useMemo(
-    () =>
-      mergeStyles({
-        '--bk-baseline-width': normWidth,
-        padding: `${top}px ${right}px ${bottom}px ${left}px`,
-        position: 'absolute',
-        inset: 0,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-        height: `${normHeight}px`,
-      } as CSSProperties,
-      style,
-      ),
-    [normWidth, top, right, bottom, left, normHeight, style],
-  )
+  const containerStyles = React.useMemo(() => {
+    const padding = [top, right, bottom, left]
+      .map((value) => (value ? `${value}px` : '0'))
+      .join(' ')
 
-  const getRowStyle = useCallback(
-    (index: number): CSSProperties =>
-      mergeStyles({
-        top: `${index * base}px`,
-        left: 0,
-        right: 0,
-        height: variant === 'line' ? '1px' : `${base}px`,
-        backgroundColor: chosenColor,
-        position: 'absolute',
-      }),
-    [base, variant, chosenColor],
+    return mergeStyles(
+      {
+        '--bkbw': widthProp ? `${normWidth}px` : '100%',
+        '--bkbh': heightProp ? `${normHeight}px` : '100%',
+        ...(padding !== '0 0 0 0' && { padding }),
+      } as React.CSSProperties,
+      style
+    )
+  }, [
+    top,
+    right,
+    bottom,
+    left,
+    widthProp,
+    normWidth,
+    heightProp,
+    normHeight,
+    style,
+  ])
+
+  const getRowStyle = React.useCallback(
+    (index: number) => {
+      const defaultRowHeight = variant === 'line' ? '1px' : `${base}px`
+      const defaultRowColor =
+        variant === 'line' ? config.colors.line : config.colors.flat
+
+      return mergeStyles({
+        '--bkrt': `${index * base}px`,
+        ...(defaultRowHeight !== '1px' && { '--bkrh': defaultRowHeight }),
+        ...(chosenColor !== defaultRowColor && { '--bkbcl': chosenColor }),
+      } as React.CSSProperties)
+    },
+    [base, variant, chosenColor, config.colors.line, config.colors.flat]
   )
 
   return (
     <div
       ref={containerRef}
       data-testid="baseline"
-      className={mergeClasses(styles.baseline, isShown ? styles.visible : styles.hidden, className)}
+      className={mergeClasses(
+        styles.bas,
+        isShown ? styles.v : styles.h,
+        className
+      )}
       style={containerStyles}
       {...spacingProps}
     >
@@ -133,7 +160,12 @@ export const Baseline = memo(function Baseline({
         Array.from({ length: end - start }, (_, i) => {
           const rowIndex = i + start
           return (
-            <div key={rowIndex} data-row-index={rowIndex} style={getRowStyle(rowIndex)} />
+            <div
+              className={styles.row}
+              key={rowIndex}
+              data-row-index={rowIndex}
+              style={getRowStyle(rowIndex)}
+            />
           )
         })}
     </div>

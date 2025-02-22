@@ -4,11 +4,14 @@ import { Config, DEFAULT_CONFIG, useDefaultConfig, createCSSVariables } from '@c
 
 describe('Config component', () => {
   // Create a test consumer component that uses the config context
-  function TestConsumer({ children, ...props }: React.HTMLProps<HTMLDivElement>) {
+  const TestConsumer = ({ children, ...props }: React.HTMLProps<HTMLDivElement>) => {
     const config = useDefaultConfig()
-    const cssVars = createCSSVariables(config)
     return (
-      <div style={cssVars} {...props}>
+      <div
+        data-testid={props['data-testid']}
+        style={createCSSVariables(config)}
+        {...props}
+      >
         {children}
       </div>
     )
@@ -24,9 +27,9 @@ describe('Config component', () => {
 
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain(`--bk-base: ${DEFAULT_CONFIG.base}px`)
-      expect(style).toContain(`--bk-baseline-color-line: ${DEFAULT_CONFIG.baseline.colors.line}`)
-      expect(style).toContain(`--bk-baseline-color-flat: ${DEFAULT_CONFIG.baseline.colors.flat}`)
+      expect(style).toContain(`--bkb: ${DEFAULT_CONFIG.base}px`)
+      expect(style).toContain(`--bkbcl: ${DEFAULT_CONFIG.baseline.colors.line}`)
+      expect(style).toContain(`--bkbcf: ${DEFAULT_CONFIG.baseline.colors.flat}`)
       expect(screen.getByText('Test Content')).toBeInTheDocument()
     })
   })
@@ -40,7 +43,7 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bk-base: 16px')
+      expect(style).toContain('--bkb: 16px')
     })
 
     it('allows overriding the baseline config', () => {
@@ -60,8 +63,8 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bk-baseline-color-line: #FF0000')
-      expect(style).toContain('--bk-baseline-color-flat: #00FF00')
+      expect(style).toContain('--bkbcl: #FF0000')
+      expect(style).toContain('--bkbcf: #00FF00')
     })
 
     it('allows overriding the guide config', () => {
@@ -83,10 +86,10 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bk-guide-color-line: #FF0000')
-      expect(style).toContain('--bk-guide-color-pattern: #00FF00')
-      expect(style).toContain('--bk-guide-color-auto: #0000FF')
-      expect(style).toContain('--bk-guide-color-fixed: #FFFF00')
+      expect(style).toContain('--bkgcl: #FF0000')
+      expect(style).toContain('--bkgcp: #00FF00')
+      expect(style).toContain('--bkgca: #0000FF')
+      expect(style).toContain('--bkgcf: #FFFF00')
     })
   })
 
@@ -101,7 +104,7 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('nested-child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bk-base: 24px')
+      expect(style).toContain('--bkb: 24px')
     })
   })
 
@@ -114,8 +117,8 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain(`--bk-guide-color-line: ${DEFAULT_CONFIG.guide.colors.line}`)
-      expect(style).toContain(`--bk-guide-color-pattern: ${DEFAULT_CONFIG.guide.colors.pattern}`)
+      expect(style).toContain(`--bkgcl: ${DEFAULT_CONFIG.guide.colors.line}`)
+      expect(style).toContain(`--bkgcp: ${DEFAULT_CONFIG.guide.colors.pattern}`)
     })
 
     it('handles partial color overrides correctly', () => {
@@ -133,8 +136,8 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bk-guide-color-line: #FF0000')
-      expect(style).toContain(`--bk-guide-color-pattern: ${DEFAULT_CONFIG.guide.colors.pattern}`)
+      expect(style).toContain('--bkgcl: #FF0000')
+      expect(style).toContain(`--bkgcp: ${DEFAULT_CONFIG.guide.colors.pattern}`)
     })
   })
 })
