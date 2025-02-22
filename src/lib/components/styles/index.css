@@ -26,20 +26,20 @@
   --bkxb: var(--bkb);
   --bkxw: var(--bk-width-default);
   --bkxh: var(--bk-height-default);
-  --bkxcl: var(--bk-box-color-line-theme, hsla(var(--bk-color-pink-primary), 0.6));
-  --bkxcf: var(--bk-box-color-flat-theme, hsla(var(--bk-color-pink-secondary), 0.2));
-  --bkxci: var(--bk-box-color-indice-theme, hsla(var(--bk-color-pink-secondary), 0.9));
+  --bkxcl: var(--bk-box-color-line-theme);
+  --bkxcf: var(--bk-box-color-flat-theme);
+  --bkxci: var(--bk-box-color-text-theme);
 
   /* Stack Component */
   --bkkw: var(--bkwf);
   --bkkh: var(--bk-height-default);
-  --bkkcl: var(--bk-stack-color-line-theme, hsla(var(--bk-color-red-primary), 0.6));
-  --bkkcf: var(--bk-stack-color-flat-theme, hsla(var(--bk-color-red-secondary), 0.2));
-  --bkkci: var(--bk-stack-color-indice-theme, hsla(var(--bk-color-red-primary), 1));
+  --bkkcl: var(--bk-stack-color-line-theme);
+  --bkkcf: var(--bk-stack-color-flat-theme);
+  --bkkci: var(--bk-stack-color-text-theme);
 
   /* Baseline Component */
-  --bkbw: "100%";
-  --bkbh: "100%";
+  --bkbw: '100%';
+  --bkbh: '100%';
   --bkrt: 0;
   --bkrh: 1px;
   --bkbcl: var(--bk-baseline-color-line-theme);
@@ -53,17 +53,17 @@
   --bkgt: auto;
   --bkgpb: 0;
   --bkgpi: 0;
-  --bkgcl: var(--bk-guide-color-line-theme, hsla(var(--bk-color-blue-primary), 0.15));
-  --bkgcp: var(--bk-guide-color-pattern-theme, hsla(var(--bk-color-purple-secondary), 0.2));
-  --bkgca: var(--bk-guide-color-auto-theme, hsla(var(--bk-color-blue-secondary), 0.15));
-  --bkgcf: var(--bk-guide-color-fixed-theme, hsla(var(--bk-color-blue-secondary), 0.15));
+  --bkgcl: var(--bk-guide-color-line-theme);
+  --bkgcp: var(--bk-guide-color-pattern-theme);
+  --bkgca: var(--bk-guide-color-auto-theme);
+  --bkgcf: var(--bk-guide-color-fixed-theme);
 
   /* Layout Component */
   --bklw: var(--bk-width-default);
   --bklh: var(--bk-height-default);
-  --bklcl: var(--bk-layout-color-line-theme, hsla(var(--bk-color-red-primary), 0.6));
-  --bklcf: var(--bk-layout-color-flat-theme, hsla(var(--bk-color-red-secondary), 0.2));
-  --bklci: var(--bk-layout-color-indice-theme, hsla(var(--bk-color-red-primary), 1));
+  --bklcl: var(--bk-layout-color-line-theme);
+  --bklcf: var(--bk-layout-color-flat-theme);
+  --bklci: var(--bk-layout-color-text-theme);
   --bklgtc: repeat(auto-fit, minmax(100px, 1fr));
   --bklgtr: auto;
   --bklg: 0;
@@ -77,14 +77,14 @@
   /* Padder Component */
   --bkpw: var(--bk-width-default);
   --bkph: var(--bk-height-default);
-  --bkpc: var(--bk-padder-color-theme, hsla(var(--bk-color-purple-primary), 0.6));
+  --bkpc: var(--bk-padder-color-theme);
 
   /* Spacer Component */
   --bksw: var(--bkwf);
   --bksh: var(--bkhf);
-  --bkscl: var(--bk-spacer-color-line-theme, hsla(var(--bk-color-purple-primary), 0.6));
-  --bkscf: var(--bk-spacer-color-flat-theme, hsla(var(--bk-color-purple-secondary), 0.2));
-  --bksci: var(--bk-spacer-color-indice-theme, hsla(var(--bk-color-purple-primary), 1));
+  --bkscl: var(--bk-spacer-color-line-theme);
+  --bkscf: var(--bk-spacer-color-flat-theme);
+  --bksci: var(--bk-spacer-color-text-theme);
 }
 
 /* Utility classes */

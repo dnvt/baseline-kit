@@ -7,8 +7,8 @@
   display: grid;
   position: relative;
   box-sizing: border-box;
-  width: var(--bklw, fit-content);
-  height: var(--bklh, fit-content);
+  width: var(--bklw, auto);
+  height: var(--bklh, auto);
   grid-template-columns: var(--bklgtc, repeat(auto-fit, minmax(100px, 1fr)));
   grid-template-rows: var(--bklgtr, auto);
   gap: var(--bklg);

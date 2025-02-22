@@ -54,7 +54,7 @@ describe('StackComponent', () => {
     // Check the style attribute string for flex properties
     expect(styleAttr).toContain('flex-direction: row')
     expect(styleAttr).toContain('justify-content: flex-start')
-    expect(styleAttr).toContain('align-items: stretch')
+    expect(styleAttr).toContain('align-items: flex-start')
   })
 
   it('applies custom layout props', () => {
@@ -86,7 +86,7 @@ describe('StackComponent', () => {
     render(
       <Stack debugging="none" block={[10, 20]} inline={[5, 15]}>
         Content
-      </Stack>
+      </Stack>,
     )
     const stack = screen.getByTestId('stack')
     const styleAttr = stack.getAttribute('style') || ''

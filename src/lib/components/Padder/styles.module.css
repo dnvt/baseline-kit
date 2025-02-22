@@ -5,10 +5,11 @@
 
 .pad {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  width: var(--bkpw, fit-content);
-  height: var(--bkph, fit-content);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
+  width: var(--bkpw, auto);
+  height: var(--bkph, auto);
 }
 
 .v::after {

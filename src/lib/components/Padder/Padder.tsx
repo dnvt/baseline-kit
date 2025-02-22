@@ -6,17 +6,26 @@
 
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeClasses, mergeStyles, parsePadding, mergeRefs, formatValue } from '@utils'
+import {
+  mergeClasses,
+  mergeStyles,
+  parsePadding,
+  mergeRefs,
+  formatValue,
+} from '@utils'
 import { ComponentsProps } from '../types'
 import { IndicatorNode, Spacer } from '../Spacer'
 import styles from './styles.module.css'
 
-type RenderSpacerFn = (width: React.CSSProperties['width'], height: React.CSSProperties['height']) => React.ReactNode
+type RenderSpacerFn = (
+  width: React.CSSProperties['width'],
+  height: React.CSSProperties['height']
+) => React.ReactNode
 
 type PadderProps = {
   /** Render function for custom measurement indicators */
-  indicatorNode?: IndicatorNode;
-  children?: React.ReactNode;
+  indicatorNode?: IndicatorNode
+  children?: React.ReactNode
 } & ComponentsProps
 
 /**
@@ -74,19 +83,24 @@ export const Padder = React.memo(
       width,
       ...spacingProps
     },
-    ref,
+    ref
   ) {
     const config = useConfig('padder')
     const { variant } = useConfig('spacer')
     const initialPadding = React.useMemo(
       () => parsePadding(spacingProps),
-      [spacingProps],
+      [spacingProps]
     )
-    const { isShown, isNone, debugging } = useDebug(debuggingProp, config.debugging)
+    const { isShown, isNone, debugging } = useDebug(
+      debuggingProp,
+      config.debugging
+    )
     const enableSpacers = !isNone
 
     const internalRef = React.useRef<HTMLDivElement | null>(null)
-    const { padding: { top, left, bottom, right } } = useBaseline(internalRef, {
+    const {
+      padding: { top, left, bottom, right },
+    } = useBaseline(internalRef, {
       base: config.base,
       snapping: 'height',
       spacing: initialPadding,
@@ -96,77 +110,114 @@ export const Padder = React.memo(
     const setRefs = mergeRefs(ref, internalRef)
 
     const containerStyles = React.useMemo(() => {
-      const styles: Record<string, string> = {}
+      const stylesObj: Record<string, string> = {}
 
       // Only inject width/height if they differ from defaults
-      if (width !== 'fit-content' && width !== undefined) {
-        styles['--bkpw'] = formatValue(width)
+      if (width !== 'fit-content') {
+        stylesObj['--bkpw'] = formatValue(width || 'fit-content')
       }
-      if (height !== 'fit-content' && height !== undefined) {
-        styles['--bkph'] = formatValue(height)
+      if (height !== 'fit-content') {
+        stylesObj['--bkph'] = formatValue(height || 'fit-content')
       }
       // Only inject base if it differs from theme
       if (config.base !== 8) {
-        styles['--bkpb'] = `${config.base}px`
+        stylesObj['--bkpb'] = `${config.base}px`
       }
       // Only inject color if it differs from theme
       if (config.color !== 'var(--bk-padder-color-theme)') {
-        styles['--bkpc'] = config.color
+        stylesObj['--bkpc'] = config.color
       }
 
-      // Padding styles when spacers are disabled
+      // When spacers are disabled (i.e. debugging === "none"), add direct padding styles
       if (!enableSpacers) {
         if (top > 0 || bottom > 0) {
-          styles.paddingBlock = `${top}px ${bottom}px`
+          stylesObj.paddingBlock = `${top}px ${bottom}px`
         }
         if (left > 0 || right > 0) {
-          styles.paddingInline = `${left}px ${right}px`
+          stylesObj.paddingInline = `${left}px ${right}px`
         }
       }
 
-      return mergeStyles(styles as React.CSSProperties, style)
+      return mergeStyles(stylesObj as React.CSSProperties, style)
     }, [
-      width, height, config.base, config.color,
-      enableSpacers, top, right, bottom, left, style,
+      width,
+      height,
+      config.base,
+      config.color,
+      enableSpacers,
+      top,
+      right,
+      bottom,
+      left,
+      style,
     ])
 
-    const renderSpacer: RenderSpacerFn = (width, height) => (
+    const renderSpacer: RenderSpacerFn = (widthVal, heightVal) => (
       <Spacer
         variant={variant}
         debugging={debugging}
         indicatorNode={indicatorNode}
-        height={height !== '100%' ? height : undefined}
-        width={width !== '100%' ? width : undefined}
+        height={heightVal !== '100%' ? heightVal : undefined}
+        width={widthVal !== '100%' ? widthVal : undefined}
       />
     )
 
+    // When debugging is "none", simply return a container with direct CSS padding
+    // and no additional grid/Spacer elements.
+    if (!enableSpacers) {
+      return (
+        <div
+          ref={setRefs}
+          data-testid="padder"
+          className={mergeClasses(styles.pad, className)}
+          style={containerStyles}
+        >
+          {children}
+        </div>
+      )
+    }
+
+    // When debugging is enabled, use a grid structure with wrapping spacer elements.
     return (
       <div
         ref={setRefs}
         data-testid="padder"
-        className={mergeClasses(
-          styles.pad,
-          isShown && styles.v,
-          className,
-        )}
+        className={mergeClasses(styles.pad, isShown && styles.v, className)}
         style={containerStyles}
       >
-        {enableSpacers && (
-          <>
-            {top > 0 && renderSpacer('100%', top)}
-            {left > 0 && renderSpacer(left, '100%')}
-          </>
-        )}
+        <>
+          {/* Top spacer - spans full width */}
+          {top > 0 && (
+            <div style={{ gridColumn: '1 / -1' }}>
+              {renderSpacer('100%', top)}
+            </div>
+          )}
 
-        {children}
+          {/* Left spacer */}
+          {left > 0 && (
+            <div style={{ gridRow: '2 / 3' }}>{renderSpacer(left, '100%')}</div>
+          )}
+        </>
 
-        {enableSpacers && (
-          <>
-            {bottom > 0 && renderSpacer('100%', bottom)}
-            {right > 0 && renderSpacer(right, '100%')}
-          </>
-        )}
+        {/* Main content - centered in grid */}
+        <div style={{ gridRow: '2 / 3', gridColumn: '2 / 3' }}>{children}</div>
+
+        <>
+          {/* Right spacer */}
+          {right > 0 && (
+            <div style={{ gridRow: '2 / 3' }}>
+              {renderSpacer(right, '100%')}
+            </div>
+          )}
+
+          {/* Bottom spacer - spans full width */}
+          {bottom > 0 && (
+            <div style={{ gridColumn: '1 / -1' }}>
+              {renderSpacer('100%', bottom)}
+            </div>
+          )}
+        </>
       </div>
     )
-  }),
+  })
 )
