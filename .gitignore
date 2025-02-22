@@ -3,6 +3,7 @@ node_modules/
 
 # Bun
 bun.lockb
+⁠bun.lock
 
 # Build output
 dist/
