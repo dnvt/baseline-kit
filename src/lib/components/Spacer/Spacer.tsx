@@ -71,7 +71,7 @@ export const Spacer = React.memo(function Spacer({
     '--bksh': '100%',
     '--bksw': '100%',
     '--bksb': `${config.base}px`,
-    '--bksci': 'var(--bk-spacer-color-indice-theme)',
+    '--bksci': 'var(--bk-spacer-color-text-theme)',
     '--bkscl': 'var(--bk-spacer-color-line-theme)',
     '--bkscf': 'var(--bk-spacer-color-flat-theme)',
   }), [config.base])
@@ -98,7 +98,7 @@ export const Spacer = React.memo(function Spacer({
       ...getStyleOverride('--bksb', baseValue),
       ...getStyleOverride(
         '--bksci',
-        colorProp ?? config.colors.indice,
+        colorProp ?? config.colors.text,
       ),
       ...getStyleOverride(
         '--bkscl',
@@ -112,7 +112,7 @@ export const Spacer = React.memo(function Spacer({
 
     return mergeStyles(customStyles, style)
   }, [getStyleOverride, normHeight, normWidth, config.base, colorProp,
-    config.colors.indice, config.colors.line, config.colors.flat, style])
+    config.colors.text, config.colors.line, config.colors.flat, style])
 
   return (
     <div

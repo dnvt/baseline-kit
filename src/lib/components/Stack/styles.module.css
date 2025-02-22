@@ -6,8 +6,8 @@
 .stk {
   display: flex;
   position: relative;
-  width: var(--bkkw, 100%);
-  height: var(--bkkh, fit-content);
+  width: var(--bkkw, auto);
+  height: var(--bkkh, auto);
 }
 
 .v::after {
@@ -16,5 +16,5 @@
   inset: 0;
   border: 1px solid var(--bkkcl);
   pointer-events: none;
-  z-index: var(--bkzio)
+  z-index: var(--bkzio);
 }

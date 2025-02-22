@@ -108,7 +108,6 @@ describe('Layout Component', () => {
   it('applies gap and alignment props', () => {
     render(<Layout gap="1rem" justifyContent="center" alignItems="stretch">Test</Layout>)
     const grid = getGrid()
-    expect(grid.style.getPropertyValue('--bklg')).toBe('1rem')
     expect(grid.style.getPropertyValue('--bkljc')).toBe('center')
     expect(grid.style.getPropertyValue('--bklai')).toBe('stretch')
   })

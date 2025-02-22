@@ -39,7 +39,6 @@
   },
   "include": [
     "src/lib/**/*",
-    "demo/**/*",
     "vitest.d.ts"
   ],
   "exclude": [

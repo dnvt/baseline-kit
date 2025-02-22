@@ -26,7 +26,7 @@ type Colors = {
   /** Color for flat surface visuals */
   flat: string;
   /** Color for measurement indicators */
-  indice: string;
+  text: string;
 }
 
 /** Complete configuration schema for baseline-kit. */
@@ -124,22 +124,22 @@ export const createCSSVariables = ({
   // Spacer Colors
   '--bkscl': spacer.colors.line,
   '--bkscf': spacer.colors.flat,
-  '--bksci': spacer.colors.indice,
+  '--bksci': spacer.colors.text,
 
   // Box Colors
   '--bkxcl': box.colors.line,
   '--bkxcf': box.colors.flat,
-  '--bkxci': box.colors.indice,
+  '--bkxci': box.colors.text,
 
   // Flex Colors
   '--bkkcl': stack.colors.line,
   '--bkkcf': stack.colors.flat,
-  '--bkkci': stack.colors.indice,
+  '--bkkci': stack.colors.text,
 
   // Layout Colors
   '--bklcl': layout.colors.line,
   '--bklcf': layout.colors.flat,
-  '--bklci': layout.colors.indice,
+  '--bklci': layout.colors.text,
 
   // Padder Color
   '--bkpc': padder.color,

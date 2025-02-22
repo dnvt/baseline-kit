@@ -47,7 +47,6 @@ src/
 │   ├── hooks/        # Custom hooks
 │   ├── types/        # TypeScript types
 │   └── utils/        # Utility functions
-└── demo/             # Demo application
 ```
 
 ## Pull Request Process

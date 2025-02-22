@@ -82,7 +82,7 @@ export function useVirtual({
     if (!element) return { start: 0, end: totalLines }
 
     // Show all lines if container is inside .content-block
-    if (element.closest('.content-block')) {
+    if (element.closest('.block')) {
       return { start: 0, end: totalLines }
     }
 
