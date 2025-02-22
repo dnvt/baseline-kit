@@ -1,5 +1,11 @@
 # baseline-kit
 
+## 2.0.1
+
+### Patch Changes
+
+- 63a10ba: Fix readme, remove the demo and improved layout
+
 ## 2.0.0
 
 ### Major Changes
