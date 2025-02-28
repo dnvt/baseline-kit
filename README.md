@@ -4,7 +4,7 @@ Baseline Kit is a lightweight development tool for visualizing and debugging gri
 applications. It provides configurable overlays for both column-based and baseline grids, flexible layout components,
 and theme-aware configuration—all optimized for performance and built with TypeScript.
 
-![Demo visual](demo/padded-demo.png)
+![Demo visual](padded-demo.png)
 
 ## Features
 

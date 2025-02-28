@@ -73,10 +73,12 @@ export type Config = {
   };
 }
 
-const ConfigContext = React.createContext<Config | null>(null)
+// Create the context
+const ConfigContext = React.createContext<Config>(DEFAULT_CONFIG)
 ConfigContext.displayName = 'ConfigContext'
 
-export const useDefaultConfig = () => React.use(ConfigContext) ?? DEFAULT_CONFIG
+// Use standard useContext hook instead of React.use
+export const useDefaultConfig = () => React.useContext(ConfigContext)
 
 type ConfigProps = {
   children: React.ReactNode;
@@ -213,10 +215,7 @@ export function Config({
       padder: { ...parentConfig.padder, ...padder },
     }
 
-    return {
-      ...newConfig,
-      cssVariables: createCSSVariables(newConfig),
-    }
+    return newConfig
   }, [
     base,
     parentConfig.base,
@@ -237,8 +236,8 @@ export function Config({
   ])
 
   return (
-    <ConfigContext value={value}>
+    <ConfigContext.Provider value={value}>
       {children}
-    </ConfigContext>
+    </ConfigContext.Provider>
   )
 }

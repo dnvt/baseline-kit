@@ -38,11 +38,13 @@
     }
   },
   "include": [
+    "demo/**/*",    
     "src/lib/**/*",
     "vitest.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "demo"
   ]
 }

@@ -19,7 +19,7 @@ import styles from './styles.module.css'
 
 type RenderSpacerFn = (
   width: React.CSSProperties['width'],
-  height: React.CSSProperties['height']
+  height: React.CSSProperties['height'],
 ) => React.ReactNode
 
 type PadderProps = {
@@ -83,17 +83,17 @@ export const Padder = React.memo(
       width,
       ...spacingProps
     },
-    ref
+    ref,
   ) {
     const config = useConfig('padder')
     const { variant } = useConfig('spacer')
     const initialPadding = React.useMemo(
       () => parsePadding(spacingProps),
-      [spacingProps]
+      [spacingProps],
     )
     const { isShown, isNone, debugging } = useDebug(
       debuggingProp,
-      config.debugging
+      config.debugging,
     )
     const enableSpacers = !isNone
 
@@ -219,5 +219,5 @@ export const Padder = React.memo(
         </>
       </div>
     )
-  })
+  }),
 )
