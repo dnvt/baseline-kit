@@ -43,4 +43,5 @@ export default defineConfig(({ command }) => ({
     },
     sourcemap: true,
   },
+  ...(command === 'serve' && { root: 'demo', base: '/' }),
 }))
