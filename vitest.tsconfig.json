@@ -1,0 +1,27 @@
+{
+  "extends": "../config/tsconfig/test.json",
+  "include": [
+    "tests/**/*.test.ts",
+    "tests/**/*.test.tsx",
+    "tests/setup.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage"
+  ],
+  "compilerOptions": {
+    "types": [
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ],
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist/tsc"
+  }
+}

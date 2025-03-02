@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["./src/lib"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "./src/lib/test"
+  ],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationDir": "./dist"
+  }
+}

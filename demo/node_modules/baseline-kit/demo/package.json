@@ -1,0 +1,14 @@
+{
+  "name": "baseline-kit-demo",
+  "version": "2.0.2",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "baseline-kit": "../",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "src/test",
+    "vitest.config.ts",
+    "vitest.d.ts",
+    "vite.config.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "dist",
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "noEmit": true,
+    "paths": {
+      "@utils": ["src/utils"],
+      "@utils/*": ["src/utils/*"],
+      "@hooks": ["src/hooks"],
+      "@hooks/*": ["src/hooks/*"],
+      "@components": ["src/components"],
+      "@components/*": ["src/components/*"],
+      "@context": ["src/context"],
+      "@context/*": ["src/context/*"],
+      "@types": ["src/types"],
+      "@types/*": ["src/types/*"]
+    },
+    "emitDeclarationOnly": true,
+    "stripInternal": true,
+    "baseUrl": ".",
+    "declaration": true,
+    "declarationDir": "dist"
+  }
+}

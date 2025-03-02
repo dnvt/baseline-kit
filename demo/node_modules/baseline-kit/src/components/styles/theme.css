@@ -1,0 +1,68 @@
+/**
+ * Baseline Kit Theme System
+ */
+
+:root {
+   /* Neutral Colors */
+   --bk-color-black-primary: 0, 0%, 10%;
+   --bk-color-black-secondary: 0, 10%, 30%;
+   --bk-color-white-primary: 0, 100%, 90%;
+   --bk-color-white-secondary: 0, 0%, 90%;
+
+   /* ───────────────────────────────────────────────────────
+      Component Theme Colors - Light
+      Using consistent alpha values:
+      - Line: 0.4 (borders)
+      - Flat: 0.15 (backgrounds)
+      - Text: 0.9 (indicators)
+   ─────────────────────────────────────────────────────── */
+
+   /* Guide Component Theme */
+   --bk-guide-color-line-theme: hsla(var(--bk-color-black-primary), 0.15);
+   --bk-guide-color-pattern-theme: hsla(var(--bk-color-black-secondary), 0.15);
+   --bk-guide-color-auto-theme: hsla(var(--bk-color-black-secondary), 0.15);
+   --bk-guide-color-fixed-theme: hsla(var(--bk-color-black-secondary), 0.15);
+
+   /* Baseline Component Theme */
+   --bk-baseline-color-line-theme: hsla(var(--bk-color-black-primary), 0.15);
+   --bk-baseline-color-flat-theme: hsla(var(--bk-color-black-secondary), 0.15);
+
+   /* Spacer Component Theme */
+   --bk-spacer-color-line-theme: hsla(var(--bk-color-black-primary), 0.4);
+   --bk-spacer-color-flat-theme: hsla(var(--bk-color-black-secondary), 0.15);
+   --bk-spacer-color-text-theme: hsla(var(--bk-color-black-primary), 0.9);
+
+   /* Box Component Theme */
+   --bk-box-color-line-theme: hsla(var(--bk-color-black-primary), 0.4);
+   --bk-box-color-flat-theme: hsla(var(--bk-color-black-secondary), 0.15);
+   --bk-box-color-text-theme: hsla(var(--bk-color-black-primary), 0.9);
+
+   /* Stack Component Theme */
+   --bk-stack-color-line-theme: hsla(var(--bk-color-black-primary), 0.8);
+   --bk-stack-color-flat-theme: hsla(var(--bk-color-black-secondary), 0.15);
+   --bk-stack-color-text-theme: hsla(var(--bk-color-black-primary), 0.9);
+
+   /* Layout Component Theme */
+   --bk-layout-color-line-theme: hsla(var(--bk-color-black-primary), 0.8);
+   --bk-layout-color-flat-theme: hsla(var(--bk-color-black-secondary), 0.15);
+   --bk-layout-color-text-theme: hsla(var(--bk-color-black-primary), 0.9);
+
+   /* Padder Component Theme */
+   --bk-padder-color-theme: hsla(var(--bk-color-black-primary), 0.4);
+}
+
+/* ───────────────────────────────────────────────────────
+   Dark Theme
+   - Inverts Primary/Secondary relationships
+   - Adjusts alpha values for better contrast
+─────────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+   :root {
+      /* Neutral Colors - Dark */
+      --bk-color-black-primary: 0, 10%, 30%;
+      --bk-color-black-secondary: 0, 0%, 10%;
+      --bk-color-white-primary: 0, 0%, 90%;
+      --bk-color-white-secondary: 0, 100%, 90%;
+   }
+}

@@ -1,0 +1,15 @@
+[build]
+entrypoints = ["./src/index.ts"]
+outdir = "./dist"
+
+[build.alias]
+"@utils" = "./src/utils"
+"@hooks" = "./src/hooks"
+"@components" = "./src/components"
+"@context" = "./src/context"
+"@types" = "./src/types"
+"@/utils" = "./src/utils"
+"@/hooks" = "./src/hooks"
+"@/components" = "./src/components"
+"@/context" = "./src/context"
+"@/types" = "./src/types"

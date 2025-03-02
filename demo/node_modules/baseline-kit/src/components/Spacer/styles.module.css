@@ -1,0 +1,24 @@
+/**
+ * Spacer Component Styles
+ * Basic component with outline or background options
+ */
+
+.spr {
+  position: relative;
+  width: var(--bksw);
+  height: var(--bksh);
+  flex-shrink: 0;  
+}
+
+.line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--bkscl);
+  z-index: calc(var(--bkzi));
+
+}
+
+.flat {
+  background-color: var(--bkscf);
+}
