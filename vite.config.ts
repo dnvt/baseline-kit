@@ -1,9 +1,8 @@
-import { defineConfig } from "vite";
+import {defineConfig} from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { resolve } from "path";
-import { visualizer } from "rollup-plugin-visualizer";
+import {resolve} from "path";
+import {visualizer} from "rollup-plugin-visualizer";
 
-// Define aliases directly here to ensure they're properly resolved
 const alias = {
   "@utils": resolve(__dirname, "src/utils"),
   "@hooks": resolve(__dirname, "src/hooks"),
@@ -12,7 +11,7 @@ const alias = {
   "@types": resolve(__dirname, "src/types"),
 };
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(({}) => ({
   plugins: [
     react(),
     visualizer({
@@ -20,7 +19,7 @@ export default defineConfig(({ command }) => ({
       gzipSize: true,
     }),
   ],
-  resolve: { alias },
+  resolve: {alias},
   css: {
     modules: {
       localsConvention: "camelCase",
@@ -38,7 +37,7 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       external: ["react", "react-dom"],
       output: {
-        globals: { react: "React", "react-dom": "ReactDOM" },
+        globals: {react: "React", "react-dom": "ReactDOM"},
         assetFileNames: (assetInfo) =>
           assetInfo.name && assetInfo.name.endsWith(".css")
             ? "styles.css"
