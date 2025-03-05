@@ -12,6 +12,12 @@
   height: var(--bkph, auto);
 }
 
+
+.lay .line::after,
+.stk .line::after {
+  border: none;
+}
+
 .v::after {
   content: '';
   position: absolute;

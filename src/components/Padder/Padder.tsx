@@ -155,7 +155,7 @@ export const Padder = React.memo(
     const renderSpacer: RenderSpacerFn = (widthVal, heightVal) => (
       <Spacer
         variant={variant}
-        debugging={debugging}
+        debugging={(heightVal === 0 || widthVal === 0) ? "none" : debugging}
         indicatorNode={indicatorNode}
         height={heightVal !== '100%' ? heightVal : undefined}
         width={widthVal !== '100%' ? widthVal : undefined}
@@ -187,14 +187,14 @@ export const Padder = React.memo(
       >
         <>
           {/* Top spacer - spans full width */}
-          {top > 0 && (
+          {top >= 0 && (
             <div style={{ gridColumn: '1 / -1' }}>
               {renderSpacer('100%', top)}
             </div>
           )}
 
           {/* Left spacer */}
-          {left > 0 && (
+          {left >= 0 && (
             <div style={{ gridRow: '2 / 3' }}>{renderSpacer(left, '100%')}</div>
           )}
         </>
@@ -204,14 +204,14 @@ export const Padder = React.memo(
 
         <>
           {/* Right spacer */}
-          {right > 0 && (
+          {right >= 0 && (
             <div style={{ gridRow: '2 / 3' }}>
               {renderSpacer(right, '100%')}
             </div>
           )}
 
           {/* Bottom spacer - spans full width */}
-          {bottom > 0 && (
+          {bottom >= 0 && (
             <div style={{ gridColumn: '1 / -1' }}>
               {renderSpacer('100%', bottom)}
             </div>

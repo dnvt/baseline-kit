@@ -66,7 +66,6 @@ export const Spacer = React.memo(function Spacer({
     ].filter(Boolean)
   }, [isShown, indicatorNode, normHeight, normWidth])
 
-  // IMPORTANT: Correct default key for spacer base, using "--bk-spacer-base"
   const defaultSpacerStyles: Record<string, string> = React.useMemo(() => ({
     '--bksh': '100%',
     '--bksw': '100%',
@@ -111,8 +110,7 @@ export const Spacer = React.memo(function Spacer({
     } as React.CSSProperties
 
     return mergeStyles(customStyles, style)
-  }, [getStyleOverride, normHeight, normWidth, config.base, colorProp,
-    config.colors.text, config.colors.line, config.colors.flat, style])
+  }, [normHeight, normWidth, baseProp, config.base, config.colors.text, config.colors.line, config.colors.flat, getStyleOverride, colorProp, style])
 
   return (
     <div
