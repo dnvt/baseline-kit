@@ -17,20 +17,19 @@ export function Demo({
     <Stack className="demo" justify="center" width="100%">
       <Stack width={1216} direction="column">
         {guides}
+        <Spacer height={24} indicatorNode={Indice} debugging={state.showGuides.spacer ? 'visible' : 'none'} />
         <Stack
-          gap={12}
-          block={8}
+          gap={32}
           align="flex-start"
           style={{ flexWrap: 'wrap' }}
-          debugging={state.showGuides.stack ? 'visible' : 'hidden'}
+          debugging={state.showGuides.stack ? 'visible' : 'none'}
         >
           {[1, 2, 3, 4].map((num) => (
             <Box
               key={num}
               block={[6, 10]}
-              debugging={state.showGuides.box ? 'visible' : 'hidden'}
+              debugging={state.showGuides.box ? 'visible' : 'none'}
               width="auto"
-              style={{ flexShrink: 0 }}
             >
               <p>Menu {num}</p>
             </Box>
@@ -41,14 +40,14 @@ export function Demo({
           block={24}
           columns={9}
           columnGap={8}
-          debugging={state.showGuides.layout ? 'visible' : 'hidden'}
+          debugging={state.showGuides.layout ? 'visible' : 'none'}
           indicatorNode={Indice}
         >
           <Box
             ref={box1}
             block={[6, 10]}
             span={5}
-            debugging={state.showGuides.box ? 'visible' : 'hidden'}
+            debugging={state.showGuides.box ? 'visible' : 'none'}
             snapping="height"
           >
             <h1 className="demo-title">
@@ -61,7 +60,7 @@ export function Demo({
             block={[6, 10]}
             snapping="height"
             span={5}
-            debugging={state.showGuides.box ? 'visible' : 'hidden'}
+            debugging={state.showGuides.box ? 'visible' : 'none'}
           >
             <p>
               This is a comprehensive demo showcasing the grid system
@@ -77,12 +76,12 @@ export function Demo({
             {!!i && (
               <Spacer
                 height={8}
-                debugging={state.showGuides.spacer ? 'visible' : 'hidden'}
+                debugging={state.showGuides.spacer ? 'visible' : 'none'}
                 variant="flat"
               />
             )}
             <Box
-              debugging={state.showGuides.box ? 'visible' : 'hidden'}
+              debugging={state.showGuides.box ? 'visible' : 'none'}
               block={[0, 2]}
               width="100%"
             >
@@ -90,7 +89,7 @@ export function Demo({
                 <div className="block">
                   <Baseline
                     height={56}
-                    debugging={state.showGuides.baseline ? 'visible' : 'hidden'}
+                    debugging={state.showGuides.baseline ? 'visible' : 'none'}
                   />
                   Content Block {i + 1}
                 </div>
@@ -101,7 +100,7 @@ export function Demo({
 
         <Spacer
           height={40}
-          debugging={state.showGuides.spacer ? 'visible' : 'hidden'}
+          debugging={state.showGuides.spacer ? 'visible' : 'none'}
           indicatorNode={Indice}
         />
       </Stack>

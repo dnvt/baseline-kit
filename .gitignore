@@ -58,5 +58,6 @@ npm-debug.log*
 .prettiercache
 
 # Project specific
-demo
-dist
+demo/
+demo/*
+dist/

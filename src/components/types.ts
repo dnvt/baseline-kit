@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { DebuggingMode } from '@components'
+import { DebuggingMode } from './Config/Config'
 
 // Spacing Types  --------------------------------------------------------------
 

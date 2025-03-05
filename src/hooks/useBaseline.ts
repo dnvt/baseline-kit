@@ -41,22 +41,17 @@ export interface BaselineResult {
  *  @param options Configuration options for alignment behavior
  *  @returns Object with adjusted padding, alignment status, and height
  *
- *  @example
- *  function MyComponent() {
- *  const ref = useRef<HTMLDivElement>(null)
- *  const { padding, isAligned } = useBaseline(ref, {
- *  base: 8,
- *  snapping: 'height',
- *  spacing: { top: 10, bottom: 20 },
- *  warnOnMisalignment: true,
- *  })
- *
- *  return (
- *  <div
- *    ref={ref}
- *    style={{
- *      paddingTop: padding.top,
- *      paddingBottom: padding.bottom,
+ * @example
+ * ```tsx
+ * export function MyComponent() {
+ *   const ref = useRef<HTMLDivElement>(null)
+ *   const { padding } = useBaseline(ref, {
+ *     base: 8,
+ *     snapping: 'height',
+ *     spacing: {
+ *       top: 16,
+ *       bottom: 16
+ *     }
  *    }}
  *  >
  *    Content
@@ -64,19 +59,6 @@ export interface BaselineResult {
  *  )
  *  }
  */
-export interface BaselineOptions {
-  base?: number;
-  snapping?: SnappingMode;
-  spacing?: Partial<Padding> | number;
-  warnOnMisalignment?: boolean;
-}
-
-export interface BaselineResult {
-  padding: Padding;
-  isAligned: boolean;
-  height: number;
-}
-
 export function useBaseline(
   ref: React.RefObject<HTMLElement | null>,
   {
@@ -93,7 +75,7 @@ export function useBaseline(
   const { height } = useMeasure(ref)
   // Track whether we've already snapped once for this component.
   const didSnapRef = React.useRef<boolean>(false)
-  const hasWarnedRef = React.useRef<boolean>(false) // Track if warning has been logged
+  const hasWarnedRef = React.useRef<boolean>(false)
 
   return React.useMemo(() => {
     // Convert the spacing prop into { top, right, bottom, left } numeric values.

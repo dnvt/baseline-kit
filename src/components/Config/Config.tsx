@@ -5,7 +5,7 @@
  */
 
 import * as React from 'react'
-import { BaselineVariant } from '@components'
+import { BaselineVariant } from '../Baseline/Baseline'
 import { DEFAULT_CONFIG } from './defaults'
 import type { GuideVariant, Variant } from '../types'
 

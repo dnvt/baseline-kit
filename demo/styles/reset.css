@@ -31,12 +31,6 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-/* Set shorter line heights on headings and interactive elements */
-h1, h2, h3, h4,
-button, input, label {
-  line-height: 1.1;
-}
-
 /* Balance text wrapping on headings */
 h1, h2,
 h3, h4 {

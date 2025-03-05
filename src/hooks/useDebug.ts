@@ -5,7 +5,7 @@
  */
 
 import { useMemo } from 'react'
-import { DebuggingMode } from '@components'
+import { DebuggingMode } from '../components/Config/Config'
 
 interface DebugResult {
   /** Whether debug visuals should be shown */
