@@ -4,7 +4,7 @@
  * @module hooks
  */
 
-import { useMemo, RefObject } from 'react'
+import * as React from 'react'
 import { GuideConfig, GuideColumnsPattern, isValidGuidePattern } from '@components'
 import { formatValue, convertValue, normalizeValue } from '@utils'
 import { useMeasure } from './useMeasure'
@@ -69,15 +69,16 @@ export interface GuideResult {
  * ```
  */
 export function useGuide(
-  ref: RefObject<HTMLElement | null>,
+  ref: React.RefObject<HTMLElement | null>,
   config: GuideConfig,
 ): GuideResult {
   const { width } = useMeasure(ref)
+  const hasWarnedRef = React.useRef<boolean>(false) // Track if warning has been logged
 
-  return useMemo(() => {
+  return React.useMemo(() => {
     // Default values
     const variant = config.variant ?? 'line'
-    const gap = normalizeValue(config.gap ?? 0, {base: 1})
+    const gap = normalizeValue(config.gap ?? 0, { base: 1 })
 
     // Return invalid result if no width
     if (!width) {
@@ -176,10 +177,12 @@ export function useGuide(
       }
 
       default: {
-        // Fallback to line variant
-        console.warn(
-          `[useGuide] Unknown variant "${variant}". Falling back to "line".`,
-        )
+        if (!hasWarnedRef.current) {
+          console.warn(
+            `[useGuide] Unknown variant "${variant}". Falling back to "line".`,
+          )
+          hasWarnedRef.current = true // Mark warning as logged
+        }
         const columns = Math.max(1, Math.floor(width / (gap + 1)) + 1)
         return {
           template: `repeat(${columns}, 1px)`,

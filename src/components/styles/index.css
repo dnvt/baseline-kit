@@ -1,5 +1,4 @@
 /* Theme must come first to establish CSS variables */
-@import './theme.css';
 @import './reset.css';
 
 /* Component-specific styles */

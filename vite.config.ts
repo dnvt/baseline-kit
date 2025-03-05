@@ -9,7 +9,10 @@ export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     viteStaticCopy({
-      targets: [{ src: resolve(__dirname, 'README.md'), dest: '.' }],
+      targets: [
+        { src: resolve(__dirname, 'README.md'), dest: '.' },
+        { src: resolve(__dirname, 'src/components/theme/theme.css'), dest: '.' }, // Copy theme.css to dist
+      ],
     }),
     visualizer({
       filename: 'stats.html',
@@ -24,9 +27,9 @@ export default defineConfig(({ command }) => ({
     },
   },
   build: {
-    cssCodeSplit: false,
+    cssCodeSplit: false, // Combine all CSS into styles.css
     lib: {
-      entry: resolve(__dirname, 'src/lib/index.ts'),
+      entry: resolve(__dirname, 'src/index.ts'),
       name: 'BaselineKit',
       formats: ['es', 'cjs'],
       fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
@@ -37,7 +40,7 @@ export default defineConfig(({ command }) => ({
         globals: { react: 'React', 'react-dom': 'ReactDOM' },
         assetFileNames: (assetInfo) =>
           assetInfo.name && assetInfo.name.endsWith('.css')
-            ? 'styles.css'
+            ? 'styles.css' // Output styles.css
             : assetInfo.name ?? '[name]-[hash][extname]',
       },
     },

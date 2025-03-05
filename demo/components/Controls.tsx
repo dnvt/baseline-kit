@@ -1,5 +1,5 @@
 import { Dispatch, useId } from 'react'
-import { DEFAULT_CONFIG, Stack } from '../../dist'
+import { DEFAULT_CONFIG, Stack } from '@kit'
 import type { DemoGridAction, DemoGridState } from './types'
 import { usePerformanceMonitor, type PerformanceMetrics } from '../hooks'
 
@@ -157,7 +157,7 @@ const PerformanceMetrics = ({ metrics }: { metrics: PerformanceMetrics }) => (
 )
 
 export function Controls({ state, dispatch }: GridControlsProps) {
-  const metrics = usePerformanceMonitor()
+//  const metrics = usePerformanceMonitor()
 
   return (
     <Stack className="controls" direction="column">
@@ -165,7 +165,7 @@ export function Controls({ state, dispatch }: GridControlsProps) {
       <div className="divider" />
       <ConfigControls state={state} dispatch={dispatch} />
       <div className="divider" />
-      <PerformanceMetrics metrics={metrics} />
+      {/*<PerformanceMetrics metrics={metrics} />*/}
     </Stack>
   )
 }

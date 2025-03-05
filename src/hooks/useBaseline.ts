@@ -1,4 +1,4 @@
-import { useMemo, useRef, RefObject } from 'react'
+import * as React from 'react'
 import { useMeasure } from './useMeasure'
 import { calculateSnappedSpacing } from '@utils'
 import type { SnappingMode, Padding } from '@components'
@@ -64,8 +64,21 @@ export interface BaselineResult {
  *  )
  *  }
  */
+export interface BaselineOptions {
+  base?: number;
+  snapping?: SnappingMode;
+  spacing?: Partial<Padding> | number;
+  warnOnMisalignment?: boolean;
+}
+
+export interface BaselineResult {
+  padding: Padding;
+  isAligned: boolean;
+  height: number;
+}
+
 export function useBaseline(
-  ref: RefObject<HTMLElement | null>,
+  ref: React.RefObject<HTMLElement | null>,
   {
     base = 8,
     snapping = 'none',
@@ -76,18 +89,25 @@ export function useBaseline(
   if (base < 1) {
     throw new Error('Base must be >= 1 for baseline alignment.')
   }
-  // Measure the element’s dimensions (via ResizeObserver).
+
   const { height } = useMeasure(ref)
   // Track whether we've already snapped once for this component.
-  const didSnapRef = useRef<boolean>(false)
-  return useMemo(() => {
+  const didSnapRef = React.useRef<boolean>(false)
+  const hasWarnedRef = React.useRef<boolean>(false) // Track if warning has been logged
+
+  return React.useMemo(() => {
     // Convert the spacing prop into { top, right, bottom, left } numeric values.
     const initialPadding = parsePadding({ padding: spacing })
     const isAligned = height % base === 0
+
+    // Log the warning only once
     if (!isAligned && warnOnMisalignment && process.env.NODE_ENV === 'development') {
-      console.warn(
-        `[useBaseline] Element height (${height}px) is not aligned with base (${base}px).`,
-      )
+      if (!hasWarnedRef.current) {
+        console.warn(
+          `[useBaseline] Element height (${height}px) is not aligned with base (${base}px).`,
+        )
+        hasWarnedRef.current = true // Mark warning as logged
+      }
     }
 
     // If snapping is disabled, just return the original padding.
