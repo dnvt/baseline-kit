@@ -1,19 +1,25 @@
 # Dependencies
-node_modules/
+node_modules
 
 # Bun
 bun.lockb
-⁠bun.lock
+bun.lock
+.bun/
 
 # Build output
 dist/
+dist/*
 stats.html
+*.mjs.map
+*.cjs.map
 
 # Cache
 .cache/
 .rollup.cache/
 tsup.config.tsbuildinfo
 *.tsbuildinfo
+.vite/
+.vitest/
 
 # Testing
 coverage/
@@ -26,6 +32,7 @@ vitest.d.ts
 !.vscode/settings.json
 .idea/
 .fleet/
+.history/
 .DS_Store
 
 # Debug
@@ -42,7 +49,14 @@ npm-debug.log*
 *.tmp
 *.temp
 .temp/
+*.bak
+*.swp
 
-# Project specific
+# Static analysis tools
 .eslintcache
 .stylelintcache
+.prettiercache
+
+# Project specific
+demo
+dist

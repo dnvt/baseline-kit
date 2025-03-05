@@ -1,5 +1,5 @@
 import { useReducer, useCallback } from 'react'
-import { Config } from '../../dist'
+import { Config } from '@kit'
 import { Controls } from './Controls'
 import { Demo } from './Demo'
 import { usePageHeight } from '../hooks'

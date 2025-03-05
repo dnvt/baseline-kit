@@ -1,24 +1,22 @@
 {
   "scripts": {
-    "lint": "eslint src/lib --fix",
+    "build": "bun run build:type && vite build",
     "build:type": "tsc -p tsconfig.build.json",
-    "prepare": "bun run build && bun run build:type",
-    "version": "changeset version",
-    "test:coverage": "vitest run --coverage",
-    "release": "changeset publish",
-    "typecheck": "tsc --noEmit",
-    "test:ui": "vitest --ui",
-    "dev": "vite",
-    "test:ci": "vitest run",
-    "format": "prettier --write \"src/lib/**/*.{ts,tsx,css}\"",
-    "prepublishOnly": "bun run build && bun run build:type",
     "changeset": "changeset",
+    "dev": "vite",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "lint": "eslint src/lib --fix",
+    "prepare": "bun run build && bun run build:type",
+    "prepublishOnly": "bun run build && bun run build:type",
+    "release": "changeset publish",
     "test": "vitest",
-    "build": "vite build"
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "version": "changeset version"
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^18 || ^19",
+    "react-dom": "^18 || ^19",
     "typescript": "^5.7.3"
   },
   "main": "dist/index.cjs",
@@ -71,7 +69,7 @@
     "rollup-plugin-visualizer": "^5.14.0",
     "vite": "^6.2.0",
     "vite-plugin-static-copy": "^2.2.0",
-    "vitest": "^2.1.9"
+    "vitest": "^3.0.7"
   },
   "name": "baseline-kit",
   "version": "2.0.1",
@@ -84,7 +82,8 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
-    "./styles.css": "./dist/styles.css"
+    "./styles": "./dist/styles.css",
+    "./theme": "./dist/theme.css"
   },
   "files": [
     "dist",
@@ -93,7 +92,8 @@
   ],
   "style": "dist/styles.css",
   "sideEffects": [
-    "dist/styles.css"
+    "dist/styles.css",
+    "dist/theme.css"
   ],
   "bugs": {
     "url": "https://github.com/dnvt/baseline-kit/issues"

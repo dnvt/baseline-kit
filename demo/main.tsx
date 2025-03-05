@@ -4,6 +4,7 @@ import { App } from './components'
 import './styles/demo.css'
 import './styles/reset.css'
 import './styles/controls.css'
+import '../dist/theme.css'
 
 document.body.innerHTML = '<div id="root"></div>'
 const root = createRoot(document.getElementById('root') as HTMLElement)

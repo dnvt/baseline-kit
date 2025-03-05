@@ -1,5 +1,5 @@
-import  { Fragment, ReactElement, useRef } from 'react'
-import { Box, Config, Baseline, Layout, Stack, Spacer } from '../../dist'
+import { Fragment, ReactElement, useRef } from 'react'
+import { Box, Config, Baseline, Layout, Stack, Spacer } from '@kit'
 import { Indice } from './ui/Indice'
 import type { DemoGridState } from './types'
 
