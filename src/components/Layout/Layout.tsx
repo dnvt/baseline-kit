@@ -1,9 +1,3 @@
-/**
- * @file Layout Component
- * @description Grid-based layout component with baseline alignment
- * @module components
- */
-
 import * as React from 'react'
 import type { Gaps, IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'

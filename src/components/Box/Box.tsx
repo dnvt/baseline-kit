@@ -1,9 +1,3 @@
-/**
- * @file Box Component
- * @description A fundamental layout container with baseline grid alignment
- * @module components
- */
-
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
 import {

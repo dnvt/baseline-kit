@@ -1,11 +1,5 @@
-/**
- * @file Config Component
- * @description Theme and configuration provider for baseline-kit components
- * @module components
- */
-
 import * as React from 'react'
-import { BaselineVariant } from '../Baseline/Baseline'
+import { BaselineVariant } from '@/components'
 import { DEFAULT_CONFIG } from './defaults'
 import type { GuideVariant, Variant } from '../types'
 

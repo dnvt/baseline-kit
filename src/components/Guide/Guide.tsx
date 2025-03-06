@@ -1,9 +1,3 @@
-/**
- * @file Guide Component
- * @description Visual grid overlay component for alignment and debugging
- * @module components
- */
-
 import * as React from 'react'
 import {
   useConfig,
