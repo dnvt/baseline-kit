@@ -1,8 +1,3 @@
-/**
- * Layout Component Styles
- * Grid-based layout with baseline alignment
- */
-
 .lay {
   display: grid;
   position: relative;

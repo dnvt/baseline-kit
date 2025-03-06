@@ -5,7 +5,7 @@
     "changeset": "changeset",
     "dev": "vite",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "lint": "eslint src/lib --fix",
+    "lint": "eslint src --fix",
     "prepare": "bun run build && bun run build:type",
     "prepublishOnly": "bun run build && bun run build:type",
     "release": "changeset publish",

@@ -1,8 +1,3 @@
-/**
- * @file normalize.ts
- * @description Value normalization and standardization utilities
- * @module utils
- */
 import { convertValue } from './convert'
 import { clamp } from './math'
 

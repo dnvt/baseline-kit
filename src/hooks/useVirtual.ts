@@ -1,9 +1,3 @@
-/**
- * @file useVirtual Hook
- * @description Manages virtual scrolling calculations
- * @module hooks
- */
-
 import { RefObject, useCallback, useLayoutEffect, useMemo, useState } from 'react'
 import { rafThrottle } from '@utils'
 

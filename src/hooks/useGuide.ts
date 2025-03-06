@@ -1,9 +1,3 @@
-/**
- * @file useGuide Hook
- * @description Manages grid layout calculations for guide overlays
- * @module hooks
- */
-
 import * as React from 'react'
 import { GuideConfig, GuideColumnsPattern, isValidGuidePattern } from '@components'
 import { formatValue, convertValue, normalizeValue } from '@utils'

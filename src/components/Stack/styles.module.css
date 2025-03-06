@@ -1,15 +1,9 @@
-/**
- * Stack Component Styles
- * Flex container with baseline grid alignment
- */
-
 .stk {
   display: flex;
   position: relative;
   width: var(--bkkw, auto);
   height: var(--bkkh, auto);
 }
-
 
 .lay .line::after,
 .stk .line::after {

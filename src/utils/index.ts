@@ -12,6 +12,7 @@ export * from './math'
 export * from './normalize'
 export * from './padding'
 export * from './snapping'
+export * from './grid'
 
 // DOM & Style Utilities
 export * from './merge'

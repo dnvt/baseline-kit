@@ -1,9 +1,3 @@
-/**
- * @file snapping.ts
- * @description Baseline grid snapping utilities
- * @module utils
- */
-
 import { SnappingMode, Padding, PaddingValue } from '@components'
 import { parsePadding } from '@/utils/padding'
 

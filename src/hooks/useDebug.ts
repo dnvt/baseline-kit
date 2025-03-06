@@ -1,9 +1,3 @@
-/**
- * @file useDebug Hook
- * @description Manages component debugging state
- * @module hooks
- */
-
 import { useMemo } from 'react'
 import { DebuggingMode } from '../components/Config/Config'
 

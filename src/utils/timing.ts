@@ -1,10 +1,4 @@
 /**
- * @file timing.ts
- * @description Performance optimization utilities
- * @module utils
- */
-
-/**
  * Creates a debounced version of a function.
  *
  * @remarks

@@ -7,8 +7,9 @@ import {
   mergeRefs,
   formatValue,
 } from '@utils'
-import { ComponentsProps } from '../types'
-import { IndicatorNode, Spacer } from '../Spacer'
+import { ComponentsProps, Variant } from '../types'
+import { Spacer, IndicatorNode } from '../Spacer'
+import { DebuggingMode } from '@/components'
 import styles from './styles.module.css'
 
 type RenderSpacerFn = (
@@ -16,11 +17,100 @@ type RenderSpacerFn = (
   height: React.CSSProperties['height'],
 ) => React.ReactNode
 
+type PaddingStyles = {
+  paddingBlock?: string;
+  paddingInline?: string;
+  [key: string]: string | undefined;
+}
+
 type PadderProps = {
   /** Render function for custom measurement indicators */
   indicatorNode?: IndicatorNode
   children?: React.ReactNode
 } & ComponentsProps
+
+// Utils -----------------------------------------------------------------------
+
+/** Creates default container styles for Padder */
+export const createPadderContainerStyles = (
+  width: React.CSSProperties['width'],
+  height: React.CSSProperties['height'],
+  base: number,
+  color: string,
+): Record<string, string> => {
+  const stylesObj: Record<string, string> = {}
+
+  // Only inject width/height if they differ from defaults
+  if (width !== 'fit-content') {
+    stylesObj['--bkpw'] = formatValue(width || 'fit-content')
+  }
+  if (height !== 'fit-content') {
+    stylesObj['--bkph'] = formatValue(height || 'fit-content')
+  }
+  // Only inject base if it differs from theme
+  if (base !== 8) {
+    stylesObj['--bkpb'] = `${base}px`
+  }
+  // Only inject color if it differs from theme
+  if (color !== 'var(--bk-padder-color-theme)') {
+    stylesObj['--bkpc'] = color
+  }
+
+  return stylesObj
+}
+
+/** Creates padding styles when spacers are disabled */
+export const createDirectPaddingStyles = (
+  enableSpacers: boolean,
+  padding: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  },
+): PaddingStyles => {
+  const { top, right, bottom, left } = padding
+  const stylesObj: PaddingStyles = {}
+
+  // When spacers are disabled (i.e. debugging === "none"), add direct padding styles
+  if (!enableSpacers) {
+    if (top > 0 || bottom > 0) {
+      stylesObj.paddingBlock = `${top}px ${bottom}px`
+    }
+    if (left > 0 || right > 0) {
+      stylesObj.paddingInline = `${left}px ${right}px`
+    }
+  }
+
+  return stylesObj
+}
+
+/** Creates a render function for spacers */
+export const createRenderSpacerFn = (
+  variant: Variant | undefined,
+  debugging: DebuggingMode | undefined,
+  indicatorNode?: IndicatorNode,
+): RenderSpacerFn => {
+  // Default to 'line' if variant is undefined
+  const safeVariant = variant || 'line'
+  // Default to 'none' if debugging is undefined
+  const safeDebugging = debugging || 'none'
+
+  const SpacerElement = (widthVal: React.CSSProperties['width'], heightVal: React.CSSProperties['height']) => (
+    <Spacer
+      variant={safeVariant}
+      debugging={(heightVal === 0 || widthVal === 0) ? 'none' : safeDebugging}
+      indicatorNode={indicatorNode}
+      height={heightVal !== '100%' ? heightVal : undefined}
+      width={widthVal !== '100%' ? widthVal : undefined}
+    />
+  )
+
+  // Add display name to satisfy linter
+  SpacerElement.displayName = 'PadderSpacer'
+
+  return SpacerElement
+}
 
 /**
  * A foundational component that manages consistent padding with visual debugging.
@@ -104,35 +194,22 @@ export const Padder = React.memo(
     const setRefs = mergeRefs(ref, internalRef)
 
     const containerStyles = React.useMemo(() => {
-      const stylesObj: Record<string, string> = {}
+      const baseStyles = createPadderContainerStyles(
+        width,
+        height,
+        config.base,
+        config.color,
+      )
 
-      // Only inject width/height if they differ from defaults
-      if (width !== 'fit-content') {
-        stylesObj['--bkpw'] = formatValue(width || 'fit-content')
-      }
-      if (height !== 'fit-content') {
-        stylesObj['--bkph'] = formatValue(height || 'fit-content')
-      }
-      // Only inject base if it differs from theme
-      if (config.base !== 8) {
-        stylesObj['--bkpb'] = `${config.base}px`
-      }
-      // Only inject color if it differs from theme
-      if (config.color !== 'var(--bk-padder-color-theme)') {
-        stylesObj['--bkpc'] = config.color
-      }
+      const paddingStyles = createDirectPaddingStyles(
+        enableSpacers,
+        { top, right, bottom, left },
+      )
 
-      // When spacers are disabled (i.e. debugging === "none"), add direct padding styles
-      if (!enableSpacers) {
-        if (top > 0 || bottom > 0) {
-          stylesObj.paddingBlock = `${top}px ${bottom}px`
-        }
-        if (left > 0 || right > 0) {
-          stylesObj.paddingInline = `${left}px ${right}px`
-        }
-      }
-
-      return mergeStyles(stylesObj as React.CSSProperties, style)
+      return mergeStyles(
+        { ...baseStyles, ...paddingStyles } as React.CSSProperties,
+        style,
+      )
     }, [
       width,
       height,
@@ -146,14 +223,9 @@ export const Padder = React.memo(
       style,
     ])
 
-    const renderSpacer: RenderSpacerFn = (widthVal, heightVal) => (
-      <Spacer
-        variant={variant}
-        debugging={(heightVal === 0 || widthVal === 0) ? 'none' : debugging}
-        indicatorNode={indicatorNode}
-        height={heightVal !== '100%' ? heightVal : undefined}
-        width={widthVal !== '100%' ? widthVal : undefined}
-      />
+    const renderSpacer = React.useMemo(
+      () => createRenderSpacerFn(variant, debugging, indicatorNode),
+      [variant, debugging, indicatorNode],
     )
 
     // When debugging is "none", simply return a container with direct CSS padding

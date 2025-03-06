@@ -1,110 +1,200 @@
 import * as React from 'react'
 import { useConfig, useDebug } from '@hooks'
-import { mergeStyles, mergeClasses, formatValue, normalizeValuePair } from '@utils'
+import {
+  mergeStyles,
+  mergeClasses,
+  formatValue,
+  normalizeValuePair,
+  createStyleOverride,
+} from '@utils'
 import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
-export type IndicatorNode = (
-  value: number,
-  dimension: 'width' | 'height',
-) => React.ReactNode
+// Type Definitions ------------------------------------------------------------
+
+export type IndicatorNode = (value: number, type: 'width' | 'height') => React.ReactNode
 
 export type SpacerProps = {
-  /** Render function for custom measurement display */
-  indicatorNode?: IndicatorNode;
-  /** Visual style when debugging is enabled */
-  variant?: Variant;
+  /** Explicit width (takes precedence over block) */
+  width?: React.CSSProperties['width']
+  /** Explicit height (takes precedence over block) */
+  height?: React.CSSProperties['height']
+  /** Visual style in debug mode */
+  variant?: Variant
+  /** Color to use for debug visuals (overrides theme) */
+  color?: string
   /** Base unit for measurements (defaults to theme value) */
-  base?: number;
-  /** Color override for visual indicators */
-  color?: string;
+  base?: number
+  /** Custom content to render (for debugging info) */
+  children?: React.ReactNode
+  /** Custom indicator node rendering function */
+  indicatorNode?: IndicatorNode
 } & ComponentsProps
 
+// Utils -----------------------------------------------------------------------
+
+/** Creates default spacer styles */
+export const createDefaultSpacerStyles = (
+  base: number,
+  textColor: string,
+  flatColor: string,
+  lineColor: string,
+): Record<string, string> => ({
+  '--bksw': '100%',
+  '--bksh': '100%',
+  '--bksb': `${base}px`,
+  '--bksci': textColor,
+  '--bkscl': lineColor,
+  '--bkscf': flatColor,
+})
+
+/** Generates measurement indicators for debugging */
+export const generateMeasurements = (
+  isShown: boolean,
+  indicatorNode: SpacerProps['indicatorNode'],
+  normWidth: number | string,
+  normHeight: number | string,
+): React.ReactNode | null => {
+  if (!isShown || !indicatorNode) return null
+
+  const width = typeof normWidth === 'number' ? normWidth : 0
+  const height = typeof normHeight === 'number' ? normHeight : 0
+
+  return (
+    <>
+      {height !== 0 && (
+        <span key="height">
+          {indicatorNode(height, 'height')}
+        </span>
+      )}
+      {width !== 0 && (
+        <span key="width">
+          {indicatorNode(width, 'width')}
+        </span>
+      )}
+    </>
+  )
+}
+
+/**
+ * Creates empty space for implementing margins, gaps, and spacing.
+ *
+ * @remarks
+ * - Flexible sizing: Set width and height directly
+ * - Normalized values: All inputs convert to base unit multiples
+ * - Debug visuals: Shows spacing measurements with theming
+ * - Automatic: Empty in production, visible in debug mode
+ *
+ * @example
+ * ```tsx
+ * // Fixed size spacer
+ * <Spacer width={32} height={16} />
+ *
+ * // Percentage-based spacer with debug hints
+ * <Spacer
+ *   width="50%"
+ *   height={32}
+ *   debugging="visible"
+ *   variant="line"
+ * />
+ *
+ * // Full-width spacer
+ * <Spacer height={64} />
+ * ```
+ */
 export const Spacer = React.memo(function Spacer({
-  height,
-  width,
+  height: heightProp,
+  width: widthProp,
   indicatorNode,
-  debugging,
+  debugging: debuggingProp,
   variant: variantProp,
   base: baseProp,
   color: colorProp,
   className,
   style,
+  children,
   ...props
 }: SpacerProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   const config = useConfig('spacer')
 
-  const { isShown } = useDebug(debugging, config.debugging)
+  const { isShown } = useDebug(debuggingProp, config.debugging)
   const variant = variantProp ?? config.variant
   const base = baseProp ?? config.base
 
+  // Normalize width and height values correctly
   const [normWidth, normHeight] = normalizeValuePair(
-    [width, height], [0, 0], { base, suppressWarnings: true },
+    [widthProp, heightProp],
+    [0, 0],
+    { base, suppressWarnings: true },
   )
 
-  const measurements = React.useMemo(() => {
-    if (!isShown || !indicatorNode) return null
-
-    return [
-      normHeight !== 0 && (
-        <span key="height">
-          {indicatorNode(normHeight, 'height')}
-        </span>
-      ),
-      normWidth !== 0 && (
-        <span key="width">
-          {indicatorNode(normWidth, 'width')}
-        </span>
-      ),
-    ].filter(Boolean)
-  }, [isShown, indicatorNode, normHeight, normWidth])
-
-  const defaultSpacerStyles: Record<string, string> = React.useMemo(() => ({
-    '--bksh': '100%',
-    '--bksw': '100%',
-    '--bksb': `${config.base}px`,
-    '--bksci': 'var(--bk-spacer-color-text-theme)',
-    '--bkscl': 'var(--bk-spacer-color-line-theme)',
-    '--bkscf': 'var(--bk-spacer-color-flat-theme)',
-  }), [config.base])
-
-  const getStyleOverride = React.useCallback(
-    (key: string, value: string): Record<string, string | number> => {
-      // For width/height, if the computed value is "100%" skip inline injection
-      if ((key === '--bksw' || key === '--bksh') && value === '100%') {
-        return {}
-      }
-      return value !== defaultSpacerStyles[key] ? { [key]: value } : {}
-    },
-    [defaultSpacerStyles],
+  const measurements = React.useMemo(
+    () => generateMeasurements(isShown, indicatorNode, normWidth, normHeight),
+    [isShown, indicatorNode, normWidth, normHeight],
   )
 
-  const containerStyles = React.useMemo(() => {
+  const defaultStyles = React.useMemo(
+    () =>
+      createDefaultSpacerStyles(
+        base,
+        config.colors.text,
+        config.colors.flat,
+        config.colors.line,
+      ),
+    [base, config.colors],
+  )
+
+  const baseStyles = React.useMemo(() => {
     const heightValue = formatValue(normHeight || '100%')
     const widthValue = formatValue(normWidth || '100%')
-    const baseValue = `${baseProp || config.base}px`
+    const baseValue = `${base}px`
+
+    // Define dimensions that should be skipped when set to 100%
+    const dimensionVars = ['--bksw', '--bksh']
 
     const customStyles = {
-      ...getStyleOverride('--bksh', heightValue),
-      ...getStyleOverride('--bksw', widthValue),
-      ...getStyleOverride('--bksb', baseValue),
-      ...getStyleOverride(
-        '--bksci',
-        colorProp ?? config.colors.text,
-      ),
-      ...getStyleOverride(
-        '--bkscl',
-        colorProp ?? config.colors.line,
-      ),
-      ...getStyleOverride(
-        '--bkscf',
-        colorProp ?? config.colors.flat,
-      ),
+      ...createStyleOverride({
+        key: '--bksh',
+        value: heightValue,
+        defaultStyles,
+        skipDimensions: { fullSize: dimensionVars },
+      }),
+      ...createStyleOverride({
+        key: '--bksw',
+        value: widthValue,
+        defaultStyles,
+        skipDimensions: { fullSize: dimensionVars },
+      }),
+      // Explicitly set --bksb to ensure it is always applied
+      '--bksb': baseValue,
+      ...createStyleOverride({
+        key: '--bksci',
+        value: colorProp ?? config.colors.text,
+        defaultStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkscl',
+        value: colorProp ?? config.colors.line,
+        defaultStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkscf',
+        value: colorProp ?? config.colors.flat,
+        defaultStyles,
+      }),
     } as React.CSSProperties
 
     return mergeStyles(customStyles, style)
-  }, [normHeight, normWidth, baseProp, config.base, config.colors.text, config.colors.line, config.colors.flat, getStyleOverride, colorProp, style])
+  }, [
+    normWidth,
+    normHeight,
+    colorProp,
+    base,
+    config.colors,
+    defaultStyles,
+    style,
+  ])
 
   return (
     <div
@@ -112,10 +202,11 @@ export const Spacer = React.memo(function Spacer({
       data-testid="spacer"
       className={mergeClasses(styles.spr, isShown && styles[variant], className)}
       data-variant={variant}
-      style={containerStyles}
+      style={baseStyles}
       {...props}
     >
       {measurements}
+      {children}
     </div>
   )
 })
