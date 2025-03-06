@@ -50,7 +50,7 @@ export function useMeasure(ref: React.RefObject<HTMLElement | null>): MeasureRes
       setDimensions(prev =>
         prev.width === next.width && prev.height === next.height ? prev : next,
       )
-    } catch (error) {
+    } catch {
       setDimensions({ width: 0, height: 0 })
     }
   }, [ref])
@@ -59,9 +59,7 @@ export function useMeasure(ref: React.RefObject<HTMLElement | null>): MeasureRes
   const refresh = React.useMemo(() => rafThrottle(measure), [measure])
 
   // On mount (or when ref changes) perform an immediate measurement.
-  React.useLayoutEffect(() => {
-    measure()
-  }, [measure])
+  React.useLayoutEffect(() => { measure() }, [measure])
 
   // Set up a ResizeObserver on mount.
   React.useLayoutEffect(() => {

@@ -6,6 +6,8 @@ import {
   parsePadding,
   mergeRefs,
   formatValue,
+  createGridSpanStyles,
+  createStyleOverride,
 } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
@@ -33,6 +35,79 @@ type BoxProps = {
   snapping?: SnappingMode
   children?: React.ReactNode
 } & ComponentsProps
+
+// Utils -----------------------------------------------------------------------
+
+/**
+ * Creates default box styles with theme values.
+ * Sets CSS variables for width, height, base unit, and colors.
+ */
+export const createDefaultBoxStyles = (
+  base: number,
+  lineColor: string
+): Record<string, string> => ({
+  '--bkxw': 'fit-content',
+  '--bkxh': 'fit-content',
+  '--bkxb': `${base}px`,
+  '--bkxcl': lineColor,
+})
+
+/** Parameters for creating box custom styles */
+type BoxCustomStylesParams = {
+  /** Width property for the box */
+  width?: React.CSSProperties['width'];
+  /** Height property for the box */
+  height?: React.CSSProperties['height'];
+  /** Base unit for measurements */
+  base: number;
+  /** Line color from theme */
+  lineColor: string;
+  /** Default styles for comparison */
+  defaultStyles: Record<string, string>;
+}
+
+/**
+ * Creates custom styles for the box.
+ * Combines all style properties and only applies changes when needed.
+ */
+export const createBoxCustomStyles = ({
+  width,
+  height,
+  base,
+  lineColor,
+  defaultStyles
+}: BoxCustomStylesParams): React.CSSProperties => {
+  const widthValue = formatValue(width || 'fit-content')
+  const heightValue = formatValue(height || 'fit-content')
+
+  // Define box dimensions that should be skipped when set to fit-content
+  const dimensionVars = ['--bkxw', '--bkxh']
+
+  return {
+    ...createStyleOverride({
+      key: '--bkxw',
+      value: widthValue,
+      defaultStyles,
+      skipDimensions: { fitContent: dimensionVars }
+    }),
+    ...createStyleOverride({
+      key: '--bkxh',
+      value: heightValue,
+      defaultStyles,
+      skipDimensions: { fitContent: dimensionVars }
+    }),
+    ...createStyleOverride({
+      key: '--bkxb',
+      value: `${base}px`,
+      defaultStyles
+    }),
+    ...createStyleOverride({
+      key: '--bkxcl',
+      value: lineColor,
+      defaultStyles
+    }),
+  } as React.CSSProperties
+}
 
 /**
  * A foundational container component that ensures consistent spacing and baseline alignment.
@@ -93,63 +168,29 @@ export const Box = React.memo(
       warnOnMisalignment: debugging !== 'none',
     })
 
-    const gridSpanStyles = React.useMemo(() => {
-      const gridStyles: React.CSSProperties = {}
-      if (span !== undefined) {
-        gridStyles.gridColumn = `span ${span}`
-        gridStyles.gridRow = `span ${span}`
-      } else {
-        if (colSpan !== undefined) {
-          gridStyles.gridColumn = `span ${colSpan}`
-        }
-        if (rowSpan !== undefined) {
-          gridStyles.gridRow = `span ${rowSpan}`
-        }
-      }
-      return gridStyles
-    }, [colSpan, rowSpan, span])
-
-    const defaultBoxStyles: Record<string, string> = React.useMemo(
-      () => ({
-        '--bkxw': 'fit-content',
-        '--bkxh': 'fit-content',
-        '--bkxb': `${config.base}px`,
-        '--bkxcl': config.colors.line,
-      }),
-      [config.base, config.colors.line],
+    const gridSpanStyles = React.useMemo(
+      () => createGridSpanStyles(span, colSpan, rowSpan),
+      [colSpan, rowSpan, span]
     )
 
-    // Helper: for width/height, skip if "auto"
-    const getBoxStyleOverride = React.useCallback(
-      (key: string, value: string): Record<string, string | number> => {
-        if ((key === '--bkxw' || key === '--bkxh') && value === 'fit-content') {
-          return {}
-        }
-        return value !== defaultBoxStyles[key] ? { [key]: value } : {}
+    const defaultBoxStyles = React.useMemo(
+      () => createDefaultBoxStyles(config.base, config.colors.line),
+      [config.base, config.colors.line]
+    )
+
+    const boxStyles = React.useMemo(
+      () => {
+        const customStyles = createBoxCustomStyles({
+          width,
+          height,
+          base: config.base,
+          lineColor: config.colors.line,
+          defaultStyles: defaultBoxStyles
+        })
+        return mergeStyles(customStyles, style)
       },
-      [defaultBoxStyles],
+      [config.base, config.colors.line, width, height, defaultBoxStyles, style]
     )
-
-    const boxStyles = React.useMemo(() => {
-      const widthValue = formatValue(width || 'fit-content')
-      const heightValue = formatValue(height || 'fit-content')
-
-      const customStyles = {
-        ...getBoxStyleOverride('--bkxw', widthValue),
-        ...getBoxStyleOverride('--bkxh', heightValue),
-        ...getBoxStyleOverride('--bkxb', `${config.base}px`),
-        ...getBoxStyleOverride('--bkxcl', config.colors.line),
-      } as React.CSSProperties
-
-      return mergeStyles(customStyles, style)
-    }, [
-      config.base,
-      config.colors.line,
-      width,
-      height,
-      getBoxStyleOverride,
-      style,
-    ])
 
     return (
       <div

@@ -116,14 +116,14 @@ describe('Baseline', () => {
     expect(lines.length).toBe(8)
     const firstLine = lines[0] as HTMLElement
 
-    // Either use getPropertyValue
-    expect(firstLine.style.getPropertyValue('--bkrt')).toBe('0px')
-    expect(firstLine.style.getPropertyValue('--bkrh')).toBe('8px')
+    // Log the style attribute and computed styles for debugging
+    console.log('Style attribute:', firstLine.getAttribute('style'))
+    console.log('Computed styles:', window.getComputedStyle(firstLine).cssText)
 
-    // Or check the style attribute string
-    const styleAttr = firstLine.getAttribute('style') || ''
-    expect(styleAttr).toContain('--bkrt: 0px')
-    expect(styleAttr).toContain('--bkrh: 8px')
+    // Use getComputedStyle to check the computed styles
+    const computedStyle = window.getComputedStyle(firstLine)
+    expect(firstLine.style.getPropertyValue('--bkrt')).toBe('0px')
+    expect(computedStyle.getPropertyValue('--bkrh')).toBe('8px')
   })
 
   it('respects custom numeric height', () => {

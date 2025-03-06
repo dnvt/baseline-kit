@@ -1,9 +1,3 @@
-/**
- * @file convert.ts
- * @description Unit conversion and dimension calculation utilities
- * @module utils
- */
-
 import { parseUnit } from './parse'
 
 export interface ConversionContext {

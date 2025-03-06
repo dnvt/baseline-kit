@@ -6,6 +6,9 @@ import {
   normalizeValuePair,
   mergeStyles,
   mergeClasses,
+  calculateRowCount,
+  formatValue,
+  createStyleOverride,
 } from '@utils'
 import { Variant } from '../types'
 import styles from './styles.module.css'
@@ -21,7 +24,57 @@ export type BaselineProps = {
   height?: number | string
   /** Base unit for measurements (defaults to theme value) */
   base?: number
+  /** Color override for grid lines */
+  color?: string
 } & ComponentsProps
+
+// Utils -----------------------------------------------------------------------
+
+/** Creates default baseline styles */
+export const createDefaultBaselineStyles = (
+  base: number,
+  lineColor: string,
+  flatColor: string,
+): Record<string, string> => ({
+  '--bkbw': '100%',
+  '--bkbh': '100%',
+  '--bkbb': `${base}px`,
+  '--bkbcl': lineColor,
+  '--bkbcf': flatColor,
+})
+
+/** Create row styles for baseline lines */
+type RowStyleParams = {
+  /** Row index */
+  index: number;
+  /** Base unit for calculations */
+  base: number;
+  /** Baseline visual variant */
+  variant: BaselineVariant;
+  /** Selected color for the baseline */
+  chosenColor: string;
+  /** Theme line color */
+  lineColor: string;
+  /** Theme flat color */
+  flatColor: string;
+}
+
+/**
+ * Creates styles for an individual baseline row.
+ * Applies positioning and visual styling based on variant.
+ */
+export const createBaselineRowStyle = (
+  params: RowStyleParams,
+): React.CSSProperties => {
+  const { index, base, variant, chosenColor, lineColor, flatColor } = params
+
+  // Directly set the CSS variables instead of using createStyleOverride
+  return {
+    '--bkrt': index === 0 ? '0px' : `${index * base}px`,
+    '--bkrh': variant === 'line' ? '1px' : `${base}px`,
+    '--bkbc': chosenColor || (variant === 'line' ? lineColor : flatColor),
+  } as React.CSSProperties
+}
 
 /**
  * Renders horizontal guidelines for maintaining vertical rhythm and baseline alignment.
@@ -60,6 +113,7 @@ export const Baseline = React.memo(function Baseline({
   height: heightProp,
   width: widthProp,
   base: baseProp,
+  color: colorProp,
   ...spacingProps
 }: BaselineProps) {
   const config = useConfig('baseline')
@@ -71,7 +125,7 @@ export const Baseline = React.memo(function Baseline({
   const { width: containerWidth, height: containerHeight } =
     useMeasure(containerRef)
 
-  const [normWidth, normHeight] = React.useMemo(() => {
+  const [_normWidth, normHeight] = React.useMemo(() => {
     return normalizeValuePair(
       [widthProp, heightProp],
       [containerWidth, containerHeight],
@@ -83,9 +137,21 @@ export const Baseline = React.memo(function Baseline({
     [spacingProps],
   )
 
+  const padding = React.useMemo(() => {
+    const paddingValues = [top, right, bottom, left]
+      .map((value) => (value ? `${value}px` : '0'))
+      .join(' ')
+
+    return paddingValues !== '0 0 0 0' ? paddingValues : undefined
+  }, [top, right, bottom, left])
+
   const rowCount = React.useMemo(() => {
-    const totalHeight = (normHeight ?? 0) - (top + bottom)
-    return Math.max(1, Math.floor(totalHeight / base))
+    return calculateRowCount({
+      height: normHeight,
+      top,
+      bottom,
+      base,
+    })
   }, [normHeight, top, bottom, base])
 
   const { start, end } = useVirtual({
@@ -95,45 +161,81 @@ export const Baseline = React.memo(function Baseline({
     buffer: 160,
   })
 
-  const chosenColor =
-    variant === 'line' ? config.colors.line : config.colors.flat
+  const chosenColor = colorProp ||
+    (variant === 'line' ? config.colors.line : config.colors.flat)
+
+  // Create default baseline styles
+  const defaultBaselineStyles = React.useMemo(
+    () => createDefaultBaselineStyles(
+      base,
+      config.colors.line,
+      config.colors.flat,
+    ),
+    [base, config.colors.line, config.colors.flat],
+  )
 
   const containerStyles = React.useMemo(() => {
-    const padding = [top, right, bottom, left]
-      .map((value) => (value ? `${value}px` : '0'))
-      .join(' ')
+    const widthValue = formatValue(widthProp || '100%')
+    const heightValue = formatValue(heightProp || '100%')
+
+    // Define dimensions that should be skipped when set to 100%
+    const dimensionVars = ['--bkbw', '--bkbh']
 
     return mergeStyles(
       {
-        '--bkbw': widthProp ? `${normWidth}px` : '100%',
-        '--bkbh': heightProp ? `${normHeight}px` : '100%',
-        ...(padding !== '0 0 0 0' && { padding }),
+        ...createStyleOverride({
+          key: '--bkbw',
+          value: widthValue,
+          defaultStyles: defaultBaselineStyles,
+          skipDimensions: { fullSize: dimensionVars },
+        }),
+        ...createStyleOverride({
+          key: '--bkbh',
+          value: heightValue,
+          defaultStyles: defaultBaselineStyles,
+          skipDimensions: { fullSize: dimensionVars },
+        }),
+        ...createStyleOverride({
+          key: '--bkbb',
+          value: `${base}px`,
+          defaultStyles: defaultBaselineStyles,
+        }),
+        ...createStyleOverride({
+          key: '--bkbcl',
+          value: colorProp || config.colors.line,
+          defaultStyles: defaultBaselineStyles,
+        }),
+        ...createStyleOverride({
+          key: '--bkbcf',
+          value: colorProp || config.colors.flat,
+          defaultStyles: defaultBaselineStyles,
+        }),
+        ...(padding && { padding }),
       } as React.CSSProperties,
       style,
     )
   }, [
-    top,
-    right,
-    bottom,
-    left,
     widthProp,
-    normWidth,
     heightProp,
-    normHeight,
+    base,
+    colorProp,
+    config.colors.line,
+    config.colors.flat,
+    padding,
+    defaultBaselineStyles,
     style,
   ])
 
   const getRowStyle = React.useCallback(
     (index: number) => {
-      const defaultRowHeight = variant === 'line' ? '1px' : `${base}px`
-      const defaultRowColor =
-        variant === 'line' ? config.colors.line : config.colors.flat
-
-      return mergeStyles({
-        '--bkrt': `${index * base}px`,
-        ...(defaultRowHeight !== '1px' && { '--bkrh': defaultRowHeight }),
-        ...(chosenColor !== defaultRowColor && { '--bkbcl': chosenColor }),
-      } as React.CSSProperties)
+      return createBaselineRowStyle({
+        index,
+        base,
+        variant,
+        chosenColor,
+        lineColor: config.colors.line,
+        flatColor: config.colors.flat,
+      })
     },
     [base, variant, chosenColor, config.colors.line, config.colors.flat],
   )

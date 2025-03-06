@@ -1,10 +1,4 @@
 /**
- * @file parse.ts
- * @description CSS value parsing utilities
- * @module utils
- */
-
-/**
  * Parses a CSS unit string into its numeric value and unit.
  *
  * @remarks

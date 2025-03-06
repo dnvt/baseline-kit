@@ -94,52 +94,134 @@ type ConfigProps = {
   padder?: Partial<Config['padder']>;
 }
 
-/** Creates CSS variables from the configuration object. */
-export const createCSSVariables = ({
-  base,
-  baseline,
-  guide,
-  stack,
-  spacer,
-  layout,
-  box,
-  padder,
-}: Config): Record<string, string> => ({
-  '--bkb': `${base}px`,
+// Utils -----------------------------------------------------------------------
 
-  // Baseline Colors
-  '--bkbcl': baseline.colors.line,
-  '--bkbcf': baseline.colors.flat,
+/** Parameters for creating CSS variables */
+type CSSVariablesParams = {
+  /** Base unit for spacing calculations */
+  base: number;
+  /** Baseline component configuration */
+  baseline: Config['baseline'];
+  /** Guide component configuration */
+  guide: Config['guide'];
+  /** Stack component configuration */
+  stack: Config['stack'];
+  /** Spacer component configuration */
+  spacer: Config['spacer'];
+  /** Layout component configuration */
+  layout: Config['layout'];
+  /** Box component configuration */
+  box: Config['box'];
+  /** Padder component configuration */
+  padder: Config['padder'];
+}
 
-  // Guide Colors
-  '--bkgcl': guide.colors.line,
-  '--bkgcp': guide.colors.pattern,
-  '--bkgca': guide.colors.auto,
-  '--bkgcf': guide.colors.fixed,
+/** 
+ * Creates CSS variables from the configuration object.
+ * These variables are used throughout the component library.
+ */
+export const createCSSVariables = (
+  params: CSSVariablesParams
+): Record<string, string> => {
+  const {
+    base,
+    baseline,
+    guide,
+    stack,
+    spacer,
+    layout,
+    box,
+    padder,
+  } = params
 
-  // Spacer Colors
-  '--bkscl': spacer.colors.line,
-  '--bkscf': spacer.colors.flat,
-  '--bksci': spacer.colors.text,
+  return {
+    '--bkb': `${base}px`,
 
-  // Box Colors
-  '--bkxcl': box.colors.line,
-  '--bkxcf': box.colors.flat,
-  '--bkxci': box.colors.text,
+    // Baseline Colors
+    '--bkbcl': baseline.colors.line,
+    '--bkbcf': baseline.colors.flat,
 
-  // Flex Colors
-  '--bkkcl': stack.colors.line,
-  '--bkkcf': stack.colors.flat,
-  '--bkkci': stack.colors.text,
+    // Guide Colors
+    '--bkgcl': guide.colors.line,
+    '--bkgcp': guide.colors.pattern,
+    '--bkgca': guide.colors.auto,
+    '--bkgcf': guide.colors.fixed,
 
-  // Layout Colors
-  '--bklcl': layout.colors.line,
-  '--bklcf': layout.colors.flat,
-  '--bklci': layout.colors.text,
+    // Spacer Colors
+    '--bkscl': spacer.colors.line,
+    '--bkscf': spacer.colors.flat,
+    '--bksci': spacer.colors.text,
 
-  // Padder Color
-  '--bkpc': padder.color,
-})
+    // Box Colors
+    '--bkxcl': box.colors.line,
+    '--bkxcf': box.colors.flat,
+    '--bkxci': box.colors.text,
+
+    // Flex Colors
+    '--bkkcl': stack.colors.line,
+    '--bkkcf': stack.colors.flat,
+    '--bkkci': stack.colors.text,
+
+    // Layout Colors
+    '--bklcl': layout.colors.line,
+    '--bklcf': layout.colors.flat,
+    '--bklci': layout.colors.text,
+
+    // Padder Color
+    '--bkpc': padder.color,
+  }
+}
+
+/** Parameters for merging configuration */
+type MergeConfigParams = {
+  /** Parent configuration to extend */
+  parentConfig: Config;
+  /** Base unit override */
+  base?: number;
+  /** Baseline component overrides */
+  baseline?: Partial<Config['baseline']>;
+  /** Guide component overrides */
+  guide?: Partial<Config['guide']>;
+  /** Spacer component overrides */
+  spacer?: Partial<Config['spacer']>;
+  /** Box component overrides */
+  box?: Partial<Config['box']>;
+  /** Stack component overrides */
+  stack?: Partial<Config['stack']>;
+  /** Layout component overrides */
+  layout?: Partial<Config['layout']>;
+  /** Padder component overrides */
+  padder?: Partial<Config['padder']>;
+}
+
+/** 
+ * Merges parent config with overrides.
+ * Creates a new config object without mutating the parent.
+ */
+export const mergeConfig = (params: MergeConfigParams): Config => {
+  const {
+    parentConfig,
+    base,
+    baseline,
+    guide,
+    spacer,
+    box,
+    stack,
+    layout,
+    padder,
+  } = params
+
+  return {
+    base: base ?? parentConfig.base,
+    baseline: { ...parentConfig.baseline, ...baseline },
+    guide: { ...parentConfig.guide, ...guide },
+    spacer: { ...parentConfig.spacer, ...spacer },
+    box: { ...parentConfig.box, ...box },
+    stack: { ...parentConfig.stack, ...stack },
+    layout: { ...parentConfig.layout, ...layout },
+    padder: { ...parentConfig.padder, ...padder },
+  }
+}
 
 /**
  * Configuration provider for baseline-kit components.
@@ -198,28 +280,20 @@ export function Config({
   const parentConfig = useDefaultConfig()
 
   const value = React.useMemo(() => {
-    const newConfig: Config = {
-      base: base ?? parentConfig.base,
-      baseline: { ...parentConfig.baseline, ...baseline },
-      guide: { ...parentConfig.guide, ...guide },
-      spacer: { ...parentConfig.spacer, ...spacer },
-      box: { ...parentConfig.box, ...box },
-      stack: { ...parentConfig.stack, ...stack },
-      layout: { ...parentConfig.layout, ...layout },
-      padder: { ...parentConfig.padder, ...padder },
-    }
-
-    return newConfig
+    return mergeConfig({
+      parentConfig,
+      base,
+      baseline,
+      guide,
+      spacer,
+      box,
+      stack,
+      layout,
+      padder,
+    })
   }, [
+    parentConfig,
     base,
-    parentConfig.base,
-    parentConfig.baseline,
-    parentConfig.guide,
-    parentConfig.spacer,
-    parentConfig.box,
-    parentConfig.stack,
-    parentConfig.layout,
-    parentConfig.padder,
     baseline,
     guide,
     spacer,

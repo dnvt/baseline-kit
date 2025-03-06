@@ -1,9 +1,3 @@
-/**
- * @file useConfig Hook
- * @description Manages component-specific theme configuration
- * @module hooks
- */
-
 import { useMemo } from 'react'
 import { Config, useDefaultConfig } from '@components'
 

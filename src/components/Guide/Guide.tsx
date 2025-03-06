@@ -5,21 +5,111 @@ import {
   useGuide,
   useMeasure,
 } from '@hooks'
-import { formatValue, mergeClasses, mergeStyles, normalizeValue, parsePadding } from '@utils'
+import {
+  formatValue,
+  mergeClasses,
+  mergeStyles,
+  normalizeValue,
+  createStyleOverride,
+} from '@utils'
 import { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
-import type { ComponentsProps } from '../types'
+import type { ComponentsProps, GuideVariant } from '../types'
 import styles from './styles.module.css'
 
 /** Merged configuration types that support various grid layout strategies */
 export type GuideConfig = PatternConfig | AutoConfig | FixedConfig | LineConfig;
 
 export type GuideProps = {
-  /**
-   * Controls horizontal alignment of columns within the container.
-   * @default "start"
-   */
-  align?: 'start' | 'center' | 'end';
+  /** Controls horizontal alignment of columns within the container */
+  align?: React.CSSProperties['justifyContent']
+  /** Visual style of the guide */
+  variant?: GuideVariant
+  /** Number of columns (for fixed/auto variants) */
+  columns?: number
+  /** Column width (for fixed variant) */
+  columnWidth?: React.CSSProperties['width']
+  /** Gutter width between columns */
+  gutterWidth?: React.CSSProperties['width']
+  /** Maximum width of the guide */
+  maxWidth?: React.CSSProperties['maxWidth']
+  /** Color override for guide lines */
+  color?: React.CSSProperties['color']
+  /** Content to render inside the guide */
+  children?: React.ReactNode
+  /** Gap between columns */
+  gap?: number
 } & ComponentsProps & GuideConfig;
+
+/** Parameters for creating a grid configuration */
+type GridConfigParams = {
+  variant: GuideVariant;
+  base: number;
+  gap: number;
+  columns?: number | readonly (string | number | undefined | 'auto')[];
+  columnWidth?: React.CSSProperties['width'];
+}
+
+// Utils -----------------------------------------------------------------------
+
+/** Creates the appropriate grid configuration based on variant */
+export const createGridConfig = (
+  params: GridConfigParams,
+): (PatternConfig | AutoConfig | FixedConfig | LineConfig) => {
+  const { variant, base, gap, columns, columnWidth } = params
+
+  return {
+    line: {
+      variant: 'line' as const,
+      gap: gap - 1,
+      base,
+    },
+    auto: columnWidth
+      ? {
+        variant: 'auto' as const,
+        columnWidth,
+        gap,
+        base,
+      }
+      : null,
+    pattern: Array.isArray(columns)
+      ? {
+        variant: 'pattern' as const,
+        columns,
+        gap,
+        base,
+      }
+      : null,
+    fixed:
+      typeof columns === 'number'
+        ? {
+          variant: 'fixed' as const,
+          columns,
+          columnWidth,
+          gap,
+          base,
+        }
+        : null,
+  }[variant] ?? {
+    variant: 'line' as const,
+    gap: gap - 1,
+    base,
+  }
+}
+
+/** Creates default guide styles */
+export const createDefaultGuideStyles = (
+  base: number,
+  lineColor: string,
+): Record<string, string> => ({
+  '--bkgw': 'auto',
+  '--bkgh': 'auto',
+  '--bkgmw': 'none',
+  '--bkgcw': '60px',
+  '--bkggw': '24px',
+  '--bkgc': '12',
+  '--bkgb': `${base}px`,
+  '--bkgcl': lineColor,
+})
 
 /**
  * A developer tool component that provides visual grid overlays for alignment.
@@ -75,6 +165,10 @@ export const Guide = React.memo(function Guide({
   width,
   columns,
   columnWidth,
+  gutterWidth,
+  maxWidth,
+  color,
+  children,
   ...props
 }: GuideProps) {
   const config = useConfig('guide')
@@ -82,49 +176,16 @@ export const Guide = React.memo(function Guide({
   const { isShown } = useDebug(debugging, config.debugging)
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
-  const { top, right, bottom, left } = React.useMemo(() => parsePadding(props), [props])
 
   const gridConfig = React.useMemo(() => {
     const gap = normalizeValue(gapProp)
-    return (
-      {
-        line: {
-          variant: 'line' as const,
-          gap: gap - 1,
-          base: config.base,
-        },
-        auto: columnWidth
-          ? {
-            variant: 'auto' as const,
-            columnWidth,
-            gap,
-            base: config.base,
-          }
-          : null,
-        pattern: Array.isArray(columns)
-          ? {
-            variant: 'pattern' as const,
-            columns,
-            gap,
-            base: config.base,
-          }
-          : null,
-        fixed:
-          typeof columns === 'number'
-            ? {
-              variant: 'fixed' as const,
-              columns,
-              columnWidth,
-              gap,
-              base: config.base,
-            }
-            : null,
-      }[variant] ?? {
-        variant: 'line' as const,
-        gap: gap - 1,
-        base: config.base,
-      }
-    )
+    return createGridConfig({
+      variant,
+      base: config.base,
+      gap,
+      columns,
+      columnWidth,
+    })
   }, [gapProp, config.base, columnWidth, columns, variant])
 
   const {
@@ -133,51 +194,96 @@ export const Guide = React.memo(function Guide({
     calculatedGap,
   } = useGuide(containerRef, gridConfig)
 
-  const defaultGuideStyles: Record<string, string> = React.useMemo(() => ({
-    '--bkgg': `${calculatedGap}px`,
-    '--bkgj': 'start',
-    '--bkgcl': config.colors.line,
-    '--bkgcp': config.colors.pattern,
-    '--bkgw': '100vw',
-    '--bkgh': '100vh',
-  }), [calculatedGap, config.colors.line, config.colors.pattern])
-
-  const getGuideStyleOverride = React.useCallback(
-    (key: string, value: string): Record<string, string> => {
-      if (
-        ((key === '--bkgw') && value === '100vw') ||
-        ((key === '--bkgh') && value === '100vh')
-      ) {
-        return {}
-      }
-      return value !== defaultGuideStyles[key] ? { [key]: value } : {}
-    },
-    [defaultGuideStyles],
+  const defaultStyles = React.useMemo(
+    () => createDefaultGuideStyles(config.base, config.colors.line),
+    [config.base, config.colors.line],
   )
 
-  // Build base styles (all as string values)
-  const baseStyles: Record<string, string> = {
-    '--bkgg': `${calculatedGap}px`,
-    '--bkgj': align,
-    '--bkgcl': config.colors.line,
-    '--bkgcp': config.colors.pattern,
-    '--bkgpb': `${top}px ${bottom}px`,
-    '--bkgpi': `${left}px ${right}px`,
-    '--bkgt': template,
-    '--bkgw': formatValue(width ?? containerWidth, 0) || '100vw',
-    '--bkgh': formatValue(height ?? containerHeight, 0) || '100vh',
-  }
+  const containerStyles = React.useMemo(() => {
+    // Process dimension values
+    const widthValue = formatValue(width || containerWidth || 'auto')
+    const heightValue = formatValue(height || containerHeight || 'auto')
+    const maxWidthValue = formatValue(maxWidth || 'none')
+    const columnWidthValue = formatValue(columnWidth || '60px')
+    const gutterWidthValue = formatValue(gutterWidth || '24px')
 
-  const customOverrides: Record<string, string> = {
-    ...getGuideStyleOverride('--bkgw', baseStyles['--bkgw']),
-    ...getGuideStyleOverride('--bkgh', baseStyles['--bkgh']),
-    ...getGuideStyleOverride('--bkgj', align),
-    ...getGuideStyleOverride('--bkgcl', config.colors.line),
-    ...getGuideStyleOverride('--bkgcp', config.colors.pattern),
-    ...getGuideStyleOverride('--bkgg', `${calculatedGap}px`),
-  }
+    // Define dimensions that should be skipped when set to auto
+    const autoDimensions = ['--bkgw', '--bkgh']
 
-  const containerStyles: Record<string, string> = mergeStyles(baseStyles, customOverrides, style as Record<string, string>)
+    // Create custom styles with conditional overrides
+    const customStyles = {
+      ...createStyleOverride({
+        key: '--bkgw',
+        value: widthValue,
+        defaultStyles,
+        skipDimensions: { auto: autoDimensions },
+      }),
+      ...createStyleOverride({
+        key: '--bkgh',
+        value: heightValue,
+        defaultStyles,
+        skipDimensions: { auto: autoDimensions },
+      }),
+      ...createStyleOverride({
+        key: '--bkgmw',
+        value: maxWidthValue,
+        defaultStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkgcw',
+        value: columnWidthValue,
+        defaultStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkggw',
+        value: gutterWidthValue,
+        defaultStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkgc',
+        value: `${columnsCount}`,
+        defaultStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkgb',
+        value: `${config.base}px`,
+        defaultStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkgcl',
+        value: color ?? config.colors.line,
+        defaultStyles,
+      }),
+      // Add the CSS variables expected by tests
+      '--bkgg': `${calculatedGap}px`,
+      ...(template && template !== 'none' ? { '--bkgt': template } : {}),
+      // Add grid template if available
+      ...(template && template !== 'none' ? { gridTemplateColumns: template } : {}),
+      // Add gap if calculated
+      ...(calculatedGap ? { gap: `${calculatedGap}px` } : {}),
+      // Add justifyContent based on align
+      justifyContent: align,
+    } as React.CSSProperties
+
+    return mergeStyles(customStyles, style)
+  }, [
+    width,
+    height,
+    maxWidth,
+    columnWidth,
+    gutterWidth,
+    columnsCount,
+    color,
+    template,
+    calculatedGap,
+    containerWidth,
+    containerHeight,
+    config.base,
+    config.colors.line,
+    defaultStyles,
+    style,
+    align,
+  ])
 
   return (
     <div
@@ -210,6 +316,7 @@ export const Guide = React.memo(function Guide({
           })}
         </div>
       )}
+      {children}
     </div>
   )
 })

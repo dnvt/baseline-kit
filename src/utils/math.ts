@@ -1,9 +1,3 @@
-/**
- * @file math.ts
- * @description Mathematical calculation utilities
- * @module utils
- */
-
 import { convertValue } from './convert'
 
 /**
@@ -88,4 +82,35 @@ export function round(value: number, precision = 0): number {
     const factor = 10 ** Math.abs(precision)
     return Math.round(value / factor) * factor
   }
+}
+
+/** Parameters for row count calculation */
+type RowCountParams = {
+  /** Available height for the container */
+  height?: number;
+  /** Top padding/offset value */
+  top: number;
+  /** Bottom padding/offset value */
+  bottom: number;
+  /** Base unit for calculations */
+  base: number;
+}
+
+/**
+ * Calculates the number of rows that fit in the available space.
+ * Ensures at least one row is always returned.
+ * 
+ * @param params - Parameters for calculation
+ * @returns Number of rows that fit in the space
+ * 
+ * @example
+ * ```ts
+ * calculateRowCount({ height: 100, top: 10, bottom: 10, base: 8 }) // => 10
+ * calculateRowCount({ height: 20, top: 0, bottom: 0, base: 8 }) // => 2
+ * ```
+ */
+export function calculateRowCount(params: RowCountParams): number {
+  const { height, top, bottom, base } = params
+  const totalHeight = (height ?? 0) - (top + bottom)
+  return Math.max(1, Math.floor(totalHeight / base))
 }

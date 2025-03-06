@@ -1,11 +1,21 @@
 import * as React from 'react'
-import type { Gaps, IndicatorNode } from '@components'
+import type { Gaps } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeStyles, mergeClasses, parsePadding, formatValue } from '@utils'
+import {
+  mergeStyles,
+  mergeClasses,
+  parsePadding,
+  formatValue,
+  createStyleOverride,
+} from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
+import { Spacer } from '../Spacer'
 import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
+
+// Import the IndicatorNode type from Spacer props
+type IndicatorNode = NonNullable<React.ComponentProps<typeof Spacer>['indicatorNode']>
 
 export type LayoutProps = {
   /**
@@ -33,14 +43,50 @@ export type LayoutProps = {
 } & ComponentsProps &
   Gaps
 
+// Utils -----------------------------------------------------------------------
+
+/** Creates default layout styles with theme colors */
+export const createDefaultLayoutStyles = (colors: {
+  line: string;
+  flat: string;
+  text: string;
+}): Record<string, string> => ({
+  '--bklw': 'auto',
+  '--bklh': 'auto',
+  '--bklcl': colors.line,
+  '--bklcf': colors.flat,
+  '--bklci': colors.text,
+})
+
 /** Parses grid template definitions into CSS grid-template values. */
-function getGridTemplate(prop?: number | string | Array<number | string>) {
+export const getGridTemplate = (prop?: number | string | Array<number | string>): string => {
   if (typeof prop === 'number') return `repeat(${prop}, 1fr)`
   if (typeof prop === 'string') return prop
   if (Array.isArray(prop)) {
     return prop.map((p) => (typeof p === 'number' ? `${p}px` : p)).join(' ')
   }
   return 'repeat(auto-fit, minmax(100px, 1fr))'
+}
+
+/** Creates grid gap styles */
+export const createGridGapStyles = (
+  gap?: React.CSSProperties['gap'] | number,
+  rowGap?: React.CSSProperties['rowGap'] | number,
+  columnGap?: React.CSSProperties['columnGap'] | number,
+): Record<string, string> => {
+  const styles: Record<string, string> = {}
+
+  if (gap !== undefined) {
+    styles.gap = formatValue(gap)
+  }
+  if (rowGap !== undefined) {
+    styles.rowGap = formatValue(rowGap)
+  }
+  if (columnGap !== undefined) {
+    styles.columnGap = formatValue(columnGap)
+  }
+
+  return styles
 }
 
 /**
@@ -124,34 +170,13 @@ export const Layout = React.memo(function Layout({
     [rows],
   )
 
-  const defaultLayoutStyles: Record<string, string> = React.useMemo(
-    () => ({
-      '--bklw': 'auto',
-      '--bklh': 'auto',
-      '--bklcl': config.colors.line,
-      '--bklcf': config.colors.flat,
-      '--bklci': config.colors.text,
-    }),
-    [config.colors.line, config.colors.flat, config.colors.text],
-  )
-
-  const getLayoutStyleOverride = React.useCallback(
-    (key: string, value: string): Record<string, string | number> => {
-      // For width/height, if value is "auto" skip injection.
-      if ((key === '--bklw' || key === '--bklh') && value === 'auto') {
-        return {}
-      }
-      return value !== defaultLayoutStyles[key] ? { [key]: value } : {}
-    },
-    [defaultLayoutStyles],
+  const defaultLayoutStyles = React.useMemo(
+    () => createDefaultLayoutStyles(config.colors),
+    [config.colors],
   )
 
   const gridGapStyles = React.useMemo(
-    () => ({
-      ...(gap !== undefined && { gap: formatValue(gap) }),
-      ...(rowGap !== undefined && { rowGap: formatValue(rowGap) }),
-      ...(columnGap !== undefined && { columnGap: formatValue(columnGap) }),
-    }),
+    () => createGridGapStyles(gap, rowGap, columnGap),
     [gap, rowGap, columnGap],
   )
 
@@ -159,19 +184,42 @@ export const Layout = React.memo(function Layout({
     const widthValue = formatValue(width || 'auto')
     const heightValue = formatValue(height || 'auto')
 
+    // Define dimensions that should be skipped when set to auto
+    const autoDimensions = ['--bklw', '--bklh']
+
     return mergeStyles(
       {
         // Theme overrides
-        ...getLayoutStyleOverride('--bklw', widthValue),
-        ...getLayoutStyleOverride('--bklh', heightValue),
-        ...getLayoutStyleOverride('--bklcl', config.colors.line),
-        ...getLayoutStyleOverride('--bklcf', config.colors.flat),
-        ...getLayoutStyleOverride('--bklci', config.colors.text),
+        ...createStyleOverride({
+          key: '--bklw',
+          value: widthValue,
+          defaultStyles: defaultLayoutStyles,
+          skipDimensions: { auto: autoDimensions }
+        }),
+        ...createStyleOverride({
+          key: '--bklh',
+          value: heightValue,
+          defaultStyles: defaultLayoutStyles,
+          skipDimensions: { auto: autoDimensions }
+        }),
+        ...createStyleOverride({
+          key: '--bklcl',
+          value: config.colors.line,
+          defaultStyles: defaultLayoutStyles
+        }),
+        ...createStyleOverride({
+          key: '--bklcf',
+          value: config.colors.flat,
+          defaultStyles: defaultLayoutStyles
+        }),
+        ...createStyleOverride({
+          key: '--bklci',
+          value: config.colors.text,
+          defaultStyles: defaultLayoutStyles
+        }),
 
         // Grid properties - only inject if different from defaults
-        ...(gridTemplateColumns !== 'repeat(auto-fit, minmax(100px, 1fr))' && {
-          '--bklgtc': gridTemplateColumns,
-        }),
+        ...(gridTemplateColumns !== 'repeat(auto-fit, minmax(100px, 1fr))' && { '--bklgtc': gridTemplateColumns }),
         ...(gridTemplateRows !== 'auto' && { '--bklgtr': gridTemplateRows }),
         ...(justifyItems && { '--bklji': justifyItems }),
         ...(alignItems && { '--bklai': alignItems }),
@@ -192,10 +240,8 @@ export const Layout = React.memo(function Layout({
     alignContent,
     width,
     height,
-    config.colors.line,
-    config.colors.flat,
-    config.colors.text,
-    getLayoutStyleOverride,
+    config.colors,
+    defaultLayoutStyles,
     style,
     gridGapStyles,
   ])
@@ -208,7 +254,7 @@ export const Layout = React.memo(function Layout({
         ref={layoutRef}
         className={isShown ? styles.v : ''}
         block={[padding.top, padding.bottom]}
-        indicatorNode={indicatorNode}
+        {... (indicatorNode ? { indicatorNode } : {})}
         inline={[padding.left, padding.right]}
         debugging={debugging}
         width={width}

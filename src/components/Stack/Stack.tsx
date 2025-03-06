@@ -1,14 +1,28 @@
 import * as React from 'react'
-import type { Gaps, IndicatorNode } from '@components'
+import type { Gaps } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
-import { mergeClasses, mergeStyles, parsePadding, formatValue } from '@utils'
-import { createDefaultStackStyles, getStackStyleOverride } from './utils/style'
-import { createStackGapStyles } from './utils/gap'
-import { DIRECTION_AXIS, type CSSPropertiesDirectionalAxis } from './utils/direction'
+import {
+  mergeClasses,
+  mergeStyles,
+  parsePadding,
+  formatValue,
+  createStyleOverride,
+} from '@utils'
 import { Padder } from '../Padder'
+import { IndicatorNode } from '../Spacer'
 import { Config } from '../Config'
 import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
+
+// Maps shorthand directions to Flexbox directions
+export const DIRECTION_AXIS: Record<string, React.CSSProperties['flexDirection']> = {
+  x: 'row',
+  y: 'column',
+  '-x': 'row-reverse',
+  '-y': 'column-reverse',
+}
+
+export type CSSPropertiesDirectionalAxis = keyof typeof DIRECTION_AXIS;
 
 export type StackProps = {
   /** Main axis orientation */
@@ -26,8 +40,28 @@ export type StackProps = {
   /** Visual style in debug mode */
   variant?: Variant
   children?: React.ReactNode
-} & ComponentsProps &
-  Gaps
+} & ComponentsProps & Gaps
+
+// Utils -----------------------------------------------------------------------
+
+/** Creates default stack styles with theme colors */
+export const createDefaultStackStyles = (colors: Record<string, string>) => ({
+  '--bkkw': 'auto',
+  '--bkkh': 'auto',
+  '--bkkcl': colors.line,
+  '--bkkcf': colors.flat,
+  '--bkkci': colors.text,
+})
+
+/** Creates gap styles for the stack */
+export const createStackGapStyles = (
+  rowGap?: number,
+  columnGap?: number,
+  gap?: number,
+): Record<string, number | undefined> => ({
+  rowGap: gap !== undefined ? gap : rowGap,
+  columnGap: gap !== undefined ? gap : columnGap,
+})
 
 /**
  * A flexible container component aligning children to the baseline grid.
@@ -97,20 +131,21 @@ export const Stack = React.memo(function Stack({
   width,
   ...spacingProps
 }: StackProps) {
+  // Read configuration from context or props
   const config = useConfig('stack')
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
   const stackRef = React.useRef<HTMLDivElement | null>(null)
 
-  const initialPadding = React.useMemo(
-    () => parsePadding(spacingProps),
-    [spacingProps],
-  )
+  // Process spacing props
+  const { top, right, bottom, left } = parsePadding({
+    ...spacingProps,
+  })
 
   const { padding } = useBaseline(stackRef, {
     base: config.base,
     snapping: 'height',
-    spacing: initialPadding,
-    warnOnMisalignment: true,
+    spacing: { top, right, bottom, left },
+    warnOnMisalignment: debugging !== 'none',
   })
 
   const stackGapStyles = React.useMemo(() => {
@@ -131,12 +166,37 @@ export const Stack = React.memo(function Stack({
     const heightValue = formatValue(height || 'auto')
     const flexDirection = DIRECTION_AXIS[direction] || direction
 
+    // Define stack dimensions that should be skipped when set to auto
+    const dimensionVars = ['--bkkw', '--bkkh']
+
     const customOverrides = {
-      ...getStackStyleOverride('--bkkw', widthValue, defaultStackStyles),
-      ...getStackStyleOverride('--bkkh', heightValue, defaultStackStyles),
-      ...getStackStyleOverride('--bkkcl', config.colors.line, defaultStackStyles),
-      ...getStackStyleOverride('--bkkcf', config.colors.flat, defaultStackStyles),
-      ...getStackStyleOverride('--bkkci', config.colors.text, defaultStackStyles),
+      ...createStyleOverride({
+        key: '--bkkw',
+        value: widthValue,
+        defaultStyles: defaultStackStyles,
+        skipDimensions: { auto: dimensionVars },
+      }),
+      ...createStyleOverride({
+        key: '--bkkh',
+        value: heightValue,
+        defaultStyles: defaultStackStyles,
+        skipDimensions: { auto: dimensionVars },
+      }),
+      ...createStyleOverride({
+        key: '--bkkcl',
+        value: config.colors.line,
+        defaultStyles: defaultStackStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkkcf',
+        value: config.colors.flat,
+        defaultStyles: defaultStackStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkkci',
+        value: config.colors.text,
+        defaultStyles: defaultStackStyles,
+      }),
     } as React.CSSProperties
 
     const baseStyles = {
