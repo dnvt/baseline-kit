@@ -1,9 +1,3 @@
-/**
- * @file Padder Component
- * @description Low-level padding management with visual debugging
- * @module components
- */
-
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '@hooks'
 import {
@@ -155,7 +149,7 @@ export const Padder = React.memo(
     const renderSpacer: RenderSpacerFn = (widthVal, heightVal) => (
       <Spacer
         variant={variant}
-        debugging={(heightVal === 0 || widthVal === 0) ? "none" : debugging}
+        debugging={(heightVal === 0 || widthVal === 0) ? 'none' : debugging}
         indicatorNode={indicatorNode}
         height={heightVal !== '100%' ? heightVal : undefined}
         width={widthVal !== '100%' ? widthVal : undefined}

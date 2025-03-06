@@ -1,9 +1,3 @@
-/**
- * @file Spacer Component
- * @description Flexible spacing element with measurement indicators
- * @module components
- */
-
 import * as React from 'react'
 import { useConfig, useDebug } from '@hooks'
 import { mergeStyles, mergeClasses, formatValue, normalizeValuePair } from '@utils'

@@ -1,13 +1,10 @@
-/**
- * @file Stack Component
- * @description Flex container with baseline grid alignment
- * @module components
- */
-
 import * as React from 'react'
 import type { Gaps, IndicatorNode } from '@components'
 import { useConfig, useDebug, useBaseline } from '@hooks'
 import { mergeClasses, mergeStyles, parsePadding, formatValue } from '@utils'
+import { createDefaultStackStyles, getStackStyleOverride } from './utils/style'
+import { createStackGapStyles } from './utils/gap'
+import { DIRECTION_AXIS, type CSSPropertiesDirectionalAxis } from './utils/direction'
 import { Padder } from '../Padder'
 import { Config } from '../Config'
 import { ComponentsProps, Variant } from '../types'
@@ -15,7 +12,7 @@ import styles from './styles.module.css'
 
 export type StackProps = {
   /** Main axis orientation */
-  direction?: 'row' | 'column'
+  direction?: React.CSSProperties['flexDirection'] & CSSPropertiesDirectionalAxis;
   /** Distribution of space on main axis */
   justify?: React.CSSProperties['justifyContent']
   /** Alignment on cross axis */
@@ -108,6 +105,7 @@ export const Stack = React.memo(function Stack({
     () => parsePadding(spacingProps),
     [spacingProps],
   )
+
   const { padding } = useBaseline(stackRef, {
     base: config.base,
     snapping: 'height',
@@ -115,51 +113,34 @@ export const Stack = React.memo(function Stack({
     warnOnMisalignment: true,
   })
 
-  const stackGapStyles = React.useMemo(
-    () => ({
-      rowGap,
-      columnGap,
-      ...(gap !== undefined && { gap }),
-    }),
-    [rowGap, columnGap, gap],
-  )
+  const stackGapStyles = React.useMemo(() => {
+    const formattedRowGap = rowGap !== undefined ? Number(rowGap) : undefined
+    const formattedColumnGap = columnGap !== undefined ? Number(columnGap) : undefined
+    const formattedGap = gap !== undefined ? Number(gap) : undefined
 
-  const defaultStackStyles: Record<string, string> = React.useMemo(
-    () => ({
-      '--bkkw': 'auto',
-      '--bkkh': 'auto',
-      '--bkkcl': config.colors.line,
-      '--bkkcf': config.colors.flat,
-      '--bkkci': config.colors.text,
-    }),
-    [config.colors.line, config.colors.flat, config.colors.text],
-  )
+    return createStackGapStyles(formattedRowGap, formattedColumnGap, formattedGap)
+  }, [rowGap, columnGap, gap])
 
-  const getStackStyleOverride = React.useCallback(
-    (key: string, value: string): Record<string, string | number> => {
-      // For width, if value equals "100%" then skip inline override.
-      if (key === '--bkkw' && value === 'auto') return {}
-      // For height, if value equals "auto", skip override.
-      if (key === '--bkkh' && value === 'auto') return {}
-      return value !== defaultStackStyles[key] ? { [key]: value } : {}
-    },
-    [defaultStackStyles],
+  const defaultStackStyles = React.useMemo(
+    () => createDefaultStackStyles(config.colors),
+    [config.colors],
   )
 
   const containerStyles = React.useMemo(() => {
     const widthValue = formatValue(width || 'auto')
     const heightValue = formatValue(height || 'auto')
+    const flexDirection = DIRECTION_AXIS[direction] || direction
 
     const customOverrides = {
-      ...getStackStyleOverride('--bkkw', widthValue),
-      ...getStackStyleOverride('--bkkh', heightValue),
-      ...getStackStyleOverride('--bkkcl', config.colors.line),
-      ...getStackStyleOverride('--bkkcf', config.colors.flat),
-      ...getStackStyleOverride('--bkkci', config.colors.text),
+      ...getStackStyleOverride('--bkkw', widthValue, defaultStackStyles),
+      ...getStackStyleOverride('--bkkh', heightValue, defaultStackStyles),
+      ...getStackStyleOverride('--bkkcl', config.colors.line, defaultStackStyles),
+      ...getStackStyleOverride('--bkkcf', config.colors.flat, defaultStackStyles),
+      ...getStackStyleOverride('--bkkci', config.colors.text, defaultStackStyles),
     } as React.CSSProperties
 
     const baseStyles = {
-      flexDirection: direction,
+      flexDirection,
       justifyContent: justify,
       alignItems: align,
       width,
@@ -176,7 +157,7 @@ export const Stack = React.memo(function Stack({
     config.colors.line,
     config.colors.flat,
     config.colors.text,
-    getStackStyleOverride,
+    defaultStackStyles,
     stackGapStyles,
     style,
   ])

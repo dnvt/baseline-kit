@@ -1,9 +1,3 @@
-/**
- * @file Baseline Component
- * @description Horizontal grid overlay for baseline alignment
- * @module components
- */
-
 import * as React from 'react'
 import { ComponentsProps } from '@components'
 import { useConfig, useDebug, useVirtual, useMeasure } from '@hooks'
@@ -80,13 +74,13 @@ export const Baseline = React.memo(function Baseline({
   const [normWidth, normHeight] = React.useMemo(() => {
     return normalizeValuePair(
       [widthProp, heightProp],
-      [containerWidth, containerHeight]
+      [containerWidth, containerHeight],
     )
   }, [widthProp, heightProp, containerWidth, containerHeight])
 
   const { top, right, bottom, left } = React.useMemo(
     () => parsePadding(spacingProps),
-    [spacingProps]
+    [spacingProps],
   )
 
   const rowCount = React.useMemo(() => {
@@ -115,7 +109,7 @@ export const Baseline = React.memo(function Baseline({
         '--bkbh': heightProp ? `${normHeight}px` : '100%',
         ...(padding !== '0 0 0 0' && { padding }),
       } as React.CSSProperties,
-      style
+      style,
     )
   }, [
     top,
@@ -141,7 +135,7 @@ export const Baseline = React.memo(function Baseline({
         ...(chosenColor !== defaultRowColor && { '--bkbcl': chosenColor }),
       } as React.CSSProperties)
     },
-    [base, variant, chosenColor, config.colors.line, config.colors.flat]
+    [base, variant, chosenColor, config.colors.line, config.colors.flat],
   )
 
   return (
@@ -151,7 +145,7 @@ export const Baseline = React.memo(function Baseline({
       className={mergeClasses(
         styles.bas,
         isShown ? styles.v : styles.h,
-        className
+        className,
       )}
       style={containerStyles}
       {...spacingProps}
