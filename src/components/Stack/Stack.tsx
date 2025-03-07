@@ -7,6 +7,7 @@ import {
   parsePadding,
   formatValue,
   createStyleOverride,
+  hydratedValue
 } from '@utils'
 import { Padder } from '../Padder'
 import { IndicatorNode } from '../Spacer'
@@ -39,8 +40,16 @@ export type StackProps = {
   indicatorNode?: IndicatorNode
   /** Visual style in debug mode */
   variant?: Variant
+  /** Gap between items in base units */
+  gap?: Gaps
+  /** Row gap when using different values for rows and columns */
+  rowGap?: Gaps
+  /** Column gap when using different values for rows and columns */
+  columnGap?: Gaps
+  /** Flag to enable SSR-compatible mode (simplified initial render) */
+  ssrMode?: boolean
   children?: React.ReactNode
-} & ComponentsProps & Gaps
+} & ComponentsProps
 
 // Utils -----------------------------------------------------------------------
 
@@ -129,11 +138,20 @@ export const Stack = React.memo(function Stack({
   style,
   variant,
   width,
+  ssrMode = false,
   ...spacingProps
 }: StackProps) {
   // Read configuration from context or props
   const config = useConfig('stack')
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
+  
+  // Add hydration state tracking
+  const [isHydrated, setIsHydrated] = React.useState(false)
+  
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+  
   const stackRef = React.useRef<HTMLDivElement | null>(null)
 
   // Process spacing props
@@ -141,12 +159,30 @@ export const Stack = React.memo(function Stack({
     ...spacingProps,
   })
 
-  const { padding } = useBaseline(stackRef, {
+  // Get padding calculation from useBaseline
+  const baselinePadding = useBaseline(stackRef, {
     base: config.base,
     snapping: 'height',
     spacing: { top, right, bottom, left },
     warnOnMisalignment: debugging !== 'none',
   })
+  
+  // Create stable initial padding for SSR
+  const stablePadding = {
+    padding: {
+      top: top || 0,
+      right: right || 0,
+      bottom: bottom || 0,
+      left: left || 0
+    }
+  }
+  
+  // Use stable padding during SSR and initial render, then switch to dynamic padding
+  const { padding } = hydratedValue(
+    isHydrated && !ssrMode,
+    stablePadding,
+    baselinePadding
+  )
 
   const stackGapStyles = React.useMemo(() => {
     const formattedRowGap = rowGap !== undefined ? Number(rowGap) : undefined
@@ -244,6 +280,7 @@ export const Stack = React.memo(function Stack({
         indicatorNode={indicatorNode}
         width={width}
         height={height}
+        ssrMode={ssrMode}
       >
         <div
           data-testid="stack"

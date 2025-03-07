@@ -9,8 +9,8 @@ import {
   formatValue,
   mergeClasses,
   mergeStyles,
-  normalizeValue,
   createStyleOverride,
+  hydratedValue
 } from '@utils'
 import { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
 import type { ComponentsProps, GuideVariant } from '../types'
@@ -25,7 +25,7 @@ export type GuideProps = {
   /** Visual style of the guide */
   variant?: GuideVariant
   /** Number of columns (for fixed/auto variants) */
-  columns?: number
+  columns?: number | readonly (string | number | undefined | 'auto')[]
   /** Column width (for fixed variant) */
   columnWidth?: React.CSSProperties['width']
   /** Gutter width between columns */
@@ -38,7 +38,9 @@ export type GuideProps = {
   children?: React.ReactNode
   /** Gap between columns */
   gap?: number
-} & ComponentsProps & GuideConfig;
+  /** Flag to enable SSR-compatible mode (simplified initial render) */
+  ssrMode?: boolean
+} & ComponentsProps & Omit<GuideConfig, 'columns' | 'columnWidth' | 'gap'>;
 
 /** Parameters for creating a grid configuration */
 type GridConfigParams = {
@@ -169,16 +171,38 @@ export const Guide = React.memo(function Guide({
   maxWidth,
   color,
   children,
+  ssrMode = false,
   ...props
 }: GuideProps) {
   const config = useConfig('guide')
   const variant = variantProp ?? config.variant
-  const { isShown } = useDebug(debugging, config.debugging)
-  const containerRef = React.useRef<HTMLDivElement | null>(null)
-  const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
+  const gap = typeof gapProp === 'number' ? gapProp : config.base
+  
+  // Add hydration state tracking
+  const [isHydrated, setIsHydrated] = React.useState(false)
+  
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+  
+  // Always call useMeasure, but conditionally use its results
+  const measuredDimensions = useMeasure(containerRef)
+  
+  // Choose appropriate dimensions based on rendering environment
+  const dimensions = hydratedValue(
+    isHydrated && !ssrMode,
+    { width: 1024, height: 768, refresh: () => {} },
+    measuredDimensions
+  )
+  
+  const { width: containerWidth, height: containerHeight } = dimensions
+
+  const { isShown } = useDebug(debugging, config.debugging)
+
+  // Create guide configuration based on variant
   const gridConfig = React.useMemo(() => {
-    const gap = normalizeValue(gapProp)
     return createGridConfig({
       variant,
       base: config.base,
@@ -186,7 +210,7 @@ export const Guide = React.memo(function Guide({
       columns,
       columnWidth,
     })
-  }, [gapProp, config.base, columnWidth, columns, variant])
+  }, [variant, config.base, gap, columns, columnWidth])
 
   const {
     template,

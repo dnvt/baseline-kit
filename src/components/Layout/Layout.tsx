@@ -7,6 +7,7 @@ import {
   parsePadding,
   formatValue,
   createStyleOverride,
+  hydratedValue
 } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
@@ -39,9 +40,14 @@ export type LayoutProps = {
   indicatorNode?: IndicatorNode
   /** Visual style in debug mode */
   variant?: Variant
+  /** Flag to enable SSR-compatible mode (simplified initial render) */
+  ssrMode?: boolean
+  /** Container width (defaults to "auto") */
+  width?: React.CSSProperties['width']
+  /** Container height (defaults to "auto") */
+  height?: React.CSSProperties['height']
   children?: React.ReactNode
-} & ComponentsProps &
-  Gaps
+} & ComponentsProps & Gaps
 
 // Utils -----------------------------------------------------------------------
 
@@ -126,39 +132,67 @@ export const createGridGapStyles = (
  * ```
  */
 export const Layout = React.memo(function Layout({
+  alignContent,
+  alignItems,
   children,
-  columns,
-  rows,
-  rowGap,
+  className,
+  columns = 'repeat(auto-fit, minmax(100px, 1fr))',
   columnGap,
+  debugging: debuggingProp,
   gap,
   height,
-  width,
   indicatorNode,
-  justifyItems,
-  alignItems,
   justifyContent,
-  alignContent,
-  className,
-  variant,
+  justifyItems,
+  rowGap,
+  rows,
   style,
-  debugging,
+  variant,
+  width,
+  ssrMode = false,
   ...spacingProps
 }: LayoutProps) {
   const config = useConfig('layout')
-  const { isShown } = useDebug(debugging, config.debugging)
+  const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
+  
+  // Add hydration state tracking
+  const [isHydrated, setIsHydrated] = React.useState(false)
+  
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+  
   const layoutRef = React.useRef<HTMLDivElement>(null)
 
   const initialPadding = React.useMemo(
     () => parsePadding(spacingProps),
     [spacingProps],
   )
-  const { padding } = useBaseline(layoutRef, {
+  
+  // Get padding calculation from useBaseline
+  const baselinePadding = useBaseline(layoutRef, {
     base: config.base,
     snapping: 'height',
     spacing: initialPadding,
     warnOnMisalignment: true,
   })
+  
+  // Create stable initial padding for SSR
+  const stablePadding = {
+    padding: {
+      top: initialPadding.top || 0,
+      right: initialPadding.right || 0,
+      bottom: initialPadding.bottom || 0,
+      left: initialPadding.left || 0
+    }
+  }
+  
+  // Use stable padding during SSR and initial render, then switch to dynamic padding
+  const { padding } = hydratedValue(
+    isHydrated && !ssrMode,
+    stablePadding,
+    baselinePadding
+  )
 
   const gridTemplateColumns = React.useMemo(
     () => getGridTemplate(columns),
@@ -259,11 +293,16 @@ export const Layout = React.memo(function Layout({
         debugging={debugging}
         width={width}
         height={height}
+        ssrMode={ssrMode}
       >
         <div
           data-testid="layout"
           className={mergeClasses(className, styles.lay)}
           style={containerStyles}
+          {...(spacingProps && Object.keys(spacingProps).length > 0 ? 
+            Object.fromEntries(
+              Object.entries(spacingProps).filter(([key]) => key !== 'ssrMode')
+            ) : {})}
         >
           {children}
         </div>

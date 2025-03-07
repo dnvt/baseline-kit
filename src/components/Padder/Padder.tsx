@@ -6,6 +6,7 @@ import {
   parsePadding,
   mergeRefs,
   formatValue,
+  hydratedValue
 } from '@utils'
 import { ComponentsProps, Variant } from '../types'
 import { Spacer, IndicatorNode } from '../Spacer'
@@ -26,6 +27,8 @@ type PaddingStyles = {
 type PadderProps = {
   /** Render function for custom measurement indicators */
   indicatorNode?: IndicatorNode
+  /** Flag to enable SSR-compatible mode (simplified initial render) */
+  ssrMode?: boolean
   children?: React.ReactNode
 } & ComponentsProps
 
@@ -165,6 +168,7 @@ export const Padder = React.memo(
       indicatorNode,
       style,
       width,
+      ssrMode = false,
       ...spacingProps
     },
     ref,
@@ -181,15 +185,39 @@ export const Padder = React.memo(
     )
     const enableSpacers = !isNone
 
+    // Add hydration state tracking
+    const [isHydrated, setIsHydrated] = React.useState(false)
+    
+    React.useEffect(() => {
+      setIsHydrated(true)
+    }, [])
+
     const internalRef = React.useRef<HTMLDivElement | null>(null)
-    const {
-      padding: { top, left, bottom, right },
-    } = useBaseline(internalRef, {
+    
+    // Get padding calculation from useBaseline
+    const baselinePadding = useBaseline(internalRef, {
       base: config.base,
       snapping: 'height',
       spacing: initialPadding,
       warnOnMisalignment: !isNone,
     })
+    
+    // Create stable initial padding for SSR
+    const stablePadding = {
+      padding: {
+        top: initialPadding.top || 0,
+        right: initialPadding.right || 0,
+        bottom: initialPadding.bottom || 0,
+        left: initialPadding.left || 0
+      }
+    }
+    
+    // Use stable padding during SSR and initial render, then switch to dynamic padding
+    const { padding } = hydratedValue(
+      isHydrated && !ssrMode,
+      stablePadding,
+      baselinePadding
+    )
 
     const setRefs = mergeRefs(ref, internalRef)
 
@@ -203,7 +231,7 @@ export const Padder = React.memo(
 
       const paddingStyles = createDirectPaddingStyles(
         enableSpacers,
-        { top, right, bottom, left },
+        { top: padding.top, right: padding.right, bottom: padding.bottom, left: padding.left },
       )
 
       return mergeStyles(
@@ -216,10 +244,10 @@ export const Padder = React.memo(
       config.base,
       config.color,
       enableSpacers,
-      top,
-      right,
-      bottom,
-      left,
+      padding.top,
+      padding.right,
+      padding.bottom,
+      padding.left,
       style,
     ])
 
@@ -253,15 +281,15 @@ export const Padder = React.memo(
       >
         <>
           {/* Top spacer - spans full width */}
-          {top >= 0 && (
+          {padding.top >= 0 && (
             <div style={{ gridColumn: '1 / -1' }}>
-              {renderSpacer('100%', top)}
+              {renderSpacer('100%', padding.top)}
             </div>
           )}
 
           {/* Left spacer */}
-          {left >= 0 && (
-            <div style={{ gridRow: '2 / 3' }}>{renderSpacer(left, '100%')}</div>
+          {padding.left >= 0 && (
+            <div style={{ gridRow: '2 / 3' }}>{renderSpacer(padding.left, '100%')}</div>
           )}
         </>
 
@@ -270,16 +298,16 @@ export const Padder = React.memo(
 
         <>
           {/* Right spacer */}
-          {right >= 0 && (
+          {padding.right >= 0 && (
             <div style={{ gridRow: '2 / 3' }}>
-              {renderSpacer(right, '100%')}
+              {renderSpacer(padding.right, '100%')}
             </div>
           )}
 
           {/* Bottom spacer - spans full width */}
-          {bottom >= 0 && (
+          {padding.bottom >= 0 && (
             <div style={{ gridColumn: '1 / -1' }}>
-              {renderSpacer('100%', bottom)}
+              {renderSpacer('100%', padding.bottom)}
             </div>
           )}
         </>

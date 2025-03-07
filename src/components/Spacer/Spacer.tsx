@@ -6,6 +6,7 @@ import {
   formatValue,
   normalizeValuePair,
   createStyleOverride,
+  hydratedValue
 } from '@utils'
 import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
@@ -29,6 +30,8 @@ export type SpacerProps = {
   children?: React.ReactNode
   /** Custom indicator node rendering function */
   indicatorNode?: IndicatorNode
+  /** Flag to enable SSR-compatible mode (simplified initial render) */
+  ssrMode?: boolean
 } & ComponentsProps
 
 // Utils -----------------------------------------------------------------------
@@ -113,26 +116,51 @@ export const Spacer = React.memo(function Spacer({
   className,
   style,
   children,
+  ssrMode = false,
   ...props
 }: SpacerProps) {
   const ref = React.useRef<HTMLDivElement>(null)
   const config = useConfig('spacer')
 
-  const { isShown } = useDebug(debuggingProp, config.debugging)
+  const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
   const variant = variantProp ?? config.variant
   const base = baseProp ?? config.base
 
-  // Normalize width and height values correctly
-  const [normWidth, normHeight] = normalizeValuePair(
-    [widthProp, heightProp],
-    [0, 0],
-    { base, suppressWarnings: true },
+  // Add hydration state tracking
+  const [isHydrated, setIsHydrated] = React.useState(false)
+  
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
+  const [normWidth, normHeight] = React.useMemo(() => {
+    return normalizeValuePair(
+      [widthProp, heightProp],
+      [0, 0],
+      { base, suppressWarnings: true }
+    )
+  }, [widthProp, heightProp, base])
+
+  // Ensure stable rendering for measurements during SSR
+  const shouldShowMeasurements = hydratedValue(
+    isHydrated && !ssrMode,
+    false, // Don't show measurements during SSR
+    isShown && (indicatorNode !== undefined)
   )
 
-  const measurements = React.useMemo(
-    () => generateMeasurements(isShown, indicatorNode, normWidth, normHeight),
-    [isShown, indicatorNode, normWidth, normHeight],
-  )
+  // Only generate measurements after hydration
+  const measurements = React.useMemo(() => {
+    if (!shouldShowMeasurements) {
+      return null
+    }
+
+    return generateMeasurements(
+      isShown,
+      indicatorNode,
+      normWidth,
+      normHeight
+    )
+  }, [shouldShowMeasurements, isShown, indicatorNode, normWidth, normHeight])
 
   const defaultStyles = React.useMemo(
     () =>

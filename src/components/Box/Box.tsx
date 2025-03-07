@@ -8,6 +8,7 @@ import {
   formatValue,
   createGridSpanStyles,
   createStyleOverride,
+  hydratedValue
 } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
@@ -33,6 +34,8 @@ type BoxProps = {
   span?: number
   /** Controls baseline grid alignment behavior */
   snapping?: SnappingMode
+  /** Flag to enable SSR-compatible mode (simplified initial render) */
+  ssrMode?: boolean
   children?: React.ReactNode
 } & ComponentsProps
 
@@ -152,6 +155,7 @@ export const Box = React.memo(
       width,
       height,
       style,
+      ssrMode = false,
       ...spacingProps
     },
     ref,
@@ -159,14 +163,40 @@ export const Box = React.memo(
     const config = useConfig('box')
     const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
+    // Add hydration state tracking
+    const [isHydrated, setIsHydrated] = React.useState(false)
+    
+    React.useEffect(() => {
+      setIsHydrated(true)
+    }, [])
+
     const internalRef = React.useRef<HTMLDivElement | null>(null)
     const { top, bottom, left, right } = parsePadding(spacingProps)
-    const { padding } = useBaseline(internalRef, {
+    
+    // Get padding calculation from useBaseline
+    const baselinePadding = useBaseline(internalRef, {
       base: config.base,
       snapping,
       spacing: { top, bottom, left, right },
       warnOnMisalignment: debugging !== 'none',
     })
+    
+    // Create stable initial padding for SSR
+    const stablePadding = {
+      padding: {
+        top: top || 0,
+        right: right || 0,
+        bottom: bottom || 0,
+        left: left || 0
+      }
+    }
+    
+    // Use stable padding during SSR and initial render, then switch to dynamic padding
+    const { padding } = hydratedValue(
+      isHydrated && !ssrMode,
+      stablePadding,
+      baselinePadding
+    )
 
     const gridSpanStyles = React.useMemo(
       () => createGridSpanStyles(span, colSpan, rowSpan),
@@ -209,6 +239,7 @@ export const Box = React.memo(
             width="fit-content"
             height={height}
             debugging={debugging}
+            ssrMode={ssrMode}
           >
             {children}
           </Padder>
