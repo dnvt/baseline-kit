@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "bun run build:type && vite build",
+    "build": "vite build && bun run build:type",
     "build:type": "tsc -p tsconfig.build.json",
     "changeset": "changeset",
     "dev": "vite",
@@ -72,7 +72,7 @@
     "vitest": "^3.0.7"
   },
   "name": "baseline-kit",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "type": "module",
   "homepage": "https://github.com/dnvt/baseline-kit#readme",
   "types": "dist/index.d.ts",
@@ -80,10 +80,19 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.mjs"
     },
-    "./styles": "./dist/styles.css",
-    "./theme": "./dist/theme.css"
+    "./styles": {
+      "import": "./dist/styles.css",
+      "require": "./dist/styles.css",
+      "default": "./dist/styles.css"
+    },
+    "./theme": {
+      "import": "./dist/theme.css",
+      "require": "./dist/theme.css",
+      "default": "./dist/theme.css"
+    }
   },
   "files": [
     "dist",
