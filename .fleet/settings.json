@@ -1,6 +1,0 @@
-{
-  "prettier.mode": "Enabled",
-  "nodejs.editor.formatOnSave.eslint.mode": "Auto",
-  "prettier.specificBinary": "/.prettierrc.json",
-  "backend.maxHeapSizeMb": 1487
-}
