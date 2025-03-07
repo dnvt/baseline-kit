@@ -9,7 +9,6 @@ import {
   calculateRowCount,
   formatValue,
   createStyleOverride,
-  isSSR,
   SSR_DIMENSIONS,
   hydratedValue
 } from '@utils'
@@ -29,8 +28,6 @@ export type BaselineProps = {
   base?: number
   /** Color override for grid lines */
   color?: string
-  /** Content to render inside the baseline grid */
-  children?: React.ReactNode
   /** Flag to enable SSR-compatible mode (simplified initial render) */
   ssrMode?: boolean
 } & ComponentsProps
@@ -121,7 +118,6 @@ export const Baseline = React.memo(function Baseline({
   width: widthProp,
   base: baseProp,
   color: colorProp,
-  children,
   ssrMode = false,
   ...spacingProps
 }: BaselineProps) {

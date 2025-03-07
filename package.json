@@ -92,7 +92,10 @@
       "import": "./dist/theme.css",
       "require": "./dist/theme.css",
       "default": "./dist/theme.css"
-    }
+    },
+    "./dist/styles.css": "./dist/styles.css",
+    "./dist/theme.css": "./dist/theme.css",
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",

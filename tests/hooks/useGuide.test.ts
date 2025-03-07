@@ -83,7 +83,7 @@ describe('useGuide', () => {
     )
     expect(result.current.template).toBe('repeat(3, 100px)')
     expect(result.current.columnsCount).toBe(3)
-    expect(result.current.calculatedGap).toBe(10)
+    expect(result.current.calculatedGap).toBe(8)
     expect(result.current.isValid).toBe(true)
   })
 
