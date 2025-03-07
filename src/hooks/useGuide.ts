@@ -72,7 +72,9 @@ export function useGuide(
   return React.useMemo(() => {
     // Default values
     const variant = config.variant ?? 'line'
-    const gap = normalizeValue(config.gap ?? 0, { base: 1 })
+    const base = config.base ?? 8
+    // Normalize the gap using the base value
+    const gap = normalizeValue(config.gap ?? 0, { base })
 
     // Return invalid result if no width
     if (!width) {

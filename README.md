@@ -299,6 +299,32 @@ Baseline Kit leverages React 19's latest features:
 
 These modern features allow for cleaner code and better performance, but require React 19.
 
+## Server-Side Rendering (SSR)
+
+Baseline Kit is fully compatible with React's Server-Side Rendering in frameworks like Next.js, Remix, and other React Router-based applications.
+
+### SSR-Friendly Design
+
+Components are designed to:
+- Provide consistent rendering between server and client
+- Avoid hydration mismatches by using deterministic initial values
+- Progressively enhance with client-side measurements after hydration
+- Work with frameworks that use streaming SSR
+
+### SSR Mode Prop
+
+Components accept an `ssrMode` prop to explicitly optimize for server rendering:
+
+```tsx
+<Baseline
+  height="100vh"
+  ssrMode={true}
+  debugging="visible"
+/>
+```
+
+With `ssrMode` enabled, components use simplified rendering during SSR and initial hydration, then enhance with full features after client-side hydration completes.
+
 ## Development
 
 ```shell
