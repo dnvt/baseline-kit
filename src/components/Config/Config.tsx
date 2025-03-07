@@ -71,8 +71,8 @@ export type Config = {
 const ConfigContext = React.createContext<Config>(DEFAULT_CONFIG)
 ConfigContext.displayName = 'ConfigContext'
 
-// Use standard useContext hook instead of React.use
-export const useDefaultConfig = () => React.useContext(ConfigContext)
+// Update to use React 19's use hook instead of useContext
+export const useDefaultConfig = () => React.use(ConfigContext)
 
 type ConfigProps = {
   children: React.ReactNode;
@@ -304,8 +304,8 @@ export function Config({
   ])
 
   return (
-    <ConfigContext.Provider value={value}>
+    <ConfigContext value={value}>
       {children}
-    </ConfigContext.Provider>
+    </ConfigContext>
   )
 }

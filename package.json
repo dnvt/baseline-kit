@@ -15,8 +15,8 @@
     "version": "changeset version"
   },
   "peerDependencies": {
-    "react": "^18 || ^19",
-    "react-dom": "^18 || ^19",
+    "react": "^19",
+    "react-dom": "^19",
     "typescript": "^5.7.3"
   },
   "main": "dist/index.cjs",
