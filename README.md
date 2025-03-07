@@ -28,18 +28,21 @@ yarn add baseline-kit
 pnpm add baseline-kit
 ```
 
-### TypeScript Support
+After installation, import both the styles and theme in your application:
 
-Baseline Kit is written in TypeScript and includes built-in type definitions. No additional packages are required.
+```tsx
+// Import in your main entry file (e.g., index.js, App.js)
+import 'baseline-kit/styles';  // Required core styles
+import 'baseline-kit/theme';   // Recommended theme (or use your own)
+```
+
+Baseline Kit is written in TypeScript and includes built-in type definitions—no additional packages required.
 
 ## Quick Start
-
-Basic setup with debugging enabled during development:
 
 ```tsx
 import React from 'react'
 import { Config, Guide, Baseline, Box } from 'baseline-kit'
-import 'baseline-kit/styles.css'
 
 function App() {
   const isDev = process.env.NODE_ENV === 'development'
@@ -97,13 +100,6 @@ unit:
   >
     {/* Content automatically aligned to the 8px grid */}
   </Layout>
-
-  <Stack
-    block={[17, 25]}  // Top: 16px, Bottom: 24px
-    inline={22}       // Left/Right: 24px
-  >
-    {/* Padding automatically adjusted to base unit multiples */}
-  </Stack>
 </Config>
 ```
 
@@ -113,7 +109,7 @@ Spacing props (`block`, `inline`, `gap`) accept values in three formats:
 
 ```
 // Single number (applies to both sides)
-block={16px}                  // 16px top and bottom
+block={16}                  // 16px top and bottom
 
 // Array [start, end]
 block={[2, 3]}                // 2px top, 3px bottom
@@ -159,128 +155,136 @@ debugging = "none"           // Removes debug elements entirely
 #### 3. Configuration
 
 - **`Config`** Theme and settings provider
-- **`Padder`** Internal spacing utility
 
-### Config
+### Key Components
 
-The Config component provides theme and debugging settings to all child components.
+#### Config
 
 ```tsx
 <Config
   base={8}                         // Base unit for calculations
   baseline={{ debugging }}         // Baseline grid visibility
-  guide={{                         // Guide customization
-    debugging,
-    colors: {
-      line: 'rgba(0,0,255,0.1)'
-    }
-  }}
+  guide={{ debugging }}            // Guide customization
 >
   {children}
 </Config>
 ```
 
-### Baseline
+#### Baseline
 
 ```tsx
 <Baseline
-  base={8}                // Base unit (defaults to Config value)
   height="100vh"          // Overlay height
   variant="line"          // "line" or "flat"
   debugging="visible"     // Show the grid overlay
 />
 ```
 
-### Guide
+#### Guide
 
 ```tsx
 <Guide
-  variant="pattern"                          // "line", "pattern", "fixed", or "auto"
-  columns={['100px', '1fr', '100px']}        // Column definition
-  gap={8}                                    // Gap value
-  align="center"                             // "start", "center", or "end"
-  width="1200px"                             // Container width
-  debugging="visible"                        // Show grid overlay
+  variant="pattern"                     // "line", "pattern", "fixed", or "auto"
+  columns={['100px', '1fr', '100px']}   // Column definition
+  gap={8}                               // Gap value
+  width="1200px"                        // Container width
 />
 ```
 
-### Box
+#### Box
 
 ```tsx
 <Box
-  block={[2, 5]}         // Vertical padding in base units (auto-adjusted for baseline)
+  block={[2, 5]}         // Vertical padding in base units
   span={2}               // Grid column span when used in Layout
   snapping="height"      // "none", "height", or "clamp"
-  debugging="visible"    // Show alignment guides
 >
   <p>Content aligned to baseline grid</p>
 </Box>
 ```
 
-### Stack
-
-```tsx
-<Stack
-  direction="column"     // "row" or "column"
-  block={[8, 24]}        // Vertical padding (auto-snapping)
-  inline={16}            // Horizontal padding (auto-snapping)
-  gap={16}               // Gap value
-  justify="center"       // Flex justify-content
-  align="center"         // Flex align-items
-  debugging="visible"    // Show alignment guides
->
-  <Box>Item 1</Box>
-  <Box>Item 2</Box>
-</Stack>
-```
-
-### Layout
-
-```tsx
-<Layout
-  columns={3}            // Number of columns or pattern array
-  gap={16}               // Gap value
-  block={16}             // Vertical padding (auto-snapping)
-  inline={8}             // Horizontal padding (auto-snapping)
-  debugging="visible"    // Show grid guides
->
-  <Box span={2}>Wide content</Box>
-  <Box>Regular content</Box>
-</Layout>
-```
-
 ## Theme System
 
-### Color Customization
+Baseline Kit comes with two CSS files:
 
-The theme system allows customization of debugging visuals through the Config component:
+1. `styles.css` - Contains the core component styles required for functionality
+2. `theme.css` - Contains color variables and theming (optional but recommended)
+
+### Theme Options
+
+You have three options for using the theme system:
+
+#### 1. Use the Built-in Theme
+
+```tsx
+import 'baseline-kit/theme';  // Default theme with light/dark mode support
+```
+
+#### 2. Create a Custom Theme
+
+Create your own theme.css file:
+
+```css
+/* yourCustomTheme.css */
+:root {
+  /* Component-specific colors */
+  --bk-baseline-color-line-theme: hsla(210, 100%, 50%, 0.15);
+  --bk-baseline-color-flat-theme: hsla(270, 100%, 60%, 0.2);
+  /* Add other component colors as needed */
+}
+
+/* Optional dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bk-baseline-color-line-theme: hsla(210, 100%, 50%, 0.2);
+  }
+}
+```
+
+Then import your custom theme:
+
+```tsx
+import 'baseline-kit/styles';  // Required core styles
+import './path/to/yourCustomTheme.css';  // Your custom theme
+```
+
+#### 3. Override via Config
+
+For minor adjustments, use the Config component:
 
 ```tsx
 <Config
-  base={8}
-  guide={{
-    colors: {
-      line: 'rgba(0,0,255,0.1)',
-      pattern: 'rgba(0,0,255,0.05)',
-      auto: 'rgba(0,0,255,0.05)',
-      fixed: 'rgba(0,0,255,0.05)'
-    }
-  }}
   baseline={{
     colors: {
-      line: 'rgba(255,0,0,0.1)',
-      flat: 'rgba(255,0,0,0.05)'
+      line: 'rgba(255,0,0,0.1)',   // Custom red baseline lines
+      flat: 'rgba(255,0,0,0.05)',  // Custom red baseline backgrounds
     }
   }}
 >
-  {children}
+  {/* Your components here */}
 </Config>
 ```
 
-The library uses CSS custom properties for colors, which automatically respect the user's system dark mode preferences
-through CSS media queries. No additional configuration is required.
+### Theme Variables Reference
 
-## Development Setup
+| Component | Variable Pattern | Purpose |
+|-----------|-----------------|---------|
+| Baseline  | `--bk-baseline-color-[line/flat]-theme` | Colors for lines and backgrounds |
+| Guide     | `--bk-guide-color-[line/pattern/auto/fixed]-theme` | Colors for different guide variants |
+| Box       | `--bk-box-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
+| Stack     | `--bk-stack-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
+| Layout    | `--bk-layout-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
+| Spacer    | `--bk-spacer-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
+
+See the [default theme file](https://github.com/dnvt/baseline-kit/blob/main/dist/theme.css) for a complete example.
+
+## Browser Support
+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Requires CSS Grid Layout support and CSS Custom Properties
+- Falls back gracefully in unsupported browsers
+
+## Development
 
 ```shell
 # Clone the repository
@@ -294,38 +298,17 @@ bun run dev
 
 # Run tests
 bun run test
-
-# Build package
-bun run build
 ```
 
-## Server-Side Rendering
+## Performance Features
 
-Baseline Kit is compatible with SSR frameworks like Next.js and Gatsby. The overlay components automatically handle
-hydration mismatches.
-
-## Browser Support
-
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- Requires CSS Grid Layout support
-- Requires CSS Custom Properties (CSS Variables)
-- Falls back gracefully in unsupported browsers
-
-## Performance Considerations
-
-- Uses requestAnimationFrame for smooth animations
 - Virtualizes large grid overlays
 - Optimizes re-renders using React.memo
 - Supports tree-shaking for minimal bundle size
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines on:
-
-- Development setup
-- Code style
-- Testing requirements
-- Pull request process
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
 ## License
 
