@@ -113,8 +113,7 @@
   "license": "MIT",
   "module": "dist/index.mjs",
   "publishConfig": {
-    "access": "public",
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "author": "Francois Denavaut",
   "description": "Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, flexible spacing components, and theme-aware configuration—all optimized for performance and built with TypeScript.",
