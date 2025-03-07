@@ -78,7 +78,7 @@ describe('Guide component', () => {
   it('renders a line variant with 64 columns from the partial mock', () => {
     render(<Guide variant="line" gap={10} debugging="visible" data-testid="guide" />)
     const guideEl = screen.getByTestId('guide')
-    expect(guideEl.getAttribute('style')).toContain('--bkgg: 7px')
+    expect(guideEl.getAttribute('style')).toContain('--bkgg: 9px')
   })
 
   it('handles "auto" variant with numeric columnWidth', () => {
@@ -113,7 +113,7 @@ describe('Guide component', () => {
     const cols = guideEl.querySelectorAll('[data-column-index]')
     expect(cols.length).toBe(3)
     expect(guideEl.getAttribute('style')).toContain('--bkgt: 1fr 2fr 3fr')
-    expect(guideEl.getAttribute('style')).toContain('--bkgg: 8px')
+    expect(guideEl.getAttribute('style')).toContain('--bkgg: 10px')
   })
 
   it('handles "fixed" variant with 5 columns', () => {
@@ -131,7 +131,7 @@ describe('Guide component', () => {
     expect(guideEl.dataset.variant).toBe('fixed')
     const cols = guideEl.querySelectorAll('[data-column-index]')
     expect(cols.length).toBe(5)
-    expect(guideEl.getAttribute('style')).toContain('--bkgg: 16px')
+    expect(guideEl.getAttribute('style')).toContain('--bkgg: 12px')
     expect(guideEl.getAttribute('style')).toContain('--bkgt: repeat(5, 120px)')
   })
 

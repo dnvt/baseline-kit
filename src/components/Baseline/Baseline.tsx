@@ -9,6 +9,8 @@ import {
   calculateRowCount,
   formatValue,
   createStyleOverride,
+  SSR_DIMENSIONS,
+  hydratedValue
 } from '@utils'
 import { Variant } from '../types'
 import styles from './styles.module.css'
@@ -26,6 +28,8 @@ export type BaselineProps = {
   base?: number
   /** Color override for grid lines */
   color?: string
+  /** Flag to enable SSR-compatible mode (simplified initial render) */
+  ssrMode?: boolean
 } & ComponentsProps
 
 // Utils -----------------------------------------------------------------------
@@ -114,6 +118,7 @@ export const Baseline = React.memo(function Baseline({
   width: widthProp,
   base: baseProp,
   color: colorProp,
+  ssrMode = false,
   ...spacingProps
 }: BaselineProps) {
   const config = useConfig('baseline')
@@ -121,9 +126,28 @@ export const Baseline = React.memo(function Baseline({
   const base = baseProp ?? config.base
   const { isShown } = useDebug(debugging, config.debugging)
 
+  // Use a stable reference that won't cause hydration mismatches
   const containerRef = React.useRef<HTMLDivElement | null>(null)
-  const { width: containerWidth, height: containerHeight } =
-    useMeasure(containerRef)
+  
+  // Use state to track if we're hydrated
+  const [isHydrated, setIsHydrated] = React.useState(false)
+  
+  // Always call hooks, but conditionally use their results
+  const measuredDimensions = useMeasure(containerRef)
+  
+  // After hydration, we can use real measurement
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+  
+  // Choose appropriate dimensions based on rendering environment using our utility
+  const dimensions = hydratedValue(
+    isHydrated,
+    SSR_DIMENSIONS,
+    measuredDimensions
+  )
+  
+  const { width: containerWidth, height: containerHeight } = dimensions
 
   const [_normWidth, normHeight] = React.useMemo(() => {
     return normalizeValuePair(
@@ -154,12 +178,26 @@ export const Baseline = React.memo(function Baseline({
     })
   }, [normHeight, top, bottom, base])
 
-  const { start, end } = useVirtual({
+  // Always call useVirtual but potentially use simpler values
+  const virtualResult = useVirtual({
     totalLines: rowCount,
     lineHeight: base,
     containerRef,
     buffer: 160,
   })
+  
+  // For SSR, use simplistic settings that match between server/client
+  const stableVirtualResult = { 
+    start: 0, 
+    end: Math.min(10, rowCount)
+  }
+  
+  // Choose appropriate virtualization based on environment
+  const { start, end } = hydratedValue(
+    isHydrated && !ssrMode,
+    stableVirtualResult,
+    virtualResult
+  )
 
   const chosenColor = colorProp ||
     (variant === 'line' ? config.colors.line : config.colors.flat)

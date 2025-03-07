@@ -1,5 +1,17 @@
 # baseline-kit
 
+## 2.1.0
+
+### Minor Changes
+
+- Added comprehensive Server-Side Rendering (SSR) support:
+  - Created new SSR utilities for stable rendering between server and client
+  - Updated package exports for proper CSS file resolution in SSR environments
+  - Added deterministic initial rendering for all components
+  - Implemented hydration-aware components that enhance after client-side hydration
+  - Added `ssrMode` prop for explicit SSR optimization
+  - Improved compatibility with Next.js, Remix, and other React Router applications
+
 ## 2.0.2
 
 ### Patch Changes
