@@ -1,25 +1,42 @@
 # Dependencies
-node_modules
+node_modules/
+.pnp/
+.pnp.js
+package-lock.json
+yarn.lock
+
+# Package managers
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
 
 # Bun
 bun.lockb
 bun.lock
 .bun/
 
-# Build output
+# Build and distribution files
 dist/
-dist/*
+build/
+lib/
 stats.html
 *.mjs.map
 *.cjs.map
+*.tgz
 
-# Cache
+# Cache and temp files
 .cache/
+.temp/
 .rollup.cache/
-tsup.config.tsbuildinfo
-*.tsbuildinfo
 .vite/
 .vitest/
+*.tsbuildinfo
+tsup.config.tsbuildinfo
 
 # Testing
 coverage/
@@ -33,31 +50,36 @@ vitest.d.ts
 .idea/
 .fleet/
 .history/
+*.sublime-*
+*.swp
+*.swo
 .DS_Store
+Thumbs.db
 
-# Debug
-npm-debug.log*
-*.log
-
-# Environment variables
-.npmrc
+# Environment variables and secrets
 .env
 .env.*
 !.env.example
-
-# Temporary files
-*.tmp
-*.temp
-.temp/
-*.bak
-*.swp
+.npmrc
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Static analysis tools
 .eslintcache
 .stylelintcache
 .prettiercache
 
-# Project specific
+# Demo and examples (explicitly excluded)
 demo/
-demo/*
-dist/
+examples/
+
+# Misc
+.DS_Store
+*.log
+*.tmp
+*.temp
+.temp/
+*.bak
+logs/
