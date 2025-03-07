@@ -18,31 +18,33 @@
     "strict": true,
     "paths": {
       "@/*": [
-        "src/lib/*"
+        "src/*"
       ],
       "@components": [
-        "src/lib/components/index.ts"
+        "src/components/index.ts"
       ],
       "@hooks": [
-        "src/lib/hooks/index.ts"
+        "src/hooks/index.ts"
       ],
       "@types": [
-        "src/lib/types/index.ts"
+        "src/types/index.ts"
       ],
       "@context": [
-        "src/lib/context/index.ts"
+        "src/context/index.ts"
       ],
       "@utils": [
-        "src/lib/utils/index.ts"
+        "src/utils/index.ts"
       ],
     }
   },
   "include": [
-    "src/lib/**/*",
+    "demo/**/*",    
+    "src/**/*",
     "vitest.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "demo"
   ]
 }
