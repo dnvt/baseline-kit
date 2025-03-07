@@ -1,5 +1,16 @@
 # baseline-kit
 
+## 2.0.2
+
+### Patch Changes
+
+- React 19 compatibility:
+  - Replaced useContext with the React 19 `use` hook
+  - Updated Context Provider syntax
+  - Improved theme system organization and documentation
+  - Fixed gitignore and repository organization
+  - Updated dependencies
+
 ## 2.0.1
 
 ### Patch Changes

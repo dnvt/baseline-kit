@@ -1,0 +1,20 @@
+.stk {
+  display: flex;
+  position: relative;
+  width: var(--bkkw, auto);
+  height: var(--bkkh, auto);
+}
+
+.lay .line::after,
+.stk .line::after {
+  border: none;
+}
+
+.v::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--bkkcl);
+  pointer-events: none;
+  z-index: var(--bkzio);
+}

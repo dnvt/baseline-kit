@@ -1,0 +1,17 @@
+.bas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  width: var(--bkbw);
+  height: var(--bkbh);
+  overflow: hidden;
+}
+
+.row {
+  left: 0;
+  right: 0;
+  position: absolute;
+  top: var(--bkrt);
+  height: var(--bkrh);
+  background-color: var(--bkbcl);
+}

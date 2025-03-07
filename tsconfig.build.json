@@ -1,7 +1,6 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "declaration": true,
     "declarationDir": "dist",
     "emitDeclarationOnly": true,
@@ -12,15 +11,13 @@
     "noEmit": false
   },
   "include": [
-    "src/lib"
+    "src"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "src/lib/test",
-    "vitest.config.ts",
-    "vitest.d.ts"
+    "**/*.test.*",
+    "src/test",
+    "vitest.*"
   ]
 }
