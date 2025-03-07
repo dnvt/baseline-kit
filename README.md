@@ -1,6 +1,6 @@
 # Baseline Kit
 
-Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React
+Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React 19
 applications. It provides configurable overlays for both column-based and baseline grids, flexible layout components,
 and theme-aware configuration—all optimized for performance and built with TypeScript.
 
@@ -14,6 +14,11 @@ and theme-aware configuration—all optimized for performance and built with Typ
 - 🧩 **Layout Component:** CSS Grid-based container with automatic column calculations and baseline alignment
 - 📐 **Stack Component:** Flex-based container that maintains consistent spacing and baseline alignment
 - 🎨 **Theme System:** Customizable colors and debug visuals through a centralized configuration
+
+## Requirements
+
+- **React 19**: Baseline Kit is built for React 19 and uses the latest React features like the `use` hook
+- **Modern Browsers**: Supporting the latest CSS features
 
 ## Installation
 
@@ -283,6 +288,16 @@ See the [default theme file](https://github.com/dnvt/baseline-kit/blob/main/dist
 - Modern browsers (Chrome, Firefox, Safari, Edge)
 - Requires CSS Grid Layout support and CSS Custom Properties
 - Falls back gracefully in unsupported browsers
+
+## React 19 Features
+
+Baseline Kit leverages React 19's latest features:
+
+- **`use` Hook**: Replaces `useContext` for better performance and cleaner code
+- **Streamlined Context API**: Uses the simplified Context Provider syntax
+- **JSX Transform**: Takes advantage of the mandatory JSX transform in React 19
+
+These modern features allow for cleaner code and better performance, but require React 19.
 
 ## Development
 
