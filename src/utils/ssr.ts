@@ -31,7 +31,7 @@ export function safeClientValue<T>(clientFn: () => T, fallback: T): T {
   
   try {
     return clientFn()
-  } catch (e) {
+  } catch {
     return fallback
   }
 }
