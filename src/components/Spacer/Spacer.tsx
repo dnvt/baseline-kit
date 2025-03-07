@@ -122,7 +122,7 @@ export const Spacer = React.memo(function Spacer({
   const ref = React.useRef<HTMLDivElement>(null)
   const config = useConfig('spacer')
 
-  const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
+  const { isShown } = useDebug(debuggingProp, config.debugging)
   const variant = variantProp ?? config.variant
   const base = baseProp ?? config.base
 
