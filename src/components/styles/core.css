@@ -1,14 +1,28 @@
-/* Core styles - Variables and fundamentals */
+/**
+ * Baseline Kit Core Styles
+ *
+ * This file imports all fundamental styles in the correct order:
+ * 1. CSS reset for consistent defaults across browsers
+ * 2. Base variables and common styles
+ * 3. Component-specific styles
+ */
+
+/* CSS reset - Normalizes browser defaults */
 @import './reset.css';
+
+/* Base variables - Core system variables and defaults */
 @import './base.css';
 
-/* Component imports */
+/* Component-specific styles - Each component's styling */
 @import '../Box/styles.module.css';
 @import '../Guide/styles.module.css';
 @import '../Padder/styles.module.css';
 @import '../Spacer/styles.module.css';
+@import '../Stack/styles.module.css';
+@import '../Layout/styles.module.css';
+@import '../Baseline/styles.module.css';
 
-/* Utility classes */
+/* Utility classes for visibility control */
 .v {
   opacity: 1;
   visibility: visible;
