@@ -8,7 +8,7 @@ import {
   formatValue,
   createGridSpanStyles,
   createStyleOverride,
-  hydratedValue
+  hydratedValue,
 } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
@@ -58,15 +58,15 @@ export const createDefaultBoxStyles = (
 /** Parameters for creating box custom styles */
 type BoxCustomStylesParams = {
   /** Width property for the box */
-  width?: React.CSSProperties['width'];
+  width?: React.CSSProperties['width']
   /** Height property for the box */
-  height?: React.CSSProperties['height'];
+  height?: React.CSSProperties['height']
   /** Base unit for measurements */
-  base: number;
+  base: number
   /** Line color from theme */
-  lineColor: string;
+  lineColor: string
   /** Default styles for comparison */
-  defaultStyles: Record<string, string>;
+  defaultStyles: Record<string, string>
 }
 
 /**
@@ -78,7 +78,7 @@ export const createBoxCustomStyles = ({
   height,
   base,
   lineColor,
-  defaultStyles
+  defaultStyles,
 }: BoxCustomStylesParams): React.CSSProperties => {
   const widthValue = formatValue(width || 'fit-content')
   const heightValue = formatValue(height || 'fit-content')
@@ -91,23 +91,23 @@ export const createBoxCustomStyles = ({
       key: '--bkxw',
       value: widthValue,
       defaultStyles,
-      skipDimensions: { fitContent: dimensionVars }
+      skipDimensions: { fitContent: dimensionVars },
     }),
     ...createStyleOverride({
       key: '--bkxh',
       value: heightValue,
       defaultStyles,
-      skipDimensions: { fitContent: dimensionVars }
+      skipDimensions: { fitContent: dimensionVars },
     }),
     ...createStyleOverride({
       key: '--bkxb',
       value: `${base}px`,
-      defaultStyles
+      defaultStyles,
     }),
     ...createStyleOverride({
       key: '--bkxcl',
       value: lineColor,
-      defaultStyles
+      defaultStyles,
     }),
   } as React.CSSProperties
 }
@@ -158,21 +158,21 @@ export const Box = React.memo(
       ssrMode = false,
       ...spacingProps
     },
-    ref,
+    ref
   ) {
     const config = useConfig('box')
     const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
     // Add hydration state tracking
     const [isHydrated, setIsHydrated] = React.useState(false)
-    
+
     React.useEffect(() => {
       setIsHydrated(true)
     }, [])
 
     const internalRef = React.useRef<HTMLDivElement | null>(null)
     const { top, bottom, left, right } = parsePadding(spacingProps)
-    
+
     // Get padding calculation from useBaseline
     const baselinePadding = useBaseline(internalRef, {
       base: config.base,
@@ -180,17 +180,17 @@ export const Box = React.memo(
       spacing: { top, bottom, left, right },
       warnOnMisalignment: debugging !== 'none',
     })
-    
+
     // Create stable initial padding for SSR
     const stablePadding = {
       padding: {
         top: top || 0,
         right: right || 0,
         bottom: bottom || 0,
-        left: left || 0
-      }
+        left: left || 0,
+      },
     }
-    
+
     // Use stable padding during SSR and initial render, then switch to dynamic padding
     const { padding } = hydratedValue(
       isHydrated && !ssrMode,
@@ -208,19 +208,23 @@ export const Box = React.memo(
       [config.base, config.colors.line]
     )
 
-    const boxStyles = React.useMemo(
-      () => {
-        const customStyles = createBoxCustomStyles({
-          width,
-          height,
-          base: config.base,
-          lineColor: config.colors.line,
-          defaultStyles: defaultBoxStyles
-        })
-        return mergeStyles(customStyles, style)
-      },
-      [config.base, config.colors.line, width, height, defaultBoxStyles, style]
-    )
+    const boxStyles = React.useMemo(() => {
+      const customStyles = createBoxCustomStyles({
+        width,
+        height,
+        base: config.base,
+        lineColor: config.colors.line,
+        defaultStyles: defaultBoxStyles,
+      })
+      return mergeStyles(customStyles, style)
+    }, [
+      config.base,
+      config.colors.line,
+      width,
+      height,
+      defaultBoxStyles,
+      style,
+    ])
 
     return (
       <div
@@ -229,10 +233,7 @@ export const Box = React.memo(
         className={mergeClasses(styles.box, isShown && styles.v, className)}
         style={mergeStyles(boxStyles, gridSpanStyles)}
       >
-        <Config
-          base={1}
-          spacer={{ variant: 'flat' }}
-        >
+        <Config base={1} spacer={{ variant: 'flat' }}>
           <Padder
             block={[padding.top, padding.bottom]}
             inline={[padding.left, padding.right]}
@@ -246,5 +247,5 @@ export const Box = React.memo(
         </Config>
       </div>
     )
-  }),
+  })
 )

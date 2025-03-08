@@ -1,20 +1,26 @@
 .stk {
   display: flex;
   position: relative;
-  width: var(--bkkw, auto);
-  height: var(--bkkh, auto);
+  width: var(--bkkw);
+  height: var(--bkkh);
 }
 
-.lay .line::after,
+/* Remove borders from children if they're lines */
 .stk .line::after {
   border: none;
 }
 
+/* Style for debugging border */
 .v::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bkkcl);
+  border: 1px solid var(--bkkcl, hsla(330, 60%, 40%, 0.6));
   pointer-events: none;
-  z-index: var(--bkzio);
+  z-index: var(--bkzio, 2);
+}
+
+/* Style for flat debugging background */
+.flat {
+  background-color: var(--bkkcf, hsla(0, 100%, 70%, 0.2));
 }

@@ -17,7 +17,8 @@ import { ABSOLUTE_UNIT_CONVERSIONS, RELATIVE_UNITS } from '@utils'
  * Regular expression for valid CSS unit values.
  * Matches numeric values with supported CSS units.
  */
-const UNIT_PATTERN = /^\d*\.?\d+(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/
+const UNIT_PATTERN =
+  /^\d*\.?\d+(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/
 
 /**
  * Validates individual grid column values.
@@ -30,7 +31,9 @@ const UNIT_PATTERN = /^\d*\.?\d+(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm
  * isValidGuideColumnValue('foo')   // false
  * ```
  */
-export const isValidGuideColumnValue = (value: unknown): value is GuideColumnValue => {
+export const isValidGuideColumnValue = (
+  value: unknown
+): value is GuideColumnValue => {
   if (typeof value === 'number') return Number.isFinite(value) && value >= 0
   if (typeof value !== 'string') return false
   return value === 'auto' || value === '100%' || UNIT_PATTERN.test(value)
@@ -47,8 +50,12 @@ export const isValidGuideColumnValue = (value: unknown): value is GuideColumnVal
  * isValidGuidePattern([])                   // false
  * ```
  */
-export const isValidGuidePattern = (pattern: unknown): pattern is GuideColumnsPattern =>
-  Array.isArray(pattern) && pattern.length > 0 && pattern.every(isValidGuideColumnValue)
+export const isValidGuidePattern = (
+  pattern: unknown
+): pattern is GuideColumnsPattern =>
+  Array.isArray(pattern) &&
+  pattern.length > 0 &&
+  pattern.every(isValidGuideColumnValue)
 
 /**
  * Validates CSS grid values against supported units.
@@ -61,10 +68,14 @@ export const isValidGuidePattern = (pattern: unknown): pattern is GuideColumnsPa
  * ```
  */
 export const isGuideValue = (value: unknown) => {
-  const CSS_UNITS = [...Object.keys(ABSOLUTE_UNIT_CONVERSIONS), ...RELATIVE_UNITS]
+  const CSS_UNITS = [
+    ...Object.keys(ABSOLUTE_UNIT_CONVERSIONS),
+    ...RELATIVE_UNITS,
+  ]
   return (
     typeof value === 'number' ||
-    (typeof value === 'string' && CSS_UNITS.some(unit => value.endsWith(unit)))
+    (typeof value === 'string' &&
+      CSS_UNITS.some((unit) => value.endsWith(unit)))
   )
 }
 

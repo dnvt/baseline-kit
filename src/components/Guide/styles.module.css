@@ -13,7 +13,7 @@
   position: absolute;
   inset: 0;
   display: grid;
-  gap: var(--bkgg);
+  column-gap: var(--bkgg);
   grid-template-columns: var(--bkgt);
   justify-content: var(--bkgj);
   width: var(--bkwf);
@@ -27,19 +27,19 @@
 }
 
 /* Variant-specific styles */
-.col[data-variant="line"] {
+.col[data-variant='line'] {
   width: 1px;
   background-color: var(--bkgcl);
 }
 
-.col[data-variant="pattern"] {
+.col[data-variant='pattern'] {
   background-color: var(--bkgcp);
 }
 
-.col[data-variant="auto"] {
+.col[data-variant='auto'] {
   background-color: var(--bkgca);
 }
 
-.col[data-variant="fixed"] {
+.col[data-variant='fixed'] {
   background-color: var(--bkgcf);
 }

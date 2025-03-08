@@ -4,7 +4,9 @@
  * @module baseline-kit/components
  */
 
-import './styles/index.css'
+// Style imports - these generate CSS files in the dist folder
+import './styles/core.css'
+import './styles/theme.css'
 
 // Layout Components
 export * from './Layout'

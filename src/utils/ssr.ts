@@ -9,13 +9,13 @@
 export const isSSR = typeof window === 'undefined'
 
 /**
- * Default dimensions to use during server-side rendering 
+ * Default dimensions to use during server-side rendering
  * These values provide stable rendering between server and client
  * during the initial hydration phase.
  */
 export const SSR_DIMENSIONS = {
   width: 1024,
-  height: 768
+  height: 768,
 }
 
 /**
@@ -28,7 +28,7 @@ export function safeClientValue<T>(clientFn: () => T, fallback: T): T {
   if (isSSR) {
     return fallback
   }
-  
+
   try {
     return clientFn()
   } catch {
@@ -44,6 +44,10 @@ export function safeClientValue<T>(clientFn: () => T, fallback: T): T {
  * @param dynamicValue Value to use after hydration
  * @returns Appropriate value based on hydration state
  */
-export function hydratedValue<T>(isHydrated: boolean, ssrValue: T, dynamicValue: T): T {
-  return (!isHydrated || isSSR) ? ssrValue : dynamicValue
-} 
+export function hydratedValue<T>(
+  isHydrated: boolean,
+  ssrValue: T,
+  dynamicValue: T
+): T {
+  return !isHydrated || isSSR ? ssrValue : dynamicValue
+}

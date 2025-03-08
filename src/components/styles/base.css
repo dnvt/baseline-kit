@@ -1,0 +1,158 @@
+/* Core system variables */
+:root {
+  /* Core System Variables */
+  --bkb: 8px;
+  --bkzi: 1;
+  --bkzio: 2;
+  --bk-transition-base: 180ms ease;
+
+  /* Default Dimensions */
+  --bk-width-default: fit-content;
+  --bk-height-default: fit-content;
+  --bkwf: 100%;
+  --bkhf: 100%;
+
+  /* Box Component */
+  --bkxb: var(--bkb);
+  --bkxw: var(--bk-width-default);
+  --bkxh: var(--bk-height-default);
+  --bkxcl: var(--bk-box-color-line-theme, hsla(300, 60%, 40%, 0.6));
+  --bkxcf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
+  --bkxci: var(--bk-box-color-text-theme, hsla(300, 60%, 40%, 0.9));
+
+  /* Stack Component */
+  --bkkw: var(--bkwf);
+  --bkkh: var(--bk-height-default);
+  --bkkcl: var(--bk-stack-color-line-theme, hsla(330, 60%, 40%, 0.6));
+  --bkkcf: var(--bk-stack-color-flat-theme, hsla(0, 100%, 70%, 0.2));
+  --bkkci: var(--bk-stack-color-text-theme, hsla(330, 60%, 40%, 0.9));
+
+  /* Baseline Component */
+  --bkbw: 100%;
+  --bkbh: 100%;
+  --bkrt: 0;
+  --bkrh: 1px;
+  --bkbcl: var(--bk-baseline-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkbcf: var(--bk-baseline-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+
+  /* Guide Component */
+  --bkgw: 100vw;
+  --bkgh: 100vh;
+  --bkgg: var(--bkb);
+  --bkgj: start;
+  --bkgt: auto;
+  --bkgpb: 0;
+  --bkgpi: 0;
+  --bkgcl: var(--bk-guide-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkgcp: var(--bk-guide-color-pattern-theme, hsla(230, 100%, 70%, 0.2));
+  --bkgca: var(--bk-guide-color-auto-theme, hsla(200, 100%, 70%, 0.15));
+  --bkgcf: var(--bk-guide-color-fixed-theme, hsla(200, 100%, 70%, 0.15));
+
+  /* Layout Component */
+  --bklw: var(--bk-width-default);
+  --bklh: var(--bk-height-default);
+  --bklcl: var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6));
+  --bklcf: var(--bk-layout-color-flat-theme, hsla(0, 100%, 70%, 0.2));
+  --bklci: var(--bk-layout-color-text-theme, hsla(330, 60%, 40%, 0.9));
+  --bklgtc: repeat(auto-fit, minmax(100px, 1fr));
+  --bklgtr: auto;
+  --bklg: 0;
+  --bklcg: 0;
+  --bklrg: 0;
+  --bklji: stretch;
+  --bklai: stretch;
+  --bkljc: start;
+  --bklac: start;
+
+  /* Layout Component alternative variables */
+  --bk-layout-gtc: repeat(auto-fit, minmax(100px, 1fr));
+  --bk-layout-gtr: auto;
+  --bk-layout-cg: 0;
+  --bk-layout-rg: 0;
+  --bk-layout-ji: stretch;
+  --bk-layout-ai: stretch;
+  --bk-layout-jc: start;
+  --bk-layout-ac: start;
+
+  /* Padder Component */
+  --bkpw: var(--bk-width-default);
+  --bkph: var(--bk-height-default);
+  --bkpc: var(--bk-padder-color-theme, hsla(270, 60%, 40%, 0.6));
+
+  /* Spacer Component - with fallback values */
+  --bksw: var(--bkwf);
+  --bksh: var(--bkhf);
+  --bkscl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
+  --bkscf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+  --bksct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
+}
+
+/* Component styles with enhanced fallbacks to ensure visibility in all environments */
+
+/* Spacer Component - Robust fallback styles */
+.spr_zbcF6 {
+  /* Variable definitions with fallbacks */
+  --bkscl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
+  --bkscf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+  --bksct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
+  --bkzi: 1;
+  --bkzio: 2;
+  
+  /* Essential layout properties */
+  position: relative;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  width: var(--bksw, 100%);
+  height: var(--bksh, auto);
+  background-color: var(--bkscf);
+  border: 1px dashed var(--bkscl);
+}
+
+/* Spacer text indicator */
+.spr_zbcF6[data-height]::before {
+  content: attr(data-height);
+  color: var(--bksct);
+  font-family: monospace;
+  font-size: 12px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--bkzio);
+}
+
+/* Guide Component - Robust fallbacks */
+.guide {
+  --bkgcl: var(--bk-guide-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkgcp: var(--bk-guide-color-pattern-theme, hsla(230, 100%, 70%, 0.2));
+  --bkgca: var(--bk-guide-color-auto-theme, hsla(200, 100%, 70%, 0.15));
+  --bkgcf: var(--bk-guide-color-fixed-theme, hsla(200, 100%, 70%, 0.15));
+}
+
+/* Baseline Component - Robust fallbacks */
+.baseline {
+  --bkbcl: var(--bk-baseline-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkbcf: var(--bk-baseline-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+}
+
+/* Box Component - Robust fallbacks */
+.box {
+  --bkxcl: var(--bk-box-color-line-theme, hsla(300, 60%, 40%, 0.6));
+  --bkxcf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
+  --bkxci: var(--bk-box-color-text-theme, hsla(300, 60%, 40%, 0.9));
+}
+
+/* Stack Component - Robust fallbacks */
+.stack {
+  --bkkcl: var(--bk-stack-color-line-theme, hsla(330, 60%, 40%, 0.6));
+  --bkkcf: var(--bk-stack-color-flat-theme, hsla(0, 100%, 70%, 0.2));
+  --bkkci: var(--bk-stack-color-text-theme, hsla(330, 60%, 40%, 0.9));
+}
+
+/* Layout Component - Robust fallbacks */
+.layout {
+  --bklcl: var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6));
+  --bklcf: var(--bk-layout-color-flat-theme, hsla(0, 100%, 70%, 0.2));
+  --bklci: var(--bk-layout-color-text-theme, hsla(330, 60%, 40%, 0.9));
+}

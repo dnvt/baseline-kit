@@ -1,23 +1,18 @@
 import * as React from 'react'
-import {
-  useConfig,
-  useDebug,
-  useGuide,
-  useMeasure,
-} from '@hooks'
+import { useConfig, useDebug, useGuide, useMeasure } from '@hooks'
 import {
   formatValue,
   mergeClasses,
   mergeStyles,
   createStyleOverride,
-  hydratedValue
+  hydratedValue,
 } from '@utils'
 import { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
 import type { ComponentsProps, GuideVariant } from '../types'
 import styles from './styles.module.css'
 
 /** Merged configuration types that support various grid layout strategies */
-export type GuideConfig = PatternConfig | AutoConfig | FixedConfig | LineConfig;
+export type GuideConfig = PatternConfig | AutoConfig | FixedConfig | LineConfig
 
 export type GuideProps = {
   /** Controls horizontal alignment of columns within the container */
@@ -40,68 +35,71 @@ export type GuideProps = {
   gap?: number
   /** Flag to enable SSR-compatible mode (simplified initial render) */
   ssrMode?: boolean
-} & ComponentsProps & Omit<GuideConfig, 'columns' | 'columnWidth' | 'gap'>;
+} & ComponentsProps &
+  Omit<GuideConfig, 'columns' | 'columnWidth' | 'gap'>
 
 /** Parameters for creating a grid configuration */
 type GridConfigParams = {
-  variant: GuideVariant;
-  base: number;
-  gap: number;
-  columns?: number | readonly (string | number | undefined | 'auto')[];
-  columnWidth?: React.CSSProperties['width'];
+  variant: GuideVariant
+  base: number
+  gap: number
+  columns?: number | readonly (string | number | undefined | 'auto')[]
+  columnWidth?: React.CSSProperties['width']
 }
 
 // Utils -----------------------------------------------------------------------
 
 /** Creates the appropriate grid configuration based on variant */
 export const createGridConfig = (
-  params: GridConfigParams,
-): (PatternConfig | AutoConfig | FixedConfig | LineConfig) => {
+  params: GridConfigParams
+): PatternConfig | AutoConfig | FixedConfig | LineConfig => {
   const { variant, base, gap, columns, columnWidth } = params
 
-  return {
-    line: {
+  return (
+    {
+      line: {
+        variant: 'line' as const,
+        gap: gap - 1,
+        base,
+      },
+      auto: columnWidth
+        ? {
+            variant: 'auto' as const,
+            columnWidth,
+            gap,
+            base,
+          }
+        : null,
+      pattern: Array.isArray(columns)
+        ? {
+            variant: 'pattern' as const,
+            columns,
+            gap,
+            base,
+          }
+        : null,
+      fixed:
+        typeof columns === 'number'
+          ? {
+              variant: 'fixed' as const,
+              columns,
+              columnWidth,
+              gap,
+              base,
+            }
+          : null,
+    }[variant] ?? {
       variant: 'line' as const,
       gap: gap - 1,
       base,
-    },
-    auto: columnWidth
-      ? {
-        variant: 'auto' as const,
-        columnWidth,
-        gap,
-        base,
-      }
-      : null,
-    pattern: Array.isArray(columns)
-      ? {
-        variant: 'pattern' as const,
-        columns,
-        gap,
-        base,
-      }
-      : null,
-    fixed:
-      typeof columns === 'number'
-        ? {
-          variant: 'fixed' as const,
-          columns,
-          columnWidth,
-          gap,
-          base,
-        }
-        : null,
-  }[variant] ?? {
-    variant: 'line' as const,
-    gap: gap - 1,
-    base,
-  }
+    }
+  )
 }
 
 /** Creates default guide styles */
 export const createDefaultGuideStyles = (
   base: number,
-  lineColor: string,
+  lineColor: string
 ): Record<string, string> => ({
   '--bkgw': 'auto',
   '--bkgh': 'auto',
@@ -111,6 +109,7 @@ export const createDefaultGuideStyles = (
   '--bkgc': '12',
   '--bkgb': `${base}px`,
   '--bkgcl': lineColor,
+  '--bkgg': '0',
 })
 
 /**
@@ -176,27 +175,27 @@ export const Guide = React.memo(function Guide({
 }: GuideProps) {
   const config = useConfig('guide')
   const variant = variantProp ?? config.variant
-  const gap = typeof gapProp === 'number' ? gapProp : config.base
-  
+  const gap = typeof gapProp === 'number' ? gapProp : 0
+
   // Add hydration state tracking
   const [isHydrated, setIsHydrated] = React.useState(false)
-  
+
   React.useEffect(() => {
     setIsHydrated(true)
   }, [])
 
   const containerRef = React.useRef<HTMLDivElement | null>(null)
-  
+
   // Always call useMeasure, but conditionally use its results
   const measuredDimensions = useMeasure(containerRef)
-  
+
   // Choose appropriate dimensions based on rendering environment
   const dimensions = hydratedValue(
     isHydrated && !ssrMode,
     { width: 1024, height: 768, refresh: () => {} },
     measuredDimensions
   )
-  
+
   const { width: containerWidth, height: containerHeight } = dimensions
 
   const { isShown } = useDebug(debugging, config.debugging)
@@ -212,15 +211,14 @@ export const Guide = React.memo(function Guide({
     })
   }, [variant, config.base, gap, columns, columnWidth])
 
-  const {
-    template,
-    columnsCount,
-    calculatedGap,
-  } = useGuide(containerRef, gridConfig)
+  const { template, columnsCount, calculatedGap } = useGuide(
+    containerRef,
+    gridConfig
+  )
 
   const defaultStyles = React.useMemo(
     () => createDefaultGuideStyles(config.base, config.colors.line),
-    [config.base, config.colors.line],
+    [config.base, config.colors.line]
   )
 
   const containerStyles = React.useMemo(() => {
@@ -270,7 +268,7 @@ export const Guide = React.memo(function Guide({
       }),
       ...createStyleOverride({
         key: '--bkgb',
-        value: `${config.base}px`,
+        value: `0`,
         defaultStyles,
       }),
       ...createStyleOverride({
@@ -278,13 +276,17 @@ export const Guide = React.memo(function Guide({
         value: color ?? config.colors.line,
         defaultStyles,
       }),
-      // Add the CSS variables expected by tests
-      '--bkgg': `${calculatedGap}px`,
+      // Use style override for gap to be consistent with other properties
+      ...createStyleOverride({
+        key: '--bkgg',
+        value: `${calculatedGap}px`,
+        defaultStyles,
+      }),
       ...(template && template !== 'none' ? { '--bkgt': template } : {}),
       // Add grid template if available
-      ...(template && template !== 'none' ? { gridTemplateColumns: template } : {}),
-      // Add gap if calculated
-      ...(calculatedGap ? { gap: `${calculatedGap}px` } : {}),
+      ...(template && template !== 'none'
+        ? { gridTemplateColumns: template }
+        : {}),
       // Add justifyContent based on align
       justifyContent: align,
     } as React.CSSProperties
@@ -302,12 +304,45 @@ export const Guide = React.memo(function Guide({
     calculatedGap,
     containerWidth,
     containerHeight,
-    config.base,
     config.colors.line,
     defaultStyles,
     style,
     align,
   ])
+
+  // Calculate how many columns we need
+  // When gap is 0, we need width + 1 columns to fill the space
+  // When gap > 0, we need to account for the -1px reduction in each gap
+  const finalGap = gap === 0 ? 0 : gap - 1
+  const actualGapWithLine = finalGap + 1
+
+  // Ensure width is a number
+  const containerWidthValue =
+    typeof width === 'number' ? width : containerWidth || 1024
+
+  // For line variants, account for the -1px reduction in each gap
+  // If we have N columns, we have (N-1) gaps, each reduced by 1px
+  // So the total width lost is (N-1) pixels
+  let columnCount: number
+
+  if (finalGap === 0) {
+    // When gap is 0, we need a column per pixel + 1
+    columnCount = Math.floor(containerWidthValue) + 1
+  } else if (variant === 'line') {
+    // For line variant with gap > 0:
+    // We need to solve for N in: N * actualGapWithLine - (N-1) = containerWidthValue
+    // Which simplifies to: N = (containerWidthValue + 1) / (actualGapWithLine - 1 + 1)
+    columnCount = Math.max(
+      1,
+      Math.floor((containerWidthValue + 1) / actualGapWithLine) + 1
+    )
+  } else {
+    // For other variants, use the standard formula
+    columnCount = Math.max(
+      1,
+      Math.floor(containerWidthValue / actualGapWithLine) + 1
+    )
+  }
 
   return (
     <div
@@ -317,7 +352,7 @@ export const Guide = React.memo(function Guide({
         styles.gde,
         className,
         isShown ? styles.v : styles.h,
-        variant === 'line' && styles.line,
+        variant === 'line' && styles.line
       )}
       data-variant={variant}
       style={containerStyles}
@@ -325,9 +360,10 @@ export const Guide = React.memo(function Guide({
     >
       {isShown && (
         <div className={styles.cols} data-variant={variant}>
-          {Array.from({ length: columnsCount }, (_, i) => {
+          {Array.from({ length: columnCount }, (_, i) => {
             const colColor =
-              config.colors[variant as keyof typeof config.colors] ?? config.colors.line
+              config.colors[variant as keyof typeof config.colors] ??
+              config.colors.line
             return (
               <div
                 key={i}

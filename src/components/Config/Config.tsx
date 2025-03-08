@@ -16,55 +16,55 @@ export type DebuggingMode = 'none' | 'hidden' | 'visible'
 /** Color configuration for component themes. */
 type Colors = {
   /** Color for line-based visuals */
-  line: string;
+  line: string
   /** Color for flat surface visuals */
-  flat: string;
+  flat: string
   /** Color for measurement indicators */
-  text: string;
+  text: string
 }
 
 /** Complete configuration schema for baseline-kit. */
 export type Config = {
   /** Base unit for spacing calculations */
-  base: number;
+  base: number
   /** Guide component configuration */
   guide: {
-    variant: GuideVariant;
-    debugging: DebuggingMode;
-    colors: Record<GuideVariant, string>;
-  };
+    variant: GuideVariant
+    debugging: DebuggingMode
+    colors: Record<GuideVariant, string>
+  }
   /** Baseline component configuration */
   baseline: {
-    variant: BaselineVariant;
-    debugging: DebuggingMode;
-    colors: Record<BaselineVariant, string>;
-  };
+    variant: BaselineVariant
+    debugging: DebuggingMode
+    colors: Record<BaselineVariant, string>
+  }
   /** Stack component configuration */
   stack: {
-    colors: Colors;
-    debugging: DebuggingMode;
-  };
+    colors: Colors
+    debugging: DebuggingMode
+  }
   /** Layout component configuration */
   layout: {
-    colors: Colors;
-    debugging: DebuggingMode;
-  };
+    colors: Colors
+    debugging: DebuggingMode
+  }
   /** Spacer component configuration */
   spacer: {
-    variant: Variant;
-    debugging: DebuggingMode;
-    colors: Colors;
-  };
+    variant: Variant
+    debugging: DebuggingMode
+    colors: Colors
+  }
   /** Box component configuration */
   box: {
-    colors: Colors;
-    debugging: DebuggingMode;
-  };
+    colors: Colors
+    debugging: DebuggingMode
+  }
   /** Padder component configuration */
   padder: {
-    color: string;
-    debugging: DebuggingMode;
-  };
+    color: string
+    debugging: DebuggingMode
+  }
 }
 
 // Create the context
@@ -75,23 +75,23 @@ ConfigContext.displayName = 'ConfigContext'
 export const useDefaultConfig = () => React.use(ConfigContext)
 
 type ConfigProps = {
-  children: React.ReactNode;
+  children: React.ReactNode
   /** Base unit for spacing calculations */
-  base?: number;
+  base?: number
   /** Baseline component overrides */
-  baseline?: Partial<Config['baseline']>;
+  baseline?: Partial<Config['baseline']>
   /** Flex component overrides */
-  stack?: Partial<Config['stack']>;
+  stack?: Partial<Config['stack']>
   /** Layout component overrides */
-  layout?: Partial<Config['layout']>;
+  layout?: Partial<Config['layout']>
   /** Guide component overrides */
-  guide?: Partial<Config['guide']>;
+  guide?: Partial<Config['guide']>
   /** Spacer component overrides */
-  spacer?: Partial<Config['spacer']>;
+  spacer?: Partial<Config['spacer']>
   /** Box component overrides */
-  box?: Partial<Config['box']>;
+  box?: Partial<Config['box']>
   /** Padder component overrides */
-  padder?: Partial<Config['padder']>;
+  padder?: Partial<Config['padder']>
 }
 
 // Utils -----------------------------------------------------------------------
@@ -99,40 +99,31 @@ type ConfigProps = {
 /** Parameters for creating CSS variables */
 type CSSVariablesParams = {
   /** Base unit for spacing calculations */
-  base: number;
+  base: number
   /** Baseline component configuration */
-  baseline: Config['baseline'];
+  baseline: Config['baseline']
   /** Guide component configuration */
-  guide: Config['guide'];
+  guide: Config['guide']
   /** Stack component configuration */
-  stack: Config['stack'];
+  stack: Config['stack']
   /** Spacer component configuration */
-  spacer: Config['spacer'];
+  spacer: Config['spacer']
   /** Layout component configuration */
-  layout: Config['layout'];
+  layout: Config['layout']
   /** Box component configuration */
-  box: Config['box'];
+  box: Config['box']
   /** Padder component configuration */
-  padder: Config['padder'];
+  padder: Config['padder']
 }
 
-/** 
+/**
  * Creates CSS variables from the configuration object.
  * These variables are used throughout the component library.
  */
 export const createCSSVariables = (
   params: CSSVariablesParams
 ): Record<string, string> => {
-  const {
-    base,
-    baseline,
-    guide,
-    stack,
-    spacer,
-    layout,
-    box,
-    padder,
-  } = params
+  const { base, baseline, guide, stack, spacer, layout, box, padder } = params
 
   return {
     '--bkb': `${base}px`,
@@ -175,26 +166,26 @@ export const createCSSVariables = (
 /** Parameters for merging configuration */
 type MergeConfigParams = {
   /** Parent configuration to extend */
-  parentConfig: Config;
+  parentConfig: Config
   /** Base unit override */
-  base?: number;
+  base?: number
   /** Baseline component overrides */
-  baseline?: Partial<Config['baseline']>;
+  baseline?: Partial<Config['baseline']>
   /** Guide component overrides */
-  guide?: Partial<Config['guide']>;
+  guide?: Partial<Config['guide']>
   /** Spacer component overrides */
-  spacer?: Partial<Config['spacer']>;
+  spacer?: Partial<Config['spacer']>
   /** Box component overrides */
-  box?: Partial<Config['box']>;
+  box?: Partial<Config['box']>
   /** Stack component overrides */
-  stack?: Partial<Config['stack']>;
+  stack?: Partial<Config['stack']>
   /** Layout component overrides */
-  layout?: Partial<Config['layout']>;
+  layout?: Partial<Config['layout']>
   /** Padder component overrides */
-  padder?: Partial<Config['padder']>;
+  padder?: Partial<Config['padder']>
 }
 
-/** 
+/**
  * Merges parent config with overrides.
  * Creates a new config object without mutating the parent.
  */
@@ -291,21 +282,7 @@ export function Config({
       layout,
       padder,
     })
-  }, [
-    parentConfig,
-    base,
-    baseline,
-    guide,
-    spacer,
-    box,
-    stack,
-    layout,
-    padder,
-  ])
+  }, [parentConfig, base, baseline, guide, spacer, box, stack, layout, padder])
 
-  return (
-    <ConfigContext value={value}>
-      {children}
-    </ConfigContext>
-  )
+  return <ConfigContext value={value}>{children}</ConfigContext>
 }

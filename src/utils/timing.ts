@@ -22,7 +22,7 @@
  */
 export const debounce = <T extends (...args: unknown[]) => void>(
   fn: T,
-  delay: number,
+  delay: number
 ): [T, () => void] => {
   let timer: ReturnType<typeof setTimeout> | null = null
 
@@ -62,9 +62,7 @@ export const debounce = <T extends (...args: unknown[]) => void>(
  * document.addEventListener('scroll', updateScroll);
  * ```
  */
-export const rafThrottle = <T extends (...args: never[]) => void>(
-  fn: T,
-): T => {
+export const rafThrottle = <T extends (...args: never[]) => void>(fn: T): T => {
   let rafId: number | null = null
   let lastArgs: Parameters<T> | null = null
 

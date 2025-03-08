@@ -19,7 +19,9 @@
  * parseUnit('invalid')  // => null
  * ```
  */
-export function parseUnit(value: string): { value: number; unit: string } | null {
+export function parseUnit(
+  value: string
+): { value: number; unit: string } | null {
   const match = value.trim().match(/^([+-]?[\d.]+)([a-zA-Z%]+)$/)
   if (!match) return null
   const num = parseFloat(match[1])
@@ -48,9 +50,17 @@ export function parseUnit(value: string): { value: number; unit: string } | null
  * formatValue('1fr')         // => "1fr"
  * ```
  */
-export function formatValue(value: string | number | undefined, defaultValue?: number): string {
-  if (value === undefined && defaultValue !== undefined) return `${defaultValue}px`
-  if (value === 'auto' || (typeof value === 'string' && (/^(auto|100%|0|.*(fr|vh|vw|vmin|vmax|rem))$/).test(value))) {
+export function formatValue(
+  value: string | number | undefined,
+  defaultValue?: number
+): string {
+  if (value === undefined && defaultValue !== undefined)
+    return `${defaultValue}px`
+  if (
+    value === 'auto' ||
+    (typeof value === 'string' &&
+      /^(auto|100%|0|.*(fr|vh|vw|vmin|vmax|rem))$/.test(value))
+  ) {
     return String(value)
   }
   if (typeof value === 'number') return `${value}px`
