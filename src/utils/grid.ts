@@ -12,9 +12,9 @@ import * as React from 'react'
  *
  * @param span - Optional equal span for both rows and columns
  * @param colSpan - Optional column span value
- * @param rowSpan - Optional row span value 
+ * @param rowSpan - Optional row span value
  * @returns CSS properties object with grid span values
- * 
+ *
  * @example
  * ```ts
  * createGridSpanStyles(2) // => { gridColumn: "span 2", gridRow: "span 2" }
@@ -27,7 +27,7 @@ export const createGridSpanStyles = (
   rowSpan?: number
 ): React.CSSProperties => {
   const gridStyles: React.CSSProperties = {}
-  
+
   if (span !== undefined) {
     gridStyles.gridColumn = `span ${span}`
     gridStyles.gridRow = `span ${span}`
@@ -39,6 +39,6 @@ export const createGridSpanStyles = (
       gridStyles.gridRow = `span ${rowSpan}`
     }
   }
-  
+
   return gridStyles
-} 
+}

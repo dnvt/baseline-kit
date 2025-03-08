@@ -1,15 +1,21 @@
-import { RefObject, useCallback, useLayoutEffect, useMemo, useState } from 'react'
+import {
+  RefObject,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { rafThrottle } from '@utils'
 
 type VirtualResult = {
   /** Total number of items/lines to virtualize */
-  totalLines: number;
+  totalLines: number
   /** Height of each item in pixels */
-  lineHeight: number;
+  lineHeight: number
   /** Reference to the scrollable container */
-  containerRef: RefObject<HTMLDivElement | null>;
+  containerRef: RefObject<HTMLDivElement | null>
   /** Additional items to render above/below viewport */
-  buffer?: number | string;
+  buffer?: number | string
 }
 
 /**
@@ -63,9 +69,10 @@ export function useVirtual({
   buffer = 0,
 }: VirtualResult) {
   // Convert buffer to numeric value
-  const numericBuffer = useMemo(() =>
-    typeof buffer === 'number' ? buffer : parseInt(buffer, 10) || 0
-  , [buffer])
+  const numericBuffer = useMemo(
+    () => (typeof buffer === 'number' ? buffer : parseInt(buffer, 10) || 0),
+    [buffer]
+  )
 
   /**
    * Calculates the visible range of items based on scroll position
@@ -99,23 +106,27 @@ export function useVirtual({
     updateRangeThrottled()
   })
 
-
   // Throttle updates for performance
   const updateRange = useCallback(() => {
-    setVisibleRange(prev => {
+    setVisibleRange((prev) => {
       const next = calculateRange()
       return prev.start !== next.start || prev.end !== next.end ? next : prev
     })
   }, [calculateRange])
 
-  const updateRangeThrottled = useMemo(() => rafThrottle(updateRange), [updateRange])
+  const updateRangeThrottled = useMemo(
+    () => rafThrottle(updateRange),
+    [updateRange]
+  )
 
   useLayoutEffect(() => {
     const element = containerRef.current
     if (!element) return
 
     // Use IntersectionObserver for visibility tracking
-    const observer = new IntersectionObserver(updateRangeThrottled, { threshold: 0 })
+    const observer = new IntersectionObserver(updateRangeThrottled, {
+      threshold: 0,
+    })
     observer.observe(element)
     updateRangeThrottled()
 
@@ -133,8 +144,8 @@ function useWindowEvents(events: string[], handler: () => void) {
 
   useLayoutEffect(() => {
     const wrappedHandler = () => stableHandler()
-    events.forEach(evt => window.addEventListener(evt, wrappedHandler))
-    return () => events.forEach(evt => window.removeEventListener(evt, wrappedHandler))
+    events.forEach((evt) => window.addEventListener(evt, wrappedHandler))
+    return () =>
+      events.forEach((evt) => window.removeEventListener(evt, wrappedHandler))
   }, [events, stableHandler])
 }
-

@@ -13,5 +13,5 @@
   position: absolute;
   top: var(--bkrt);
   height: var(--bkrh);
-  background-color: var(--bkbcl);
+  background-color: var(--bkbc);
 }

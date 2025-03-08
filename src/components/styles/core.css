@@ -1,0 +1,26 @@
+/* Core styles - Variables and fundamentals */
+@import './reset.css';
+@import './base.css';
+
+/* Component imports */
+@import '../Box/styles.module.css';
+@import '../Guide/styles.module.css';
+@import '../Padder/styles.module.css';
+@import '../Spacer/styles.module.css';
+
+/* Utility classes */
+.v {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--bk-transition-base),
+    visibility 0ms linear;
+}
+
+.h {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--bk-transition-base),
+    visibility 0ms linear 180ms;
+}

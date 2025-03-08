@@ -10,7 +10,7 @@ import {
   formatValue,
   createStyleOverride,
   SSR_DIMENSIONS,
-  hydratedValue
+  hydratedValue,
 } from '@utils'
 import { Variant } from '../types'
 import styles from './styles.module.css'
@@ -38,7 +38,7 @@ export type BaselineProps = {
 export const createDefaultBaselineStyles = (
   base: number,
   lineColor: string,
-  flatColor: string,
+  flatColor: string
 ): Record<string, string> => ({
   '--bkbw': '100%',
   '--bkbh': '100%',
@@ -50,17 +50,17 @@ export const createDefaultBaselineStyles = (
 /** Create row styles for baseline lines */
 type RowStyleParams = {
   /** Row index */
-  index: number;
+  index: number
   /** Base unit for calculations */
-  base: number;
+  base: number
   /** Baseline visual variant */
-  variant: BaselineVariant;
+  variant: BaselineVariant
   /** Selected color for the baseline */
-  chosenColor: string;
+  chosenColor: string
   /** Theme line color */
-  lineColor: string;
+  lineColor: string
   /** Theme flat color */
-  flatColor: string;
+  flatColor: string
 }
 
 /**
@@ -68,7 +68,7 @@ type RowStyleParams = {
  * Applies positioning and visual styling based on variant.
  */
 export const createBaselineRowStyle = (
-  params: RowStyleParams,
+  params: RowStyleParams
 ): React.CSSProperties => {
   const { index, base, variant, chosenColor, lineColor, flatColor } = params
 
@@ -128,37 +128,37 @@ export const Baseline = React.memo(function Baseline({
 
   // Use a stable reference that won't cause hydration mismatches
   const containerRef = React.useRef<HTMLDivElement | null>(null)
-  
+
   // Use state to track if we're hydrated
   const [isHydrated, setIsHydrated] = React.useState(false)
-  
+
   // Always call hooks, but conditionally use their results
   const measuredDimensions = useMeasure(containerRef)
-  
+
   // After hydration, we can use real measurement
   React.useEffect(() => {
     setIsHydrated(true)
   }, [])
-  
+
   // Choose appropriate dimensions based on rendering environment using our utility
   const dimensions = hydratedValue(
     isHydrated,
     SSR_DIMENSIONS,
     measuredDimensions
   )
-  
+
   const { width: containerWidth, height: containerHeight } = dimensions
 
   const [_normWidth, normHeight] = React.useMemo(() => {
     return normalizeValuePair(
       [widthProp, heightProp],
-      [containerWidth, containerHeight],
+      [containerWidth, containerHeight]
     )
   }, [widthProp, heightProp, containerWidth, containerHeight])
 
   const { top, right, bottom, left } = React.useMemo(
     () => parsePadding(spacingProps),
-    [spacingProps],
+    [spacingProps]
   )
 
   const padding = React.useMemo(() => {
@@ -185,13 +185,13 @@ export const Baseline = React.memo(function Baseline({
     containerRef,
     buffer: 160,
   })
-  
+
   // For SSR, use simplistic settings that match between server/client
-  const stableVirtualResult = { 
-    start: 0, 
-    end: Math.min(10, rowCount)
+  const stableVirtualResult = {
+    start: 0,
+    end: Math.min(10, rowCount),
   }
-  
+
   // Choose appropriate virtualization based on environment
   const { start, end } = hydratedValue(
     isHydrated && !ssrMode,
@@ -199,17 +199,14 @@ export const Baseline = React.memo(function Baseline({
     virtualResult
   )
 
-  const chosenColor = colorProp ||
-    (variant === 'line' ? config.colors.line : config.colors.flat)
+  const chosenColor =
+    colorProp || (variant === 'line' ? config.colors.line : config.colors.flat)
 
   // Create default baseline styles
   const defaultBaselineStyles = React.useMemo(
-    () => createDefaultBaselineStyles(
-      base,
-      config.colors.line,
-      config.colors.flat,
-    ),
-    [base, config.colors.line, config.colors.flat],
+    () =>
+      createDefaultBaselineStyles(base, config.colors.line, config.colors.flat),
+    [base, config.colors.line, config.colors.flat]
   )
 
   const containerStyles = React.useMemo(() => {
@@ -250,7 +247,7 @@ export const Baseline = React.memo(function Baseline({
         }),
         ...(padding && { padding }),
       } as React.CSSProperties,
-      style,
+      style
     )
   }, [
     widthProp,
@@ -275,7 +272,7 @@ export const Baseline = React.memo(function Baseline({
         flatColor: config.colors.flat,
       })
     },
-    [base, variant, chosenColor, config.colors.line, config.colors.flat],
+    [base, variant, chosenColor, config.colors.line, config.colors.flat]
   )
 
   return (
@@ -285,7 +282,7 @@ export const Baseline = React.memo(function Baseline({
       className={mergeClasses(
         styles.bas,
         isShown ? styles.v : styles.h,
-        className,
+        className
       )}
       style={containerStyles}
       {...spacingProps}

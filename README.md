@@ -41,6 +41,27 @@ import 'baseline-kit/styles';  // Required core styles
 import 'baseline-kit/theme';   // Recommended theme (or use your own)
 ```
 
+For frameworks like Remix that use URL imports in a links function:
+
+```tsx
+export const links = () => [
+  { rel: "stylesheet", href: "baseline-kit/styles" },
+  { rel: "stylesheet", href: "baseline-kit/theme" }
+];
+```
+
+If you prefer a single CSS file that includes everything:
+
+```tsx
+// Alternative: Import everything in one file
+import 'baseline-kit/full';
+
+// For Remix:
+export const links = () => [
+  { rel: "stylesheet", href: "baseline-kit/full" }
+];
+```
+
 Baseline Kit is written in TypeScript and includes built-in type definitions—no additional packages required.
 
 ## Quick Start
@@ -210,24 +231,59 @@ debugging = "none"           // Removes debug elements entirely
 
 ## Theme System
 
-Baseline Kit comes with two CSS files:
+Baseline Kit comes with a flexible CSS structure and theming system:
 
-1. `styles.css` - Contains the core component styles required for functionality
-2. `theme.css` - Contains color variables and theming (optional but recommended)
+1. `core.css` - Contains the core component styles required for functionality (imported via `baseline-kit/styles`)
+2. `theme.css` - Contains color variables and theming with automatic dark mode support (imported via `baseline-kit/theme`)
+3. `baseline-kit.css` - Combined file with both core and theme styles (imported via `baseline-kit/full`)
+
+### CSS Import Options
+
+Baseline Kit gives you flexibility in how you include the styles:
+
+```tsx
+// Option 1: Import core styles and theme separately (recommended)
+import 'baseline-kit/styles';
+import 'baseline-kit/theme';
+
+// Option 2: Import everything in one file
+import 'baseline-kit/full';
+```
 
 ### Theme Options
 
-You have three options for using the theme system:
+You now have four options for using the theme system:
 
-#### 1. Use the Built-in Theme
+#### 1. Use the Built-in Theme (with automatic dark mode)
 
 ```tsx
 import 'baseline-kit/theme';  // Default theme with light/dark mode support
 ```
 
-#### 2. Create a Custom Theme
+#### 2. Use Specific Theme Variants
 
-Create your own theme.css file:
+```tsx
+// Use only the light theme (no dark mode)
+import 'baseline-kit/theme/default';
+
+// Use only the dark theme
+import 'baseline-kit/theme/dark';
+
+// Example: Apply dark theme regardless of system preference
+import 'baseline-kit/styles';
+import 'baseline-kit/theme/dark';
+```
+
+#### 3. Create a Custom Theme
+
+You can use the tokens template as a starting point:
+
+```tsx
+// First check the token template to see available variables
+import 'baseline-kit/theme/tokens';  // Just for reference (contains no values)
+```
+
+Then create your own custom theme file:
 
 ```css
 /* yourCustomTheme.css */
@@ -253,7 +309,7 @@ import 'baseline-kit/styles';  // Required core styles
 import './path/to/yourCustomTheme.css';  // Your custom theme
 ```
 
-#### 3. Override via Config
+#### 4. Override via Config
 
 For minor adjustments, use the Config component:
 
@@ -354,3 +410,79 @@ Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 ## License
 
 MIT © [François Denavaut](https://github.com/dnvt)
+
+## Integration with Remix
+
+Baseline Kit is fully compatible with Remix. Follow these steps to integrate it into your Remix application:
+
+### Standard Integration
+
+In your Remix application, create a `root.tsx` file with proper links to the CSS:
+
+```tsx
+// app/root.tsx
+import type { LinksFunction } from '@remix-run/node';
+
+export const links: LinksFunction = () => [
+  // Option 1: Use the combined CSS file (simplest approach)
+  { rel: 'stylesheet', href: 'npm:baseline-kit/dist/baseline-kit.css' },
+
+  // Option 2: Or use core styles and theme separately
+  // { rel: 'stylesheet', href: 'npm:baseline-kit/dist/styles.css' },
+  // { rel: 'stylesheet', href: 'npm:baseline-kit/dist/theme.css' },
+];
+
+export default function App() {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Links />
+      </head>
+      <body>
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+  );
+}
+```
+
+Note the use of `npm:` prefix which is the recommended way to reference CSS from node_modules in Remix.
+
+### Troubleshooting CSS in Remix
+
+If you're experiencing styling issues with components not showing properly:
+
+1. **Copy to public directory**: For a completely reliable solution, copy the CSS files to your public directory:
+   ```shell
+   mkdir -p public/css
+   cp node_modules/baseline-kit/dist/*.css public/css/
+   ```
+
+   Then reference these local files:
+   ```tsx
+   export const links: LinksFunction = () => [
+     { rel: 'stylesheet', href: '/css/baseline-kit.css' }
+   ];
+   ```
+
+2. **Check CSS specificity**: Make sure your application's CSS isn't overriding Baseline Kit styles. You may need to adjust specificity or load order of your stylesheets.
+
+### Custom Theme Integration
+
+For custom theming:
+
+```tsx
+export const links: LinksFunction = () => [
+  // Core styles (required)
+  { rel: 'stylesheet', href: 'npm:baseline-kit/dist/styles.css' },
+  // Choose one of these theme options:
+  { rel: 'stylesheet', href: 'npm:baseline-kit/dist/theme/default.css' }, // Light theme only
+  { rel: 'stylesheet', href: 'npm:baseline-kit/dist/theme/dark.css' },    // Dark theme only
+  { rel: 'stylesheet', href: '/css/custom-theme.css' },                  // Your custom theme
+];
+```

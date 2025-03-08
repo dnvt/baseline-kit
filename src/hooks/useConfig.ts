@@ -41,12 +41,14 @@ export type ComponentConfig<K extends keyof Config> = Config[K] & {
  * }
  * ```
  */
-export function useConfig<K extends keyof Config>(component: K): ComponentConfig<K> {
+export function useConfig<K extends keyof Config>(
+  component: K
+): ComponentConfig<K> {
   const defaultConfig = useDefaultConfig()
   return useMemo(() => {
     return Object.assign(
       { base: defaultConfig.base },
-      defaultConfig[component],
+      defaultConfig[component]
     ) as ComponentConfig<K>
   }, [defaultConfig, component])
 }

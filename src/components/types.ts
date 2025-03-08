@@ -44,28 +44,28 @@ export type Spacing =
  */
 export type PaddingValue =
   | number
-  | [number, number]                    // [block, inline]
-  | [number, number, number, number]    // [top, right, bottom, left]
+  | [number, number] // [block, inline]
+  | [number, number, number, number] // [top, right, bottom, left]
   | {
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
-}
+      top?: number
+      bottom?: number
+      left?: number
+      right?: number
+    }
 
 /** Resolved padding values for all edges after normalization. */
 export type Padding = {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
+  top: number
+  right: number
+  bottom: number
+  left: number
 }
 
 /** Props interface for components that support spacing configuration. */
 export type SpacingProps = {
-  padding?: PaddingValue;
-  block?: Spacing;
-  inline?: Spacing;
+  padding?: PaddingValue
+  block?: Spacing
+  inline?: Spacing
 }
 
 // Grid Types ------------------------------------------------------------------
@@ -86,11 +86,11 @@ export type GuideColumnsPattern = readonly GuideColumnValue[]
 
 /** Valid grid alignment values. */
 export const GRID_ALIGNMENTS = ['start', 'center', 'end'] as const
-export type GridAlignment = typeof GRID_ALIGNMENTS[number]
+export type GridAlignment = (typeof GRID_ALIGNMENTS)[number]
 
 /** Valid component variants affecting visual style. */
 export const PADD_VARIANTS = ['line', 'flat'] as const
-export type PaddedVariant = typeof PADD_VARIANTS[number]
+export type PaddedVariant = (typeof PADD_VARIANTS)[number]
 
 // Component Base Types --------------------------------------------------------
 
@@ -99,29 +99,31 @@ export type PaddedVariant = typeof PADD_VARIANTS[number]
  * Provides consistent sizing, spacing, styling, and debugging options.
  */
 export type ComponentsProps = {
-  debugging?: DebuggingMode;
-  className?: string;
-  style?: React.CSSProperties;
-  height?: React.CSSProperties['height'];
-  width?: React.CSSProperties['width'];
+  debugging?: DebuggingMode
+  className?: string
+  style?: React.CSSProperties
+  height?: React.CSSProperties['height']
+  width?: React.CSSProperties['width']
 } & SpacingProps
 
 /** Base configuration for components that support padding. */
 export type PaddedBaseConfig = {
-  base?: number;
-  color?: React.CSSProperties['color'] | React.CSSProperties['backgroundColor'];
-  zIndex?: React.CSSProperties['zIndex'];
+  base?: number
+  color?: React.CSSProperties['color'] | React.CSSProperties['backgroundColor']
+  zIndex?: React.CSSProperties['zIndex']
 }
 
 export type Variant = 'line' | 'flat' | 'pattern'
 
-export type Gaps = {
-  gap?: React.CSSProperties['gap']
-  rowGap?: never
-  columnGap?: never
-} | {
-  /** When using separate gaps, omit unified gap */
-  gap?: never
-  rowGap?: React.CSSProperties['rowGap']
-  columnGap?: React.CSSProperties['columnGap']
-}
+export type Gaps =
+  | {
+      gap?: React.CSSProperties['gap']
+      rowGap?: never
+      columnGap?: never
+    }
+  | {
+      /** When using separate gaps, omit unified gap */
+      gap?: never
+      rowGap?: React.CSSProperties['rowGap']
+      columnGap?: React.CSSProperties['columnGap']
+    }

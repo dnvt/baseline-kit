@@ -24,7 +24,7 @@ import { convertValue } from './convert'
 export function moduloize(
   value: number | string | undefined,
   base: number,
-  options?: { round?: boolean },
+  options?: { round?: boolean }
 ): string {
   const doRound = options?.round ?? true
   const num =
@@ -32,7 +32,7 @@ export function moduloize(
       ? 0
       : typeof value === 'number'
         ? value
-        : convertValue(value) ?? 0
+        : (convertValue(value) ?? 0)
   const normalized = doRound ? Math.round(num) : num
   const remainder = normalized % base
   return `${remainder}px`
@@ -77,7 +77,9 @@ export function clamp(value: number, min: number, max: number): number {
  */
 export function round(value: number, precision = 0): number {
   if (precision >= 0) {
-    return Number((Math.round(value * 10 ** precision) / 10 ** precision).toFixed(precision))
+    return Number(
+      (Math.round(value * 10 ** precision) / 10 ** precision).toFixed(precision)
+    )
   } else {
     const factor = 10 ** Math.abs(precision)
     return Math.round(value / factor) * factor
@@ -87,22 +89,22 @@ export function round(value: number, precision = 0): number {
 /** Parameters for row count calculation */
 type RowCountParams = {
   /** Available height for the container */
-  height?: number;
+  height?: number
   /** Top padding/offset value */
-  top: number;
+  top: number
   /** Bottom padding/offset value */
-  bottom: number;
+  bottom: number
   /** Base unit for calculations */
-  base: number;
+  base: number
 }
 
 /**
  * Calculates the number of rows that fit in the available space.
  * Ensures at least one row is always returned.
- * 
+ *
  * @param params - Parameters for calculation
  * @returns Number of rows that fit in the space
- * 
+ *
  * @example
  * ```ts
  * calculateRowCount({ height: 100, top: 10, bottom: 10, base: 8 }) // => 10

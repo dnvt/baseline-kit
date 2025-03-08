@@ -7,7 +7,7 @@ import {
   parsePadding,
   formatValue,
   createStyleOverride,
-  hydratedValue
+  hydratedValue,
 } from '@utils'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
@@ -16,7 +16,9 @@ import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
 // Import the IndicatorNode type from Spacer props
-type IndicatorNode = NonNullable<React.ComponentProps<typeof Spacer>['indicatorNode']>
+type IndicatorNode = NonNullable<
+  React.ComponentProps<typeof Spacer>['indicatorNode']
+>
 
 export type LayoutProps = {
   /**
@@ -47,15 +49,16 @@ export type LayoutProps = {
   /** Container height (defaults to "auto") */
   height?: React.CSSProperties['height']
   children?: React.ReactNode
-} & ComponentsProps & Gaps
+} & ComponentsProps &
+  Gaps
 
 // Utils -----------------------------------------------------------------------
 
 /** Creates default layout styles with theme colors */
 export const createDefaultLayoutStyles = (colors: {
-  line: string;
-  flat: string;
-  text: string;
+  line: string
+  flat: string
+  text: string
 }): Record<string, string> => ({
   '--bklw': 'auto',
   '--bklh': 'auto',
@@ -65,7 +68,9 @@ export const createDefaultLayoutStyles = (colors: {
 })
 
 /** Parses grid template definitions into CSS grid-template values. */
-export const getGridTemplate = (prop?: number | string | Array<number | string>): string => {
+export const getGridTemplate = (
+  prop?: number | string | Array<number | string>
+): string => {
   if (typeof prop === 'number') return `repeat(${prop}, 1fr)`
   if (typeof prop === 'string') return prop
   if (Array.isArray(prop)) {
@@ -78,7 +83,7 @@ export const getGridTemplate = (prop?: number | string | Array<number | string>)
 export const createGridGapStyles = (
   gap?: React.CSSProperties['gap'] | number,
   rowGap?: React.CSSProperties['rowGap'] | number,
-  columnGap?: React.CSSProperties['columnGap'] | number,
+  columnGap?: React.CSSProperties['columnGap'] | number
 ): Record<string, string> => {
   const styles: Record<string, string> = {}
 
@@ -154,21 +159,21 @@ export const Layout = React.memo(function Layout({
 }: LayoutProps) {
   const config = useConfig('layout')
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
-  
+
   // Add hydration state tracking
   const [isHydrated, setIsHydrated] = React.useState(false)
-  
+
   React.useEffect(() => {
     setIsHydrated(true)
   }, [])
-  
+
   const layoutRef = React.useRef<HTMLDivElement>(null)
 
   const initialPadding = React.useMemo(
     () => parsePadding(spacingProps),
-    [spacingProps],
+    [spacingProps]
   )
-  
+
   // Get padding calculation from useBaseline
   const baselinePadding = useBaseline(layoutRef, {
     base: config.base,
@@ -176,17 +181,17 @@ export const Layout = React.memo(function Layout({
     spacing: initialPadding,
     warnOnMisalignment: true,
   })
-  
+
   // Create stable initial padding for SSR
   const stablePadding = {
     padding: {
       top: initialPadding.top || 0,
       right: initialPadding.right || 0,
       bottom: initialPadding.bottom || 0,
-      left: initialPadding.left || 0
-    }
+      left: initialPadding.left || 0,
+    },
   }
-  
+
   // Use stable padding during SSR and initial render, then switch to dynamic padding
   const { padding } = hydratedValue(
     isHydrated && !ssrMode,
@@ -196,22 +201,22 @@ export const Layout = React.memo(function Layout({
 
   const gridTemplateColumns = React.useMemo(
     () => getGridTemplate(columns),
-    [columns],
+    [columns]
   )
 
   const gridTemplateRows = React.useMemo(
     () => (rows ? getGridTemplate(rows) : 'auto'),
-    [rows],
+    [rows]
   )
 
   const defaultLayoutStyles = React.useMemo(
     () => createDefaultLayoutStyles(config.colors),
-    [config.colors],
+    [config.colors]
   )
 
   const gridGapStyles = React.useMemo(
     () => createGridGapStyles(gap, rowGap, columnGap),
-    [gap, rowGap, columnGap],
+    [gap, rowGap, columnGap]
   )
 
   const containerStyles = React.useMemo(() => {
@@ -228,32 +233,34 @@ export const Layout = React.memo(function Layout({
           key: '--bklw',
           value: widthValue,
           defaultStyles: defaultLayoutStyles,
-          skipDimensions: { auto: autoDimensions }
+          skipDimensions: { auto: autoDimensions },
         }),
         ...createStyleOverride({
           key: '--bklh',
           value: heightValue,
           defaultStyles: defaultLayoutStyles,
-          skipDimensions: { auto: autoDimensions }
+          skipDimensions: { auto: autoDimensions },
         }),
         ...createStyleOverride({
           key: '--bklcl',
           value: config.colors.line,
-          defaultStyles: defaultLayoutStyles
+          defaultStyles: defaultLayoutStyles,
         }),
         ...createStyleOverride({
           key: '--bklcf',
           value: config.colors.flat,
-          defaultStyles: defaultLayoutStyles
+          defaultStyles: defaultLayoutStyles,
         }),
         ...createStyleOverride({
           key: '--bklci',
           value: config.colors.text,
-          defaultStyles: defaultLayoutStyles
+          defaultStyles: defaultLayoutStyles,
         }),
 
         // Grid properties - only inject if different from defaults
-        ...(gridTemplateColumns !== 'repeat(auto-fit, minmax(100px, 1fr))' && { '--bklgtc': gridTemplateColumns }),
+        ...(gridTemplateColumns !== 'repeat(auto-fit, minmax(100px, 1fr))' && {
+          '--bklgtc': gridTemplateColumns,
+        }),
         ...(gridTemplateRows !== 'auto' && { '--bklgtr': gridTemplateRows }),
         ...(justifyItems && { '--bklji': justifyItems }),
         ...(alignItems && { '--bklai': alignItems }),
@@ -263,7 +270,7 @@ export const Layout = React.memo(function Layout({
         // Include gap styles
         ...gridGapStyles,
       } as React.CSSProperties,
-      style,
+      style
     )
   }, [
     gridTemplateColumns,
@@ -281,14 +288,12 @@ export const Layout = React.memo(function Layout({
   ])
 
   return (
-    <Config
-      spacer={{ variant: variant ?? 'line' }}
-    >
+    <Config spacer={{ variant: variant ?? 'line' }}>
       <Padder
         ref={layoutRef}
         className={isShown ? styles.v : ''}
         block={[padding.top, padding.bottom]}
-        {... (indicatorNode ? { indicatorNode } : {})}
+        {...(indicatorNode ? { indicatorNode } : {})}
         inline={[padding.left, padding.right]}
         debugging={debugging}
         width={width}
@@ -299,10 +304,13 @@ export const Layout = React.memo(function Layout({
           data-testid="layout"
           className={mergeClasses(className, styles.lay)}
           style={containerStyles}
-          {...(spacingProps && Object.keys(spacingProps).length > 0 ? 
-            Object.fromEntries(
-              Object.entries(spacingProps).filter(([key]) => key !== 'ssrMode')
-            ) : {})}
+          {...(spacingProps && Object.keys(spacingProps).length > 0
+            ? Object.fromEntries(
+                Object.entries(spacingProps).filter(
+                  ([key]) => key !== 'ssrMode'
+                )
+              )
+            : {})}
         >
           {children}
         </div>

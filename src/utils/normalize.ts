@@ -47,7 +47,7 @@ export interface NormalizationOptions {
  */
 export function normalizeValue(
   value: string | number | undefined,
-  options: NormalizationOptions = {},
+  options: NormalizationOptions = {}
 ): number {
   const {
     base = 8,
@@ -68,7 +68,7 @@ export function normalizeValue(
     if (conv === null) {
       if (!suppressWarnings) {
         console.error(
-          `Failed to convert "${value}" to pixels. Falling back to base ${base}.`,
+          `Failed to convert "${value}" to pixels. Falling back to base ${base}.`
         )
       }
       num = base
@@ -85,10 +85,10 @@ export function normalizeValue(
   const clamped =
     clampOptions !== undefined
       ? clamp(
-        normalized,
-        clampOptions.min ?? -Infinity,
-        clampOptions.max ?? Infinity,
-      )
+          normalized,
+          clampOptions.min ?? -Infinity,
+          clampOptions.max ?? Infinity
+        )
       : normalized
 
   // Warn about adjustments
@@ -121,7 +121,7 @@ export function normalizeValuePair(
     | [string | number | undefined, string | number | undefined]
     | undefined,
   defaults: [number, number],
-  options?: NormalizationOptions,
+  options?: NormalizationOptions
 ): [number, number] {
   if (!values) return defaults
 

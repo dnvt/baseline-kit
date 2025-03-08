@@ -1,19 +1,22 @@
 .spr {
   position: relative;
-  width: var(--bksw);
-  height: var(--bksh);
-  flex-shrink: 0;  
+  box-sizing: border-box;
+  width: var(--bksw, 100%);
+  height: var(--bksh, auto);
+  flex-shrink: 0;
+  display: block;
+  margin: 0;
+  padding: 0;
 }
 
 .line::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bkscl);
-  z-index: calc(var(--bkzi));
-
+  border: 1px solid var(--bkscl, hsla(270, 60%, 40%, 0.6));
+  z-index: calc(var(--bkzi, 1));
 }
 
 .flat {
-  background-color: var(--bkscf);
+  background-color: var(--bkscf, hsla(230, 100%, 70%, 0.2));
 }

@@ -31,7 +31,7 @@ export function calculateSnappedSpacing(
   height: number,
   base: number,
   initial: PaddingValue,
-  snapping: SnappingMode,
+  snapping: SnappingMode
 ): Padding {
   const pad: Padding = parsePadding({ padding: initial })
 

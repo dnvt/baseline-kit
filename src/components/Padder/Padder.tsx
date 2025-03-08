@@ -6,7 +6,7 @@ import {
   parsePadding,
   mergeRefs,
   formatValue,
-  hydratedValue
+  hydratedValue,
 } from '@utils'
 import { ComponentsProps, Variant } from '../types'
 import { Spacer, IndicatorNode } from '../Spacer'
@@ -15,13 +15,13 @@ import styles from './styles.module.css'
 
 type RenderSpacerFn = (
   width: React.CSSProperties['width'],
-  height: React.CSSProperties['height'],
+  height: React.CSSProperties['height']
 ) => React.ReactNode
 
 type PaddingStyles = {
-  paddingBlock?: string;
-  paddingInline?: string;
-  [key: string]: string | undefined;
+  paddingBlock?: string
+  paddingInline?: string
+  [key: string]: string | undefined
 }
 
 type PadderProps = {
@@ -39,7 +39,7 @@ export const createPadderContainerStyles = (
   width: React.CSSProperties['width'],
   height: React.CSSProperties['height'],
   base: number,
-  color: string,
+  color: string
 ): Record<string, string> => {
   const stylesObj: Record<string, string> = {}
 
@@ -66,11 +66,11 @@ export const createPadderContainerStyles = (
 export const createDirectPaddingStyles = (
   enableSpacers: boolean,
   padding: {
-    top: number;
-    right: number;
-    bottom: number;
-    left: number;
-  },
+    top: number
+    right: number
+    bottom: number
+    left: number
+  }
 ): PaddingStyles => {
   const { top, right, bottom, left } = padding
   const stylesObj: PaddingStyles = {}
@@ -92,17 +92,20 @@ export const createDirectPaddingStyles = (
 export const createRenderSpacerFn = (
   variant: Variant | undefined,
   debugging: DebuggingMode | undefined,
-  indicatorNode?: IndicatorNode,
+  indicatorNode?: IndicatorNode
 ): RenderSpacerFn => {
   // Default to 'line' if variant is undefined
   const safeVariant = variant || 'line'
   // Default to 'none' if debugging is undefined
   const safeDebugging = debugging || 'none'
 
-  const SpacerElement = (widthVal: React.CSSProperties['width'], heightVal: React.CSSProperties['height']) => (
+  const SpacerElement = (
+    widthVal: React.CSSProperties['width'],
+    heightVal: React.CSSProperties['height']
+  ) => (
     <Spacer
       variant={safeVariant}
-      debugging={(heightVal === 0 || widthVal === 0) ? 'none' : safeDebugging}
+      debugging={heightVal === 0 || widthVal === 0 ? 'none' : safeDebugging}
       indicatorNode={indicatorNode}
       height={heightVal !== '100%' ? heightVal : undefined}
       width={widthVal !== '100%' ? widthVal : undefined}
@@ -171,29 +174,29 @@ export const Padder = React.memo(
       ssrMode = false,
       ...spacingProps
     },
-    ref,
+    ref
   ) {
     const config = useConfig('padder')
     const { variant } = useConfig('spacer')
     const initialPadding = React.useMemo(
       () => parsePadding(spacingProps),
-      [spacingProps],
+      [spacingProps]
     )
     const { isShown, isNone, debugging } = useDebug(
       debuggingProp,
-      config.debugging,
+      config.debugging
     )
     const enableSpacers = !isNone
 
     // Add hydration state tracking
     const [isHydrated, setIsHydrated] = React.useState(false)
-    
+
     React.useEffect(() => {
       setIsHydrated(true)
     }, [])
 
     const internalRef = React.useRef<HTMLDivElement | null>(null)
-    
+
     // Get padding calculation from useBaseline
     const baselinePadding = useBaseline(internalRef, {
       base: config.base,
@@ -201,17 +204,17 @@ export const Padder = React.memo(
       spacing: initialPadding,
       warnOnMisalignment: !isNone,
     })
-    
+
     // Create stable initial padding for SSR
     const stablePadding = {
       padding: {
         top: initialPadding.top || 0,
         right: initialPadding.right || 0,
         bottom: initialPadding.bottom || 0,
-        left: initialPadding.left || 0
-      }
+        left: initialPadding.left || 0,
+      },
     }
-    
+
     // Use stable padding during SSR and initial render, then switch to dynamic padding
     const { padding } = hydratedValue(
       isHydrated && !ssrMode,
@@ -226,17 +229,19 @@ export const Padder = React.memo(
         width,
         height,
         config.base,
-        config.color,
+        config.color
       )
 
-      const paddingStyles = createDirectPaddingStyles(
-        enableSpacers,
-        { top: padding.top, right: padding.right, bottom: padding.bottom, left: padding.left },
-      )
+      const paddingStyles = createDirectPaddingStyles(enableSpacers, {
+        top: padding.top,
+        right: padding.right,
+        bottom: padding.bottom,
+        left: padding.left,
+      })
 
       return mergeStyles(
         { ...baseStyles, ...paddingStyles } as React.CSSProperties,
-        style,
+        style
       )
     }, [
       width,
@@ -253,7 +258,7 @@ export const Padder = React.memo(
 
     const renderSpacer = React.useMemo(
       () => createRenderSpacerFn(variant, debugging, indicatorNode),
-      [variant, debugging, indicatorNode],
+      [variant, debugging, indicatorNode]
     )
 
     // When debugging is "none", simply return a container with direct CSS padding
@@ -289,7 +294,9 @@ export const Padder = React.memo(
 
           {/* Left spacer */}
           {padding.left >= 0 && (
-            <div style={{ gridRow: '2 / 3' }}>{renderSpacer(padding.left, '100%')}</div>
+            <div style={{ gridRow: '2 / 3' }}>
+              {renderSpacer(padding.left, '100%')}
+            </div>
           )}
         </>
 
@@ -313,5 +320,5 @@ export const Padder = React.memo(
         </>
       </div>
     )
-  }),
+  })
 )

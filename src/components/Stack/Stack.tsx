@@ -7,7 +7,7 @@ import {
   parsePadding,
   formatValue,
   createStyleOverride,
-  hydratedValue
+  hydratedValue,
 } from '@utils'
 import { Padder } from '../Padder'
 import { IndicatorNode } from '../Spacer'
@@ -16,18 +16,22 @@ import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
 // Maps shorthand directions to Flexbox directions
-export const DIRECTION_AXIS: Record<string, React.CSSProperties['flexDirection']> = {
+export const DIRECTION_AXIS: Record<
+  string,
+  React.CSSProperties['flexDirection']
+> = {
   x: 'row',
   y: 'column',
   '-x': 'row-reverse',
   '-y': 'column-reverse',
 }
 
-export type CSSPropertiesDirectionalAxis = keyof typeof DIRECTION_AXIS;
+export type CSSPropertiesDirectionalAxis = keyof typeof DIRECTION_AXIS
 
 export type StackProps = {
   /** Main axis orientation */
-  direction?: React.CSSProperties['flexDirection'] & CSSPropertiesDirectionalAxis;
+  direction?: React.CSSProperties['flexDirection'] &
+    CSSPropertiesDirectionalAxis
   /** Distribution of space on main axis */
   justify?: React.CSSProperties['justifyContent']
   /** Alignment on cross axis */
@@ -66,7 +70,7 @@ export const createDefaultStackStyles = (colors: Record<string, string>) => ({
 export const createStackGapStyles = (
   rowGap?: number,
   columnGap?: number,
-  gap?: number,
+  gap?: number
 ): Record<string, number | undefined> => ({
   rowGap: gap !== undefined ? gap : rowGap,
   columnGap: gap !== undefined ? gap : columnGap,
@@ -144,14 +148,14 @@ export const Stack = React.memo(function Stack({
   // Read configuration from context or props
   const config = useConfig('stack')
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
-  
+
   // Add hydration state tracking
   const [isHydrated, setIsHydrated] = React.useState(false)
-  
+
   React.useEffect(() => {
     setIsHydrated(true)
   }, [])
-  
+
   const stackRef = React.useRef<HTMLDivElement | null>(null)
 
   // Process spacing props
@@ -166,17 +170,17 @@ export const Stack = React.memo(function Stack({
     spacing: { top, right, bottom, left },
     warnOnMisalignment: debugging !== 'none',
   })
-  
+
   // Create stable initial padding for SSR
   const stablePadding = {
     padding: {
       top: top || 0,
       right: right || 0,
       bottom: bottom || 0,
-      left: left || 0
-    }
+      left: left || 0,
+    },
   }
-  
+
   // Use stable padding during SSR and initial render, then switch to dynamic padding
   const { padding } = hydratedValue(
     isHydrated && !ssrMode,
@@ -186,15 +190,20 @@ export const Stack = React.memo(function Stack({
 
   const stackGapStyles = React.useMemo(() => {
     const formattedRowGap = rowGap !== undefined ? Number(rowGap) : undefined
-    const formattedColumnGap = columnGap !== undefined ? Number(columnGap) : undefined
+    const formattedColumnGap =
+      columnGap !== undefined ? Number(columnGap) : undefined
     const formattedGap = gap !== undefined ? Number(gap) : undefined
 
-    return createStackGapStyles(formattedRowGap, formattedColumnGap, formattedGap)
+    return createStackGapStyles(
+      formattedRowGap,
+      formattedColumnGap,
+      formattedGap
+    )
   }, [rowGap, columnGap, gap])
 
   const defaultStackStyles = React.useMemo(
     () => createDefaultStackStyles(config.colors),
-    [config.colors],
+    [config.colors]
   )
 
   const containerStyles = React.useMemo(() => {
@@ -261,19 +270,16 @@ export const Stack = React.memo(function Stack({
   const mergedContainerStyles =
     debugging === 'none'
       ? {
-        ...containerStyles,
-        paddingBlock: `${padding.top}px ${padding.bottom}px`,
-        paddingInline: `${padding.left}px ${padding.right}px`,
-      }
+          ...containerStyles,
+          paddingBlock: `${padding.top}px ${padding.bottom}px`,
+          paddingInline: `${padding.left}px ${padding.right}px`,
+        }
       : containerStyles
 
   return (
-    <Config
-      spacer={{ variant: variant ?? 'line' }}
-    >
+    <Config spacer={{ variant: variant ?? 'line' }}>
       <Padder
         ref={stackRef}
-        className={isShown ? styles.v : ''}
         block={[padding.top, padding.bottom]}
         inline={[padding.left, padding.right]}
         debugging={debugging}
@@ -284,7 +290,7 @@ export const Stack = React.memo(function Stack({
       >
         <div
           data-testid="stack"
-          className={mergeClasses(className, styles.stk)}
+          className={mergeClasses(className, styles.stk, isShown && styles.v)}
           style={mergedContainerStyles}
           {...spacingProps}
         >

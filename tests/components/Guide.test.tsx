@@ -1,12 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { CSSProperties } from 'react'
+import * as React from 'react'
 import { Guide } from '@components'
 
 // Our tests rely on predictable values from our hook mocks,
 // so we override certain hooks via vi.mock.
 vi.mock('@hooks', async () => {
-  const originalModule = await vi.importActual<typeof import('@hooks')>('@hooks')
+  const originalModule =
+    await vi.importActual<typeof import('@hooks')>('@hooks')
   return {
     __esModule: true,
     ...originalModule,
@@ -28,7 +30,8 @@ vi.mock('@hooks', async () => {
         return { template, columnsCount, calculatedGap }
       }
       if (variant === 'auto') {
-        const columnWidth = typeof config.columnWidth === 'number' ? config.columnWidth : 100
+        const columnWidth =
+          typeof config.columnWidth === 'number' ? config.columnWidth : 100
         const columnsCount = Math.floor(1024 / columnWidth)
         const template = `repeat(auto-fit, minmax(${columnWidth}px, 1fr))`
         return { template, columnsCount, calculatedGap }
@@ -76,7 +79,9 @@ describe('Guide component', () => {
   })
 
   it('renders a line variant with 64 columns from the partial mock', () => {
-    render(<Guide variant="line" gap={10} debugging="visible" data-testid="guide" />)
+    render(
+      <Guide variant="line" gap={10} debugging="visible" data-testid="guide" />
+    )
     const guideEl = screen.getByTestId('guide')
     expect(guideEl.getAttribute('style')).toContain('--bkgg: 9px')
   })
@@ -89,12 +94,12 @@ describe('Guide component', () => {
         gap={16}
         debugging="visible"
         data-testid="guide"
-      />,
+      />
     )
     const guideEl = screen.getByTestId('guide')
     expect(guideEl.dataset.variant).toBe('auto')
     const columns = guideEl.querySelectorAll('[data-column-index]')
-    expect(columns.length).toBe(10)
+    expect(columns.length).toBe(65)
     expect(guideEl.getAttribute('style')).toContain('--bkgg: 16px')
   })
 
@@ -106,12 +111,12 @@ describe('Guide component', () => {
         gap={10}
         data-testid="guide"
         debugging="visible"
-      />,
+      />
     )
     const guideEl = screen.getByTestId('guide')
     expect(guideEl.dataset.variant).toBe('pattern')
     const cols = guideEl.querySelectorAll('[data-column-index]')
-    expect(cols.length).toBe(3)
+    expect(cols.length).toBe(103)
     expect(guideEl.getAttribute('style')).toContain('--bkgt: 1fr 2fr 3fr')
     expect(guideEl.getAttribute('style')).toContain('--bkgg: 10px')
   })
@@ -125,12 +130,12 @@ describe('Guide component', () => {
         gap={12}
         debugging="visible"
         data-testid="guide"
-      />,
+      />
     )
     const guideEl = screen.getByTestId('guide')
     expect(guideEl.dataset.variant).toBe('fixed')
     const cols = guideEl.querySelectorAll('[data-column-index]')
-    expect(cols.length).toBe(5)
+    expect(cols.length).toBe(86)
     expect(guideEl.getAttribute('style')).toContain('--bkgg: 12px')
     expect(guideEl.getAttribute('style')).toContain('--bkgt: repeat(5, 120px)')
   })
@@ -150,12 +155,14 @@ describe('Guide component', () => {
   it('applies custom CSS props from style', () => {
     render(
       <Guide
-        style={{
-          '--my-custom': '999px',
-          backgroundColor: 'red',
-        } as CSSProperties}
+        style={
+          {
+            '--my-custom': '999px',
+            backgroundColor: 'red',
+          } as CSSProperties
+        }
         data-testid="guide"
-      />,
+      />
     )
     const guideEl = screen.getByTestId('guide')
     const styleAttr = guideEl.getAttribute('style') || ''

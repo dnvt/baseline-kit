@@ -15,12 +15,14 @@ export function parsePadding(spacing: SpacingProps): Padding {
   }
 
   // Otherwise, parse block/inline separately
-  const blockEdges = 'block' in spacing && spacing.block != null
-    ? parseBlock(spacing.block)
-    : { top: 0, bottom: 0 }
-  const inlineEdges = 'inline' in spacing && spacing.inline != null
-    ? parseInline(spacing.inline)
-    : { left: 0, right: 0 }
+  const blockEdges =
+    'block' in spacing && spacing.block != null
+      ? parseBlock(spacing.block)
+      : { top: 0, bottom: 0 }
+  const inlineEdges =
+    'inline' in spacing && spacing.inline != null
+      ? parseInline(spacing.inline)
+      : { left: 0, right: 0 }
 
   // Merge partial edges
   return {
