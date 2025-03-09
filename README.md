@@ -1,10 +1,29 @@
 # Baseline Kit
 
-Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React 19
-applications. It provides configurable overlays for both column-based and baseline grids, flexible layout components,
-and theme-aware configuration—all optimized for performance and built with TypeScript.
+![Build Status](https://img.shields.io/github/actions/workflow/status/dnvt/baseline-kit/test.yml)
+![npm version](https://img.shields.io/npm/v/baseline-kit)
+![License](https://img.shields.io/github/license/dnvt/baseline-kit)
+
+Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React 19 applications. It provides configurable overlays for both column-based and baseline grids, flexible layout components, and theme-aware configuration—all optimized for performance and built with TypeScript.
 
 ![Demo visual](kit.png)
+
+## Table of Contents
+  - [Base Unit](#base-unit)
+  - [Spacing Values](#spacing-values)
+  - [Grid Snapping](#grid-snapping)
+  - [Debugging Modes](#debugging-modes)
+  - [Component Hierarchy](#component-hierarchy)
+  - [Key Components](#key-components)
+    - [Config](#config)
+    - [Baseline](#baseline)
+    - [Guide](#guide)
+    - [Box](#box)
+  - [CSS Import Options](#css-import-options)
+  - [Theme Options](#theme-options)
+  - [Theme Variables Reference](#theme-variables-reference)
+  - [SSR-Friendly Design](#ssr-friendly-design)
+  - [SSR Mode Prop](#ssr-mode-prop)
 
 ## Features
 
@@ -119,7 +138,7 @@ The base unit is the foundation of Baseline Kit's spacing system. All measuremen
 unit:
 
 ```tsx
-<Config base={8}> // Sets 8px as the base unit
+<Config base={8}>     // Sets 8px as the base unit
   <Layout
     block={17}        // Will be rounded to 16px (2 * base)
     inline={22}       // Will be rounded to 24px (3 * base)
@@ -305,7 +324,7 @@ Then create your own custom theme file:
 Then import your custom theme:
 
 ```tsx
-import 'baseline-kit/styles';  // Required core styles
+import 'baseline-kit/styles';            // Required core styles
 import './path/to/yourCustomTheme.css';  // Your custom theme
 ```
 
@@ -337,7 +356,7 @@ For minor adjustments, use the Config component:
 | Layout    | `--bk-layout-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
 | Spacer    | `--bk-spacer-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
 
-See the [default theme file](https://github.com/dnvt/baseline-kit/blob/main/dist/theme.css) for a complete example.
+See the [tokens file](https://github.com/dnvt/baseline-kit/blob/main/dist/theme/tokens.css) for a complete list of available variables.
 
 ## Browser Support
 
@@ -348,7 +367,6 @@ See the [default theme file](https://github.com/dnvt/baseline-kit/blob/main/dist
 ## React 19 Features
 
 Baseline Kit leverages React 19's latest features:
-
 - **`use` Hook**: Replaces `useContext` for better performance and cleaner code
 - **Streamlined Context API**: Uses the simplified Context Provider syntax
 - **JSX Transform**: Takes advantage of the mandatory JSX transform in React 19
@@ -400,7 +418,9 @@ bun run test
 ## Performance Features
 
 - Virtualizes large grid overlays
-- Optimizes re-renders using React.memo
+- Client-side only rendering for dynamic components
+- Optimized resize event handling
+- Optimizes re-renders using React.memo and useMemo
 - Supports tree-shaking for minimal bundle size
 
 ## Contributing
@@ -410,79 +430,3 @@ Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 ## License
 
 MIT © [François Denavaut](https://github.com/dnvt)
-
-## Integration with Remix
-
-Baseline Kit is fully compatible with Remix. Follow these steps to integrate it into your Remix application:
-
-### Standard Integration
-
-In your Remix application, create a `root.tsx` file with proper links to the CSS:
-
-```tsx
-// app/root.tsx
-import type { LinksFunction } from '@remix-run/node';
-
-export const links: LinksFunction = () => [
-  // Option 1: Use the combined CSS file (simplest approach)
-  { rel: 'stylesheet', href: 'npm:baseline-kit/dist/baseline-kit.css' },
-
-  // Option 2: Or use core styles and theme separately
-  // { rel: 'stylesheet', href: 'npm:baseline-kit/dist/styles.css' },
-  // { rel: 'stylesheet', href: 'npm:baseline-kit/dist/theme.css' },
-];
-
-export default function App() {
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Links />
-      </head>
-      <body>
-        <Outlet />
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
-      </body>
-    </html>
-  );
-}
-```
-
-Note the use of `npm:` prefix which is the recommended way to reference CSS from node_modules in Remix.
-
-### Troubleshooting CSS in Remix
-
-If you're experiencing styling issues with components not showing properly:
-
-1. **Copy to public directory**: For a completely reliable solution, copy the CSS files to your public directory:
-   ```shell
-   mkdir -p public/css
-   cp node_modules/baseline-kit/dist/*.css public/css/
-   ```
-
-   Then reference these local files:
-   ```tsx
-   export const links: LinksFunction = () => [
-     { rel: 'stylesheet', href: '/css/baseline-kit.css' }
-   ];
-   ```
-
-2. **Check CSS specificity**: Make sure your application's CSS isn't overriding Baseline Kit styles. You may need to adjust specificity or load order of your stylesheets.
-
-### Custom Theme Integration
-
-For custom theming:
-
-```tsx
-export const links: LinksFunction = () => [
-  // Core styles (required)
-  { rel: 'stylesheet', href: 'npm:baseline-kit/dist/styles.css' },
-  // Choose one of these theme options:
-  { rel: 'stylesheet', href: 'npm:baseline-kit/dist/theme/default.css' }, // Light theme only
-  { rel: 'stylesheet', href: 'npm:baseline-kit/dist/theme/dark.css' },    // Dark theme only
-  { rel: 'stylesheet', href: '/css/custom-theme.css' },                  // Your custom theme
-];
-```
