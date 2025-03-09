@@ -46,57 +46,60 @@ type GridConfigParams = {
   columnWidth?: React.CSSProperties['width']
 }
 
-// Utils -----------------------------------------------------------------------
-
-/** Creates the appropriate grid configuration based on variant */
-export const createGridConfig = (
+/**
+ * Creates a grid configuration based on the specified variant and parameters
+ * Internal helper function for Guide component
+ */
+const createGridConfig = (
   params: GridConfigParams
 ): PatternConfig | AutoConfig | FixedConfig | LineConfig => {
   const { variant, base, gap, columns, columnWidth } = params
 
-  return (
-    {
-      line: {
-        variant: 'line' as const,
-        gap: gap - 1,
+  switch (variant) {
+    case 'line':
+      return {
+        variant: 'line',
+        gap,
         base,
-      },
-      auto: columnWidth
-        ? {
-            variant: 'auto' as const,
-            columnWidth,
-            gap,
-            base,
-          }
-        : null,
-      pattern: Array.isArray(columns)
-        ? {
-            variant: 'pattern' as const,
-            columns,
-            gap,
-            base,
-          }
-        : null,
-      fixed:
-        typeof columns === 'number'
-          ? {
-              variant: 'fixed' as const,
-              columns,
-              columnWidth,
-              gap,
-              base,
-            }
-          : null,
-    }[variant] ?? {
-      variant: 'line' as const,
-      gap: gap - 1,
-      base,
-    }
-  )
+      } as LineConfig
+
+    case 'pattern':
+      if (columns && Array.isArray(columns)) {
+        return {
+          variant: 'pattern',
+          columns: columns as readonly (string | number)[],
+          gap,
+          base,
+        } as PatternConfig
+      }
+      break
+
+    case 'fixed':
+      if (columns !== undefined) {
+        const parsedColumns =
+          typeof columns === 'number' ? columns : parseInt(String(columns), 10)
+        return {
+          variant: 'fixed',
+          columns: !isNaN(parsedColumns) ? parsedColumns : 12,
+          columnWidth: columnWidth || '60px',
+          gap,
+          base,
+        } as FixedConfig
+      }
+      break
+  }
+
+  // Default to auto columns if no valid configuration was created
+  return {
+    variant: 'auto',
+    columnWidth: columnWidth || '1fr',
+    gap,
+    base,
+  } as AutoConfig
 }
 
 /** Creates default guide styles */
-export const createDefaultGuideStyles = (
+const createDefaultGuideStyles = (
   base: number,
   lineColor: string
 ): Record<string, string> => ({

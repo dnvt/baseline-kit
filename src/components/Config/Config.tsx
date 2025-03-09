@@ -24,7 +24,7 @@ type Colors = {
 }
 
 /** Complete configuration schema for baseline-kit. */
-export type Config = {
+export type ConfigSchema = {
   /** Base unit for spacing calculations */
   base: number
   /** Guide component configuration */
@@ -68,7 +68,7 @@ export type Config = {
 }
 
 // Create the context
-const ConfigContext = React.createContext<Config>(DEFAULT_CONFIG)
+const ConfigContext = React.createContext<ConfigSchema>(DEFAULT_CONFIG)
 ConfigContext.displayName = 'ConfigContext'
 
 // Update to use React 19's use hook instead of useContext
@@ -79,19 +79,19 @@ type ConfigProps = {
   /** Base unit for spacing calculations */
   base?: number
   /** Baseline component overrides */
-  baseline?: Partial<Config['baseline']>
+  baseline?: Partial<ConfigSchema['baseline']>
   /** Flex component overrides */
-  stack?: Partial<Config['stack']>
+  stack?: Partial<ConfigSchema['stack']>
   /** Layout component overrides */
-  layout?: Partial<Config['layout']>
+  layout?: Partial<ConfigSchema['layout']>
   /** Guide component overrides */
-  guide?: Partial<Config['guide']>
+  guide?: Partial<ConfigSchema['guide']>
   /** Spacer component overrides */
-  spacer?: Partial<Config['spacer']>
+  spacer?: Partial<ConfigSchema['spacer']>
   /** Box component overrides */
-  box?: Partial<Config['box']>
+  box?: Partial<ConfigSchema['box']>
   /** Padder component overrides */
-  padder?: Partial<Config['padder']>
+  padder?: Partial<ConfigSchema['padder']>
 }
 
 // Utils -----------------------------------------------------------------------
@@ -101,19 +101,19 @@ type CSSVariablesParams = {
   /** Base unit for spacing calculations */
   base: number
   /** Baseline component configuration */
-  baseline: Config['baseline']
+  baseline: ConfigSchema['baseline']
   /** Guide component configuration */
-  guide: Config['guide']
+  guide: ConfigSchema['guide']
   /** Stack component configuration */
-  stack: Config['stack']
+  stack: ConfigSchema['stack']
   /** Spacer component configuration */
-  spacer: Config['spacer']
+  spacer: ConfigSchema['spacer']
   /** Layout component configuration */
-  layout: Config['layout']
+  layout: ConfigSchema['layout']
   /** Box component configuration */
-  box: Config['box']
+  box: ConfigSchema['box']
   /** Padder component configuration */
-  padder: Config['padder']
+  padder: ConfigSchema['padder']
 }
 
 /**
@@ -166,30 +166,30 @@ export const createCSSVariables = (
 /** Parameters for merging configuration */
 type MergeConfigParams = {
   /** Parent configuration to extend */
-  parentConfig: Config
+  parentConfig: ConfigSchema
   /** Base unit override */
   base?: number
   /** Baseline component overrides */
-  baseline?: Partial<Config['baseline']>
+  baseline?: Partial<ConfigSchema['baseline']>
   /** Guide component overrides */
-  guide?: Partial<Config['guide']>
+  guide?: Partial<ConfigSchema['guide']>
   /** Spacer component overrides */
-  spacer?: Partial<Config['spacer']>
+  spacer?: Partial<ConfigSchema['spacer']>
   /** Box component overrides */
-  box?: Partial<Config['box']>
+  box?: Partial<ConfigSchema['box']>
   /** Stack component overrides */
-  stack?: Partial<Config['stack']>
+  stack?: Partial<ConfigSchema['stack']>
   /** Layout component overrides */
-  layout?: Partial<Config['layout']>
+  layout?: Partial<ConfigSchema['layout']>
   /** Padder component overrides */
-  padder?: Partial<Config['padder']>
+  padder?: Partial<ConfigSchema['padder']>
 }
 
 /**
  * Merges parent config with overrides.
  * Creates a new config object without mutating the parent.
  */
-export const mergeConfig = (params: MergeConfigParams): Config => {
+export const mergeConfig = (params: MergeConfigParams): ConfigSchema => {
   const {
     parentConfig,
     base,

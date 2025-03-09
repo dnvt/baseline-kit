@@ -24,7 +24,7 @@ type PaddingStyles = {
   [key: string]: string | undefined
 }
 
-type PadderProps = {
+export type PadderProps = {
   /** Render function for custom measurement indicators */
   indicatorNode?: IndicatorNode
   /** Flag to enable SSR-compatible mode (simplified initial render) */
@@ -32,10 +32,8 @@ type PadderProps = {
   children?: React.ReactNode
 } & ComponentsProps
 
-// Utils -----------------------------------------------------------------------
-
 /** Creates default container styles for Padder */
-export const createPadderContainerStyles = (
+const createPadderContainerStyles = (
   width: React.CSSProperties['width'],
   height: React.CSSProperties['height'],
   base: number,
@@ -50,20 +48,16 @@ export const createPadderContainerStyles = (
   if (height !== 'fit-content') {
     stylesObj['--bkph'] = formatValue(height || 'fit-content')
   }
-  // Only inject base if it differs from theme
-  if (base !== 8) {
-    stylesObj['--bkpb'] = `${base}px`
-  }
-  // Only inject color if it differs from theme
-  if (color !== 'var(--bk-padder-color-theme)') {
-    stylesObj['--bkpc'] = color
-  }
+
+  // Always set base and color
+  stylesObj['--bkpb'] = `${base}px`
+  stylesObj['--bkpc'] = color
 
   return stylesObj
 }
 
-/** Creates padding styles when spacers are disabled */
-export const createDirectPaddingStyles = (
+/** Creates direct padding styles when spacers are disabled */
+const createDirectPaddingStyles = (
   enableSpacers: boolean,
   padding: {
     top: number
@@ -89,7 +83,7 @@ export const createDirectPaddingStyles = (
 }
 
 /** Creates a render function for spacers */
-export const createRenderSpacerFn = (
+const createRenderSpacerFn = (
   variant: Variant | undefined,
   debugging: DebuggingMode | undefined,
   indicatorNode?: IndicatorNode

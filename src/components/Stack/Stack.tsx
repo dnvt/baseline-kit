@@ -16,10 +16,7 @@ import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
 // Maps shorthand directions to Flexbox directions
-export const DIRECTION_AXIS: Record<
-  string,
-  React.CSSProperties['flexDirection']
-> = {
+const DIRECTION_AXIS: Record<string, React.CSSProperties['flexDirection']> = {
   x: 'row',
   y: 'column',
   '-x': 'row-reverse',
@@ -58,7 +55,7 @@ export type StackProps = {
 // Utils -----------------------------------------------------------------------
 
 /** Creates default stack styles with theme colors */
-export const createDefaultStackStyles = (colors: Record<string, string>) => ({
+const createDefaultStackStyles = (colors: Record<string, string>) => ({
   '--bkkw': 'auto',
   '--bkkh': 'auto',
   '--bkkcl': colors.line,
@@ -67,7 +64,7 @@ export const createDefaultStackStyles = (colors: Record<string, string>) => ({
 })
 
 /** Creates gap styles for the stack */
-export const createStackGapStyles = (
+const createStackGapStyles = (
   rowGap?: number,
   columnGap?: number,
   gap?: number

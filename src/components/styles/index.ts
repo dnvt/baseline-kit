@@ -11,8 +11,5 @@
 import './core.css'
 import './theme.css'
 
-// Export component types for external usage
-export * from '../types'
-
 // Empty export to make this a proper module
 export {}

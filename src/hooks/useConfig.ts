@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
-import { Config, useDefaultConfig } from '@components'
+import { ConfigSchema, useDefaultConfig } from '@components'
 
 /** Type helper that merges base configuration with component-specific settings. */
-export type ComponentConfig<K extends keyof Config> = Config[K] & {
+export type ComponentConfig<K extends keyof ConfigSchema> = ConfigSchema[K] & {
   /** Base unit for spacing calculations */
   base: number
 }
@@ -41,7 +41,7 @@ export type ComponentConfig<K extends keyof Config> = Config[K] & {
  * }
  * ```
  */
-export function useConfig<K extends keyof Config>(
+export function useConfig<K extends keyof ConfigSchema>(
   component: K
 ): ComponentConfig<K> {
   const defaultConfig = useDefaultConfig()

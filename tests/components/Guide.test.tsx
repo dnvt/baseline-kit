@@ -83,7 +83,7 @@ describe('Guide component', () => {
       <Guide variant="line" gap={10} debugging="visible" data-testid="guide" />
     )
     const guideEl = screen.getByTestId('guide')
-    expect(guideEl.getAttribute('style')).toContain('--bkgg: 9px')
+    expect(guideEl.getAttribute('style')).toContain('--bkgg: 10px')
   })
 
   it('handles "auto" variant with numeric columnWidth', () => {
