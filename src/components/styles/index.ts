@@ -1,6 +1,6 @@
 /**
  * Baseline Kit Styles System
- * 
+ *
  * This file exports all core styles needed for the component library.
  * The import order is important:
  * 1. core.css - Contains reset.css, base.css, and component styles

@@ -96,7 +96,7 @@ export type FixedConfig = BaseGuideConfig & {
  *
  * @example
  * ```ts
- * // Auto-fit columns of 200px
+ * // Auto-fill columns of 200px
  * const auto: AutoConfig = {
  *   variant: 'auto',
  *   columnWidth: '200px',

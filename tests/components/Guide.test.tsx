@@ -33,7 +33,7 @@ vi.mock('@hooks', async () => {
         const columnWidth =
           typeof config.columnWidth === 'number' ? config.columnWidth : 100
         const columnsCount = Math.floor(1024 / columnWidth)
-        const template = `repeat(auto-fit, minmax(${columnWidth}px, 1fr))`
+        const template = `repeat(auto-fill, ${columnWidth}px)`
         return { template, columnsCount, calculatedGap }
       }
       if (variant === 'pattern') {

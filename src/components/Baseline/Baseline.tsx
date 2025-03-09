@@ -9,8 +9,7 @@ import {
   calculateRowCount,
   formatValue,
   createStyleOverride,
-  SSR_DIMENSIONS,
-  hydratedValue,
+  ClientOnly,
 } from '@utils'
 import { Variant } from '../types'
 import styles from './styles.module.css'
@@ -126,28 +125,88 @@ export const Baseline = React.memo(function Baseline({
   const base = baseProp ?? config.base
   const { isShown } = useDebug(debugging, config.debugging)
 
+  // If debugging isn't enabled, render a hidden element
+  // This ensures tests can find the element even when hidden
+  if (!isShown) {
+    return (
+      <div
+        className={mergeClasses(styles.b, styles.h, className)}
+        style={style}
+        data-testid="baseline"
+        {...spacingProps}
+      />
+    )
+  }
+
+  // Create a simple SSR fallback
+  const ssrFallback = (
+    <div
+      className={mergeClasses(styles.b, styles.h, styles.ssr, className)}
+      style={{
+        width: widthProp || '100%',
+        height: heightProp || '100%',
+        ...style,
+      }}
+      data-testid="baseline"
+    />
+  )
+
+  // Wrap the actual implementation in ClientOnly
+  return (
+    <ClientOnly fallback={ssrFallback}>
+      <BaselineImpl
+        className={className}
+        debugging={debugging}
+        style={style}
+        variant={variant}
+        height={heightProp}
+        width={widthProp}
+        base={base}
+        color={colorProp}
+        ssrMode={ssrMode}
+        {...spacingProps}
+      />
+    </ClientOnly>
+  )
+})
+
+// Implementation component that only renders on the client side
+const BaselineImpl = React.memo(function BaselineImpl({
+  className,
+  debugging,
+  style,
+  variant,
+  height: heightProp,
+  width: widthProp,
+  base,
+  color: colorProp,
+  ssrMode: _ssrMode = false,
+  ...spacingProps
+}: BaselineProps) {
+  const config = useConfig('baseline')
+  const { isShown } = useDebug(debugging, config.debugging)
+
   // Use a stable reference that won't cause hydration mismatches
   const containerRef = React.useRef<HTMLDivElement | null>(null)
 
-  // Use state to track if we're hydrated
-  const [isHydrated, setIsHydrated] = React.useState(false)
-
   // Always call hooks, but conditionally use their results
-  const measuredDimensions = useMeasure(containerRef)
+  const {
+    width: containerWidth,
+    height: containerHeight,
+    refresh,
+  } = useMeasure(containerRef)
 
-  // After hydration, we can use real measurement
+  // Effect for handling window resize events
   React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
+    const handleResize = () => {
+      refresh()
+    }
 
-  // Choose appropriate dimensions based on rendering environment using our utility
-  const dimensions = hydratedValue(
-    isHydrated,
-    SSR_DIMENSIONS,
-    measuredDimensions
-  )
-
-  const { width: containerWidth, height: containerHeight } = dimensions
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [refresh])
 
   const [_normWidth, normHeight] = React.useMemo(() => {
     return normalizeValuePair(
@@ -170,34 +229,22 @@ export const Baseline = React.memo(function Baseline({
   }, [top, right, bottom, left])
 
   const rowCount = React.useMemo(() => {
+    const baseValue = base || config.base
     return calculateRowCount({
       height: normHeight,
       top,
       bottom,
-      base,
+      base: baseValue,
     })
-  }, [normHeight, top, bottom, base])
+  }, [normHeight, top, bottom, base, config.base])
 
-  // Always call useVirtual but potentially use simpler values
-  const virtualResult = useVirtual({
+  // Use virtual rendering for performance
+  const { start, end } = useVirtual({
     totalLines: rowCount,
-    lineHeight: base,
+    lineHeight: base || config.base,
     containerRef,
     buffer: 160,
   })
-
-  // For SSR, use simplistic settings that match between server/client
-  const stableVirtualResult = {
-    start: 0,
-    end: Math.min(10, rowCount),
-  }
-
-  // Choose appropriate virtualization based on environment
-  const { start, end } = hydratedValue(
-    isHydrated && !ssrMode,
-    stableVirtualResult,
-    virtualResult
-  )
 
   const chosenColor =
     colorProp || (variant === 'line' ? config.colors.line : config.colors.flat)
@@ -205,8 +252,12 @@ export const Baseline = React.memo(function Baseline({
   // Create default baseline styles
   const defaultBaselineStyles = React.useMemo(
     () =>
-      createDefaultBaselineStyles(base, config.colors.line, config.colors.flat),
-    [base, config.colors.line, config.colors.flat]
+      createDefaultBaselineStyles(
+        base || config.base,
+        config.colors.line,
+        config.colors.flat
+      ),
+    [base, config.colors.line, config.colors.flat, config.base]
   )
 
   const containerStyles = React.useMemo(() => {
@@ -263,16 +314,27 @@ export const Baseline = React.memo(function Baseline({
 
   const getRowStyle = React.useCallback(
     (index: number) => {
+      // Ensure variant is a BaselineVariant
+      const safeVariant = variant as BaselineVariant
+      const safeBase = base || config.base
+
       return createBaselineRowStyle({
         index,
-        base,
-        variant,
+        base: safeBase,
+        variant: safeVariant,
         chosenColor,
         lineColor: config.colors.line,
         flatColor: config.colors.flat,
       })
     },
-    [base, variant, chosenColor, config.colors.line, config.colors.flat]
+    [
+      base,
+      variant,
+      chosenColor,
+      config.colors.line,
+      config.colors.flat,
+      config.base,
+    ]
   )
 
   return (

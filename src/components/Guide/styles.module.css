@@ -14,10 +14,12 @@
   inset: 0;
   display: grid;
   column-gap: var(--bkgg);
+  grid-template-rows: 1fr;
   grid-template-columns: var(--bkgt);
   justify-content: var(--bkgj);
   width: var(--bkwf);
   height: var(--bkhf);
+  overflow: hidden;
 }
 
 .col {
@@ -38,8 +40,19 @@
 
 .col[data-variant='auto'] {
   background-color: var(--bkgca);
+  overflow: hidden;
 }
 
 .col[data-variant='fixed'] {
   background-color: var(--bkgcf);
+}
+
+/* Style for SSR rendering */
+.ssr {
+  box-sizing: border-box;
+  display: grid;
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+  min-height: 100px; /* Ensures a minimum height during SSR */
 }

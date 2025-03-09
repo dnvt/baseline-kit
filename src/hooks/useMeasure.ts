@@ -62,12 +62,13 @@ export function useMeasure(
 
   // On mount (or when ref changes) perform an immediate measurement.
   React.useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
     measure()
   }, [measure])
 
   // Set up a ResizeObserver on mount.
   React.useLayoutEffect(() => {
-    if (!ref.current) return
+    if (typeof window === 'undefined' || !ref.current) return
     const observer = new ResizeObserver(() => {
       refresh()
     })

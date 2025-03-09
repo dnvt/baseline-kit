@@ -10,16 +10,16 @@
 /* Core system variables */
 :root {
   /* Core System Variables */
-  --bkb: 8px;                        /* Base unit for spacing */
-  --bkzi: 1;                         /* Base z-index */
-  --bkzio: 2;                        /* Overlay z-index */
-  --bk-transition-base: 180ms ease;  /* Standard transition */
+  --bkb: 8px; /* Base unit for spacing */
+  --bkzi: 1; /* Base z-index */
+  --bkzio: 2; /* Overlay z-index */
+  --bk-transition-base: 180ms ease; /* Standard transition */
 
   /* Default Dimensions */
   --bk-width-default: fit-content;
   --bk-height-default: fit-content;
-  --bkwf: 100%;                      /* Full width shorthand */
-  --bkhf: 100%;                      /* Full height shorthand */
+  --bkwf: 100%; /* Full width shorthand */
+  --bkhf: 100%; /* Full height shorthand */
 
   /* Box Component Variables */
   --bkxb: var(--bkb);
@@ -48,7 +48,7 @@
   --bkgw: 100vw;
   --bkgh: 100vh;
   --bkgg: var(--bkb);
-  --bkgj: start;
+  --bkgj: center;
   --bkgt: auto;
   --bkgpb: 0;
   --bkgpi: 0;
@@ -63,7 +63,7 @@
   --bklcl: var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6));
   --bklcf: var(--bk-layout-color-flat-theme, hsla(0, 100%, 70%, 0.2));
   --bklci: var(--bk-layout-color-text-theme, hsla(330, 60%, 40%, 0.9));
-  --bklgtc: repeat(auto-fit, minmax(100px, 1fr));
+  --bklgtc: repeat(auto-fill, minmax(100px, 1fr));
   --bklgtr: auto;
   --bklg: 0;
   --bklcg: 0;
@@ -72,16 +72,6 @@
   --bklai: stretch;
   --bkljc: start;
   --bklac: start;
-
-  /* Layout Component alternative variables (explicitly named) */
-  --bk-layout-gtc: repeat(auto-fit, minmax(100px, 1fr));
-  --bk-layout-gtr: auto;
-  --bk-layout-cg: 0;
-  --bk-layout-rg: 0;
-  --bk-layout-ji: stretch;
-  --bk-layout-ai: stretch;
-  --bk-layout-jc: start;
-  --bk-layout-ac: start;
 
   /* Padder Component Variables */
   --bkpw: var(--bk-width-default);
@@ -95,43 +85,6 @@
   --bkscf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
   --bksct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
 }
-
-/* Component-specific fallback styles to ensure cross-framework compatibility */
-
-/* Spacer Component - Robust fallback styles */
-.spr_zbcF6 {
-  /* Variable definitions with fallbacks */
-  --bkscl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
-  --bkscf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
-  --bksct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
-  --bkzi: 1;
-  --bkzio: 2;
-  
-  /* Essential layout properties */
-  position: relative;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  width: var(--bksw, 100%);
-  height: var(--bksh, auto);
-  background-color: var(--bkscf);
-  border: 1px dashed var(--bkscl);
-}
-
-/* Spacer text indicator */
-.spr_zbcF6[data-height]::before {
-  content: attr(data-height);
-  color: var(--bksct);
-  font-family: monospace;
-  font-size: 12px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: var(--bkzio);
-}
-
-/* Component-specific fallback values for theming */
 
 /* Guide Component */
 .guide {
