@@ -20,14 +20,14 @@ import { GuideColumnsPattern } from '../types'
  */
 type BaseGuideConfig = {
   /** Gap between columnms. */
-  gap?: React.CSSProperties['gap'];
+  gap?: React.CSSProperties['gap']
 
   /**
    * Base unit in pixels for spacing calculations.
    * Typically inherited from theme configuration.
    */
-  base?: number;
-};
+  base?: number
+}
 
 /**
  * Pattern-based grid configuration.
@@ -52,12 +52,12 @@ type BaseGuideConfig = {
  */
 export type PatternConfig = BaseGuideConfig & {
   /** Identifies this as a pattern-based configuration */
-  variant: 'pattern';
+  variant: 'pattern'
   /** Array of column widths that repeat */
-  columns: GuideColumnsPattern;
+  columns: GuideColumnsPattern
   /** Not applicable in pattern mode */
-  columnWidth?: never;
-};
+  columnWidth?: never
+}
 
 /**
  * Fixed-column grid configuration.
@@ -83,12 +83,12 @@ export type PatternConfig = BaseGuideConfig & {
  */
 export type FixedConfig = BaseGuideConfig & {
   /** Identifies this as a fixed-column configuration */
-  variant: 'fixed';
+  variant: 'fixed'
   /** Number of columns to create */
-  columns: number;
+  columns: number
   /** Optional fixed width for all columns */
-  columnWidth?: React.CSSProperties['width'];
-};
+  columnWidth?: React.CSSProperties['width']
+}
 
 /**
  * Auto-calculated grid configuration.
@@ -96,7 +96,7 @@ export type FixedConfig = BaseGuideConfig & {
  *
  * @example
  * ```ts
- * // Auto-fit columns of 200px
+ * // Auto-fill columns of 200px
  * const auto: AutoConfig = {
  *   variant: 'auto',
  *   columnWidth: '200px',
@@ -113,12 +113,12 @@ export type FixedConfig = BaseGuideConfig & {
  */
 export type AutoConfig = BaseGuideConfig & {
   /** Identifies this as an auto-calculated configuration */
-  variant: 'auto';
+  variant: 'auto'
   /** Desired width for each column */
-  columnWidth: React.CSSProperties['columnWidth'];
+  columnWidth: React.CSSProperties['columnWidth']
   /** Not applicable in auto mode */
-  columns?: never;
-};
+  columns?: never
+}
 
 /**
  * Simple line-based guide configuration.
@@ -142,9 +142,9 @@ export type AutoConfig = BaseGuideConfig & {
  */
 export type LineConfig = BaseGuideConfig & {
   /** Optional variant identifier (defaults to 'line') */
-  variant?: 'line';
+  variant?: 'line'
   /** Not applicable in line mode */
-  columns?: never;
+  columns?: never
   /** Not applicable in line mode */
-  columnWidth?: never;
-};
+  columnWidth?: never
+}

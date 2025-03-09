@@ -15,3 +15,6 @@ export * from './useGuide'
 // Configuration
 export * from './useConfig'
 export * from './useDebug'
+
+// Don't export useIsClient as it's only used internally
+// export * from './useIsClient'

@@ -3,11 +3,11 @@ import { rafThrottle } from '@utils'
 
 export interface MeasureResult {
   /** Measured width in pixels */
-  width: number;
+  width: number
   /** Measured height in pixels */
-  height: number;
+  height: number
   /** Function to force a remeasurement */
-  refresh: () => void;
+  refresh: () => void
 }
 
 /**
@@ -35,7 +35,9 @@ export interface MeasureResult {
  * }
  * ```
  */
-export function useMeasure(ref: React.RefObject<HTMLElement | null>): MeasureResult {
+export function useMeasure(
+  ref: React.RefObject<HTMLElement | null>
+): MeasureResult {
   const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 })
 
   // measure() reads getBoundingClientRect() from ref.current
@@ -47,8 +49,8 @@ export function useMeasure(ref: React.RefObject<HTMLElement | null>): MeasureRes
         width: rect ? Math.round(rect.width) : 0,
         height: rect ? Math.round(rect.height) : 0,
       }
-      setDimensions(prev =>
-        prev.width === next.width && prev.height === next.height ? prev : next,
+      setDimensions((prev) =>
+        prev.width === next.width && prev.height === next.height ? prev : next
       )
     } catch {
       setDimensions({ width: 0, height: 0 })
@@ -59,11 +61,14 @@ export function useMeasure(ref: React.RefObject<HTMLElement | null>): MeasureRes
   const refresh = React.useMemo(() => rafThrottle(measure), [measure])
 
   // On mount (or when ref changes) perform an immediate measurement.
-  React.useLayoutEffect(() => { measure() }, [measure])
+  React.useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+    measure()
+  }, [measure])
 
   // Set up a ResizeObserver on mount.
   React.useLayoutEffect(() => {
-    if (!ref.current) return
+    if (typeof window === 'undefined' || !ref.current) return
     const observer = new ResizeObserver(() => {
       refresh()
     })

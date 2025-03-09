@@ -6,14 +6,17 @@ import {
   formatValue,
   normalizeValuePair,
   createStyleOverride,
-  hydratedValue
+  hydratedValue,
 } from '@utils'
 import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
 // Type Definitions ------------------------------------------------------------
 
-export type IndicatorNode = (value: number, type: 'width' | 'height') => React.ReactNode
+export type IndicatorNode = (
+  value: number,
+  type: 'width' | 'height'
+) => React.ReactNode
 
 export type SpacerProps = {
   /** Explicit width (takes precedence over block) */
@@ -37,26 +40,26 @@ export type SpacerProps = {
 // Utils -----------------------------------------------------------------------
 
 /** Creates default spacer styles */
-export const createDefaultSpacerStyles = (
+const createDefaultSpacerStyles = (
   base: number,
   textColor: string,
   flatColor: string,
-  lineColor: string,
+  lineColor: string
 ): Record<string, string> => ({
   '--bksw': '100%',
   '--bksh': '100%',
   '--bksb': `${base}px`,
-  '--bksci': textColor,
-  '--bkscl': lineColor,
+  '--bksct': textColor,
   '--bkscf': flatColor,
+  '--bkscl': lineColor,
 })
 
 /** Generates measurement indicators for debugging */
-export const generateMeasurements = (
+const generateMeasurements = (
   isShown: boolean,
   indicatorNode: SpacerProps['indicatorNode'],
   normWidth: number | string,
-  normHeight: number | string,
+  normHeight: number | string
 ): React.ReactNode | null => {
   if (!isShown || !indicatorNode) return null
 
@@ -66,15 +69,9 @@ export const generateMeasurements = (
   return (
     <>
       {height !== 0 && (
-        <span key="height">
-          {indicatorNode(height, 'height')}
-        </span>
+        <span key="height">{indicatorNode(height, 'height')}</span>
       )}
-      {width !== 0 && (
-        <span key="width">
-          {indicatorNode(width, 'width')}
-        </span>
-      )}
+      {width !== 0 && <span key="width">{indicatorNode(width, 'width')}</span>}
     </>
   )
 }
@@ -128,24 +125,23 @@ export const Spacer = React.memo(function Spacer({
 
   // Add hydration state tracking
   const [isHydrated, setIsHydrated] = React.useState(false)
-  
+
   React.useEffect(() => {
     setIsHydrated(true)
   }, [])
 
   const [normWidth, normHeight] = React.useMemo(() => {
-    return normalizeValuePair(
-      [widthProp, heightProp],
-      [0, 0],
-      { base, suppressWarnings: true }
-    )
+    return normalizeValuePair([widthProp, heightProp], [0, 0], {
+      base,
+      suppressWarnings: true,
+    })
   }, [widthProp, heightProp, base])
 
   // Ensure stable rendering for measurements during SSR
   const shouldShowMeasurements = hydratedValue(
     isHydrated && !ssrMode,
     false, // Don't show measurements during SSR
-    isShown && (indicatorNode !== undefined)
+    isShown && indicatorNode !== undefined
   )
 
   // Only generate measurements after hydration
@@ -154,12 +150,7 @@ export const Spacer = React.memo(function Spacer({
       return null
     }
 
-    return generateMeasurements(
-      isShown,
-      indicatorNode,
-      normWidth,
-      normHeight
-    )
+    return generateMeasurements(isShown, indicatorNode, normWidth, normHeight)
   }, [shouldShowMeasurements, isShown, indicatorNode, normWidth, normHeight])
 
   const defaultStyles = React.useMemo(
@@ -168,9 +159,9 @@ export const Spacer = React.memo(function Spacer({
         base,
         config.colors.text,
         config.colors.flat,
-        config.colors.line,
+        config.colors.line
       ),
-    [base, config.colors],
+    [base, config.colors]
   )
 
   const baseStyles = React.useMemo(() => {
@@ -197,7 +188,7 @@ export const Spacer = React.memo(function Spacer({
       // Explicitly set --bksb to ensure it is always applied
       '--bksb': baseValue,
       ...createStyleOverride({
-        key: '--bksci',
+        key: '--bksct',
         value: colorProp ?? config.colors.text,
         defaultStyles,
       }),
@@ -228,8 +219,15 @@ export const Spacer = React.memo(function Spacer({
     <div
       ref={ref}
       data-testid="spacer"
-      className={mergeClasses(styles.spr, isShown && styles[variant], className)}
+      className={mergeClasses(
+        styles.spr,
+        isShown && styles[variant],
+        className
+      )}
       data-variant={variant}
+      data-height={
+        typeof normHeight === 'number' ? `${normHeight}px` : normHeight
+      }
       style={baseStyles}
       {...props}
     >

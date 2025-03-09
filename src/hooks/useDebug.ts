@@ -3,13 +3,13 @@ import { DebuggingMode } from '../components/Config/Config'
 
 interface DebugResult {
   /** Whether debug visuals should be shown */
-  isShown: boolean;
+  isShown: boolean
   /** Whether debug features exist but are hidden */
-  isHidden: boolean;
+  isHidden: boolean
   /** Whether debug features are disabled */
-  isNone: boolean;
+  isNone: boolean
   /** Current debugging mode */
-  debugging: DebuggingMode | undefined;
+  debugging: DebuggingMode | undefined
 }
 
 /**
@@ -50,7 +50,7 @@ interface DebugResult {
  */
 export function useDebug(
   debuggingProp?: DebuggingMode,
-  debuggingConfig?: DebuggingMode,
+  debuggingConfig?: DebuggingMode
 ): DebugResult {
   return useMemo(() => {
     const effective = debuggingProp ?? debuggingConfig

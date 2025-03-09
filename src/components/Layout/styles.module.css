@@ -2,19 +2,21 @@
   display: grid;
   position: relative;
   box-sizing: border-box;
-  width: var(--bklw, auto);
-  height: var(--bklh, auto);
-  grid-template-columns: var(--bklgtc, repeat(auto-fit, minmax(100px, 1fr)));
+  width: var(--bklw, var(--bk-width-default, auto));
+  height: var(--bklh, var(--bk-height-default, auto));
+  grid-template-columns: var(
+    --bklgtc,
+    repeat(auto-fill, minmax(100px, 1fr))
+  );
   grid-template-rows: var(--bklgtr, auto);
-  gap: var(--bklg);
-  column-gap: var(--bklcg);
-  row-gap: var(--bklrg);
-  justify-items: var(--bklji);
-  align-items: var(--bklai);
-  justify-content: var(--bkljc);
-  align-content: var(--bklac);
+  gap: var(--bklg, 0);
+  column-gap: var(--bklcg, 0);
+  row-gap: var(--bklrg, 0);
+  justify-items: var(--bklji, stretch);
+  align-items: var(--bklai, stretch);
+  justify-content: var(--bkljc, start);
+  align-content: var(--bklac, start);
 }
-
 
 .lay .line::after,
 .stk .line::after {
@@ -25,7 +27,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bklcl);
+  border: 1px solid
+    var(--bklcl, var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6)));
   pointer-events: none;
-  z-index: var(--bkzio);
+  z-index: var(--bkzio, 2);
 }

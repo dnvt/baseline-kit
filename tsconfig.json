@@ -34,7 +34,7 @@
       ],
       "@utils": [
         "src/utils/index.ts"
-      ],
+      ]
     }
   },
   "include": [

@@ -9,8 +9,7 @@ import {
   calculateRowCount,
   formatValue,
   createStyleOverride,
-  SSR_DIMENSIONS,
-  hydratedValue
+  ClientOnly,
 } from '@utils'
 import { Variant } from '../types'
 import styles from './styles.module.css'
@@ -32,13 +31,11 @@ export type BaselineProps = {
   ssrMode?: boolean
 } & ComponentsProps
 
-// Utils -----------------------------------------------------------------------
-
 /** Creates default baseline styles */
-export const createDefaultBaselineStyles = (
+const createDefaultBaselineStyles = (
   base: number,
   lineColor: string,
-  flatColor: string,
+  flatColor: string
 ): Record<string, string> => ({
   '--bkbw': '100%',
   '--bkbh': '100%',
@@ -50,25 +47,25 @@ export const createDefaultBaselineStyles = (
 /** Create row styles for baseline lines */
 type RowStyleParams = {
   /** Row index */
-  index: number;
+  index: number
   /** Base unit for calculations */
-  base: number;
+  base: number
   /** Baseline visual variant */
-  variant: BaselineVariant;
+  variant: BaselineVariant
   /** Selected color for the baseline */
-  chosenColor: string;
+  chosenColor: string
   /** Theme line color */
-  lineColor: string;
+  lineColor: string
   /** Theme flat color */
-  flatColor: string;
+  flatColor: string
 }
 
 /**
  * Creates styles for an individual baseline row.
  * Applies positioning and visual styling based on variant.
  */
-export const createBaselineRowStyle = (
-  params: RowStyleParams,
+const createBaselineRowStyle = (
+  params: RowStyleParams
 ): React.CSSProperties => {
   const { index, base, variant, chosenColor, lineColor, flatColor } = params
 
@@ -79,6 +76,201 @@ export const createBaselineRowStyle = (
     '--bkbc': chosenColor || (variant === 'line' ? lineColor : flatColor),
   } as React.CSSProperties
 }
+
+// Implementation component that only renders on the client side
+const BaselineImpl = React.memo(function BaselineImpl({
+  className,
+  debugging,
+  style,
+  variant,
+  height: heightProp,
+  width: widthProp,
+  base,
+  color: colorProp,
+  ssrMode: _ssrMode = false,
+  ...spacingProps
+}: BaselineProps) {
+  const config = useConfig('baseline')
+  const { isShown } = useDebug(debugging, config.debugging)
+
+  // Use a stable reference that won't cause hydration mismatches
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+
+  // Always call hooks, but conditionally use their results
+  const {
+    width: containerWidth,
+    height: containerHeight,
+    refresh,
+  } = useMeasure(containerRef)
+
+  // Effect for handling window resize events
+  React.useEffect(() => {
+    const handleResize = () => {
+      refresh()
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [refresh])
+
+  const [_normWidth, normHeight] = React.useMemo(() => {
+    return normalizeValuePair(
+      [widthProp, heightProp],
+      [containerWidth, containerHeight]
+    )
+  }, [widthProp, heightProp, containerWidth, containerHeight])
+
+  const { top, right, bottom, left } = React.useMemo(
+    () => parsePadding(spacingProps),
+    [spacingProps]
+  )
+
+  const padding = React.useMemo(() => {
+    const paddingValues = [top, right, bottom, left]
+      .map((value) => (value ? `${value}px` : '0'))
+      .join(' ')
+
+    return paddingValues !== '0 0 0 0' ? paddingValues : undefined
+  }, [top, right, bottom, left])
+
+  const rowCount = React.useMemo(() => {
+    const baseValue = base || config.base
+    return calculateRowCount({
+      height: normHeight,
+      top,
+      bottom,
+      base: baseValue,
+    })
+  }, [normHeight, top, bottom, base, config.base])
+
+  // Use virtual rendering for performance
+  const { start, end } = useVirtual({
+    totalLines: rowCount,
+    lineHeight: base || config.base,
+    containerRef,
+    buffer: 160,
+  })
+
+  const chosenColor =
+    colorProp || (variant === 'line' ? config.colors.line : config.colors.flat)
+
+  // Create default baseline styles
+  const defaultBaselineStyles = React.useMemo(
+    () =>
+      createDefaultBaselineStyles(
+        base || config.base,
+        config.colors.line,
+        config.colors.flat
+      ),
+    [base, config.colors.line, config.colors.flat, config.base]
+  )
+
+  const containerStyles = React.useMemo(() => {
+    const widthValue = formatValue(widthProp || '100%')
+    const heightValue = formatValue(heightProp || '100%')
+
+    // Define dimensions that should be skipped when set to 100%
+    const dimensionVars = ['--bkbw', '--bkbh']
+
+    return mergeStyles(
+      {
+        ...createStyleOverride({
+          key: '--bkbw',
+          value: widthValue,
+          defaultStyles: defaultBaselineStyles,
+          skipDimensions: { fullSize: dimensionVars },
+        }),
+        ...createStyleOverride({
+          key: '--bkbh',
+          value: heightValue,
+          defaultStyles: defaultBaselineStyles,
+          skipDimensions: { fullSize: dimensionVars },
+        }),
+        ...createStyleOverride({
+          key: '--bkbb',
+          value: `${base}px`,
+          defaultStyles: defaultBaselineStyles,
+        }),
+        ...createStyleOverride({
+          key: '--bkbcl',
+          value: colorProp || config.colors.line,
+          defaultStyles: defaultBaselineStyles,
+        }),
+        ...createStyleOverride({
+          key: '--bkbcf',
+          value: colorProp || config.colors.flat,
+          defaultStyles: defaultBaselineStyles,
+        }),
+        ...(padding && { padding }),
+      } as React.CSSProperties,
+      style
+    )
+  }, [
+    widthProp,
+    heightProp,
+    base,
+    colorProp,
+    config.colors.line,
+    config.colors.flat,
+    padding,
+    defaultBaselineStyles,
+    style,
+  ])
+
+  const getRowStyle = React.useCallback(
+    (index: number) => {
+      // Ensure variant is a BaselineVariant
+      const safeVariant = variant as BaselineVariant
+      const safeBase = base || config.base
+
+      return createBaselineRowStyle({
+        index,
+        base: safeBase,
+        variant: safeVariant,
+        chosenColor,
+        lineColor: config.colors.line,
+        flatColor: config.colors.flat,
+      })
+    },
+    [
+      base,
+      variant,
+      chosenColor,
+      config.colors.line,
+      config.colors.flat,
+      config.base,
+    ]
+  )
+
+  return (
+    <div
+      ref={containerRef}
+      data-testid="baseline"
+      className={mergeClasses(
+        styles.bas,
+        isShown ? styles.v : styles.h,
+        className
+      )}
+      style={containerStyles}
+      {...spacingProps}
+    >
+      {isShown &&
+        Array.from({ length: end - start }, (_, i) => {
+          const rowIndex = i + start
+          return (
+            <div
+              className={styles.row}
+              key={rowIndex}
+              data-row-index={rowIndex}
+              style={getRowStyle(rowIndex)}
+            />
+          )
+        })}
+    </div>
+  )
+})
 
 /**
  * Renders horizontal guidelines for maintaining vertical rhythm and baseline alignment.
@@ -126,182 +318,47 @@ export const Baseline = React.memo(function Baseline({
   const base = baseProp ?? config.base
   const { isShown } = useDebug(debugging, config.debugging)
 
-  // Use a stable reference that won't cause hydration mismatches
-  const containerRef = React.useRef<HTMLDivElement | null>(null)
-  
-  // Use state to track if we're hydrated
-  const [isHydrated, setIsHydrated] = React.useState(false)
-  
-  // Always call hooks, but conditionally use their results
-  const measuredDimensions = useMeasure(containerRef)
-  
-  // After hydration, we can use real measurement
-  React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-  
-  // Choose appropriate dimensions based on rendering environment using our utility
-  const dimensions = hydratedValue(
-    isHydrated,
-    SSR_DIMENSIONS,
-    measuredDimensions
-  )
-  
-  const { width: containerWidth, height: containerHeight } = dimensions
-
-  const [_normWidth, normHeight] = React.useMemo(() => {
-    return normalizeValuePair(
-      [widthProp, heightProp],
-      [containerWidth, containerHeight],
+  // If debugging isn't enabled, render a hidden element
+  // This ensures tests can find the element even when hidden
+  if (!isShown) {
+    return (
+      <div
+        className={mergeClasses(styles.b, styles.h, className)}
+        style={style}
+        data-testid="baseline"
+        {...spacingProps}
+      />
     )
-  }, [widthProp, heightProp, containerWidth, containerHeight])
-
-  const { top, right, bottom, left } = React.useMemo(
-    () => parsePadding(spacingProps),
-    [spacingProps],
-  )
-
-  const padding = React.useMemo(() => {
-    const paddingValues = [top, right, bottom, left]
-      .map((value) => (value ? `${value}px` : '0'))
-      .join(' ')
-
-    return paddingValues !== '0 0 0 0' ? paddingValues : undefined
-  }, [top, right, bottom, left])
-
-  const rowCount = React.useMemo(() => {
-    return calculateRowCount({
-      height: normHeight,
-      top,
-      bottom,
-      base,
-    })
-  }, [normHeight, top, bottom, base])
-
-  // Always call useVirtual but potentially use simpler values
-  const virtualResult = useVirtual({
-    totalLines: rowCount,
-    lineHeight: base,
-    containerRef,
-    buffer: 160,
-  })
-  
-  // For SSR, use simplistic settings that match between server/client
-  const stableVirtualResult = { 
-    start: 0, 
-    end: Math.min(10, rowCount)
   }
-  
-  // Choose appropriate virtualization based on environment
-  const { start, end } = hydratedValue(
-    isHydrated && !ssrMode,
-    stableVirtualResult,
-    virtualResult
-  )
 
-  const chosenColor = colorProp ||
-    (variant === 'line' ? config.colors.line : config.colors.flat)
-
-  // Create default baseline styles
-  const defaultBaselineStyles = React.useMemo(
-    () => createDefaultBaselineStyles(
-      base,
-      config.colors.line,
-      config.colors.flat,
-    ),
-    [base, config.colors.line, config.colors.flat],
-  )
-
-  const containerStyles = React.useMemo(() => {
-    const widthValue = formatValue(widthProp || '100%')
-    const heightValue = formatValue(heightProp || '100%')
-
-    // Define dimensions that should be skipped when set to 100%
-    const dimensionVars = ['--bkbw', '--bkbh']
-
-    return mergeStyles(
-      {
-        ...createStyleOverride({
-          key: '--bkbw',
-          value: widthValue,
-          defaultStyles: defaultBaselineStyles,
-          skipDimensions: { fullSize: dimensionVars },
-        }),
-        ...createStyleOverride({
-          key: '--bkbh',
-          value: heightValue,
-          defaultStyles: defaultBaselineStyles,
-          skipDimensions: { fullSize: dimensionVars },
-        }),
-        ...createStyleOverride({
-          key: '--bkbb',
-          value: `${base}px`,
-          defaultStyles: defaultBaselineStyles,
-        }),
-        ...createStyleOverride({
-          key: '--bkbcl',
-          value: colorProp || config.colors.line,
-          defaultStyles: defaultBaselineStyles,
-        }),
-        ...createStyleOverride({
-          key: '--bkbcf',
-          value: colorProp || config.colors.flat,
-          defaultStyles: defaultBaselineStyles,
-        }),
-        ...(padding && { padding }),
-      } as React.CSSProperties,
-      style,
-    )
-  }, [
-    widthProp,
-    heightProp,
-    base,
-    colorProp,
-    config.colors.line,
-    config.colors.flat,
-    padding,
-    defaultBaselineStyles,
-    style,
-  ])
-
-  const getRowStyle = React.useCallback(
-    (index: number) => {
-      return createBaselineRowStyle({
-        index,
-        base,
-        variant,
-        chosenColor,
-        lineColor: config.colors.line,
-        flatColor: config.colors.flat,
-      })
-    },
-    [base, variant, chosenColor, config.colors.line, config.colors.flat],
-  )
-
-  return (
+  // Create a simple SSR fallback
+  const ssrFallback = (
     <div
-      ref={containerRef}
+      className={mergeClasses(styles.b, styles.h, styles.ssr, className)}
+      style={{
+        width: widthProp || '100%',
+        height: heightProp || '100%',
+        ...style,
+      }}
       data-testid="baseline"
-      className={mergeClasses(
-        styles.bas,
-        isShown ? styles.v : styles.h,
-        className,
-      )}
-      style={containerStyles}
-      {...spacingProps}
-    >
-      {isShown &&
-        Array.from({ length: end - start }, (_, i) => {
-          const rowIndex = i + start
-          return (
-            <div
-              className={styles.row}
-              key={rowIndex}
-              data-row-index={rowIndex}
-              style={getRowStyle(rowIndex)}
-            />
-          )
-        })}
-    </div>
+    />
+  )
+
+  // Wrap the actual implementation in ClientOnly
+  return (
+    <ClientOnly fallback={ssrFallback}>
+      <BaselineImpl
+        className={className}
+        debugging={debugging}
+        style={style}
+        variant={variant}
+        height={heightProp}
+        width={widthProp}
+        base={base}
+        color={colorProp}
+        ssrMode={ssrMode}
+        {...spacingProps}
+      />
+    </ClientOnly>
   )
 })

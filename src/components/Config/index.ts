@@ -9,4 +9,4 @@
  */
 
 export * from './Config'
-export * from './defaults'
+export { DEFAULT_CONFIG } from './defaults'

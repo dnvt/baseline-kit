@@ -1,7 +1,8 @@
 /**
  * SSR (Server-Side Rendering) utility functions for baseline-kit.
- * These functions help ensure consistent rendering between server and client.
  */
+import * as React from 'react'
+import { useIsClient } from '../hooks/useIsClient'
 
 /**
  * Detects if code is running in a server-side environment
@@ -9,13 +10,11 @@
 export const isSSR = typeof window === 'undefined'
 
 /**
- * Default dimensions to use during server-side rendering 
- * These values provide stable rendering between server and client
- * during the initial hydration phase.
+ * Default dimensions to use during server-side rendering
  */
 export const SSR_DIMENSIONS = {
   width: 1024,
-  height: 768
+  height: 768,
 }
 
 /**
@@ -28,7 +27,7 @@ export function safeClientValue<T>(clientFn: () => T, fallback: T): T {
   if (isSSR) {
     return fallback
   }
-  
+
   try {
     return clientFn()
   } catch {
@@ -42,8 +41,40 @@ export function safeClientValue<T>(clientFn: () => T, fallback: T): T {
  * @param isHydrated Boolean indicating if component is hydrated
  * @param ssrValue Value to use during SSR/initial render
  * @param dynamicValue Value to use after hydration
- * @returns Appropriate value based on hydration state
  */
-export function hydratedValue<T>(isHydrated: boolean, ssrValue: T, dynamicValue: T): T {
-  return (!isHydrated || isSSR) ? ssrValue : dynamicValue
-} 
+export function hydratedValue<T>(
+  isHydrated: boolean,
+  ssrValue: T,
+  dynamicValue: T
+): T {
+  return !isHydrated || isSSR ? ssrValue : dynamicValue
+}
+
+/**
+ * ClientOnly component props
+ * @internal
+ */
+interface ClientOnlyProps {
+  /**
+   * Content to render when on the client-side
+   */
+  children: React.ReactNode
+  /**
+   * Optional fallback to show during SSR
+   */
+  fallback?: React.ReactNode
+}
+
+/**
+ * A utility component that only renders its children on the client side.
+ * @internal Not part of the public API
+ */
+export function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
+  const isClient = useIsClient()
+
+  if (!isClient) {
+    return <>{fallback}</>
+  }
+
+  return <>{children}</>
+}

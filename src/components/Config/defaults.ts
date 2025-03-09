@@ -4,7 +4,7 @@
  * @module baseline-kit/components/Config
  */
 
-import type { Config } from './Config'
+import type { ConfigSchema } from './Config'
 
 /**
  * CSS variable-based color configuration for Guide component.
@@ -100,7 +100,7 @@ const PADDER_COLOR = 'var(--bk-padder-color-theme)'
  * The configuration is marked as const to ensure type safety
  * and prevent accidental modifications.
  */
-export const DEFAULT_CONFIG: Config = {
+export const DEFAULT_CONFIG: ConfigSchema = {
   /** Base unit for spacing calculations (in pixels) */
   base: 8,
 
