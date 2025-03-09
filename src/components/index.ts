@@ -4,20 +4,20 @@
  * @module baseline-kit/components
  */
 
-import './styles/index.css'
+// Style imports - these generate CSS files in the dist folder
+import './styles/core.css'
+import './styles/theme.css'
 
 // Layout Components
 export * from './Layout'
 export * from './Box'
 export * from './Stack'
+export * from './Spacer'
+export * from './Padder'
 
 // Grid Components
 export * from './Guide'
 export * from './Baseline'
-
-// Spacing Components
-export * from './Spacer'
-export * from './Padder'
 
 // Configuration
 export * from './Config'

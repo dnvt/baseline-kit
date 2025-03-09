@@ -43,12 +43,19 @@ export const mergeClasses = (
  */
 export const mergeStyles = <T extends React.CSSProperties>(
   ...styles: Array<T | undefined>
-): T => Object.assign({}, ...styles.filter((style): style is T => style !== undefined))
+): T =>
+  Object.assign(
+    {},
+    ...styles.filter((style): style is T => style !== undefined)
+  )
 
 /**
  * Assigns a value to a React ref.
  */
-function assignRef<T>(ref: React.Ref<T> | null | undefined, node: T | null): void {
+function assignRef<T>(
+  ref: React.Ref<T> | null | undefined,
+  node: T | null
+): void {
   if (!ref) return
   if (typeof ref === 'function') {
     ref(node)
@@ -87,7 +94,7 @@ export function mergeRefs<T>(
   ...refs: Array<React.Ref<T> | null | undefined>
 ): React.RefCallback<T> {
   return (node: T | null) => {
-    refs.forEach(ref => {
+    refs.forEach((ref) => {
       assignRef(ref, node)
     })
   }
@@ -98,20 +105,20 @@ export function mergeRefs<T>(
  */
 export type StyleOverrideParams = {
   /** CSS variable key to potentially override */
-  key: string;
+  key: string
   /** Value to use if override is needed */
-  value: string;
+  value: string
   /** Default styles to compare against */
-  defaultStyles: Record<string, string>;
+  defaultStyles: Record<string, string>
   /** Special case dimensions that should be skipped for specific values */
   skipDimensions?: {
     /** Dimensions that should be skipped when they're set to "fit-content" */
-    fitContent?: string[];
+    fitContent?: string[]
     /** Dimensions that should be skipped when they're set to "auto" */
-    auto?: string[];
+    auto?: string[]
     /** Dimensions that should be skipped when they're set to % values (like "100%") */
-    fullSize?: string[];
-  };
+    fullSize?: string[]
+  }
 }
 
 /**
@@ -150,13 +157,15 @@ export type StyleOverrideParams = {
 export function createStyleOverride(
   params: StyleOverrideParams | string,
   value?: string,
-  defaultStyles?: Record<string, string>,
+  defaultStyles?: Record<string, string>
 ): Record<string, string | number> {
   // Handle both object parameter and individual arguments for backward compatibility
   const key = typeof params === 'string' ? params : params.key
   const val = typeof params === 'string' ? value! : params.value
-  const defaults = typeof params === 'string' ? defaultStyles! : params.defaultStyles
-  const skipDimensions = typeof params === 'object' ? params.skipDimensions : undefined
+  const defaults =
+    typeof params === 'string' ? defaultStyles! : params.defaultStyles
+  const skipDimensions =
+    typeof params === 'object' ? params.skipDimensions : undefined
 
   // Skip dimensions based on specific values
   if (skipDimensions) {
@@ -171,8 +180,10 @@ export function createStyleOverride(
     }
 
     // Skip '100%' or '100vh/vw' dimensions (Guide, some Spacer patterns)
-    if (skipDimensions.fullSize?.includes(key) &&
-      (val === '100%' || val === '100vh' || val === '100vw')) {
+    if (
+      skipDimensions.fullSize?.includes(key) &&
+      (val === '100%' || val === '100vh' || val === '100vw')
+    ) {
       return {}
     }
   }

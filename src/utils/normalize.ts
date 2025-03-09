@@ -15,39 +15,13 @@ export interface NormalizationOptions {
 /**
  * Normalizes CSS values to a consistent format based on base unit.
  *
- * @remarks
- * Handles:
- * - CSS length values
- * - Numeric values
- * - Special values (auto)
- * - Rounding to base unit
- * - Value clamping
- *
  * @param value - Value to normalize
  * @param options - Normalization configuration
  * @returns Normalized numeric value
- *
- * @example
- * ```ts
- * // Base unit normalization
- * normalizeValue(14, { base: 8 })  // => 16
- *
- * // With clamping
- * normalizeValue(14, {
- *   base: 8,
- *   clamp: { min: 8, max: 24 }
- * }) // => 16
- *
- * // Without rounding
- * normalizeValue(14, {
- *   base: 8,
- *   round: false
- * }) // => 14
- * ```
  */
 export function normalizeValue(
   value: string | number | undefined,
-  options: NormalizationOptions = {},
+  options: NormalizationOptions = {}
 ): number {
   const {
     base = 8,
@@ -68,7 +42,7 @@ export function normalizeValue(
     if (conv === null) {
       if (!suppressWarnings) {
         console.error(
-          `Failed to convert "${value}" to pixels. Falling back to base ${base}.`,
+          `Failed to convert "${value}" to pixels. Falling back to base ${base}.`
         )
       }
       num = base
@@ -85,10 +59,10 @@ export function normalizeValue(
   const clamped =
     clampOptions !== undefined
       ? clamp(
-        normalized,
-        clampOptions.min ?? -Infinity,
-        clampOptions.max ?? Infinity,
-      )
+          normalized,
+          clampOptions.min ?? -Infinity,
+          clampOptions.max ?? Infinity
+        )
       : normalized
 
   // Warn about adjustments
@@ -106,22 +80,13 @@ export function normalizeValue(
  * @param defaults - Default values if input is undefined
  * @param options - Normalization options
  * @returns Tuple of normalized values
- *
- * @example
- * ```ts
- * normalizeValuePair(
- *   ['14px', '20px'],
- *   [0, 0],
- *   { base: 8 }
- * ) // => [16, 24]
- * ```
  */
 export function normalizeValuePair(
   values:
     | [string | number | undefined, string | number | undefined]
     | undefined,
   defaults: [number, number],
-  options?: NormalizationOptions,
+  options?: NormalizationOptions
 ): [number, number] {
   if (!values) return defaults
 

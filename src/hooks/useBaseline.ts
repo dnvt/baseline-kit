@@ -66,7 +66,7 @@ export function useBaseline(
     snapping = 'none',
     spacing = {},
     warnOnMisalignment = false,
-  }: BaselineOptions = {},
+  }: BaselineOptions = {}
 ): BaselineResult {
   if (base < 1) {
     throw new Error('Base must be >= 1 for baseline alignment.')
@@ -83,10 +83,14 @@ export function useBaseline(
     const isAligned = height % base === 0
 
     // Log the warning only once
-    if (!isAligned && warnOnMisalignment && process.env.NODE_ENV === 'development') {
+    if (
+      !isAligned &&
+      warnOnMisalignment &&
+      process.env.NODE_ENV === 'development'
+    ) {
       if (!hasWarnedRef.current) {
         console.warn(
-          `[useBaseline] Element height (${height}px) is not aligned with base (${base}px).`,
+          `[useBaseline] Element height (${height}px) is not aligned with base (${base}px).`
         )
         hasWarnedRef.current = true // Mark warning as logged
       }
@@ -104,7 +108,12 @@ export function useBaseline(
     }
 
     // Snap exactly once.
-    const finalPadding = calculateSnappedSpacing(height, base, initialPadding, snapping)
+    const finalPadding = calculateSnappedSpacing(
+      height,
+      base,
+      initialPadding,
+      snapping
+    )
     didSnapRef.current = true
 
     return { padding: finalPadding, isAligned, height }
