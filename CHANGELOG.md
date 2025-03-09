@@ -1,5 +1,11 @@
 # baseline-kit
 
+## 3.0.1
+
+### Patch Changes
+
+- Update README
+
 ## 3.0.0
 
 ### Major Changes
