@@ -75,7 +75,7 @@
     "vitest": "3.0.8"
   },
   "name": "baseline-kit",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "type": "module",
   "homepage": "https://github.com/dnvt/baseline-kit#readme",
   "types": "dist/index.d.ts",

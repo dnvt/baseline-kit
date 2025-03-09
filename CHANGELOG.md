@@ -1,5 +1,11 @@
 # baseline-kit
 
+## 3.0.0
+
+### Major Changes
+
+- comprehensive component library redesign with improved theming system and optimized rendering
+
 ## 2.1.0
 
 ### Minor Changes
