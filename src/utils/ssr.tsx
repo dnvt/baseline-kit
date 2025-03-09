@@ -2,6 +2,8 @@
  * SSR (Server-Side Rendering) utility functions for baseline-kit.
  * These functions help ensure consistent rendering between server and client.
  */
+import * as React from 'react'
+import { useIsClient } from '@hooks'
 
 /**
  * Detects if code is running in a server-side environment
@@ -50,4 +52,46 @@ export function hydratedValue<T>(
   dynamicValue: T
 ): T {
   return !isHydrated || isSSR ? ssrValue : dynamicValue
+}
+
+export interface ClientOnlyProps {
+  /**
+   * Content to render when on the client-side
+   */
+  children: React.ReactNode
+  /**
+   * Optional fallback to show during SSR
+   */
+  fallback?: React.ReactNode
+}
+
+/**
+ * A utility component that only renders its children on the client side.
+ *
+ * Useful for components that rely on browser-specific APIs like DOM measurements,
+ * which aren't available during server-side rendering.
+ *
+ * @example
+ * ```tsx
+ * // With no fallback (renders nothing during SSR)
+ * <ClientOnly>
+ *   <ComponentThatNeedsMeasurements />
+ * </ClientOnly>
+ *
+ * // With a fallback (renders placeholder during SSR)
+ * <ClientOnly fallback={<div style={{ height: '500px' }} />}>
+ *   <ComplexVisualization />
+ * </ClientOnly>
+ * ```
+ */
+export function ClientOnly({ children, fallback = null }: ClientOnlyProps) {
+  const isClient = useIsClient()
+
+  // On the server or during hydration, render the fallback
+  if (!isClient) {
+    return <>{fallback}</>
+  }
+
+  // On the client, render the actual content
+  return <>{children}</>
 }

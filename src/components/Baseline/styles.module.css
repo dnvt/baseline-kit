@@ -15,3 +15,12 @@
   height: var(--bkrh);
   background-color: var(--bkbc);
 }
+
+/* Style for SSR rendering */
+.ssr {
+  box-sizing: border-box;
+  display: grid;
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}

@@ -53,7 +53,7 @@ describe('useGuide', () => {
         gap: 8,
       })
     )
-    expect(result.current.template).toBe('repeat(auto-fit, minmax(100px, 1fr))')
+    expect(result.current.template).toBe('repeat(auto-fill, 100px)')
     expect(result.current.columnsCount).toBe(3)
     expect(result.current.calculatedGap).toBe(8)
     expect(result.current.isValid).toBe(true)
@@ -69,7 +69,7 @@ describe('useGuide', () => {
         gap: 10,
       })
     )
-    expect(result.current.template).toBe('repeat(auto-fit, minmax(0, 1fr))')
+    expect(result.current.template).toBe('repeat(auto-fill, minmax(0, 1fr))')
     expect(result.current.columnsCount).toBe(1)
     expect(result.current.isValid).toBe(true)
   })

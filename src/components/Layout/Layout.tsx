@@ -76,7 +76,7 @@ export const getGridTemplate = (
   if (Array.isArray(prop)) {
     return prop.map((p) => (typeof p === 'number' ? `${p}px` : p)).join(' ')
   }
-  return 'repeat(auto-fit, minmax(100px, 1fr))'
+  return 'repeat(auto-fill, minmax(100px, 1fr))'
 }
 
 /** Creates grid gap styles */
@@ -141,7 +141,7 @@ export const Layout = React.memo(function Layout({
   alignItems,
   children,
   className,
-  columns = 'repeat(auto-fit, minmax(100px, 1fr))',
+  columns = 'repeat(auto-fill, minmax(100px, 1fr))',
   columnGap,
   debugging: debuggingProp,
   gap,
@@ -258,7 +258,7 @@ export const Layout = React.memo(function Layout({
         }),
 
         // Grid properties - only inject if different from defaults
-        ...(gridTemplateColumns !== 'repeat(auto-fit, minmax(100px, 1fr))' && {
+        ...(gridTemplateColumns !== 'repeat(auto-fill, minmax(100px, 1fr))' && {
           '--bklgtc': gridTemplateColumns,
         }),
         ...(gridTemplateRows !== 'auto' && { '--bklgtr': gridTemplateRows }),

@@ -1,14 +1,15 @@
 import * as React from 'react'
+import { ComponentsProps } from '@components'
 import { useConfig, useDebug, useGuide, useMeasure } from '@hooks'
 import {
   formatValue,
   mergeClasses,
   mergeStyles,
   createStyleOverride,
-  hydratedValue,
+  ClientOnly,
 } from '@utils'
 import { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
-import type { ComponentsProps, GuideVariant } from '../types'
+import type { GuideVariant } from '../types'
 import styles from './styles.module.css'
 
 /** Merged configuration types that support various grid layout strategies */
@@ -23,8 +24,6 @@ export type GuideProps = {
   columns?: number | readonly (string | number | undefined | 'auto')[]
   /** Column width (for fixed variant) */
   columnWidth?: React.CSSProperties['width']
-  /** Gutter width between columns */
-  gutterWidth?: React.CSSProperties['width']
   /** Maximum width of the guide */
   maxWidth?: React.CSSProperties['maxWidth']
   /** Color override for guide lines */
@@ -160,13 +159,12 @@ export const Guide = React.memo(function Guide({
   debugging,
   style,
   variant: variantProp,
-  align = 'start',
+  align = 'center',
   gap: gapProp,
   height,
   width,
   columns,
   columnWidth,
-  gutterWidth,
   maxWidth,
   color,
   children,
@@ -176,36 +174,118 @@ export const Guide = React.memo(function Guide({
   const config = useConfig('guide')
   const variant = variantProp ?? config.variant
   const gap = typeof gapProp === 'number' ? gapProp : 0
+  const { isShown } = useDebug(debugging, config.debugging)
 
-  // Add hydration state tracking
-  const [isHydrated, setIsHydrated] = React.useState(false)
+  // If debugging isn't enabled, render a hidden element
+  // This ensures tests can find the element even when hidden
+  if (!isShown) {
+    return (
+      <div
+        className={mergeClasses(styles.g, styles.h, className)}
+        style={style}
+        data-testid="guide"
+        data-variant={variant}
+        {...props}
+      >
+        {children}
+      </div>
+    )
+  }
 
-  React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-
-  const containerRef = React.useRef<HTMLDivElement | null>(null)
-
-  // Always call useMeasure, but conditionally use its results
-  const measuredDimensions = useMeasure(containerRef)
-
-  // Choose appropriate dimensions based on rendering environment
-  const dimensions = hydratedValue(
-    isHydrated && !ssrMode,
-    { width: 1024, height: 768, refresh: () => {} },
-    measuredDimensions
+  // Create a simple SSR fallback with the expected dimensions
+  const ssrFallback = (
+    <div
+      className={mergeClasses(styles.g, styles.h, styles.ssr, className)}
+      style={{
+        width: width || '100%',
+        height: height || '100%',
+        maxWidth: maxWidth || 'none',
+        ...style,
+      }}
+      data-testid="guide"
+      data-variant={variant}
+    >
+      {children}
+    </div>
   )
 
-  const { width: containerWidth, height: containerHeight } = dimensions
+  // Wrap the actual implementation in ClientOnly
+  return (
+    <ClientOnly fallback={ssrFallback}>
+      <GuideImpl
+        className={className}
+        debugging={debugging}
+        style={style}
+        variant={variant}
+        align={align}
+        gap={gap}
+        height={height}
+        width={width}
+        columns={columns}
+        columnWidth={columnWidth}
+        maxWidth={maxWidth}
+        color={color}
+        ssrMode={ssrMode}
+        {...props}
+      >
+        {children}
+      </GuideImpl>
+    </ClientOnly>
+  )
+})
 
+// Implementation component that only renders on the client side
+const GuideImpl = React.memo(function GuideImpl({
+  className,
+  debugging,
+  style,
+  variant,
+  align = 'center',
+  gap,
+  height,
+  width,
+  columns,
+  columnWidth,
+  maxWidth,
+  color,
+  children,
+  ssrMode: _ssrMode = false,
+  ...props
+}: GuideProps) {
+  const config = useConfig('guide')
   const { isShown } = useDebug(debugging, config.debugging)
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+
+  // Measure the container dimensions
+  const {
+    width: containerWidth,
+    height: containerHeight,
+    refresh, // Keep the refresh function available for dynamic updates
+  } = useMeasure(containerRef)
+
+  // Effect for handling window resize events
+  React.useEffect(() => {
+    const handleResize = () => {
+      // Trigger a remeasurement when window size changes
+      refresh()
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [refresh])
 
   // Create guide configuration based on variant
   const gridConfig = React.useMemo(() => {
+    // Ensure we have valid values for the grid configuration
+    const safeVariant = variant as GuideVariant
+    const safeGap = typeof gap === 'number' ? gap : 0
+
     return createGridConfig({
-      variant,
+      variant: safeVariant,
       base: config.base,
-      gap,
+      gap: safeGap,
       columns,
       columnWidth,
     })
@@ -227,7 +307,6 @@ export const Guide = React.memo(function Guide({
     const heightValue = formatValue(height || containerHeight || 'auto')
     const maxWidthValue = formatValue(maxWidth || 'none')
     const columnWidthValue = formatValue(columnWidth || '60px')
-    const gutterWidthValue = formatValue(gutterWidth || '24px')
 
     // Define dimensions that should be skipped when set to auto
     const autoDimensions = ['--bkgw', '--bkgh']
@@ -257,11 +336,6 @@ export const Guide = React.memo(function Guide({
         defaultStyles,
       }),
       ...createStyleOverride({
-        key: '--bkggw',
-        value: gutterWidthValue,
-        defaultStyles,
-      }),
-      ...createStyleOverride({
         key: '--bkgc',
         value: `${columnsCount}`,
         defaultStyles,
@@ -276,10 +350,14 @@ export const Guide = React.memo(function Guide({
         value: color ?? config.colors.line,
         defaultStyles,
       }),
-      // Use style override for gap to be consistent with other properties
       ...createStyleOverride({
         key: '--bkgg',
         value: `${calculatedGap}px`,
+        defaultStyles,
+      }),
+      ...createStyleOverride({
+        key: '--bkgj',
+        value: align || 'center',
         defaultStyles,
       }),
       ...(template && template !== 'none' ? { '--bkgt': template } : {}),
@@ -287,8 +365,6 @@ export const Guide = React.memo(function Guide({
       ...(template && template !== 'none'
         ? { gridTemplateColumns: template }
         : {}),
-      // Add justifyContent based on align
-      justifyContent: align,
     } as React.CSSProperties
 
     return mergeStyles(customStyles, style)
@@ -297,7 +373,6 @@ export const Guide = React.memo(function Guide({
     height,
     maxWidth,
     columnWidth,
-    gutterWidth,
     columnsCount,
     color,
     template,
@@ -310,11 +385,22 @@ export const Guide = React.memo(function Guide({
     align,
   ])
 
-  // Calculate how many columns we need
-  // When gap is 0, we need width + 1 columns to fill the space
-  // When gap > 0, we need to account for the -1px reduction in each gap
-  const finalGap = gap === 0 ? 0 : gap - 1
-  const actualGapWithLine = finalGap + 1
+  // In the component where gap is used:
+  const handleGapCalculations = () => {
+    // Ensure gap is a number
+    const safeGap = typeof gap === 'number' ? gap : 0
+
+    // When gap is 0, we need width + 1 columns to fill the space
+    // When gap > 0, we need to account for the -1px reduction in each gap
+    const finalGap = safeGap === 0 ? 0 : safeGap - 1
+    const actualGapWithLine = finalGap + 1
+
+    // Rest of the gap calculations...
+    return { finalGap, actualGapWithLine }
+  }
+
+  // Use the gap calculations where needed
+  const { finalGap, actualGapWithLine } = handleGapCalculations()
 
   // Ensure width is a number
   const containerWidthValue =

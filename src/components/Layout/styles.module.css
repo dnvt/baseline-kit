@@ -6,16 +6,16 @@
   height: var(--bklh, var(--bk-height-default, auto));
   grid-template-columns: var(
     --bklgtc,
-    var(--bk-layout-gtc, repeat(auto-fit, minmax(100px, 1fr)))
+    repeat(auto-fill, minmax(100px, 1fr))
   );
-  grid-template-rows: var(--bklgtr, var(--bk-layout-gtr, auto));
+  grid-template-rows: var(--bklgtr, auto);
   gap: var(--bklg, 0);
-  column-gap: var(--bklcg, var(--bk-layout-cg, 0));
-  row-gap: var(--bklrg, var(--bk-layout-rg, 0));
-  justify-items: var(--bklji, var(--bk-layout-ji, stretch));
-  align-items: var(--bklai, var(--bk-layout-ai, stretch));
-  justify-content: var(--bkljc, var(--bk-layout-jc, start));
-  align-content: var(--bklac, var(--bk-layout-ac, start));
+  column-gap: var(--bklcg, 0);
+  row-gap: var(--bklrg, 0);
+  justify-items: var(--bklji, stretch);
+  align-items: var(--bklai, stretch);
+  justify-content: var(--bkljc, start);
+  align-content: var(--bklac, start);
 }
 
 .lay .line::after,

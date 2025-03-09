@@ -172,11 +172,11 @@ export function useGuide(
         }
 
         case 'auto': {
-          // Auto-fitting columns
+          // Auto-filling columns
           const colWidth = config.columnWidth ?? 'auto'
           if (colWidth === 'auto') {
             return {
-              template: 'repeat(auto-fit, minmax(0, 1fr))',
+              template: 'repeat(auto-fill, minmax(0, 1fr))',
               columnsCount: 1,
               calculatedGap: gap,
               isValid: true,
@@ -192,7 +192,7 @@ export function useGuide(
               : 1
 
           return {
-            template: `repeat(auto-fit, minmax(${colWidthStr}, 1fr))`,
+            template: `repeat(auto-fill, ${colWidthStr})`,
             columnsCount: columns,
             calculatedGap: gap,
             isValid: true,
