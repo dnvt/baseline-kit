@@ -31,10 +31,8 @@ export type BaselineProps = {
   ssrMode?: boolean
 } & ComponentsProps
 
-// Utils -----------------------------------------------------------------------
-
 /** Creates default baseline styles */
-export const createDefaultBaselineStyles = (
+const createDefaultBaselineStyles = (
   base: number,
   lineColor: string,
   flatColor: string
@@ -66,7 +64,7 @@ type RowStyleParams = {
  * Creates styles for an individual baseline row.
  * Applies positioning and visual styling based on variant.
  */
-export const createBaselineRowStyle = (
+const createBaselineRowStyle = (
   params: RowStyleParams
 ): React.CSSProperties => {
   const { index, base, variant, chosenColor, lineColor, flatColor } = params
@@ -78,97 +76,6 @@ export const createBaselineRowStyle = (
     '--bkbc': chosenColor || (variant === 'line' ? lineColor : flatColor),
   } as React.CSSProperties
 }
-
-/**
- * Renders horizontal guidelines for maintaining vertical rhythm and baseline alignment.
- *
- * @remarks
- * Baseline provides horizontal guides that:
- * - Help maintain consistent vertical spacing
- * - Support visual verification of baseline alignment
- * - Optimize performance through virtual rendering
- * - Adapt to container dimensions
- *
- * @example
- * ```tsx
- * // Basic baseline overlay
- * <Baseline
- *   height="100vh"
- *   base={8}
- *   debugging="visible"
- * />
- *
- * // Custom variant with padding
- * <Baseline
- *   variant="flat"
- *   height="100vh"
- *   base={4}
- *   block={[16, 0]}
- *   debugging="visible"
- * />
- * ```
- */
-export const Baseline = React.memo(function Baseline({
-  className,
-  debugging,
-  style,
-  variant: variantProp,
-  height: heightProp,
-  width: widthProp,
-  base: baseProp,
-  color: colorProp,
-  ssrMode = false,
-  ...spacingProps
-}: BaselineProps) {
-  const config = useConfig('baseline')
-  const variant = variantProp ?? config.variant
-  const base = baseProp ?? config.base
-  const { isShown } = useDebug(debugging, config.debugging)
-
-  // If debugging isn't enabled, render a hidden element
-  // This ensures tests can find the element even when hidden
-  if (!isShown) {
-    return (
-      <div
-        className={mergeClasses(styles.b, styles.h, className)}
-        style={style}
-        data-testid="baseline"
-        {...spacingProps}
-      />
-    )
-  }
-
-  // Create a simple SSR fallback
-  const ssrFallback = (
-    <div
-      className={mergeClasses(styles.b, styles.h, styles.ssr, className)}
-      style={{
-        width: widthProp || '100%',
-        height: heightProp || '100%',
-        ...style,
-      }}
-      data-testid="baseline"
-    />
-  )
-
-  // Wrap the actual implementation in ClientOnly
-  return (
-    <ClientOnly fallback={ssrFallback}>
-      <BaselineImpl
-        className={className}
-        debugging={debugging}
-        style={style}
-        variant={variant}
-        height={heightProp}
-        width={widthProp}
-        base={base}
-        color={colorProp}
-        ssrMode={ssrMode}
-        {...spacingProps}
-      />
-    </ClientOnly>
-  )
-})
 
 // Implementation component that only renders on the client side
 const BaselineImpl = React.memo(function BaselineImpl({
@@ -362,5 +269,96 @@ const BaselineImpl = React.memo(function BaselineImpl({
           )
         })}
     </div>
+  )
+})
+
+/**
+ * Renders horizontal guidelines for maintaining vertical rhythm and baseline alignment.
+ *
+ * @remarks
+ * Baseline provides horizontal guides that:
+ * - Help maintain consistent vertical spacing
+ * - Support visual verification of baseline alignment
+ * - Optimize performance through virtual rendering
+ * - Adapt to container dimensions
+ *
+ * @example
+ * ```tsx
+ * // Basic baseline overlay
+ * <Baseline
+ *   height="100vh"
+ *   base={8}
+ *   debugging="visible"
+ * />
+ *
+ * // Custom variant with padding
+ * <Baseline
+ *   variant="flat"
+ *   height="100vh"
+ *   base={4}
+ *   block={[16, 0]}
+ *   debugging="visible"
+ * />
+ * ```
+ */
+export const Baseline = React.memo(function Baseline({
+  className,
+  debugging,
+  style,
+  variant: variantProp,
+  height: heightProp,
+  width: widthProp,
+  base: baseProp,
+  color: colorProp,
+  ssrMode = false,
+  ...spacingProps
+}: BaselineProps) {
+  const config = useConfig('baseline')
+  const variant = variantProp ?? config.variant
+  const base = baseProp ?? config.base
+  const { isShown } = useDebug(debugging, config.debugging)
+
+  // If debugging isn't enabled, render a hidden element
+  // This ensures tests can find the element even when hidden
+  if (!isShown) {
+    return (
+      <div
+        className={mergeClasses(styles.b, styles.h, className)}
+        style={style}
+        data-testid="baseline"
+        {...spacingProps}
+      />
+    )
+  }
+
+  // Create a simple SSR fallback
+  const ssrFallback = (
+    <div
+      className={mergeClasses(styles.b, styles.h, styles.ssr, className)}
+      style={{
+        width: widthProp || '100%',
+        height: heightProp || '100%',
+        ...style,
+      }}
+      data-testid="baseline"
+    />
+  )
+
+  // Wrap the actual implementation in ClientOnly
+  return (
+    <ClientOnly fallback={ssrFallback}>
+      <BaselineImpl
+        className={className}
+        debugging={debugging}
+        style={style}
+        variant={variant}
+        height={heightProp}
+        width={widthProp}
+        base={base}
+        color={colorProp}
+        ssrMode={ssrMode}
+        {...spacingProps}
+      />
+    </ClientOnly>
   )
 })

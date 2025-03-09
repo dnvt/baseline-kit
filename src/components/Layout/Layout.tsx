@@ -52,10 +52,8 @@ export type LayoutProps = {
 } & ComponentsProps &
   Gaps
 
-// Utils -----------------------------------------------------------------------
-
 /** Creates default layout styles with theme colors */
-export const createDefaultLayoutStyles = (colors: {
+const createDefaultLayoutStyles = (colors: {
   line: string
   flat: string
   text: string
@@ -68,7 +66,7 @@ export const createDefaultLayoutStyles = (colors: {
 })
 
 /** Parses grid template definitions into CSS grid-template values. */
-export const getGridTemplate = (
+const getGridTemplate = (
   prop?: number | string | Array<number | string>
 ): string => {
   if (typeof prop === 'number') return `repeat(${prop}, 1fr)`
@@ -80,7 +78,7 @@ export const getGridTemplate = (
 }
 
 /** Creates grid gap styles */
-export const createGridGapStyles = (
+const createGridGapStyles = (
   gap?: React.CSSProperties['gap'] | number,
   rowGap?: React.CSSProperties['rowGap'] | number,
   columnGap?: React.CSSProperties['columnGap'] | number

@@ -15,35 +15,9 @@ export interface NormalizationOptions {
 /**
  * Normalizes CSS values to a consistent format based on base unit.
  *
- * @remarks
- * Handles:
- * - CSS length values
- * - Numeric values
- * - Special values (auto)
- * - Rounding to base unit
- * - Value clamping
- *
  * @param value - Value to normalize
  * @param options - Normalization configuration
  * @returns Normalized numeric value
- *
- * @example
- * ```ts
- * // Base unit normalization
- * normalizeValue(14, { base: 8 })  // => 16
- *
- * // With clamping
- * normalizeValue(14, {
- *   base: 8,
- *   clamp: { min: 8, max: 24 }
- * }) // => 16
- *
- * // Without rounding
- * normalizeValue(14, {
- *   base: 8,
- *   round: false
- * }) // => 14
- * ```
  */
 export function normalizeValue(
   value: string | number | undefined,
@@ -106,15 +80,6 @@ export function normalizeValue(
  * @param defaults - Default values if input is undefined
  * @param options - Normalization options
  * @returns Tuple of normalized values
- *
- * @example
- * ```ts
- * normalizeValuePair(
- *   ['14px', '20px'],
- *   [0, 0],
- *   { base: 8 }
- * ) // => [16, 24]
- * ```
  */
 export function normalizeValuePair(
   values:

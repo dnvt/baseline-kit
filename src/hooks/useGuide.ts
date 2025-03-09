@@ -1,9 +1,6 @@
 import * as React from 'react'
-import {
-  GuideConfig,
-  GuideColumnsPattern,
-  isValidGuidePattern,
-} from '@components'
+import { GuideConfig, GuideColumnsPattern } from '@components'
+import { isValidGuidePattern } from '@/components/Guide/validation'
 import { formatValue, convertValue, normalizeValue } from '@utils'
 import { useMeasure } from './useMeasure'
 
@@ -124,9 +121,14 @@ export function useGuide(
 
         case 'pattern': {
           // Custom column pattern
+          if (!config.columns || !Array.isArray(config.columns)) {
+            throw new Error('Missing or invalid pattern columns')
+          }
+
           if (!isValidGuidePattern(config.columns)) {
             throw new Error('Invalid "pattern" columns array')
           }
+
           const columnsArr = (config.columns as GuideColumnsPattern).map(
             (col) => {
               if (typeof col === 'number') return `${col}px`

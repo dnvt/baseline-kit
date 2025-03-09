@@ -10,7 +10,7 @@ import {
   createStyleOverride,
   hydratedValue,
 } from '@utils'
-import { Config } from '../Config'
+import { Config } from '../Config/Config'
 import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
@@ -25,7 +25,7 @@ import styles from './styles.module.css'
  */
 export type SnappingMode = 'none' | 'height' | 'clamp'
 
-type BoxProps = {
+export type BoxProps = {
   /** Number of columns to span in a grid layout */
   colSpan?: number
   /** Number of rows to span in a grid layout */
@@ -39,23 +39,20 @@ type BoxProps = {
   children?: React.ReactNode
 } & ComponentsProps
 
-// Utils -----------------------------------------------------------------------
-
 /**
  * Creates default box styles with theme values.
  * Sets CSS variables for width, height, base unit, and colors.
  */
-export const createDefaultBoxStyles = (
+const createDefaultBoxStyles = (
   base: number,
   lineColor: string
 ): Record<string, string> => ({
-  '--bkxw': 'fit-content',
-  '--bkxh': 'fit-content',
-  '--bkxb': `${base}px`,
-  '--bkxcl': lineColor,
+  '--bkboxw': 'auto',
+  '--bkboxh': 'auto',
+  '--bkboxc': lineColor,
+  '--bkboxb': `${base}px`,
 })
 
-/** Parameters for creating box custom styles */
 type BoxCustomStylesParams = {
   /** Width property for the box */
   width?: React.CSSProperties['width']
@@ -70,10 +67,10 @@ type BoxCustomStylesParams = {
 }
 
 /**
- * Creates custom styles for the box.
- * Combines all style properties and only applies changes when needed.
+ * Creates custom styles for the Box component.
+ * Handles dimension overrides and other custom properties.
  */
-export const createBoxCustomStyles = ({
+const createBoxCustomStyles = ({
   width,
   height,
   base,
@@ -84,28 +81,28 @@ export const createBoxCustomStyles = ({
   const heightValue = formatValue(height || 'fit-content')
 
   // Define box dimensions that should be skipped when set to fit-content
-  const dimensionVars = ['--bkxw', '--bkxh']
+  const dimensionVars = ['--bkboxw', '--bkboxh']
 
   return {
     ...createStyleOverride({
-      key: '--bkxw',
+      key: '--bkboxw',
       value: widthValue,
       defaultStyles,
       skipDimensions: { fitContent: dimensionVars },
     }),
     ...createStyleOverride({
-      key: '--bkxh',
+      key: '--bkboxh',
       value: heightValue,
       defaultStyles,
       skipDimensions: { fitContent: dimensionVars },
     }),
     ...createStyleOverride({
-      key: '--bkxb',
+      key: '--bkboxb',
       value: `${base}px`,
       defaultStyles,
     }),
     ...createStyleOverride({
-      key: '--bkxcl',
+      key: '--bkboxc',
       value: lineColor,
       defaultStyles,
     }),

@@ -40,7 +40,7 @@ export type SpacerProps = {
 // Utils -----------------------------------------------------------------------
 
 /** Creates default spacer styles */
-export const createDefaultSpacerStyles = (
+const createDefaultSpacerStyles = (
   base: number,
   textColor: string,
   flatColor: string,
@@ -49,13 +49,13 @@ export const createDefaultSpacerStyles = (
   '--bksw': '100%',
   '--bksh': '100%',
   '--bksb': `${base}px`,
-  '--bksci': textColor,
-  '--bkscl': lineColor,
+  '--bksct': textColor,
   '--bkscf': flatColor,
+  '--bkscl': lineColor,
 })
 
 /** Generates measurement indicators for debugging */
-export const generateMeasurements = (
+const generateMeasurements = (
   isShown: boolean,
   indicatorNode: SpacerProps['indicatorNode'],
   normWidth: number | string,
@@ -188,7 +188,7 @@ export const Spacer = React.memo(function Spacer({
       // Explicitly set --bksb to ensure it is always applied
       '--bksb': baseValue,
       ...createStyleOverride({
-        key: '--bksci',
+        key: '--bksct',
         value: colorProp ?? config.colors.text,
         defaultStyles,
       }),

@@ -12,21 +12,15 @@ import './styles/theme.css'
 export * from './Layout'
 export * from './Box'
 export * from './Stack'
+export * from './Spacer'
+export * from './Padder'
 
 // Grid Components
 export * from './Guide'
 export * from './Baseline'
-
-// Spacing Components
-export * from './Spacer'
-export * from './Padder'
 
 // Configuration
 export * from './Config'
 
 // Types
 export * from './types'
-
-// Other component exports...
-
-// DON'T export ClientOnly from here anymore as it's been moved to utils/ssr

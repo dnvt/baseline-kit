@@ -45,26 +45,9 @@ export const RELATIVE_UNITS: string[] = [
 /**
  * Converts CSS values to pixels.
  *
- * @remarks
- * Handles conversion of:
- * - Absolute units (px, in, cm, mm, pt, pc)
- * - Relative units (em, rem, vh, vw, vmin, vmax, %)
- * - Number values (treated as pixels)
- *
  * @param value - CSS value to convert
  * @param context - Optional context for relative unit conversion
  * @returns Value in pixels or null if conversion fails
- *
- * @example
- * ```ts
- * // Absolute units
- * convertValue('100px') // => 100
- * convertValue('1in')   // => 96
- *
- * // Relative units with context
- * convertValue('50%', { parentSize: 200 }) // => 100
- * convertValue('2em', { parentFontSize: 16 }) // => 32
- * ```
  */
 export function convertValue(
   value: number | string | undefined,
