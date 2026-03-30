@@ -12,17 +12,10 @@ import { mergeStyles, mergeRefs } from '../../utils/merge'
 import { Config } from '../Config/Config'
 import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
+import type { SnappingMode } from '@baseline-kit/core'
 import styles from './styles.module.css'
 
-/**
- * Determines how the Box component aligns to the baseline grid.
- *
- * @remarks
- * - `none`: No snapping; uses raw spacing values as provided
- * - `height`: Only container height snaps to base unit multiples
- * - `clamp`: Both height and spacing values snap to base unit multiples
- */
-export type SnappingMode = 'none' | 'height' | 'clamp'
+export type { SnappingMode }
 
 export type BoxProps = {
   /** Number of columns to span in a grid layout */
