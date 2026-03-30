@@ -7,6 +7,7 @@ export interface BaselineOptions {
   base?: number
   snapping?: SnappingMode
   spacing?: Partial<Padding> | number
+  /** @deprecated No longer emits warnings. Check `isAligned` in the result instead. */
   warnOnMisalignment?: boolean
 }
 
@@ -25,7 +26,6 @@ export function useBaseline(
     base = 8,
     snapping = 'none',
     spacing = {},
-    warnOnMisalignment = false,
   }: BaselineOptions = {}
 ): BaselineResult {
   if (base < 1) {
@@ -34,24 +34,10 @@ export function useBaseline(
 
   const { height } = useMeasure(ref)
   const didSnapRef = React.useRef<boolean>(false)
-  const hasWarnedRef = React.useRef<boolean>(false)
 
   return React.useMemo(() => {
     const initialPadding = parsePadding({ padding: spacing })
     const isAligned = height % base === 0
-
-    if (
-      !isAligned &&
-      warnOnMisalignment &&
-      process.env.NODE_ENV === 'development'
-    ) {
-      if (!hasWarnedRef.current) {
-        console.warn(
-          `[useBaseline] Element height (${height}px) is not aligned with base (${base}px).`
-        )
-        hasWarnedRef.current = true
-      }
-    }
 
     if (snapping === 'none') {
       return { padding: initialPadding, isAligned, height }
@@ -70,5 +56,5 @@ export function useBaseline(
     didSnapRef.current = true
 
     return { padding: finalPadding, isAligned, height }
-  }, [base, snapping, spacing, warnOnMisalignment, height])
+  }, [base, snapping, spacing, height])
 }

@@ -16,7 +16,6 @@ export function normalizeValue(
     base = 8,
     round: doRound = true,
     clamp: clampOptions,
-    suppressWarnings = false,
   } = options
 
   if (value === 'auto') return base
@@ -25,17 +24,7 @@ export function normalizeValue(
   if (typeof value === 'number') {
     num = value
   } else if (typeof value === 'string') {
-    const conv = convertValue(value)
-    if (conv === null) {
-      if (!suppressWarnings && process.env.NODE_ENV === 'development') {
-        console.error(
-          `Failed to convert "${value}" to pixels. Falling back to base ${base}.`
-        )
-      }
-      num = base
-    } else {
-      num = conv
-    }
+    num = convertValue(value) ?? base
   }
   if (num === null) num = base
 
@@ -43,24 +32,9 @@ export function normalizeValue(
 
   const normalized = doRound ? Math.round(num / base) * base : num
 
-  const clamped =
-    clampOptions !== undefined
-      ? clamp(
-          normalized,
-          clampOptions.min ?? -Infinity,
-          clampOptions.max ?? Infinity
-        )
-      : normalized
-
-  if (
-    !suppressWarnings &&
-    clamped !== num &&
-    process.env.NODE_ENV === 'development'
-  ) {
-    console.warn(`Normalized ${num} to ${clamped} to match base ${base}px.`)
-  }
-
-  return clamped
+  return clampOptions !== undefined
+    ? clamp(normalized, clampOptions.min ?? -Infinity, clampOptions.max ?? Infinity)
+    : normalized
 }
 
 export function normalizeValuePair(

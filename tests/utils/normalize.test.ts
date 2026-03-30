@@ -27,23 +27,11 @@ describe('Normalization Utils', () => {
       expect(normalizeValue(6, { base: 8, clamp: { min: 8 } })).toBe(8)
     })
 
-    it('suppresses warnings when suppressWarnings is true', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
-      })
-      normalizeValue(14, { base: 8, clamp: { max: 12 }, suppressWarnings: true })
+    it('does not emit console warnings during normalization', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      normalizeValue(14, { base: 8, clamp: { max: 12 } })
       expect(warnSpy).not.toHaveBeenCalled()
       warnSpy.mockRestore()
-    })
-
-    it('logs a warning when the normalized value is clamped and warnings are not suppressed', () => {
-      const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'development'
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
-      })
-      normalizeValue(14, { base: 8, clamp: { max: 12 }, suppressWarnings: false })
-      expect(warnSpy).toHaveBeenCalled()
-      warnSpy.mockRestore()
-      process.env.NODE_ENV = originalEnv
     })
   })
 

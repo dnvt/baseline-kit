@@ -124,23 +124,16 @@ describe('useBaseline', () => {
     ).toThrow()
   })
 
-  it('logs a warning when not aligned and warnOnMisalignment is true in development', () => {
-    const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'development'
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
-    })
+  it('reports misalignment via isAligned when height does not match base', () => {
     useMeasureSpy.mockReturnValue({ width: 100, height: 42 }) // 42 % 8 = 2, not aligned.
     const ref = { current: document.createElement('div') }
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useBaseline(ref, {
         base: 8,
         snapping: 'none',
         spacing: { top: 1, bottom: 1, left: 1, right: 1 },
-        warnOnMisalignment: true,
       }),
     )
-    expect(warnSpy).toHaveBeenCalled()
-    warnSpy.mockRestore()
-    process.env.NODE_ENV = originalEnv
+    expect(result.current.isAligned).toBe(false)
   })
 })

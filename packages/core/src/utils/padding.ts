@@ -28,37 +28,17 @@ function parsePaddingValue(padding: PaddingValue): Padding {
   }
 
   if (Array.isArray(padding)) {
-    const len = padding.length
-    if (len === 2) {
-      const [block, inline] = padding as [number, number]
-      return { top: block, right: inline, bottom: block, left: inline }
-    }
-    if (len === 3) {
-      const [top, inline, bottom] = padding as [number, number, number]
-      return {
-        top: top ?? 0,
-        right: inline ?? 0,
-        bottom: bottom ?? 0,
-        left: inline ?? 0,
-      }
-    }
-    if (len >= 4) {
-      const [top, right, bottom, left] = padding as [number, number, number, number]
-      return {
-        top: top ?? 0,
-        right: right ?? 0,
-        bottom: bottom ?? 0,
-        left: left ?? 0,
-      }
-    }
+    const [a = 0, b = 0, c, d] = padding
+    return { top: a, right: b, bottom: c ?? a, left: d ?? b }
   }
 
-  if (typeof padding === 'object' && !Array.isArray(padding)) {
-    const top = padding.top ?? 0
-    const bottom = padding.bottom ?? 0
-    const left = padding.left ?? 0
-    const right = padding.right ?? 0
-    return { top, right, bottom, left }
+  if (typeof padding === 'object') {
+    return {
+      top: padding.top ?? 0,
+      right: padding.right ?? 0,
+      bottom: padding.bottom ?? 0,
+      left: padding.left ?? 0,
+    }
   }
 
   return { top: 0, right: 0, bottom: 0, left: 0 }
