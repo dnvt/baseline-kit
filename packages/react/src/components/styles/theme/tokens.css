@@ -1,0 +1,82 @@
+/**
+ * Baseline Kit Theme Tokens Template
+ * 
+ * Use this file as a starting point for creating your own custom theme.
+ * This file contains all theme variables but no values.
+ * 
+ * To create a custom theme:
+ * 1. Copy this file
+ * 2. Fill in your custom values
+ * 3. Import it in your application after the core styles
+ */
+
+:root {
+  /* ───────────────────────────────────────────────────────
+      Color Palette
+      Provide HSL values in the format: hue, saturation%, lightness%
+   ─────────────────────────────────────────────────────── */
+
+  /* Neutral Colors */
+  --bk-color-black-primary: ;
+  --bk-color-black-secondary: ;
+  --bk-color-white-primary: ;
+  --bk-color-white-secondary: ;
+
+  /* Brand Colors */
+  --bk-color-pink-primary: ;
+  --bk-color-pink-secondary: ;
+  --bk-color-purple-primary: ;
+  --bk-color-purple-secondary: ;
+  --bk-color-blue-primary: ;
+  --bk-color-blue-secondary: ;
+
+  /* Supporting Colors */
+  --bk-color-cyan-primary: ;
+  --bk-color-cyan-secondary: ;
+  --bk-color-green-primary: ;
+  --bk-color-green-secondary: ;
+  --bk-color-yellow-primary: ;
+  --bk-color-yellow-secondary: ;
+  --bk-color-orange-primary: ;
+  --bk-color-orange-secondary: ;
+  --bk-color-red-primary: ;
+  --bk-color-red-secondary: ;
+
+  /* ───────────────────────────────────────────────────────
+      Component Theme Colors
+      Use hsla(var(--color-variable), alpha) format for transparency
+   ─────────────────────────────────────────────────────── */
+
+  /* Guide Component Theme */
+  --bk-guide-color-line-theme: ;
+  --bk-guide-color-pattern-theme: ;
+  --bk-guide-color-auto-theme: ;
+  --bk-guide-color-fixed-theme: ;
+
+  /* Baseline Component Theme */
+  --bk-baseline-color-line-theme: ;
+  --bk-baseline-color-flat-theme: ;
+
+  /* Spacer Component Theme */
+  --bk-spacer-color-line-theme: ;
+  --bk-spacer-color-flat-theme: ;
+  --bk-spacer-color-text-theme: ;
+
+  /* Box Component Theme */
+  --bk-box-color-line-theme: ;
+  --bk-box-color-flat-theme: ;
+  --bk-box-color-text-theme: ;
+
+  /* Stack Component Theme */
+  --bk-stack-color-line-theme: ;
+  --bk-stack-color-flat-theme: ;
+  --bk-stack-color-text-theme: ;
+
+  /* Layout Component Theme */
+  --bk-layout-color-line-theme: ;
+  --bk-layout-color-flat-theme: ;
+  --bk-layout-color-text-theme: ;
+
+  /* Padder Component Theme */
+  --bk-padder-color-theme: ;
+}

@@ -1,0 +1,122 @@
+/**
+ * Baseline Kit Base Styles
+ * 
+ * This file defines:
+ * 1. Core system variables used across components
+ * 2. Component-specific CSS variables with fallback values
+ * 3. Robust fallbacks for components to ensure cross-framework compatibility
+ */
+
+/* Core system variables */
+:root {
+  /* Core System Variables */
+  --bkb: 8px; /* Base unit for spacing */
+  --bkzi: 1; /* Base z-index */
+  --bkzio: 2; /* Overlay z-index */
+  --bk-transition-base: 180ms ease; /* Standard transition */
+
+  /* Default Dimensions */
+  --bk-width-default: fit-content;
+  --bk-height-default: fit-content;
+  --bkwf: 100%; /* Full width shorthand */
+  --bkhf: 100%; /* Full height shorthand */
+
+  /* Box Component Variables */
+  --bkxb: var(--bkb);
+  --bkxw: var(--bk-width-default);
+  --bkxh: var(--bk-height-default);
+  --bkxcl: var(--bk-box-color-line-theme, hsla(300, 60%, 40%, 0.6));
+  --bkxcf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
+  --bkxci: var(--bk-box-color-text-theme, hsla(300, 60%, 40%, 0.9));
+
+  /* Stack Component Variables */
+  --bkkw: var(--bkwf);
+  --bkkh: var(--bk-height-default);
+  --bkkcl: var(--bk-stack-color-line-theme, hsla(330, 60%, 40%, 0.6));
+  --bkkcf: var(--bk-stack-color-flat-theme, hsla(0, 100%, 70%, 0.2));
+  --bkkci: var(--bk-stack-color-text-theme, hsla(330, 60%, 40%, 0.9));
+
+  /* Baseline Component Variables */
+  --bkbw: 100%;
+  --bkbh: 100%;
+  --bkrt: 0;
+  --bkrh: 1px;
+  --bkbcl: var(--bk-baseline-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkbcf: var(--bk-baseline-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+
+  /* Guide Component Variables */
+  --bkgw: 100vw;
+  --bkgh: 100vh;
+  --bkgg: var(--bkb);
+  --bkgj: center;
+  --bkgt: auto;
+  --bkgpb: 0;
+  --bkgpi: 0;
+  --bkgcl: var(--bk-guide-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkgcp: var(--bk-guide-color-pattern-theme, hsla(230, 100%, 70%, 0.2));
+  --bkgca: var(--bk-guide-color-auto-theme, hsla(200, 100%, 70%, 0.15));
+  --bkgcf: var(--bk-guide-color-fixed-theme, hsla(200, 100%, 70%, 0.15));
+
+  /* Layout Component Variables */
+  --bklw: var(--bk-width-default);
+  --bklh: var(--bk-height-default);
+  --bklcl: var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6));
+  --bklcf: var(--bk-layout-color-flat-theme, hsla(0, 100%, 70%, 0.2));
+  --bklci: var(--bk-layout-color-text-theme, hsla(330, 60%, 40%, 0.9));
+  --bklgtc: repeat(auto-fill, minmax(100px, 1fr));
+  --bklgtr: auto;
+  --bklg: 0;
+  --bklcg: 0;
+  --bklrg: 0;
+  --bklji: stretch;
+  --bklai: stretch;
+  --bkljc: start;
+  --bklac: start;
+
+  /* Padder Component Variables */
+  --bkpw: var(--bk-width-default);
+  --bkph: var(--bk-height-default);
+  --bkpc: var(--bk-padder-color-theme, hsla(270, 60%, 40%, 0.6));
+
+  /* Spacer Component Variables - with fallback values */
+  --bksw: var(--bkwf);
+  --bksh: var(--bkhf);
+  --bkscl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
+  --bkscf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+  --bksct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
+}
+
+/* Guide Component */
+.guide {
+  --bkgcl: var(--bk-guide-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkgcp: var(--bk-guide-color-pattern-theme, hsla(230, 100%, 70%, 0.2));
+  --bkgca: var(--bk-guide-color-auto-theme, hsla(200, 100%, 70%, 0.15));
+  --bkgcf: var(--bk-guide-color-fixed-theme, hsla(200, 100%, 70%, 0.15));
+}
+
+/* Baseline Component */
+.baseline {
+  --bkbcl: var(--bk-baseline-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkbcf: var(--bk-baseline-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+}
+
+/* Box Component */
+.box {
+  --bkxcl: var(--bk-box-color-line-theme, hsla(300, 60%, 40%, 0.6));
+  --bkxcf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
+  --bkxci: var(--bk-box-color-text-theme, hsla(300, 60%, 40%, 0.9));
+}
+
+/* Stack Component */
+.stack {
+  --bkkcl: var(--bk-stack-color-line-theme, hsla(330, 60%, 40%, 0.6));
+  --bkkcf: var(--bk-stack-color-flat-theme, hsla(0, 100%, 70%, 0.2));
+  --bkkci: var(--bk-stack-color-text-theme, hsla(330, 60%, 40%, 0.9));
+}
+
+/* Layout Component */
+.layout {
+  --bklcl: var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6));
+  --bklcf: var(--bk-layout-color-flat-theme, hsla(0, 100%, 70%, 0.2));
+  --bklci: var(--bk-layout-color-text-theme, hsla(330, 60%, 40%, 0.9));
+}
