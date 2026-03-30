@@ -19,17 +19,15 @@ export const isValidGuidePattern = (
   pattern.length > 0 &&
   pattern.every(isValidGuideColumnValue)
 
-export const isGuideValue = (value: unknown) => {
-  const CSS_UNITS = [
-    ...Object.keys(ABSOLUTE_UNIT_CONVERSIONS),
-    ...RELATIVE_UNITS,
-  ]
-  return (
-    typeof value === 'number' ||
-    (typeof value === 'string' &&
-      CSS_UNITS.some((unit) => value.endsWith(unit)))
-  )
-}
+const CSS_UNITS = [
+  ...Object.keys(ABSOLUTE_UNIT_CONVERSIONS),
+  ...RELATIVE_UNITS,
+]
+
+export const isGuideValue = (value: unknown) =>
+  typeof value === 'number' ||
+  (typeof value === 'string' &&
+    CSS_UNITS.some((unit) => value.endsWith(unit)))
 
 export const isGuideAlignment = (value: unknown): value is GridAlignment =>
   typeof value === 'string' && GRID_ALIGNMENTS.includes(value as GridAlignment)

@@ -11,10 +11,10 @@ import {
 } from '@baseline-kit/core'
 import { mergeStyles } from '../../utils/merge'
 import { ClientOnly } from '../../utils/ssr'
-import { Variant } from '../types'
+import type { BaselineVariant } from '@baseline-kit/core'
 import styles from './styles.module.css'
 
-export type BaselineVariant = Exclude<Variant, 'pattern'>
+export type { BaselineVariant }
 
 export type BaselineProps = {
   /** Visual style variant for the baseline guides */
