@@ -1,12 +1,9 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "baseline-kit",
-      "dependencies": {
-        "esbuild": "^0.25.0",
-        "postcss-preset-env": "^10.1.5",
-      },
       "devDependencies": {
         "@changesets/cli": "^2.28.1",
         "@eslint/js": "^9.21.0",
@@ -21,12 +18,14 @@
         "@vitest/coverage-v8": "^3.0.8",
         "autoprefixer": "^10.4.20",
         "cssnano": "^7.0.6",
+        "esbuild": "^0.25.0",
         "eslint": "^9.0.0",
         "eslint-config-prettier": "^10.1.1",
         "eslint-plugin-prettier": "^5.2.3",
         "eslint-plugin-react": "^7.37.4",
         "eslint-plugin-react-hooks": "^5.2.0",
         "jsdom": "^26.0.0",
+        "postcss-preset-env": "^10.1.5",
         "prettier": "^3.5.3",
         "rollup": "^4.34.9",
         "rollup-plugin-dts": "^6.1.1",
