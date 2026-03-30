@@ -8,12 +8,10 @@ import {
 } from '@baseline-kit/core'
 import { mergeStyles } from '../../utils/merge'
 import { ClientOnly } from '../../utils/ssr'
-import type { AutoConfig, FixedConfig, LineConfig, PatternConfig } from './types'
-import type { GuideVariant, GuideConfig as CoreGuideConfig } from '@baseline-kit/core'
+import type { GuideVariant, GuideConfig } from '@baseline-kit/core'
 import styles from './styles.module.css'
 
-/** Merged configuration types that support various grid layout strategies */
-export type GuideConfig = PatternConfig | AutoConfig | FixedConfig | LineConfig
+export type { GuideConfig }
 
 export type GuideProps = {
   /** Controls horizontal alignment of columns within the container */
@@ -37,65 +35,35 @@ export type GuideProps = {
 } & ComponentsProps &
   Omit<GuideConfig, 'columns' | 'columnWidth' | 'gap'>
 
-/** Parameters for creating a grid configuration */
-type GridConfigParams = {
-  variant: GuideVariant
-  base: number
-  gap: number
-  columns?: number | readonly (string | number | undefined | 'auto')[]
-  columnWidth?: React.CSSProperties['width']
-}
-
 /**
- * Creates a grid configuration based on the specified variant and parameters
- * Internal helper function for Guide component
+ * Creates a grid configuration based on the specified variant and parameters.
  */
 const createGridConfig = (
-  params: GridConfigParams
-): PatternConfig | AutoConfig | FixedConfig | LineConfig => {
-  const { variant, base, gap, columns, columnWidth } = params
-
+  variant: GuideVariant,
+  base: number,
+  gap: number,
+  columns?: number | readonly (string | number | undefined | 'auto')[],
+  columnWidth?: React.CSSProperties['width'],
+): GuideConfig => {
   switch (variant) {
     case 'line':
-      return {
-        variant: 'line',
-        gap,
-        base,
-      } as LineConfig
+      return { variant: 'line', gap, base }
 
     case 'pattern':
       if (columns && Array.isArray(columns)) {
-        return {
-          variant: 'pattern',
-          columns: columns as readonly (string | number)[],
-          gap,
-          base,
-        } as PatternConfig
+        return { variant: 'pattern', columns: columns as readonly (string | number)[], gap, base }
       }
       break
 
     case 'fixed':
       if (columns !== undefined) {
-        const parsedColumns =
-          typeof columns === 'number' ? columns : parseInt(String(columns), 10)
-        return {
-          variant: 'fixed',
-          columns: !isNaN(parsedColumns) ? parsedColumns : 12,
-          columnWidth: columnWidth || '60px',
-          gap,
-          base,
-        } as FixedConfig
+        const parsedColumns = typeof columns === 'number' ? columns : parseInt(String(columns), 10)
+        return { variant: 'fixed', columns: !isNaN(parsedColumns) ? parsedColumns : 12, columnWidth: columnWidth || '60px', gap, base }
       }
       break
   }
 
-  // Default to auto columns if no valid configuration was created
-  return {
-    variant: 'auto',
-    columnWidth: columnWidth || '1fr',
-    gap,
-    base,
-  } as AutoConfig
+  return { variant: 'auto', columnWidth: columnWidth || '1fr', gap, base }
 }
 
 /** Creates default guide styles */
@@ -281,25 +249,12 @@ const GuideImpl = React.memo(function GuideImpl({
     }
   }, [refresh])
 
-  // Create guide configuration based on variant
-  const gridConfig = React.useMemo(() => {
-    // Ensure we have valid values for the grid configuration
-    const safeVariant = variant as GuideVariant
-    const safeGap = typeof gap === 'number' ? gap : 0
-
-    return createGridConfig({
-      variant: safeVariant,
-      base: config.base,
-      gap: safeGap,
-      columns,
-      columnWidth,
-    })
-  }, [variant, config.base, gap, columns, columnWidth])
-
-  const { template, columnsCount, calculatedGap } = useGuide(
-    containerRef,
-    gridConfig as CoreGuideConfig
+  const gridConfig = React.useMemo(
+    () => createGridConfig(variant as GuideVariant, config.base, typeof gap === 'number' ? gap : 0, columns, columnWidth),
+    [variant, config.base, gap, columns, columnWidth]
   )
+
+  const { template, columnsCount, calculatedGap } = useGuide(containerRef, gridConfig)
 
   const defaultStyles = React.useMemo(
     () => createDefaultGuideStyles(config.base, config.colors.line),
