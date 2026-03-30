@@ -25,9 +25,15 @@ export { Padder } from './components/Padder'
 
 // Public API Types
 export type { DebuggingMode, ConfigSchema } from './components/Config/Config'
-export type { GuideVariant, Spacing, SpacingProps } from './components/types'
-export type { BaselineProps } from './components/Baseline'
-export type { BoxProps } from './components/Box'
+export type {
+  GuideVariant,
+  Spacing,
+  SpacingProps,
+  PaddingValue,
+  Variant,
+} from './components/types'
+export type { BaselineProps, BaselineVariant } from './components/Baseline'
+export type { BoxProps, SnappingMode } from './components/Box'
 export type { GuideProps } from './components/Guide'
 export type { LayoutProps } from './components/Layout'
 export type { StackProps } from './components/Stack'

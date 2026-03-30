@@ -40,7 +40,7 @@ export function normalizeValue(
   } else if (typeof value === 'string') {
     const conv = convertValue(value)
     if (conv === null) {
-      if (!suppressWarnings) {
+      if (!suppressWarnings && process.env.NODE_ENV === 'development') {
         console.error(
           `Failed to convert "${value}" to pixels. Falling back to base ${base}.`
         )
@@ -51,6 +51,9 @@ export function normalizeValue(
     }
   }
   if (num === null) num = base
+
+  // Guard against division by zero
+  if (base <= 0) return num
 
   // Apply normalization
   const normalized = doRound ? Math.round(num / base) * base : num
@@ -66,7 +69,11 @@ export function normalizeValue(
       : normalized
 
   // Warn about adjustments
-  if (!suppressWarnings && clamped !== num) {
+  if (
+    !suppressWarnings &&
+    clamped !== num &&
+    process.env.NODE_ENV === 'development'
+  ) {
     console.warn(`Normalized ${num} to ${clamped} to match base ${base}px.`)
   }
 

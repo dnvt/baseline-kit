@@ -45,6 +45,7 @@ export type Spacing =
 export type PaddingValue =
   | number
   | [number, number] // [block, inline]
+  | [number, number, number] // [top, inline, bottom] (CSS shorthand)
   | [number, number, number, number] // [top, right, bottom, left]
   | {
       top?: number

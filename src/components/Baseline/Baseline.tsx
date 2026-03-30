@@ -248,6 +248,7 @@ const BaselineImpl = React.memo(function BaselineImpl({
     <div
       ref={containerRef}
       data-testid="baseline"
+      aria-hidden="true"
       className={mergeClasses(
         styles.bas,
         isShown ? styles.v : styles.h,
@@ -326,6 +327,7 @@ export const Baseline = React.memo(function Baseline({
         className={mergeClasses(styles.b, styles.h, className)}
         style={style}
         data-testid="baseline"
+        aria-hidden="true"
         {...spacingProps}
       />
     )
@@ -341,6 +343,7 @@ export const Baseline = React.memo(function Baseline({
         ...style,
       }}
       data-testid="baseline"
+      aria-hidden="true"
     />
   )
 

@@ -31,7 +31,7 @@ jobs:
         run: bun run typecheck
 
       - name: Lint Check
-        run: bun run typecheck
+        run: bun run lint
 
       - name: Run Tests with Coverage
         run: bun run test
