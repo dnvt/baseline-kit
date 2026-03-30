@@ -8,12 +8,21 @@ export interface ConversionContext {
   parentFontSize?: number
 }
 
-const DEFAULT_CONTEXT: Required<ConversionContext> = {
+const STATIC_DEFAULTS: Required<ConversionContext> = {
   parentSize: 0,
-  viewportWidth: typeof window !== 'undefined' ? window.innerWidth : 1920,
-  viewportHeight: typeof window !== 'undefined' ? window.innerHeight : 1080,
+  viewportWidth: 1920,
+  viewportHeight: 1080,
   rootFontSize: 16,
   parentFontSize: 16,
+}
+
+function getDefaultContext(): Required<ConversionContext> {
+  if (typeof window === 'undefined') return STATIC_DEFAULTS
+  return {
+    ...STATIC_DEFAULTS,
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+  }
 }
 
 export const ABSOLUTE_UNIT_CONVERSIONS: Record<string, number> = {
@@ -26,6 +35,16 @@ export const ABSOLUTE_UNIT_CONVERSIONS: Record<string, number> = {
 }
 
 export const RELATIVE_UNITS: string[] = ['em', 'rem', 'vh', 'vw', 'vmin', 'vmax', '%']
+
+const RELATIVE_UNIT_RESOLVERS: Record<string, (ctx: Required<ConversionContext>) => number> = {
+  em: (ctx) => ctx.parentFontSize,
+  rem: (ctx) => ctx.rootFontSize,
+  vh: (ctx) => ctx.viewportHeight / 100,
+  vw: (ctx) => ctx.viewportWidth / 100,
+  vmin: (ctx) => Math.min(ctx.viewportWidth, ctx.viewportHeight) / 100,
+  vmax: (ctx) => Math.max(ctx.viewportWidth, ctx.viewportHeight) / 100,
+  '%': (ctx) => ctx.parentSize / 100,
+}
 
 export function convertValue(
   value: number | string | undefined,
@@ -45,18 +64,11 @@ export function convertValue(
 
   if (unit === 'auto') return null
 
-  if (RELATIVE_UNITS.includes(unit)) {
-    const ctx = { ...DEFAULT_CONTEXT, ...context }
-    switch (unit) {
-      case 'em': return num * ctx.parentFontSize
-      case 'rem': return num * ctx.rootFontSize
-      case 'vh': return (num / 100) * ctx.viewportHeight
-      case 'vw': return (num / 100) * ctx.viewportWidth
-      case 'vmin': return (num / 100) * Math.min(ctx.viewportWidth, ctx.viewportHeight)
-      case 'vmax': return (num / 100) * Math.max(ctx.viewportWidth, ctx.viewportHeight)
-      case '%': return (num / 100) * ctx.parentSize
-      default: return null
-    }
+  const resolver = RELATIVE_UNIT_RESOLVERS[unit]
+  if (resolver) {
+    const ctx = { ...getDefaultContext(), ...context }
+    return num * resolver(ctx)
   }
+
   return null
 }

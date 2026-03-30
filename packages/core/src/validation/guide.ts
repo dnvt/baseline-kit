@@ -1,5 +1,6 @@
 import type { GuideColumnsPattern, GuideColumnValue, GridAlignment, GuideConfig } from '../types'
-import { GRID_ALIGNMENTS, ABSOLUTE_UNIT_CONVERSIONS, RELATIVE_UNITS } from '..'
+import { GRID_ALIGNMENTS } from '../types'
+import { ABSOLUTE_UNIT_CONVERSIONS, RELATIVE_UNITS } from '../utils/convert'
 
 const UNIT_PATTERN =
   /^\d*\.?\d+(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/

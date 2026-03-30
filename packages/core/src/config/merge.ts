@@ -12,18 +12,17 @@ type MergeConfigParams = {
   padder?: Partial<ConfigSchema['padder']>
 }
 
+const COMPONENT_KEYS = ['baseline', 'guide', 'spacer', 'box', 'stack', 'layout', 'padder'] as const
+
 export const mergeConfig = (params: MergeConfigParams): ConfigSchema => {
-  const { parentConfig, base, baseline, guide, spacer, box, stack, layout, padder } = params
-  return {
-    base: base ?? parentConfig.base,
-    baseline: { ...parentConfig.baseline, ...baseline },
-    guide: { ...parentConfig.guide, ...guide },
-    spacer: { ...parentConfig.spacer, ...spacer },
-    box: { ...parentConfig.box, ...box },
-    stack: { ...parentConfig.stack, ...stack },
-    layout: { ...parentConfig.layout, ...layout },
-    padder: { ...parentConfig.padder, ...padder },
+  const { parentConfig, base } = params
+  const merged = {} as Record<string, unknown>
+
+  for (const key of COMPONENT_KEYS) {
+    merged[key] = { ...parentConfig[key], ...params[key] }
   }
+
+  return { base: base ?? parentConfig.base, ...merged } as ConfigSchema
 }
 
 type CSSVariablesParams = {
