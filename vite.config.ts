@@ -41,7 +41,7 @@ export default defineConfig(({ command }) => ({
       formats: ['es', 'cjs'],
       fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: [
         'react',
         'react-dom',
