@@ -5,8 +5,8 @@
     "build:combine-css": "node scripts/combine-css.js",
     "changeset": "changeset",
     "dev": "vite",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "lint": "eslint src --fix",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,css}\"",
+    "lint": "eslint packages --fix",
     "prepare": "bun run build && bun run build:type",
     "prepublishOnly": "bun run build && bun run build:type",
     "release": "changeset publish",
@@ -79,8 +79,11 @@
     "vitest": "^4.1.2"
   },
   "name": "baseline-kit",
-  "version": "3.0.2",
+  "version": "4.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "homepage": "https://github.com/dnvt/baseline-kit#readme",
   "types": "dist/index.d.ts",
   "exports": {

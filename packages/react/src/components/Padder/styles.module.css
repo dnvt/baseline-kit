@@ -1,0 +1,22 @@
+.pad {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
+  width: var(--bkpw, auto);
+  height: var(--bkph, auto);
+}
+
+.lay .line::after,
+.stk .line::after {
+  border: none;
+}
+
+.v::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--bkpc, var(--bk-padder-color-theme));
+  pointer-events: none;
+  z-index: var(--bkzi);
+}

@@ -12,7 +12,7 @@ export default defineConfig(({ command }) => ({
       targets: [
         { src: 'README.md', dest: '.' },
         {
-          src: 'src/components/styles/theme.css',
+          src: 'packages/react/src/components/styles/theme.css',
           dest: '.',
           rename: { stripBase: true },
         },
@@ -36,7 +36,7 @@ export default defineConfig(({ command }) => ({
     cssCodeSplit: false,
     cssMinify: true,
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: resolve(__dirname, 'packages/react/src/index.ts'),
       name: 'BaselineKit',
       formats: ['es', 'cjs'],
       fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,

@@ -17,29 +17,22 @@
     ],
     "strict": true,
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@components": [
-        "src/components/index.ts"
-      ],
-      "@hooks": [
-        "src/hooks/index.ts"
-      ],
-      "@types": [
-        "src/types/index.ts"
-      ],
-      "@context": [
-        "src/context/index.ts"
-      ],
-      "@utils": [
-        "src/utils/index.ts"
-      ]
+      "@baseline-kit/core": ["packages/core/src/index.ts"],
+      "@baseline-kit/core/*": ["packages/core/src/*"],
+      "@baseline-kit/dom": ["packages/dom/src/index.ts"],
+      "@baseline-kit/dom/*": ["packages/dom/src/*"],
+      "@baseline-kit/react": ["packages/react/src/index.ts"],
+      "@baseline-kit/react/*": ["packages/react/src/*"],
+      "@/*": ["packages/react/src/*"],
+      "@components": ["packages/react/src/components/index.ts"],
+      "@hooks": ["packages/react/src/hooks/index.ts"],
+      "@types": ["packages/react/src/types/index.ts"],
+      "@context": ["packages/react/src/context/index.ts"],
+      "@utils": ["packages/react/src/utils/index.ts"]
     }
   },
   "include": [
-    "demo/**/*",    
-    "src/**/*",
+    "packages/**/*",
     "vitest.d.ts"
   ],
   "exclude": [
