@@ -5,25 +5,32 @@ import { Baseline } from '@/components/Baseline'
 // We'll store IntersectionObserver callbacks in a map, keyed by element.
 const observerMap = new Map<Element, IntersectionObserverCallback>()
 
-// Mock IntersectionObserver
-const mockIntersectionObserver = vi.fn((callback: IntersectionObserverCallback) => ({
-  observe: (element: Element) => {
-    observerMap.set(element, callback)
-  },
-  unobserve: (element: Element) => {
+// Mock IntersectionObserver (must use class for Vitest 4 constructor support)
+class MockIntersectionObserver {
+  callback: IntersectionObserverCallback
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback
+  }
+  observe(element: Element) {
+    observerMap.set(element, this.callback)
+  }
+  unobserve(element: Element) {
     observerMap.delete(element)
-  },
-  disconnect: () => {
+  }
+  disconnect() {
     observerMap.clear()
-  },
-}))
+  }
+}
 
-// For ResizeObserver
-type ResizeObserverCallback = (entries: ResizeObserverEntry[], observer: ResizeObserver) => void
-const mockResizeObserver = vi.fn((callback: ResizeObserverCallback) => ({
-  observe: vi.fn((target: Element) => {
-    // Immediately trigger the callback with an initial size (1024x768)
-    callback(
+// Mock ResizeObserver (must use class for Vitest 4 constructor support)
+class MockResizeObserver {
+  constructor(callback: (entries: ResizeObserverEntry[], observer: ResizeObserver) => void) {
+    // Store for potential use, but immediately trigger on observe
+    this._callback = callback
+  }
+  _callback: (entries: ResizeObserverEntry[], observer: ResizeObserver) => void
+  observe(target: Element) {
+    this._callback(
       [
         {
           contentRect: { width: 1024, height: 768 },
@@ -35,16 +42,16 @@ const mockResizeObserver = vi.fn((callback: ResizeObserverCallback) => ({
       ],
       {} as ResizeObserver,
     )
-  }),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+  }
+  unobserve() {}
+  disconnect() {}
+}
 
 describe('Baseline', () => {
   beforeAll(() => {
     vi.useFakeTimers()
-    vi.stubGlobal('IntersectionObserver', mockIntersectionObserver)
-    vi.stubGlobal('ResizeObserver', mockResizeObserver)
+    vi.stubGlobal('IntersectionObserver', MockIntersectionObserver)
+    vi.stubGlobal('ResizeObserver', MockResizeObserver)
 
     // Set up window dimensions (these are optional if your tests rely on them).
     Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true })

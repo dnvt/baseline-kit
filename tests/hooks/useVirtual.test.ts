@@ -4,15 +4,20 @@ import { testUtils } from '../setup'
 
 // Create a map to simulate IntersectionObserver callbacks.
 const observerMap = new Map<HTMLElement, IntersectionObserverCallback>()
-const mockIntersectionObserver = vi.fn((callback: IntersectionObserverCallback) => ({
-  observe: vi.fn((element: HTMLElement) => {
-    observerMap.set(element, callback)
-  }),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
 
-vi.stubGlobal('IntersectionObserver', mockIntersectionObserver)
+class MockIntersectionObserver {
+  callback: IntersectionObserverCallback
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback
+  }
+  observe(element: HTMLElement) {
+    observerMap.set(element, this.callback)
+  }
+  unobserve() {}
+  disconnect() {}
+}
+
+vi.stubGlobal('IntersectionObserver', MockIntersectionObserver)
 
 describe('useVirtual', () => {
   beforeEach(() => {

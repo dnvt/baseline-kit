@@ -13,6 +13,9 @@
  * @module baseline-kit
  */
 
+// Core styles (base variables, reset, component CSS)
+import './components/styles/core.css'
+
 // Public API Components
 export { Config } from './components/Config'
 export { Baseline } from './components/Baseline'
