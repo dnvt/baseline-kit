@@ -44,12 +44,22 @@ function parsePaddingValue(padding: PaddingValue): Padding {
   }
 
   if (Array.isArray(padding)) {
-    if (padding.length === 2) {
-      const [block, inline] = padding
+    const len = padding.length
+    if (len === 2) {
+      const [block, inline] = padding as [number, number]
       return { top: block, right: inline, bottom: block, left: inline }
     }
-    if (padding.length >= 4) {
-      const [top, right, bottom, left] = padding
+    if (len === 3) {
+      const [top, inline, bottom] = padding as [number, number, number]
+      return {
+        top: top ?? 0,
+        right: inline ?? 0,
+        bottom: bottom ?? 0,
+        left: inline ?? 0,
+      }
+    }
+    if (len >= 4) {
+      const [top, right, bottom, left] = padding as [number, number, number, number]
       return {
         top: top ?? 0,
         right: right ?? 0,

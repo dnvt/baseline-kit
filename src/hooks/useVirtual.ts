@@ -82,11 +82,6 @@ export function useVirtual({
     const element = containerRef.current
     if (!element) return { start: 0, end: totalLines }
 
-    // Show all lines if container is inside .content-block
-    if (element.closest('.block')) {
-      return { start: 0, end: totalLines }
-    }
-
     // Calculate visible range
     const rect = element.getBoundingClientRect()
     const offsetTop = rect.top + window.scrollY
@@ -101,11 +96,6 @@ export function useVirtual({
 
   const [visibleRange, setVisibleRange] = useState(calculateRange)
 
-  // Subscribe to window events using our helper
-  useWindowEvents(['scroll', 'resize'], () => {
-    updateRangeThrottled()
-  })
-
   // Throttle updates for performance
   const updateRange = useCallback(() => {
     setVisibleRange((prev) => {
@@ -118,6 +108,9 @@ export function useVirtual({
     () => rafThrottle(updateRange),
     [updateRange]
   )
+
+  // Subscribe to window events using our helper
+  useWindowEvents(['scroll', 'resize'], updateRangeThrottled)
 
   useLayoutEffect(() => {
     const element = containerRef.current

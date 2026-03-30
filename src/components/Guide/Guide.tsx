@@ -188,6 +188,7 @@ export const Guide = React.memo(function Guide({
         style={style}
         data-testid="guide"
         data-variant={variant}
+        aria-hidden="true"
         {...props}
       >
         {children}
@@ -207,6 +208,7 @@ export const Guide = React.memo(function Guide({
       }}
       data-testid="guide"
       data-variant={variant}
+      aria-hidden="true"
     >
       {children}
     </div>
@@ -388,55 +390,11 @@ const GuideImpl = React.memo(function GuideImpl({
     align,
   ])
 
-  // In the component where gap is used:
-  const handleGapCalculations = () => {
-    // Ensure gap is a number
-    const safeGap = typeof gap === 'number' ? gap : 0
-
-    // When gap is 0, we need width + 1 columns to fill the space
-    // When gap > 0, we need to account for the -1px reduction in each gap
-    const finalGap = safeGap === 0 ? 0 : safeGap - 1
-    const actualGapWithLine = finalGap + 1
-
-    // Rest of the gap calculations...
-    return { finalGap, actualGapWithLine }
-  }
-
-  // Use the gap calculations where needed
-  const { finalGap, actualGapWithLine } = handleGapCalculations()
-
-  // Ensure width is a number
-  const containerWidthValue =
-    typeof width === 'number' ? width : containerWidth || 1024
-
-  // For line variants, account for the -1px reduction in each gap
-  // If we have N columns, we have (N-1) gaps, each reduced by 1px
-  // So the total width lost is (N-1) pixels
-  let columnCount: number
-
-  if (finalGap === 0) {
-    // When gap is 0, we need a column per pixel + 1
-    columnCount = Math.floor(containerWidthValue) + 1
-  } else if (variant === 'line') {
-    // For line variant with gap > 0:
-    // We need to solve for N in: N * actualGapWithLine - (N-1) = containerWidthValue
-    // Which simplifies to: N = (containerWidthValue + 1) / (actualGapWithLine - 1 + 1)
-    columnCount = Math.max(
-      1,
-      Math.floor((containerWidthValue + 1) / actualGapWithLine) + 1
-    )
-  } else {
-    // For other variants, use the standard formula
-    columnCount = Math.max(
-      1,
-      Math.floor(containerWidthValue / actualGapWithLine) + 1
-    )
-  }
-
   return (
     <div
       ref={containerRef}
       data-testid="guide"
+      aria-hidden="true"
       className={mergeClasses(
         styles.gde,
         className,
@@ -449,10 +407,11 @@ const GuideImpl = React.memo(function GuideImpl({
     >
       {isShown && (
         <div className={styles.cols} data-variant={variant}>
-          {Array.from({ length: columnCount }, (_, i) => {
+          {Array.from({ length: columnsCount }, (_, i) => {
             const colColor =
-              config.colors[variant as keyof typeof config.colors] ??
-              config.colors.line
+              (variant && variant in config.colors
+                ? config.colors[variant as keyof typeof config.colors]
+                : undefined) ?? config.colors.line
             return (
               <div
                 key={i}
