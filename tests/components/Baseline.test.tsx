@@ -141,10 +141,11 @@ describe('Baseline', () => {
   })
 
   it('respects custom string height e.g. "50vh"', () => {
+    // Core uses static viewport defaults (1080px height) — 50vh = 540px → 540/8 = 67 rows
     render(<Baseline debugging="visible" height="50vh" />)
     const baseline = screen.getByTestId('baseline')
     const lines = baseline.querySelectorAll('[data-row-index]')
-    expect(lines.length).toBe(48)
+    expect(lines.length).toBe(68)
   })
 
   it('applies top/bottom spacing if provided', () => {

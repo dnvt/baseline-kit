@@ -1,33 +1,13 @@
 import * as React from 'react'
 
 /**
- * Combines multiple style objects with type safety.
+ * Combines descriptor style records and React style objects.
+ * Accepts Record<string, string> from descriptors and React.CSSProperties.
  */
-export const mergeStyles = <T extends React.CSSProperties>(
-  ...styles: Array<T | undefined>
-): T =>
-  Object.assign(
-    {},
-    ...styles.filter((style): style is T => style !== undefined)
-  )
-
-/**
- * Assigns a value to a React ref.
- */
-function assignRef<T>(
-  ref: React.Ref<T> | null | undefined,
-  node: T | null
-): void {
-  if (!ref) return
-  if (typeof ref === 'function') {
-    ref(node)
-  } else {
-    try {
-      Object.assign(ref, { current: node })
-    } catch (error) {
-      console.error('Error assigning ref:', error)
-    }
-  }
+export function mergeStyles(
+  ...styles: Array<Record<string, string> | React.CSSProperties | undefined>
+): React.CSSProperties {
+  return Object.assign({}, ...styles.filter(Boolean))
 }
 
 /**
@@ -38,7 +18,12 @@ export function mergeRefs<T>(
 ): React.RefCallback<T> {
   return (node: T | null) => {
     refs.forEach((ref) => {
-      assignRef(ref, node)
+      if (!ref) return
+      if (typeof ref === 'function') {
+        ref(node)
+      } else {
+        Object.assign(ref, { current: node })
+      }
     })
   }
 }

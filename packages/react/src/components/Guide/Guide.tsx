@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { ComponentsProps } from '../types'
 import { useConfig, useDebug, useMeasure, useGuide } from '../../hooks'
-import { cx, createGuideDescriptor, createGuideConfig } from '@baseline-kit/core'
+import { cx,  createGuideDescriptor, createGuideConfig } from '@baseline-kit/core'
 import type { GuideVariant, GuideConfig } from '@baseline-kit/core'
-import { mergeStyles } from '../../utils/merge'
 import { ClientOnly } from '../../utils/ssr'
+import { mergeStyles } from '../../utils/merge'
 import styles from './styles.module.css'
 
 export type { GuideConfig }
@@ -114,13 +114,7 @@ const GuideImpl = React.memo(function GuideImpl({
   const config = useConfig('guide')
   const { isShown } = useDebug(debugging, config.debugging)
   const containerRef = React.useRef<HTMLDivElement | null>(null)
-  const { height: containerHeight, refresh } = useMeasure(containerRef)
-
-  React.useEffect(() => {
-    const handleResize = () => refresh()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [refresh])
+  const { height: containerHeight } = useMeasure(containerRef)
 
   const resolvedVariant = (variant ?? config.variant) as GuideVariant
   const resolvedGap = typeof gap === 'number' ? gap : 0
@@ -147,7 +141,7 @@ const GuideImpl = React.memo(function GuideImpl({
   )
 
   const containerStyles = React.useMemo(
-    () => mergeStyles(descriptor.containerStyle as React.CSSProperties, style),
+    () => mergeStyles(descriptor.containerStyle, style),
     [descriptor.containerStyle, style]
   )
 
