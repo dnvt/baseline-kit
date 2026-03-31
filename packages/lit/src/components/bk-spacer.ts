@@ -21,7 +21,9 @@ export class BkSpacer extends BkBase {
   }
 
   static override styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .spr {
       position: relative;
       box-sizing: border-box;

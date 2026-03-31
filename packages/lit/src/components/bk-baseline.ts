@@ -7,11 +7,11 @@ import {
   resolveDebugState,
   createBaselineDescriptor,
 } from '@baseline-kit/core'
-import {
-  createMeasureObserver,
-  createVirtualTracker,
+import { createMeasureObserver, createVirtualTracker } from '@baseline-kit/dom'
+import type {
+  MeasureObserverHandle,
+  VirtualTrackerHandle,
 } from '@baseline-kit/dom'
-import type { MeasureObserverHandle, VirtualTrackerHandle } from '@baseline-kit/dom'
 import { BkBase } from './bk-base.js'
 
 /**
@@ -32,7 +32,9 @@ export class BkBaseline extends BkBase {
   }
 
   static override styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .bas {
       position: absolute;
       inset: 0;
@@ -106,7 +108,11 @@ export class BkBaseline extends BkBase {
     this._virtualHandle?.disconnect()
     this._virtualHandle = createVirtualTracker(
       el,
-      { totalItems: descriptor.rowCount, itemHeight: resolvedBase, buffer: 160 },
+      {
+        totalItems: descriptor.rowCount,
+        itemHeight: resolvedBase,
+        buffer: 160,
+      },
       (range) => {
         this._virtualStart = range.start
         this._virtualEnd = range.end
@@ -138,12 +144,16 @@ export class BkBaseline extends BkBase {
     })
 
     const count = this._virtualEnd - this._virtualStart
-    const rows = count > 0
-      ? Array.from({ length: count }, (_, i) => {
-          const rowIndex = i + this._virtualStart
-          return html`<div class="row" style=${styleMap(descriptor.getRowStyle(rowIndex))}></div>`
-        })
-      : nothing
+    const rows =
+      count > 0
+        ? Array.from({ length: count }, (_, i) => {
+            const rowIndex = i + this._virtualStart
+            return html`<div
+              class="row"
+              style=${styleMap(descriptor.getRowStyle(rowIndex))}
+            ></div>`
+          })
+        : nothing
 
     return html`
       <div

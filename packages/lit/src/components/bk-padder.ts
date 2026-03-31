@@ -25,7 +25,9 @@ export class BkPadder extends BkBase {
   }
 
   static override styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .pad {
       position: relative;
       display: grid;
@@ -42,9 +44,16 @@ export class BkPadder extends BkBase {
       pointer-events: none;
       z-index: var(--bk-zi, 1);
     }
-    .full-row { grid-column: 1 / -1; }
-    .mid-col { grid-row: 2 / 3; }
-    .center { grid-row: 2 / 3; grid-column: 2 / 3; }
+    .full-row {
+      grid-column: 1 / -1;
+    }
+    .mid-col {
+      grid-row: 2 / 3;
+    }
+    .center {
+      grid-row: 2 / 3;
+      grid-column: 2 / 3;
+    }
   `
 
   declare debugging: 'visible' | 'hidden' | 'none' | undefined
@@ -63,8 +72,14 @@ export class BkPadder extends BkBase {
     const enableSpacers = !isNone
 
     const padding = parsePadding({
-      block: this.block != null ? [this.top ?? this.block, this.bottom ?? this.block] : undefined,
-      inline: this.inline != null ? [this.left ?? this.inline, this.right ?? this.inline] : undefined,
+      block:
+        this.block != null
+          ? [this.top ?? this.block, this.bottom ?? this.block]
+          : undefined,
+      inline:
+        this.inline != null
+          ? [this.left ?? this.inline, this.right ?? this.inline]
+          : undefined,
     })
 
     const descriptor = createPadderDescriptor({
@@ -79,27 +94,57 @@ export class BkPadder extends BkBase {
 
     if (!enableSpacers) {
       return html`
-        <div class=${cx(...descriptor.classTokens)} style=${styleMap(descriptor.containerStyle)}>
+        <div
+          class=${cx(...descriptor.classTokens)}
+          style=${styleMap(descriptor.containerStyle)}
+        >
           <slot></slot>
         </div>
       `
     }
 
     return html`
-      <div class=${cx(...descriptor.classTokens)} style=${styleMap(descriptor.containerStyle)}>
-        ${padding.top >= 0 ? html`<div class="full-row">
-          <bk-spacer width="100%" height=${padding.top} debugging=${this.debugging ?? 'none'}></bk-spacer>
-        </div>` : ''}
-        ${padding.left >= 0 ? html`<div class="mid-col">
-          <bk-spacer width=${padding.left} height="100%" debugging=${this.debugging ?? 'none'}></bk-spacer>
-        </div>` : ''}
+      <div
+        class=${cx(...descriptor.classTokens)}
+        style=${styleMap(descriptor.containerStyle)}
+      >
+        ${padding.top >= 0
+          ? html`<div class="full-row">
+              <bk-spacer
+                width="100%"
+                height=${padding.top}
+                debugging=${this.debugging ?? 'none'}
+              ></bk-spacer>
+            </div>`
+          : ''}
+        ${padding.left >= 0
+          ? html`<div class="mid-col">
+              <bk-spacer
+                width=${padding.left}
+                height="100%"
+                debugging=${this.debugging ?? 'none'}
+              ></bk-spacer>
+            </div>`
+          : ''}
         <div class="center"><slot></slot></div>
-        ${padding.right >= 0 ? html`<div class="mid-col">
-          <bk-spacer width=${padding.right} height="100%" debugging=${this.debugging ?? 'none'}></bk-spacer>
-        </div>` : ''}
-        ${padding.bottom >= 0 ? html`<div class="full-row">
-          <bk-spacer width="100%" height=${padding.bottom} debugging=${this.debugging ?? 'none'}></bk-spacer>
-        </div>` : ''}
+        ${padding.right >= 0
+          ? html`<div class="mid-col">
+              <bk-spacer
+                width=${padding.right}
+                height="100%"
+                debugging=${this.debugging ?? 'none'}
+              ></bk-spacer>
+            </div>`
+          : ''}
+        ${padding.bottom >= 0
+          ? html`<div class="full-row">
+              <bk-spacer
+                width="100%"
+                height=${padding.bottom}
+                debugging=${this.debugging ?? 'none'}
+              ></bk-spacer>
+            </div>`
+          : ''}
       </div>
     `
   }

@@ -27,14 +27,11 @@ export function useVirtual({
     end: totalLines,
   })
 
-  const updateRange = useCallback(
-    (range: VirtualRange) => {
-      setVisibleRange((prev) =>
-        prev.start === range.start && prev.end === range.end ? prev : range
-      )
-    },
-    []
-  )
+  const updateRange = useCallback((range: VirtualRange) => {
+    setVisibleRange((prev) =>
+      prev.start === range.start && prev.end === range.end ? prev : range
+    )
+  }, [])
 
   useLayoutEffect(() => {
     if (!containerRef.current) return

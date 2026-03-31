@@ -32,7 +32,6 @@ export function resolveDebugState(
   }
 }
 
-
 export type StyleOverrideParams = {
   key: string
   value: string

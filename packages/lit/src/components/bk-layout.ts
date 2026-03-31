@@ -27,14 +27,19 @@ export class BkLayout extends BkBase {
   }
 
   static override styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .lay {
       display: grid;
       position: relative;
       box-sizing: border-box;
       width: var(--bkly-w, auto);
       height: var(--bkly-h, auto);
-      grid-template-columns: var(--bkly-gtc, repeat(auto-fill, minmax(100px, 1fr)));
+      grid-template-columns: var(
+        --bkly-gtc,
+        repeat(auto-fill, minmax(100px, 1fr))
+      );
       grid-template-rows: var(--bkly-gtr, auto);
       gap: var(--bkly-g, 0);
       column-gap: var(--bkly-cg, 0);
@@ -87,7 +92,10 @@ export class BkLayout extends BkBase {
     })
 
     return html`
-      <div class=${cx(...descriptor.classTokens, isShown ? 'v' : undefined)} style=${styleMap(descriptor.containerStyle)}>
+      <div
+        class=${cx(...descriptor.classTokens, isShown ? 'v' : undefined)}
+        style=${styleMap(descriptor.containerStyle)}
+      >
         <slot></slot>
       </div>
     `

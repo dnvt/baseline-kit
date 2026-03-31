@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '../../hooks'
-import { cx,  parsePadding, createPadderDescriptor } from '@baseline-kit/core'
+import { cx, parsePadding, createPadderDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
 import { ComponentsProps, Variant } from '../types'
@@ -41,21 +41,42 @@ const createRenderSpacerFn = (
 // Static grid position styles — hoisted to avoid re-creation on render
 const GRID_FULL_ROW: React.CSSProperties = { gridColumn: '1 / -1' }
 const GRID_MID_COL: React.CSSProperties = { gridRow: '2 / 3' }
-const GRID_CENTER: React.CSSProperties = { gridRow: '2 / 3', gridColumn: '2 / 3' }
+const GRID_CENTER: React.CSSProperties = {
+  gridRow: '2 / 3',
+  gridColumn: '2 / 3',
+}
 
 export const Padder = React.memo(
   React.forwardRef<HTMLDivElement, PadderProps>(function Padder(
-    { children, className, debugging: debuggingProp, height, indicatorNode, style, width, ssrMode = false, ...spacingProps },
+    {
+      children,
+      className,
+      debugging: debuggingProp,
+      height,
+      indicatorNode,
+      style,
+      width,
+      ssrMode = false,
+      ...spacingProps
+    },
     ref
   ) {
     const config = useConfig('padder')
     const { variant } = useConfig('spacer')
-    const initialPadding = React.useMemo(() => parsePadding(spacingProps), [spacingProps])
-    const { isShown, isNone, debugging } = useDebug(debuggingProp, config.debugging)
+    const initialPadding = React.useMemo(
+      () => parsePadding(spacingProps),
+      [spacingProps]
+    )
+    const { isShown, isNone, debugging } = useDebug(
+      debuggingProp,
+      config.debugging
+    )
     const enableSpacers = !isNone
 
     const [isHydrated, setIsHydrated] = React.useState(false)
-    React.useEffect(() => { setIsHydrated(true) }, [])
+    React.useEffect(() => {
+      setIsHydrated(true)
+    }, [])
 
     const internalRef = React.useRef<HTMLDivElement | null>(null)
 
@@ -67,23 +88,41 @@ export const Padder = React.memo(
     })
 
     const stablePadding = {
-      padding: { top: initialPadding.top || 0, right: initialPadding.right || 0, bottom: initialPadding.bottom || 0, left: initialPadding.left || 0 },
+      padding: {
+        top: initialPadding.top || 0,
+        right: initialPadding.right || 0,
+        bottom: initialPadding.bottom || 0,
+        left: initialPadding.left || 0,
+      },
     }
-    const { padding } = hydratedValue(isHydrated && !ssrMode, stablePadding, baselinePadding)
+    const { padding } = hydratedValue(
+      isHydrated && !ssrMode,
+      stablePadding,
+      baselinePadding
+    )
 
     const setRefs = mergeRefs(ref, internalRef)
 
     const descriptor = React.useMemo(
-      () => createPadderDescriptor({
-        base: config.base,
-        color: config.color,
-        width: width as number | string | undefined,
-        height: height as number | string | undefined,
+      () =>
+        createPadderDescriptor({
+          base: config.base,
+          color: config.color,
+          width: width as number | string | undefined,
+          height: height as number | string | undefined,
+          padding,
+          enableSpacers,
+          isVisible: isShown,
+        }),
+      [
+        config.base,
+        config.color,
+        width,
+        height,
         padding,
         enableSpacers,
-        isVisible: isShown,
-      }),
-      [config.base, config.color, width, height, padding, enableSpacers, isShown]
+        isShown,
+      ]
     )
 
     const containerStyles = React.useMemo(
@@ -98,22 +137,50 @@ export const Padder = React.memo(
 
     if (!enableSpacers) {
       return (
-        <div ref={setRefs} data-testid="padder" className={cx(...descriptor.classTokens.map(t => styles[t]), className)} style={containerStyles}>
+        <div
+          ref={setRefs}
+          data-testid="padder"
+          className={cx(
+            ...descriptor.classTokens.map((t) => styles[t]),
+            className
+          )}
+          style={containerStyles}
+        >
           {children}
         </div>
       )
     }
 
     return (
-      <div ref={setRefs} data-testid="padder" className={cx(...descriptor.classTokens.map(t => styles[t]), className)} style={containerStyles}>
+      <div
+        ref={setRefs}
+        data-testid="padder"
+        className={cx(
+          ...descriptor.classTokens.map((t) => styles[t]),
+          className
+        )}
+        style={containerStyles}
+      >
         <>
-          {padding.top >= 0 && <div style={GRID_FULL_ROW}>{renderSpacer('100%', padding.top)}</div>}
-          {padding.left >= 0 && <div style={GRID_MID_COL}>{renderSpacer(padding.left, '100%')}</div>}
+          {padding.top >= 0 && (
+            <div style={GRID_FULL_ROW}>{renderSpacer('100%', padding.top)}</div>
+          )}
+          {padding.left >= 0 && (
+            <div style={GRID_MID_COL}>{renderSpacer(padding.left, '100%')}</div>
+          )}
         </>
         <div style={GRID_CENTER}>{children}</div>
         <>
-          {padding.right >= 0 && <div style={GRID_MID_COL}>{renderSpacer(padding.right, '100%')}</div>}
-          {padding.bottom >= 0 && <div style={GRID_FULL_ROW}>{renderSpacer('100%', padding.bottom)}</div>}
+          {padding.right >= 0 && (
+            <div style={GRID_MID_COL}>
+              {renderSpacer(padding.right, '100%')}
+            </div>
+          )}
+          {padding.bottom >= 0 && (
+            <div style={GRID_FULL_ROW}>
+              {renderSpacer('100%', padding.bottom)}
+            </div>
+          )}
         </>
       </div>
     )

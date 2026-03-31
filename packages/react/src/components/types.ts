@@ -19,10 +19,7 @@ export type {
   ConfigSchema,
 } from '@baseline-kit/core'
 
-export {
-  GRID_ALIGNMENTS,
-  PADD_VARIANTS,
-} from '@baseline-kit/core'
+export { GRID_ALIGNMENTS, PADD_VARIANTS } from '@baseline-kit/core'
 
 /**
  * Common props shared across library components.

@@ -13,5 +13,8 @@ export function useGuide(
   config: GuideConfig
 ) {
   const { width } = useMeasure(ref)
-  return React.useMemo(() => calculateGuideTemplate(width, config), [config, width])
+  return React.useMemo(
+    () => calculateGuideTemplate(width, config),
+    [config, width]
+  )
 }

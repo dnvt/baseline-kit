@@ -22,11 +22,7 @@ export interface BaselineResult {
  */
 export function useBaseline(
   ref: React.RefObject<HTMLElement | null>,
-  {
-    base = 8,
-    snapping = 'none',
-    spacing = {},
-  }: BaselineOptions = {}
+  { base = 8, snapping = 'none', spacing = {} }: BaselineOptions = {}
 ): BaselineResult {
   if (base < 1) {
     throw new Error('Base must be >= 1 for baseline alignment.')

@@ -1,10 +1,6 @@
 import { html, css } from 'lit'
 import { styleMap } from 'lit/directives/style-map.js'
-import {
-  cx,
-  resolveDebugState,
-  createBoxDescriptor,
-} from '@baseline-kit/core'
+import { cx, resolveDebugState, createBoxDescriptor } from '@baseline-kit/core'
 import { BkBase } from './bk-base.js'
 
 /**
@@ -21,7 +17,9 @@ export class BkBox extends BkBase {
   }
 
   static override styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .box {
       position: relative;
       width: var(--bkbx-w);
@@ -62,7 +60,10 @@ export class BkBox extends BkBase {
     const mergedStyle = { ...descriptor.boxStyle, ...descriptor.gridSpanStyle }
 
     return html`
-      <div class=${cx(...descriptor.classTokens)} style=${styleMap(mergedStyle)}>
+      <div
+        class=${cx(...descriptor.classTokens)}
+        style=${styleMap(mergedStyle)}
+      >
         <slot></slot>
       </div>
     `

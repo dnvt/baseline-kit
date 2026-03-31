@@ -20,7 +20,11 @@ export interface LayoutDescriptor {
   classTokens: string[]
 }
 
-const LAYOUT_DEFAULTS = (colors: { line: string; flat: string; text: string }) => ({
+const LAYOUT_DEFAULTS = (colors: {
+  line: string
+  flat: string
+  text: string
+}) => ({
   '--bkly-w': 'auto',
   '--bkly-h': 'auto',
   '--bkly-cl': colors.line,
@@ -32,7 +36,9 @@ const LAYOUT_DEFAULTS = (colors: { line: string; flat: string; text: string }) =
  * Parses grid template definitions into CSS grid-template values.
  * Pure function — framework-agnostic.
  */
-export function getGridTemplate(prop?: number | string | Array<number | string>): string {
+export function getGridTemplate(
+  prop?: number | string | Array<number | string>
+): string {
   if (typeof prop === 'number') return `repeat(${prop}, 1fr)`
   if (typeof prop === 'string') return prop
   if (Array.isArray(prop)) {
@@ -47,8 +53,23 @@ const DEFAULT_GRID_TEMPLATE = 'repeat(auto-fill, minmax(100px, 1fr))'
  * Computes styles needed to render a Layout component.
  * Pure function — framework-agnostic.
  */
-export function createLayoutDescriptor(params: LayoutDescriptorParams): LayoutDescriptor {
-  const { colors, columns, rows, width, height, gap, rowGap, columnGap, justifyItems, alignItems, justifyContent, alignContent } = params
+export function createLayoutDescriptor(
+  params: LayoutDescriptorParams
+): LayoutDescriptor {
+  const {
+    colors,
+    columns,
+    rows,
+    width,
+    height,
+    gap,
+    rowGap,
+    columnGap,
+    justifyItems,
+    alignItems,
+    justifyContent,
+    alignContent,
+  } = params
 
   const defaultStyles = LAYOUT_DEFAULTS(colors)
   const autoDimensions = ['--bkly-w', '--bkly-h']
@@ -62,12 +83,36 @@ export function createLayoutDescriptor(params: LayoutDescriptorParams): LayoutDe
   if (columnGap !== undefined) gapStyles.columnGap = formatValue(columnGap)
 
   const containerStyle: Record<string, string> = {
-    ...createStyleOverride({ key: '--bkly-w', value: formatValue(width || 'auto'), defaultStyles, skipDimensions: { auto: autoDimensions } }),
-    ...createStyleOverride({ key: '--bkly-h', value: formatValue(height || 'auto'), defaultStyles, skipDimensions: { auto: autoDimensions } }),
-    ...createStyleOverride({ key: '--bkly-cl', value: colors.line, defaultStyles }),
-    ...createStyleOverride({ key: '--bkly-cf', value: colors.flat, defaultStyles }),
-    ...createStyleOverride({ key: '--bkly-ct', value: colors.text, defaultStyles }),
-    ...(gridTemplateColumns !== DEFAULT_GRID_TEMPLATE ? { '--bkly-gtc': gridTemplateColumns } : {}),
+    ...createStyleOverride({
+      key: '--bkly-w',
+      value: formatValue(width || 'auto'),
+      defaultStyles,
+      skipDimensions: { auto: autoDimensions },
+    }),
+    ...createStyleOverride({
+      key: '--bkly-h',
+      value: formatValue(height || 'auto'),
+      defaultStyles,
+      skipDimensions: { auto: autoDimensions },
+    }),
+    ...createStyleOverride({
+      key: '--bkly-cl',
+      value: colors.line,
+      defaultStyles,
+    }),
+    ...createStyleOverride({
+      key: '--bkly-cf',
+      value: colors.flat,
+      defaultStyles,
+    }),
+    ...createStyleOverride({
+      key: '--bkly-ct',
+      value: colors.text,
+      defaultStyles,
+    }),
+    ...(gridTemplateColumns !== DEFAULT_GRID_TEMPLATE
+      ? { '--bkly-gtc': gridTemplateColumns }
+      : {}),
     ...(gridTemplateRows !== 'auto' ? { '--bkly-gtr': gridTemplateRows } : {}),
     ...(justifyItems ? { '--bkly-ji': justifyItems } : {}),
     ...(alignItems ? { '--bkly-ai': alignItems } : {}),

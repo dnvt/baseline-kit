@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ComponentsProps } from '../types'
 import { useConfig, useDebug, useVirtual, useMeasure } from '../../hooks'
-import { cx,  createBaselineDescriptor } from '@baseline-kit/core'
+import { cx, createBaselineDescriptor } from '@baseline-kit/core'
 import type { BaselineVariant } from '@baseline-kit/core'
 import { ClientOnly } from '../../utils/ssr'
 import { mergeStyles } from '../../utils/merge'
@@ -32,24 +32,38 @@ const BaselineImpl = React.memo(function BaselineImpl({
   const config = useConfig('baseline')
   const { isShown } = useDebug(debugging, config.debugging)
   const containerRef = React.useRef<HTMLDivElement | null>(null)
-  const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
+  const { width: containerWidth, height: containerHeight } =
+    useMeasure(containerRef)
 
   const resolvedBase = base || config.base
 
   const descriptor = React.useMemo(
-    () => createBaselineDescriptor({
-      base: resolvedBase,
-      colors: config.colors,
-      variant: (variant as BaselineVariant) ?? config.variant,
-      width: widthProp,
-      height: heightProp,
-      color: colorProp,
+    () =>
+      createBaselineDescriptor({
+        base: resolvedBase,
+        colors: config.colors,
+        variant: (variant as BaselineVariant) ?? config.variant,
+        width: widthProp,
+        height: heightProp,
+        color: colorProp,
+        containerWidth,
+        containerHeight,
+        spacing: spacingProps,
+        isVisible: isShown,
+      }),
+    [
+      resolvedBase,
+      config.colors,
+      config.variant,
+      variant,
+      widthProp,
+      heightProp,
+      colorProp,
       containerWidth,
       containerHeight,
-      spacing: spacingProps,
-      isVisible: isShown,
-    }),
-    [resolvedBase, config.colors, config.variant, variant, widthProp, heightProp, colorProp, containerWidth, containerHeight, spacingProps, isShown]
+      spacingProps,
+      isShown,
+    ]
   )
 
   const { start, end } = useVirtual({
@@ -69,7 +83,7 @@ const BaselineImpl = React.memo(function BaselineImpl({
       ref={containerRef}
       data-testid="baseline"
       aria-hidden="true"
-      className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
+      className={cx(...descriptor.classTokens.map((t) => styles[t]), className)}
       style={containerStyles}
       {...spacingProps}
     >
@@ -121,7 +135,11 @@ export const Baseline = React.memo(function Baseline({
   const ssrFallback = (
     <div
       className={cx(styles.b, styles.h, styles.ssr, className)}
-      style={{ width: widthProp || '100%', height: heightProp || '100%', ...style }}
+      style={{
+        width: widthProp || '100%',
+        height: heightProp || '100%',
+        ...style,
+      }}
       data-testid="baseline"
       aria-hidden="true"
     />
