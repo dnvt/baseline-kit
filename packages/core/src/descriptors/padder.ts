@@ -24,10 +24,10 @@ export function createPadderDescriptor(params: PadderDescriptorParams): PadderDe
   const containerStyle: Record<string, string> = {}
 
   if (width !== undefined && width !== 'fit-content') {
-    containerStyle['--bkpw'] = formatValue(width || 'fit-content')
+    containerStyle['--bkpw'] = formatValue(width)
   }
   if (height !== undefined && height !== 'fit-content') {
-    containerStyle['--bkph'] = formatValue(height || 'fit-content')
+    containerStyle['--bkph'] = formatValue(height)
   }
 
   containerStyle['--bkpb'] = `${base}px`

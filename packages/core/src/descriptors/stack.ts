@@ -46,8 +46,6 @@ export function createStackDescriptor(params: StackDescriptorParams): StackDescr
     flexDirection,
     justifyContent: justify,
     alignItems: align,
-    ...(width ? { width: formatValue(width) } : {}),
-    ...(height ? { height: formatValue(height) } : {}),
     ...createStyleOverride({ key: '--bkkw', value: formatValue(width || 'auto'), defaultStyles, skipDimensions: { auto: dimensionVars } }),
     ...createStyleOverride({ key: '--bkkh', value: formatValue(height || 'auto'), defaultStyles, skipDimensions: { auto: dimensionVars } }),
     ...createStyleOverride({ key: '--bkkcl', value: colors.line, defaultStyles }),

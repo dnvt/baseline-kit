@@ -62,7 +62,7 @@ export function createBaselineDescriptor(params: BaselineDescriptorParams): Base
   const getRowStyle = (index: number): Record<string, string> => ({
     '--bkrt': index === 0 ? '0px' : `${index * base}px`,
     '--bkrh': variant === 'line' ? '1px' : `${base}px`,
-    '--bkbc': chosenColor || (variant === 'line' ? colors.line : colors.flat),
+    '--bkbc': chosenColor,
   })
 
   return { containerStyle, rowCount, getRowStyle, padding, isVisible }

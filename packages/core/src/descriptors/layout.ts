@@ -37,8 +37,10 @@ export function getGridTemplate(prop?: number | string | Array<number | string>)
   if (Array.isArray(prop)) {
     return prop.map((p) => (typeof p === 'number' ? `${p}px` : p)).join(' ')
   }
-  return 'repeat(auto-fill, minmax(100px, 1fr))'
+  return DEFAULT_GRID_TEMPLATE
 }
+
+const DEFAULT_GRID_TEMPLATE = 'repeat(auto-fill, minmax(100px, 1fr))'
 
 /**
  * Computes styles needed to render a Layout component.
@@ -64,7 +66,7 @@ export function createLayoutDescriptor(params: LayoutDescriptorParams): LayoutDe
     ...createStyleOverride({ key: '--bklcl', value: colors.line, defaultStyles }),
     ...createStyleOverride({ key: '--bklcf', value: colors.flat, defaultStyles }),
     ...createStyleOverride({ key: '--bklci', value: colors.text, defaultStyles }),
-    ...(gridTemplateColumns !== 'repeat(auto-fill, minmax(100px, 1fr))' ? { '--bklgtc': gridTemplateColumns } : {}),
+    ...(gridTemplateColumns !== DEFAULT_GRID_TEMPLATE ? { '--bklgtc': gridTemplateColumns } : {}),
     ...(gridTemplateRows !== 'auto' ? { '--bklgtr': gridTemplateRows } : {}),
     ...(justifyItems ? { '--bklji': justifyItems } : {}),
     ...(alignItems ? { '--bklai': alignItems } : {}),
