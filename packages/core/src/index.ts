@@ -1,6 +1,6 @@
 /**
  * @baseline-kit/core
- * Pure TypeScript core: types, utilities, config, and validation
+ * Pure TypeScript core: types, utilities, config, validation, and descriptors
  * Zero dependencies — works in any JavaScript runtime
  */
 
@@ -15,3 +15,6 @@ export * from './utils'
 
 // Validation
 export * from './validation'
+
+// Descriptors (headless render logic)
+export * from './descriptors'
