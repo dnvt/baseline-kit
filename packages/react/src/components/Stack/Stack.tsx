@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type { Gaps } from '../types'
 import { useConfig, useDebug, useBaseline } from '../../hooks'
-import { mergeClasses, parsePadding, createStackDescriptor } from '@baseline-kit/core'
+import { cx, parsePadding, createStackDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles } from '../../utils/merge'
 import { Padder } from '../Padder'
@@ -75,8 +75,9 @@ export const Stack = React.memo(function Stack({
       gap: gap !== undefined ? Number(gap) : undefined,
       rowGap: rowGap !== undefined ? Number(rowGap) : undefined,
       columnGap: columnGap !== undefined ? Number(columnGap) : undefined,
+      isVisible: isShown,
     }),
-    [config.colors, direction, justify, align, width, height, gap, rowGap, columnGap]
+    [config.colors, direction, justify, align, width, height, gap, rowGap, columnGap, isShown]
   )
 
   const containerStyles = React.useMemo(
@@ -102,7 +103,7 @@ export const Stack = React.memo(function Stack({
       >
         <div
           data-testid="stack"
-          className={mergeClasses(className, styles.stk, isShown && styles.v)}
+          className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
           style={mergedContainerStyles}
           {...spacingProps}
         >

@@ -8,10 +8,12 @@ export interface PadderDescriptorParams {
   height?: number | string
   padding: Padding
   enableSpacers: boolean
+  isVisible: boolean
 }
 
 export interface PadderDescriptor {
   containerStyle: Record<string, string>
+  classTokens: string[]
 }
 
 /**
@@ -19,19 +21,19 @@ export interface PadderDescriptor {
  * Pure function — framework-agnostic.
  */
 export function createPadderDescriptor(params: PadderDescriptorParams): PadderDescriptor {
-  const { base, color, width, height, padding, enableSpacers } = params
+  const { base, color, width, height, padding, enableSpacers, isVisible } = params
 
   const containerStyle: Record<string, string> = {}
 
   if (width !== undefined && width !== 'fit-content') {
-    containerStyle['--bkpw'] = formatValue(width)
+    containerStyle['--bkpd-w'] = formatValue(width)
   }
   if (height !== undefined && height !== 'fit-content') {
-    containerStyle['--bkph'] = formatValue(height)
+    containerStyle['--bkpd-h'] = formatValue(height)
   }
 
-  containerStyle['--bkpb'] = `${base}px`
-  containerStyle['--bkpc'] = color
+  containerStyle['--bkpd-b'] = `${base}px`
+  containerStyle['--bkpd-c'] = color
 
   if (!enableSpacers) {
     const { top, right, bottom, left } = padding
@@ -43,5 +45,8 @@ export function createPadderDescriptor(params: PadderDescriptorParams): PadderDe
     }
   }
 
-  return { containerStyle }
+  const classTokens = ['pad']
+  if (isVisible && enableSpacers) classTokens.push('v')
+
+  return { containerStyle, classTokens }
 }

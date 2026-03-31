@@ -129,8 +129,8 @@ describe('Baseline', () => {
 
     // Use getComputedStyle to check the computed styles
     const computedStyle = window.getComputedStyle(firstLine)
-    expect(firstLine.style.getPropertyValue('--bkrt')).toBe('0px')
-    expect(computedStyle.getPropertyValue('--bkrh')).toBe('8px')
+    expect(firstLine.style.getPropertyValue('--bkbl-rt')).toBe('0px')
+    expect(computedStyle.getPropertyValue('--bkbl-rh')).toBe('8px')
   })
 
   it('respects custom numeric height', () => {

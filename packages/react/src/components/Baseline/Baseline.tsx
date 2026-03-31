@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ComponentsProps } from '../types'
 import { useConfig, useDebug, useVirtual, useMeasure } from '../../hooks'
-import { mergeClasses, createBaselineDescriptor } from '@baseline-kit/core'
+import { cx, createBaselineDescriptor } from '@baseline-kit/core'
 import type { BaselineVariant } from '@baseline-kit/core'
 import { mergeStyles } from '../../utils/merge'
 import { ClientOnly } from '../../utils/ssr'
@@ -75,7 +75,7 @@ const BaselineImpl = React.memo(function BaselineImpl({
       ref={containerRef}
       data-testid="baseline"
       aria-hidden="true"
-      className={mergeClasses(styles.bas, isShown ? styles.v : styles.h, className)}
+      className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
       style={containerStyles}
       {...spacingProps}
     >
@@ -115,7 +115,7 @@ export const Baseline = React.memo(function Baseline({
   if (!isShown) {
     return (
       <div
-        className={mergeClasses(styles.b, styles.h, className)}
+        className={cx(styles.b, styles.h, className)}
         style={style}
         data-testid="baseline"
         aria-hidden="true"
@@ -126,7 +126,7 @@ export const Baseline = React.memo(function Baseline({
 
   const ssrFallback = (
     <div
-      className={mergeClasses(styles.b, styles.h, styles.ssr, className)}
+      className={cx(styles.b, styles.h, styles.ssr, className)}
       style={{ width: widthProp || '100%', height: heightProp || '100%', ...style }}
       data-testid="baseline"
       aria-hidden="true"

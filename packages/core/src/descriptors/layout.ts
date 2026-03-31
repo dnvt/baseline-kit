@@ -17,14 +17,15 @@ export interface LayoutDescriptorParams {
 
 export interface LayoutDescriptor {
   containerStyle: Record<string, string>
+  classTokens: string[]
 }
 
 const LAYOUT_DEFAULTS = (colors: { line: string; flat: string; text: string }) => ({
-  '--bklw': 'auto',
-  '--bklh': 'auto',
-  '--bklcl': colors.line,
-  '--bklcf': colors.flat,
-  '--bklci': colors.text,
+  '--bkly-w': 'auto',
+  '--bkly-h': 'auto',
+  '--bkly-cl': colors.line,
+  '--bkly-cf': colors.flat,
+  '--bkly-ct': colors.text,
 })
 
 /**
@@ -50,7 +51,7 @@ export function createLayoutDescriptor(params: LayoutDescriptorParams): LayoutDe
   const { colors, columns, rows, width, height, gap, rowGap, columnGap, justifyItems, alignItems, justifyContent, alignContent } = params
 
   const defaultStyles = LAYOUT_DEFAULTS(colors)
-  const autoDimensions = ['--bklw', '--bklh']
+  const autoDimensions = ['--bkly-w', '--bkly-h']
 
   const gridTemplateColumns = getGridTemplate(columns)
   const gridTemplateRows = rows ? getGridTemplate(rows) : 'auto'
@@ -61,19 +62,19 @@ export function createLayoutDescriptor(params: LayoutDescriptorParams): LayoutDe
   if (columnGap !== undefined) gapStyles.columnGap = formatValue(columnGap)
 
   const containerStyle: Record<string, string> = {
-    ...createStyleOverride({ key: '--bklw', value: formatValue(width || 'auto'), defaultStyles, skipDimensions: { auto: autoDimensions } }),
-    ...createStyleOverride({ key: '--bklh', value: formatValue(height || 'auto'), defaultStyles, skipDimensions: { auto: autoDimensions } }),
-    ...createStyleOverride({ key: '--bklcl', value: colors.line, defaultStyles }),
-    ...createStyleOverride({ key: '--bklcf', value: colors.flat, defaultStyles }),
-    ...createStyleOverride({ key: '--bklci', value: colors.text, defaultStyles }),
-    ...(gridTemplateColumns !== DEFAULT_GRID_TEMPLATE ? { '--bklgtc': gridTemplateColumns } : {}),
-    ...(gridTemplateRows !== 'auto' ? { '--bklgtr': gridTemplateRows } : {}),
-    ...(justifyItems ? { '--bklji': justifyItems } : {}),
-    ...(alignItems ? { '--bklai': alignItems } : {}),
-    ...(justifyContent ? { '--bkljc': justifyContent } : {}),
-    ...(alignContent ? { '--bklac': alignContent } : {}),
+    ...createStyleOverride({ key: '--bkly-w', value: formatValue(width || 'auto'), defaultStyles, skipDimensions: { auto: autoDimensions } }),
+    ...createStyleOverride({ key: '--bkly-h', value: formatValue(height || 'auto'), defaultStyles, skipDimensions: { auto: autoDimensions } }),
+    ...createStyleOverride({ key: '--bkly-cl', value: colors.line, defaultStyles }),
+    ...createStyleOverride({ key: '--bkly-cf', value: colors.flat, defaultStyles }),
+    ...createStyleOverride({ key: '--bkly-ct', value: colors.text, defaultStyles }),
+    ...(gridTemplateColumns !== DEFAULT_GRID_TEMPLATE ? { '--bkly-gtc': gridTemplateColumns } : {}),
+    ...(gridTemplateRows !== 'auto' ? { '--bkly-gtr': gridTemplateRows } : {}),
+    ...(justifyItems ? { '--bkly-ji': justifyItems } : {}),
+    ...(alignItems ? { '--bkly-ai': alignItems } : {}),
+    ...(justifyContent ? { '--bkly-jc': justifyContent } : {}),
+    ...(alignContent ? { '--bkly-ac': alignContent } : {}),
     ...gapStyles,
   }
 
-  return { containerStyle }
+  return { containerStyle, classTokens: ['lay'] }
 }

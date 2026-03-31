@@ -1,20 +1,20 @@
-import { mergeClasses, mergeStyles } from '@utils'
+import { cx, mergeStyles } from '@utils'
 import type { CSSProperties } from 'react'
 
 describe('Merge Utilities', () => {
   describe('merge classes', () => {
     it('combines class names and filters out falsy values', () => {
-      expect(mergeClasses('foo', 'bar')).toBe('foo bar')
-      expect(mergeClasses('foo', false, 'bar', undefined, null, 'baz')).toBe('foo bar baz')
+      expect(cx('foo', 'bar')).toBe('foo bar')
+      expect(cx('foo', false, 'bar', undefined, null, 'baz')).toBe('foo bar baz')
     })
 
     it('returns an empty string when all values are falsy', () => {
-      expect(mergeClasses(false, undefined, null, '')).toBe('')
+      expect(cx(false, undefined, null, '')).toBe('')
     })
 
     it('trims the resulting string (removing leading and trailing spaces) while preserving inner spaces', () => {
       // Given that inner spaces are preserved, '  foo  ' and 'bar' yield "foo   bar"
-      expect(mergeClasses('  foo  ', 'bar')).toBe('foo   bar')
+      expect(cx('  foo  ', 'bar')).toBe('foo   bar')
     })
   })
 

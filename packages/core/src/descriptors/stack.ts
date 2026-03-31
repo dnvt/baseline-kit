@@ -17,18 +17,20 @@ export interface StackDescriptorParams {
   gap?: number
   rowGap?: number
   columnGap?: number
+  isVisible: boolean
 }
 
 export interface StackDescriptor {
   containerStyle: Record<string, string>
+  classTokens: string[]
 }
 
 const STACK_DEFAULTS = (colors: { line: string; flat: string; text: string }) => ({
-  '--bkkw': 'auto',
-  '--bkkh': 'auto',
-  '--bkkcl': colors.line,
-  '--bkkcf': colors.flat,
-  '--bkkci': colors.text,
+  '--bksk-w': 'auto',
+  '--bksk-h': 'auto',
+  '--bksk-cl': colors.line,
+  '--bksk-cf': colors.flat,
+  '--bksk-ct': colors.text,
 })
 
 /**
@@ -36,28 +38,31 @@ const STACK_DEFAULTS = (colors: { line: string; flat: string; text: string }) =>
  * Pure function — framework-agnostic.
  */
 export function createStackDescriptor(params: StackDescriptorParams): StackDescriptor {
-  const { colors, direction, justify, align, width, height, gap, rowGap, columnGap } = params
+  const { colors, direction, justify, align, width, height, gap, rowGap, columnGap, isVisible } = params
 
   const defaultStyles = STACK_DEFAULTS(colors)
-  const dimensionVars = ['--bkkw', '--bkkh']
+  const dimensionVars = ['--bksk-w', '--bksk-h']
   const flexDirection = DIRECTION_AXIS[direction] || direction
 
   const containerStyle: Record<string, string> = {
     flexDirection,
     justifyContent: justify,
     alignItems: align,
-    ...createStyleOverride({ key: '--bkkw', value: formatValue(width || 'auto'), defaultStyles, skipDimensions: { auto: dimensionVars } }),
-    ...createStyleOverride({ key: '--bkkh', value: formatValue(height || 'auto'), defaultStyles, skipDimensions: { auto: dimensionVars } }),
-    ...createStyleOverride({ key: '--bkkcl', value: colors.line, defaultStyles }),
-    ...createStyleOverride({ key: '--bkkcf', value: colors.flat, defaultStyles }),
-    ...createStyleOverride({ key: '--bkkci', value: colors.text, defaultStyles }),
+    ...createStyleOverride({ key: '--bksk-w', value: formatValue(width || 'auto'), defaultStyles, skipDimensions: { auto: dimensionVars } }),
+    ...createStyleOverride({ key: '--bksk-h', value: formatValue(height || 'auto'), defaultStyles, skipDimensions: { auto: dimensionVars } }),
+    ...createStyleOverride({ key: '--bksk-cl', value: colors.line, defaultStyles }),
+    ...createStyleOverride({ key: '--bksk-cf', value: colors.flat, defaultStyles }),
+    ...createStyleOverride({ key: '--bksk-ct', value: colors.text, defaultStyles }),
     ...(gap !== undefined ? { rowGap: `${gap}`, columnGap: `${gap}` } : {
       ...(rowGap !== undefined ? { rowGap: `${rowGap}` } : {}),
       ...(columnGap !== undefined ? { columnGap: `${columnGap}` } : {}),
     }),
   }
 
-  return { containerStyle }
+  const classTokens = ['stk']
+  if (isVisible) classTokens.push('v')
+
+  return { containerStyle, classTokens }
 }
 
 export { DIRECTION_AXIS }

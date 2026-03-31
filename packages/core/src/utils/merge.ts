@@ -1,4 +1,8 @@
-export const mergeClasses = (
+/**
+ * Combines class names, filtering out falsy values.
+ * Lightweight alternative to clsx/classnames.
+ */
+export const cx = (
   ...classes: Array<string | boolean | undefined | null>
 ): string => classes.filter(Boolean).join(' ').trim()
 

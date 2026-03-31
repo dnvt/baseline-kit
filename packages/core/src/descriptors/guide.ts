@@ -28,6 +28,7 @@ export interface GuideDescriptor {
   template: string
   isVisible: boolean
   isLineVariant: boolean
+  classTokens: string[]
 }
 
 /**
@@ -60,15 +61,15 @@ export function createGuideConfig(
 }
 
 const GUIDE_DEFAULTS = (base: number, lineColor: string): Record<string, string> => ({
-  '--bkgw': 'auto',
-  '--bkgh': 'auto',
-  '--bkgmw': 'none',
-  '--bkgcw': '60px',
-  '--bkggw': '24px',
-  '--bkgc': '12',
-  '--bkgb': `${base}px`,
-  '--bkgcl': lineColor,
-  '--bkgg': '0',
+  '--bkgd-w': 'auto',
+  '--bkgd-h': 'auto',
+  '--bkgd-mw': 'none',
+  '--bkgd-cw': '60px',
+  '--bkgd-gw': '24px',
+  '--bkgd-n': '12',
+  '--bkgd-b': `${base}px`,
+  '--bkgd-cl': lineColor,
+  '--bkgd-g': '0',
 })
 
 /**
@@ -83,27 +84,31 @@ export function createGuideDescriptor(params: GuideDescriptorParams): GuideDescr
   } = params
 
   const defaultStyles = GUIDE_DEFAULTS(base, colors.line)
-  const autoDimensions = ['--bkgw', '--bkgh']
+  const autoDimensions = ['--bkgd-w', '--bkgd-h']
 
   const widthValue = formatValue(width || containerWidth || 'auto')
   const heightValue = formatValue(height || containerHeight || 'auto')
 
   const containerStyle: Record<string, string> = {
-    ...createStyleOverride({ key: '--bkgw', value: widthValue, defaultStyles, skipDimensions: { auto: autoDimensions } }),
-    ...createStyleOverride({ key: '--bkgh', value: heightValue, defaultStyles, skipDimensions: { auto: autoDimensions } }),
-    ...createStyleOverride({ key: '--bkgmw', value: formatValue(maxWidth || 'none'), defaultStyles }),
-    ...createStyleOverride({ key: '--bkgcw', value: formatValue(columnWidth || '60px'), defaultStyles }),
-    ...createStyleOverride({ key: '--bkgc', value: `${columnsCount}`, defaultStyles }),
-    ...createStyleOverride({ key: '--bkgb', value: '0', defaultStyles }),
-    ...createStyleOverride({ key: '--bkgcl', value: color ?? colors.line, defaultStyles }),
-    ...createStyleOverride({ key: '--bkgg', value: `${calculatedGap}px`, defaultStyles }),
-    ...createStyleOverride({ key: '--bkgj', value: align || 'center', defaultStyles }),
-    ...(template && template !== 'none' ? { '--bkgt': template, gridTemplateColumns: template } : {}),
+    ...createStyleOverride({ key: '--bkgd-w', value: widthValue, defaultStyles, skipDimensions: { auto: autoDimensions } }),
+    ...createStyleOverride({ key: '--bkgd-h', value: heightValue, defaultStyles, skipDimensions: { auto: autoDimensions } }),
+    ...createStyleOverride({ key: '--bkgd-mw', value: formatValue(maxWidth || 'none'), defaultStyles }),
+    ...createStyleOverride({ key: '--bkgd-cw', value: formatValue(columnWidth || '60px'), defaultStyles }),
+    ...createStyleOverride({ key: '--bkgd-n', value: `${columnsCount}`, defaultStyles }),
+    ...createStyleOverride({ key: '--bkgd-b', value: '0', defaultStyles }),
+    ...createStyleOverride({ key: '--bkgd-cl', value: color ?? colors.line, defaultStyles }),
+    ...createStyleOverride({ key: '--bkgd-g', value: `${calculatedGap}px`, defaultStyles }),
+    ...createStyleOverride({ key: '--bkgd-j', value: align || 'center', defaultStyles }),
+    ...(template && template !== 'none' ? { '--bkgd-t': template, gridTemplateColumns: template } : {}),
   }
 
   const columnColor = (variant && variant in colors
     ? colors[variant as keyof typeof colors]
     : undefined) ?? colors.line
+
+  const isLineVariant = variant === 'line'
+  const classTokens = ['gde', isVisible ? 'v' : 'h']
+  if (isLineVariant) classTokens.push('line')
 
   return {
     containerStyle,
@@ -112,6 +117,7 @@ export function createGuideDescriptor(params: GuideDescriptorParams): GuideDescr
     calculatedGap,
     template,
     isVisible,
-    isLineVariant: variant === 'line',
+    isLineVariant,
+    classTokens,
   }
 }

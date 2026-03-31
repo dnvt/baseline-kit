@@ -20,14 +20,15 @@ export interface BaselineDescriptor {
   getRowStyle: (index: number) => Record<string, string>
   padding: string | undefined
   isVisible: boolean
+  classTokens: string[]
 }
 
 const BASELINE_DEFAULTS = (base: number, lineColor: string, flatColor: string): Record<string, string> => ({
-  '--bkbw': '100%',
-  '--bkbh': '100%',
-  '--bkbb': `${base}px`,
-  '--bkbcl': lineColor,
-  '--bkbcf': flatColor,
+  '--bkbl-w': '100%',
+  '--bkbl-h': '100%',
+  '--bkbl-b': `${base}px`,
+  '--bkbl-cl': lineColor,
+  '--bkbl-cf': flatColor,
 })
 
 /**
@@ -48,22 +49,24 @@ export function createBaselineDescriptor(params: BaselineDescriptorParams): Base
   const chosenColor = color || (variant === 'line' ? colors.line : colors.flat)
 
   const defaultStyles = BASELINE_DEFAULTS(base, colors.line, colors.flat)
-  const dimensionVars = ['--bkbw', '--bkbh']
+  const dimensionVars = ['--bkbl-w', '--bkbl-h']
 
   const containerStyle: Record<string, string> = {
-    ...createStyleOverride({ key: '--bkbw', value: formatValue(width || '100%'), defaultStyles, skipDimensions: { fullSize: dimensionVars } }),
-    ...createStyleOverride({ key: '--bkbh', value: formatValue(height || '100%'), defaultStyles, skipDimensions: { fullSize: dimensionVars } }),
-    ...createStyleOverride({ key: '--bkbb', value: `${base}px`, defaultStyles }),
-    ...createStyleOverride({ key: '--bkbcl', value: color || colors.line, defaultStyles }),
-    ...createStyleOverride({ key: '--bkbcf', value: color || colors.flat, defaultStyles }),
+    ...createStyleOverride({ key: '--bkbl-w', value: formatValue(width || '100%'), defaultStyles, skipDimensions: { fullSize: dimensionVars } }),
+    ...createStyleOverride({ key: '--bkbl-h', value: formatValue(height || '100%'), defaultStyles, skipDimensions: { fullSize: dimensionVars } }),
+    ...createStyleOverride({ key: '--bkbl-b', value: `${base}px`, defaultStyles }),
+    ...createStyleOverride({ key: '--bkbl-cl', value: color || colors.line, defaultStyles }),
+    ...createStyleOverride({ key: '--bkbl-cf', value: color || colors.flat, defaultStyles }),
     ...(padding ? { padding } : {}),
   }
 
   const getRowStyle = (index: number): Record<string, string> => ({
-    '--bkrt': index === 0 ? '0px' : `${index * base}px`,
-    '--bkrh': variant === 'line' ? '1px' : `${base}px`,
-    '--bkbc': chosenColor,
+    '--bkbl-rt': index === 0 ? '0px' : `${index * base}px`,
+    '--bkbl-rh': variant === 'line' ? '1px' : `${base}px`,
+    '--bkbl-c': chosenColor,
   })
 
-  return { containerStyle, rowCount, getRowStyle, padding, isVisible }
+  const classTokens = ['bas', isVisible ? 'v' : 'h']
+
+  return { containerStyle, rowCount, getRowStyle, padding, isVisible, classTokens }
 }
