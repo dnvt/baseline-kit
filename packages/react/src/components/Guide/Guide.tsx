@@ -1,7 +1,11 @@
 import * as React from 'react'
 import { ComponentsProps } from '../types'
 import { useConfig, useDebug, useMeasure, useGuide } from '../../hooks'
-import { cx,  createGuideDescriptor, createGuideConfig } from '@baseline-kit/core'
+import {
+  cx,
+  createGuideDescriptor,
+  createGuideConfig,
+} from '@baseline-kit/core'
 import type { GuideVariant, GuideConfig } from '@baseline-kit/core'
 import { ClientOnly } from '../../utils/ssr'
 import { mergeStyles } from '../../utils/merge'
@@ -62,7 +66,12 @@ export const Guide = React.memo(function Guide({
   const ssrFallback = (
     <div
       className={cx(styles.g, styles.h, styles.ssr, className)}
-      style={{ width: width || '100%', height: height || '100%', maxWidth: maxWidth || 'none', ...style }}
+      style={{
+        width: width || '100%',
+        height: height || '100%',
+        maxWidth: maxWidth || 'none',
+        ...style,
+      }}
       data-testid="guide"
       data-variant={variant}
       aria-hidden="true"
@@ -120,24 +129,56 @@ const GuideImpl = React.memo(function GuideImpl({
   const resolvedGap = typeof gap === 'number' ? gap : 0
 
   const gridConfig = React.useMemo(
-    () => createGuideConfig(resolvedVariant, config.base, resolvedGap, columns, columnWidth as number | string | undefined),
+    () =>
+      createGuideConfig({
+        variant: resolvedVariant,
+        base: config.base,
+        gap: resolvedGap,
+        columns,
+        columnWidth: columnWidth as number | string | undefined,
+      }),
     [resolvedVariant, config.base, resolvedGap, columns, columnWidth]
   )
 
-  const { template, columnsCount, calculatedGap } = useGuide(containerRef, gridConfig)
+  const { template, columnsCount, calculatedGap } = useGuide(
+    containerRef,
+    gridConfig
+  )
 
   const descriptor = React.useMemo(
-    () => createGuideDescriptor({
-      base: config.base,
-      colors: config.colors,
-      variant: resolvedVariant,
-      align: align || 'center',
-      width, height, columnWidth, maxWidth, color,
-      containerWidth: 0, containerHeight,
-      template, columnsCount, calculatedGap,
-      isVisible: isShown,
-    }),
-    [config, resolvedVariant, align, width, height, columnWidth, maxWidth, color, containerHeight, template, columnsCount, calculatedGap, isShown]
+    () =>
+      createGuideDescriptor({
+        base: config.base,
+        colors: config.colors,
+        variant: resolvedVariant,
+        align: align || 'center',
+        width,
+        height,
+        columnWidth,
+        maxWidth,
+        color,
+        containerWidth: 0,
+        containerHeight,
+        template,
+        columnsCount,
+        calculatedGap,
+        isVisible: isShown,
+      }),
+    [
+      config,
+      resolvedVariant,
+      align,
+      width,
+      height,
+      columnWidth,
+      maxWidth,
+      color,
+      containerHeight,
+      template,
+      columnsCount,
+      calculatedGap,
+      isShown,
+    ]
   )
 
   const containerStyles = React.useMemo(
@@ -150,7 +191,7 @@ const GuideImpl = React.memo(function GuideImpl({
       ref={containerRef}
       data-testid="guide"
       aria-hidden="true"
-      className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
+      className={cx(...descriptor.classTokens.map((t) => styles[t]), className)}
       data-variant={variant}
       style={containerStyles}
       {...props}

@@ -1,6 +1,10 @@
 import * as React from 'react'
-import type { BaselineVariant, GuideVariant, Variant, ConfigSchema } from '@baseline-kit/core'
-import { DEFAULT_CONFIG, mergeConfig, createCSSVariables } from '@baseline-kit/core'
+import type { ConfigSchema } from '@baseline-kit/core'
+import {
+  DEFAULT_CONFIG,
+  mergeConfig,
+  createCSSVariables,
+} from '@baseline-kit/core'
 
 // Re-export types that consumers need
 export type { DebuggingMode, ConfigSchema } from '@baseline-kit/core'
