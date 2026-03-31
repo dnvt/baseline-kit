@@ -16,7 +16,9 @@ export function useMeasure(
   ref: React.RefObject<HTMLElement | null>
 ): MeasureResult {
   const [dimensions, setDimensions] = React.useState<MeasureRect>(ZERO)
-  const handleRef = React.useRef<ReturnType<typeof createMeasureObserver> | null>(null)
+  const handleRef = React.useRef<ReturnType<
+    typeof createMeasureObserver
+  > | null>(null)
 
   React.useLayoutEffect(() => {
     if (typeof window === 'undefined' || !ref.current) return

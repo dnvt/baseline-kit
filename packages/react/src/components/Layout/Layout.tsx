@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type { Gaps } from '../types'
 import { useConfig, useDebug, useBaseline } from '../../hooks'
-import { cx,  parsePadding, createLayoutDescriptor } from '@baseline-kit/core'
+import { cx, parsePadding, createLayoutDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
@@ -10,7 +10,9 @@ import { ComponentsProps, Variant } from '../types'
 import { mergeStyles } from '../../utils/merge'
 import styles from './styles.module.css'
 
-type IndicatorNode = NonNullable<React.ComponentProps<typeof Spacer>['indicatorNode']>
+type IndicatorNode = NonNullable<
+  React.ComponentProps<typeof Spacer>['indicatorNode']
+>
 
 export type LayoutProps = {
   columns?: number | string | Array<number | string>
@@ -25,7 +27,8 @@ export type LayoutProps = {
   width?: React.CSSProperties['width']
   height?: React.CSSProperties['height']
   children?: React.ReactNode
-} & ComponentsProps & Gaps
+} & ComponentsProps &
+  Gaps
 
 export const Layout = React.memo(function Layout({
   alignContent,
@@ -52,10 +55,15 @@ export const Layout = React.memo(function Layout({
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
   const [isHydrated, setIsHydrated] = React.useState(false)
-  React.useEffect(() => { setIsHydrated(true) }, [])
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   const layoutRef = React.useRef<HTMLDivElement>(null)
-  const initialPadding = React.useMemo(() => parsePadding(spacingProps), [spacingProps])
+  const initialPadding = React.useMemo(
+    () => parsePadding(spacingProps),
+    [spacingProps]
+  )
 
   const baselinePadding = useBaseline(layoutRef, {
     base: config.base,
@@ -65,26 +73,49 @@ export const Layout = React.memo(function Layout({
   })
 
   const stablePadding = {
-    padding: { top: initialPadding.top || 0, right: initialPadding.right || 0, bottom: initialPadding.bottom || 0, left: initialPadding.left || 0 },
+    padding: {
+      top: initialPadding.top || 0,
+      right: initialPadding.right || 0,
+      bottom: initialPadding.bottom || 0,
+      left: initialPadding.left || 0,
+    },
   }
-  const { padding } = hydratedValue(isHydrated && !ssrMode, stablePadding, baselinePadding)
+  const { padding } = hydratedValue(
+    isHydrated && !ssrMode,
+    stablePadding,
+    baselinePadding
+  )
 
   const descriptor = React.useMemo(
-    () => createLayoutDescriptor({
-      colors: config.colors,
+    () =>
+      createLayoutDescriptor({
+        colors: config.colors,
+        columns,
+        rows,
+        width: width as number | string | undefined,
+        height: height as number | string | undefined,
+        gap: gap as number | string | undefined,
+        rowGap: rowGap as number | string | undefined,
+        columnGap: columnGap as number | string | undefined,
+        justifyItems: justifyItems as string | undefined,
+        alignItems: alignItems as string | undefined,
+        justifyContent: justifyContent as string | undefined,
+        alignContent: alignContent as string | undefined,
+      }),
+    [
+      config.colors,
       columns,
       rows,
-      width: width as number | string | undefined,
-      height: height as number | string | undefined,
-      gap: gap as number | string | undefined,
-      rowGap: rowGap as number | string | undefined,
-      columnGap: columnGap as number | string | undefined,
-      justifyItems: justifyItems as string | undefined,
-      alignItems: alignItems as string | undefined,
-      justifyContent: justifyContent as string | undefined,
-      alignContent: alignContent as string | undefined,
-    }),
-    [config.colors, columns, rows, width, height, gap, rowGap, columnGap, justifyItems, alignItems, justifyContent, alignContent]
+      width,
+      height,
+      gap,
+      rowGap,
+      columnGap,
+      justifyItems,
+      alignItems,
+      justifyContent,
+      alignContent,
+    ]
   )
 
   const containerStyles = React.useMemo(
@@ -107,10 +138,17 @@ export const Layout = React.memo(function Layout({
       >
         <div
           data-testid="layout"
-          className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
+          className={cx(
+            ...descriptor.classTokens.map((t) => styles[t]),
+            className
+          )}
           style={containerStyles}
           {...(spacingProps && Object.keys(spacingProps).length > 0
-            ? Object.fromEntries(Object.entries(spacingProps).filter(([key]) => key !== 'ssrMode'))
+            ? Object.fromEntries(
+                Object.entries(spacingProps).filter(
+                  ([key]) => key !== 'ssrMode'
+                )
+              )
             : {})}
         >
           {children}

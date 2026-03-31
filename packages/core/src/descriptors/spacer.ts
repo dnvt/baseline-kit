@@ -17,7 +17,12 @@ export interface SpacerDescriptor {
   classTokens: string[]
 }
 
-const SPACER_DEFAULTS = (base: number, textColor: string, flatColor: string, lineColor: string): Record<string, string> => ({
+const SPACER_DEFAULTS = (
+  base: number,
+  textColor: string,
+  flatColor: string,
+  lineColor: string
+): Record<string, string> => ({
   '--bksp-w': '100%',
   '--bksp-h': '100%',
   '--bksp-b': `${base}px`,
@@ -30,21 +35,53 @@ const SPACER_DEFAULTS = (base: number, textColor: string, flatColor: string, lin
  * Computes styles needed to render a Spacer component.
  * Pure function — framework-agnostic.
  */
-export function createSpacerDescriptor(params: SpacerDescriptorParams): SpacerDescriptor {
+export function createSpacerDescriptor(
+  params: SpacerDescriptorParams
+): SpacerDescriptor {
   const { base, colors, width, height, color, variant, isVisible } = params
 
-  const [normWidth, normHeight] = normalizeValuePair([width, height], [0, 0], { base, suppressWarnings: true })
+  const [normWidth, normHeight] = normalizeValuePair([width, height], [0, 0], {
+    base,
+    suppressWarnings: true,
+  })
 
-  const defaultStyles = SPACER_DEFAULTS(base, colors.text, colors.flat, colors.line)
+  const defaultStyles = SPACER_DEFAULTS(
+    base,
+    colors.text,
+    colors.flat,
+    colors.line
+  )
   const dimensionVars = ['--bksp-w', '--bksp-h']
 
   const style: Record<string, string> = {
-    ...createStyleOverride({ key: '--bksp-h', value: formatValue(normHeight || '100%'), defaultStyles, skipDimensions: { fullSize: dimensionVars } }),
-    ...createStyleOverride({ key: '--bksp-w', value: formatValue(normWidth || '100%'), defaultStyles, skipDimensions: { fullSize: dimensionVars } }),
+    ...createStyleOverride({
+      key: '--bksp-h',
+      value: formatValue(normHeight || '100%'),
+      defaultStyles,
+      skipDimensions: { fullSize: dimensionVars },
+    }),
+    ...createStyleOverride({
+      key: '--bksp-w',
+      value: formatValue(normWidth || '100%'),
+      defaultStyles,
+      skipDimensions: { fullSize: dimensionVars },
+    }),
     '--bksp-b': `${base}px`,
-    ...createStyleOverride({ key: '--bksp-ct', value: color ?? colors.text, defaultStyles }),
-    ...createStyleOverride({ key: '--bksp-cl', value: color ?? colors.line, defaultStyles }),
-    ...createStyleOverride({ key: '--bksp-cf', value: color ?? colors.flat, defaultStyles }),
+    ...createStyleOverride({
+      key: '--bksp-ct',
+      value: color ?? colors.text,
+      defaultStyles,
+    }),
+    ...createStyleOverride({
+      key: '--bksp-cl',
+      value: color ?? colors.line,
+      defaultStyles,
+    }),
+    ...createStyleOverride({
+      key: '--bksp-cf',
+      value: color ?? colors.flat,
+      defaultStyles,
+    }),
   }
 
   const classTokens = ['spr']

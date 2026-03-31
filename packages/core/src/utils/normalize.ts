@@ -12,11 +12,7 @@ export function normalizeValue(
   value: string | number | undefined,
   options: NormalizationOptions = {}
 ): number {
-  const {
-    base = 8,
-    round: doRound = true,
-    clamp: clampOptions,
-  } = options
+  const { base = 8, round: doRound = true, clamp: clampOptions } = options
 
   if (value === 'auto') return base
 
@@ -33,7 +29,11 @@ export function normalizeValue(
   const normalized = doRound ? Math.round(num / base) * base : num
 
   return clampOptions !== undefined
-    ? clamp(normalized, clampOptions.min ?? -Infinity, clampOptions.max ?? Infinity)
+    ? clamp(
+        normalized,
+        clampOptions.min ?? -Infinity,
+        clampOptions.max ?? Infinity
+      )
     : normalized
 }
 

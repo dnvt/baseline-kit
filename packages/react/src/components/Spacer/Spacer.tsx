@@ -1,12 +1,15 @@
 import * as React from 'react'
 import { useConfig, useDebug } from '../../hooks'
-import { cx,  createSpacerDescriptor } from '@baseline-kit/core'
+import { cx, createSpacerDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { ComponentsProps, Variant } from '../types'
 import { mergeStyles } from '../../utils/merge'
 import styles from './styles.module.css'
 
-export type IndicatorNode = (value: number, type: 'width' | 'height') => React.ReactNode
+export type IndicatorNode = (
+  value: number,
+  type: 'width' | 'height'
+) => React.ReactNode
 
 export type SpacerProps = {
   width?: React.CSSProperties['width']
@@ -40,22 +43,29 @@ export const Spacer = React.memo(function Spacer({
   const base = baseProp ?? config.base
 
   const [isHydrated, setIsHydrated] = React.useState(false)
-  React.useEffect(() => { setIsHydrated(true) }, [])
+  React.useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   const descriptor = React.useMemo(
-    () => createSpacerDescriptor({
-      base,
-      colors: config.colors,
-      width: widthProp as number | string | undefined,
-      height: heightProp as number | string | undefined,
-      color: colorProp,
-      variant,
-      isVisible: isShown,
-    }),
+    () =>
+      createSpacerDescriptor({
+        base,
+        colors: config.colors,
+        width: widthProp as number | string | undefined,
+        height: heightProp as number | string | undefined,
+        color: colorProp,
+        variant,
+        isVisible: isShown,
+      }),
     [base, config.colors, widthProp, heightProp, colorProp, variant, isShown]
   )
 
-  const shouldShowMeasurements = hydratedValue(isHydrated && !ssrMode, false, isShown && indicatorNode !== undefined)
+  const shouldShowMeasurements = hydratedValue(
+    isHydrated && !ssrMode,
+    false,
+    isShown && indicatorNode !== undefined
+  )
 
   const measurements = React.useMemo(() => {
     if (!shouldShowMeasurements) return null
@@ -67,7 +77,12 @@ export const Spacer = React.memo(function Spacer({
         {w !== 0 && <span key="width">{indicatorNode!(w, 'width')}</span>}
       </>
     )
-  }, [shouldShowMeasurements, indicatorNode, descriptor.normWidth, descriptor.normHeight])
+  }, [
+    shouldShowMeasurements,
+    indicatorNode,
+    descriptor.normWidth,
+    descriptor.normHeight,
+  ])
 
   const baseStyles = React.useMemo(
     () => mergeStyles(descriptor.style, style),
@@ -78,9 +93,13 @@ export const Spacer = React.memo(function Spacer({
     <div
       ref={ref}
       data-testid="spacer"
-      className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
+      className={cx(...descriptor.classTokens.map((t) => styles[t]), className)}
       data-variant={variant}
-      data-height={typeof descriptor.normHeight === 'number' ? `${descriptor.normHeight}px` : descriptor.normHeight}
+      data-height={
+        typeof descriptor.normHeight === 'number'
+          ? `${descriptor.normHeight}px`
+          : descriptor.normHeight
+      }
       style={baseStyles}
       {...props}
     >

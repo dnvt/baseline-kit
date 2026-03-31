@@ -24,7 +24,9 @@ export class BkStack extends BkBase {
   }
 
   static override styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .stk {
       display: flex;
       position: relative;
@@ -72,7 +74,10 @@ export class BkStack extends BkBase {
     })
 
     return html`
-      <div class=${cx(...descriptor.classTokens)} style=${styleMap(descriptor.containerStyle)}>
+      <div
+        class=${cx(...descriptor.classTokens)}
+        style=${styleMap(descriptor.containerStyle)}
+      >
         <slot></slot>
       </div>
     `

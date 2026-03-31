@@ -37,9 +37,10 @@ export function calculateGuideTemplate(
       const finalGap = gap === 0 ? 0 : gap - 1
       const actualGapWithLine = finalGap + 1
 
-      const columns = finalGap === 0
-        ? Math.max(1, Math.floor(width) + 1)
-        : Math.max(1, Math.floor((width + 1) / actualGapWithLine) + 1)
+      const columns =
+        finalGap === 0
+          ? Math.max(1, Math.floor(width) + 1)
+          : Math.max(1, Math.floor((width + 1) / actualGapWithLine) + 1)
 
       return {
         template: `repeat(${columns}, 1px)`,
@@ -58,8 +59,8 @@ export function calculateGuideTemplate(
         return INVALID_RESULT
       }
 
-      const columnsArr = (config.columns as GuideColumnsPattern).map(
-        (col) => typeof col === 'number' ? `${col}px` : col
+      const columnsArr = (config.columns as GuideColumnsPattern).map((col) =>
+        typeof col === 'number' ? `${col}px` : col
       )
 
       if (columnsArr.some((c) => c === '0' || c === '0px')) {
@@ -104,9 +105,8 @@ export function calculateGuideTemplate(
       const colWidthStr =
         typeof colWidth === 'number' ? `${colWidth}px` : colWidth.toString()
       const pxVal = convertValue(colWidthStr) ?? 0
-      const columns = pxVal > 0
-        ? Math.max(1, Math.floor((width + gap) / (pxVal + gap)))
-        : 1
+      const columns =
+        pxVal > 0 ? Math.max(1, Math.floor((width + gap) / (pxVal + gap))) : 1
 
       return {
         template: `repeat(auto-fill, ${colWidthStr})`,

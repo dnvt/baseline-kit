@@ -20,8 +20,11 @@ export interface PadderDescriptor {
  * Computes styles needed to render a Padder component.
  * Pure function — framework-agnostic.
  */
-export function createPadderDescriptor(params: PadderDescriptorParams): PadderDescriptor {
-  const { base, color, width, height, padding, enableSpacers, isVisible } = params
+export function createPadderDescriptor(
+  params: PadderDescriptorParams
+): PadderDescriptor {
+  const { base, color, width, height, padding, enableSpacers, isVisible } =
+    params
 
   const containerStyle: Record<string, string> = {}
 
