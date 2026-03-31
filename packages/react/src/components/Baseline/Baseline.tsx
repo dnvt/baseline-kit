@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { ComponentsProps } from '../types'
 import { useConfig, useDebug, useVirtual, useMeasure } from '../../hooks'
-import { cx, createBaselineDescriptor } from '@baseline-kit/core'
+import { cx,  createBaselineDescriptor } from '@baseline-kit/core'
 import type { BaselineVariant } from '@baseline-kit/core'
-import { mergeStyles } from '../../utils/merge'
 import { ClientOnly } from '../../utils/ssr'
+import { mergeStyles } from '../../utils/merge'
 import styles from './styles.module.css'
 
 export type { BaselineVariant }
@@ -32,13 +32,7 @@ const BaselineImpl = React.memo(function BaselineImpl({
   const config = useConfig('baseline')
   const { isShown } = useDebug(debugging, config.debugging)
   const containerRef = React.useRef<HTMLDivElement | null>(null)
-  const { width: containerWidth, height: containerHeight, refresh } = useMeasure(containerRef)
-
-  React.useEffect(() => {
-    const handleResize = () => refresh()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [refresh])
+  const { width: containerWidth, height: containerHeight } = useMeasure(containerRef)
 
   const resolvedBase = base || config.base
 
@@ -66,7 +60,7 @@ const BaselineImpl = React.memo(function BaselineImpl({
   })
 
   const containerStyles = React.useMemo(
-    () => mergeStyles(descriptor.containerStyle as React.CSSProperties, style),
+    () => mergeStyles(descriptor.containerStyle, style),
     [descriptor.containerStyle, style]
   )
 
@@ -87,7 +81,7 @@ const BaselineImpl = React.memo(function BaselineImpl({
               className={styles.row}
               key={rowIndex}
               data-row-index={rowIndex}
-              style={descriptor.getRowStyle(rowIndex) as React.CSSProperties}
+              style={descriptor.getRowStyle(rowIndex)}
             />
           )
         })}

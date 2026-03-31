@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '../../hooks'
-import { cx, parsePadding, createBoxDescriptor } from '@baseline-kit/core'
+import { cx,  parsePadding, createBoxDescriptor } from '@baseline-kit/core'
 import type { SnappingMode } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
@@ -50,7 +50,7 @@ export const Box = React.memo(
     )
 
     const boxStyles = React.useMemo(
-      () => mergeStyles(descriptor.boxStyle as React.CSSProperties, style),
+      () => mergeStyles(descriptor.boxStyle, style),
       [descriptor.boxStyle, style]
     )
 

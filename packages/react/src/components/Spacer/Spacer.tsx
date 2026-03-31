@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { useConfig, useDebug } from '../../hooks'
-import { cx, createSpacerDescriptor } from '@baseline-kit/core'
+import { cx,  createSpacerDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
-import { mergeStyles } from '../../utils/merge'
 import { ComponentsProps, Variant } from '../types'
+import { mergeStyles } from '../../utils/merge'
 import styles from './styles.module.css'
 
 export type IndicatorNode = (value: number, type: 'width' | 'height') => React.ReactNode
@@ -70,7 +70,7 @@ export const Spacer = React.memo(function Spacer({
   }, [shouldShowMeasurements, indicatorNode, descriptor.normWidth, descriptor.normHeight])
 
   const baseStyles = React.useMemo(
-    () => mergeStyles(descriptor.style as React.CSSProperties, style),
+    () => mergeStyles(descriptor.style, style),
     [descriptor.style, style]
   )
 

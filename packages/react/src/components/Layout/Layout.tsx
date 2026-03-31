@@ -1,13 +1,13 @@
 import * as React from 'react'
 import type { Gaps } from '../types'
 import { useConfig, useDebug, useBaseline } from '../../hooks'
-import { parsePadding, cx, createLayoutDescriptor } from '@baseline-kit/core'
+import { cx,  parsePadding, createLayoutDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
-import { mergeStyles } from '../../utils/merge'
 import { Config } from '../Config'
 import { Padder } from '../Padder'
 import { Spacer } from '../Spacer'
 import { ComponentsProps, Variant } from '../types'
+import { mergeStyles } from '../../utils/merge'
 import styles from './styles.module.css'
 
 type IndicatorNode = NonNullable<React.ComponentProps<typeof Spacer>['indicatorNode']>
@@ -88,7 +88,7 @@ export const Layout = React.memo(function Layout({
   )
 
   const containerStyles = React.useMemo(
-    () => mergeStyles(descriptor.containerStyle as React.CSSProperties, style),
+    () => mergeStyles(descriptor.containerStyle, style),
     [descriptor.containerStyle, style]
   )
 

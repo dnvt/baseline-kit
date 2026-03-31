@@ -1,6 +1,4 @@
-import type { GuideColumnsPattern, GuideColumnValue, GridAlignment, GuideConfig } from '../types'
-import { GRID_ALIGNMENTS } from '../types'
-import { ABSOLUTE_UNIT_CONVERSIONS, RELATIVE_UNITS } from '../utils/convert'
+import type { GuideColumnsPattern, GuideColumnValue } from '../types'
 
 const UNIT_PATTERN =
   /^\d*\.?\d+(?:fr|px|%|em|rem|vh|vw|vmin|vmax|pt|pc|in|cm|mm)$/
@@ -19,31 +17,3 @@ export const isValidGuidePattern = (
   Array.isArray(pattern) &&
   pattern.length > 0 &&
   pattern.every(isValidGuideColumnValue)
-
-const CSS_UNITS = [
-  ...Object.keys(ABSOLUTE_UNIT_CONVERSIONS),
-  ...RELATIVE_UNITS,
-]
-
-export const isGuideValue = (value: unknown) =>
-  typeof value === 'number' ||
-  (typeof value === 'string' &&
-    CSS_UNITS.some((unit) => value.endsWith(unit)))
-
-export const isGuideAlignment = (value: unknown): value is GridAlignment =>
-  typeof value === 'string' && GRID_ALIGNMENTS.includes(value as GridAlignment)
-
-const isObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
-
-export const isGuideLineConfig = (config: unknown): config is GuideConfig =>
-  isObject(config) && config.variant === 'line'
-
-export const isGuideColumnConfig = (config: unknown): config is GuideConfig =>
-  isObject(config) && 'columns' in config && !('variant' in config)
-
-export const isAutoCalculatedGuide = (config: unknown): config is GuideConfig =>
-  isObject(config) &&
-  'columnWidth' in config &&
-  !('variant' in config) &&
-  !('columns' in config)

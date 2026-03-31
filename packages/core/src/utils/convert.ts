@@ -8,21 +8,12 @@ export interface ConversionContext {
   parentFontSize?: number
 }
 
-const STATIC_DEFAULTS: Required<ConversionContext> = {
+const DEFAULT_CONTEXT: Required<ConversionContext> = {
   parentSize: 0,
   viewportWidth: 1920,
   viewportHeight: 1080,
   rootFontSize: 16,
   parentFontSize: 16,
-}
-
-function getDefaultContext(): Required<ConversionContext> {
-  if (typeof window === 'undefined') return STATIC_DEFAULTS
-  return {
-    ...STATIC_DEFAULTS,
-    viewportWidth: window.innerWidth,
-    viewportHeight: window.innerHeight,
-  }
 }
 
 export const ABSOLUTE_UNIT_CONVERSIONS: Record<string, number> = {
@@ -66,7 +57,7 @@ export function convertValue(
 
   const resolver = RELATIVE_UNIT_RESOLVERS[unit]
   if (resolver) {
-    const ctx = { ...getDefaultContext(), ...context }
+    const ctx = { ...DEFAULT_CONTEXT, ...context }
     return num * resolver(ctx)
   }
 
