@@ -1,6 +1,5 @@
 import { LitElement, html } from 'lit'
 import { ContextProvider } from '@lit/context'
-import type { ConfigSchema } from '@baseline-kit/core'
 import { DEFAULT_CONFIG, mergeConfig } from '@baseline-kit/core'
 import { configContext } from '../controllers/config-context.js'
 

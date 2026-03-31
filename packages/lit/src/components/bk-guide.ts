@@ -1,4 +1,4 @@
-import { html, css, nothing } from 'lit'
+import { html, css } from 'lit'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import type { GuideVariant } from '@baseline-kit/core'
@@ -33,14 +33,18 @@ export class BkGuide extends BkBase {
   }
 
   static override styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .gde {
       position: absolute;
       inset: 0;
       pointer-events: none;
       padding: var(--bkgd-pb) var(--bkgd-pi);
     }
-    .line { left: -0.5px; }
+    .line {
+      left: -0.5px;
+    }
     .cols {
       position: absolute;
       inset: 0;
@@ -58,10 +62,20 @@ export class BkGuide extends BkBase {
       width: 100%;
       height: 100%;
     }
-    .col[data-variant='line'] { width: 1px; background-color: var(--bkgd-cl); }
-    .col[data-variant='pattern'] { background-color: var(--bkgd-cp); }
-    .col[data-variant='auto'] { background-color: var(--bkgd-ca); overflow: hidden; }
-    .col[data-variant='fixed'] { background-color: var(--bkgd-cf); }
+    .col[data-variant='line'] {
+      width: 1px;
+      background-color: var(--bkgd-cl);
+    }
+    .col[data-variant='pattern'] {
+      background-color: var(--bkgd-cp);
+    }
+    .col[data-variant='auto'] {
+      background-color: var(--bkgd-ca);
+      overflow: hidden;
+    }
+    .col[data-variant='fixed'] {
+      background-color: var(--bkgd-cf);
+    }
   `
 
   declare variant: GuideVariant | undefined
@@ -107,13 +121,13 @@ export class BkGuide extends BkBase {
       return html`<div class="gde" aria-hidden="true"><slot></slot></div>`
     }
 
-    const gridConfig = createGuideConfig(
-      resolvedVariant,
-      this._config.base,
-      resolvedGap,
-      this.columns,
-      this.columnWidth as number | string | undefined
-    )
+    const gridConfig = createGuideConfig({
+      variant: resolvedVariant,
+      base: this._config.base,
+      gap: resolvedGap,
+      columns: this.columns,
+      columnWidth: this.columnWidth as number | string | undefined,
+    })
 
     const { template, columnsCount, calculatedGap } = calculateGuideTemplate(
       this._containerWidth,
@@ -138,8 +152,14 @@ export class BkGuide extends BkBase {
       isVisible: isShown,
     })
 
-    const columnEls = Array.from({ length: descriptor.columnsCount }, (_, i) =>
-      html`<div class="col" data-variant=${resolvedVariant} style="background-color: ${descriptor.columnColor}"></div>`
+    const columnEls = Array.from(
+      { length: descriptor.columnsCount },
+      () =>
+        html`<div
+          class="col"
+          data-variant=${resolvedVariant}
+          style="background-color: ${descriptor.columnColor}"
+        ></div>`
     )
 
     return html`
