@@ -1,53 +1,42 @@
 import * as React from 'react'
-import { rafThrottle } from '@baseline-kit/dom'
+import { createMeasureObserver } from '@baseline-kit/dom'
+import type { MeasureRect } from '@baseline-kit/dom'
 
-export interface MeasureResult {
-  width: number
-  height: number
+export interface MeasureResult extends MeasureRect {
   refresh: () => void
 }
 
+const ZERO: MeasureRect = { width: 0, height: 0 }
+
 /**
  * Hook for measuring and tracking DOM element dimensions.
+ * Thin wrapper around the imperative createMeasureObserver from @baseline-kit/dom.
  */
 export function useMeasure(
   ref: React.RefObject<HTMLElement | null>
 ): MeasureResult {
-  const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 })
-
-  const measure = React.useCallback(() => {
-    if (!ref.current) return
-    try {
-      const rect = ref.current.getBoundingClientRect()
-      const next = {
-        width: rect ? Math.round(rect.width) : 0,
-        height: rect ? Math.round(rect.height) : 0,
-      }
-      setDimensions((prev) =>
-        prev.width === next.width && prev.height === next.height ? prev : next
-      )
-    } catch {
-      setDimensions({ width: 0, height: 0 })
-    }
-  }, [ref])
-
-  const refresh = React.useMemo(() => rafThrottle(measure), [measure])
-
-  React.useLayoutEffect(() => {
-    if (typeof window === 'undefined') return
-    measure()
-  }, [measure])
+  const [dimensions, setDimensions] = React.useState<MeasureRect>(ZERO)
+  const handleRef = React.useRef<ReturnType<typeof createMeasureObserver> | null>(null)
 
   React.useLayoutEffect(() => {
     if (typeof window === 'undefined' || !ref.current) return
-    const observer = new ResizeObserver(() => {
-      refresh()
+
+    const handle = createMeasureObserver(ref.current, (rect) => {
+      setDimensions((prev) =>
+        prev.width === rect.width && prev.height === rect.height ? prev : rect
+      )
     })
-    observer.observe(ref.current)
+    handleRef.current = handle
+
     return () => {
-      observer.disconnect()
+      handle.disconnect()
+      handleRef.current = null
     }
-  }, [ref, refresh])
+  }, [ref])
+
+  const refresh = React.useCallback(() => {
+    handleRef.current?.refresh()
+  }, [])
 
   return { ...dimensions, refresh }
 }

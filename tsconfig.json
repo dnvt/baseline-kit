@@ -21,6 +21,8 @@
       "@baseline-kit/core/*": ["packages/core/src/*"],
       "@baseline-kit/dom": ["packages/dom/src/index.ts"],
       "@baseline-kit/dom/*": ["packages/dom/src/*"],
+      "@baseline-kit/lit": ["packages/lit/src/index.ts"],
+      "@baseline-kit/lit/*": ["packages/lit/src/*"],
       "@baseline-kit/react": ["packages/react/src/index.ts"],
       "@baseline-kit/react/*": ["packages/react/src/*"],
       "@/*": ["packages/react/src/*"],

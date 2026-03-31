@@ -5,6 +5,7 @@ export const alias = {
   '@baseline-kit/core': resolve(__dirname, 'packages/core/src'),
   '@baseline-kit/dom': resolve(__dirname, 'packages/dom/src'),
   '@baseline-kit/react': resolve(__dirname, 'packages/react/src'),
+  '@baseline-kit/lit': resolve(__dirname, 'packages/lit/src'),
 
   // Backwards-compatible aliases (map to new locations)
   '@': resolve(__dirname, 'packages/react/src'),
