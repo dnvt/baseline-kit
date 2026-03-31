@@ -1,12 +1,7 @@
 import * as React from 'react'
 import type { Gaps } from '../types'
 import { useConfig, useDebug, useBaseline } from '../../hooks'
-import {
-  mergeClasses,
-  parsePadding,
-  formatValue,
-  createStyleOverride,
-} from '@baseline-kit/core'
+import { mergeClasses, parsePadding, createStackDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles } from '../../utils/merge'
 import { Padder } from '../Padder'
@@ -15,115 +10,23 @@ import { Config } from '../Config'
 import { ComponentsProps, Variant } from '../types'
 import styles from './styles.module.css'
 
-// Maps shorthand directions to Flexbox directions
-const DIRECTION_AXIS: Record<string, React.CSSProperties['flexDirection']> = {
-  x: 'row',
-  y: 'column',
-  '-x': 'row-reverse',
-  '-y': 'column-reverse',
-}
-
-export type CSSPropertiesDirectionalAxis = keyof typeof DIRECTION_AXIS
+export type CSSPropertiesDirectionalAxis = 'x' | 'y' | '-x' | '-y'
 
 export type StackProps = {
-  /** Main axis orientation */
-  direction?: React.CSSProperties['flexDirection'] &
-    CSSPropertiesDirectionalAxis
-  /** Distribution of space on main axis */
+  direction?: React.CSSProperties['flexDirection'] | CSSPropertiesDirectionalAxis
   justify?: React.CSSProperties['justifyContent']
-  /** Alignment on cross axis */
   align?: React.CSSProperties['alignItems']
-  /** Container width (defaults to "auto") */
   width?: React.CSSProperties['width']
-  /** Container height (defaults to "auto") */
   height?: React.CSSProperties['height']
-  /** Custom measurement indicator renderer */
   indicatorNode?: IndicatorNode
-  /** Visual style in debug mode */
   variant?: Variant
-  /** Gap between items in base units */
   gap?: Gaps
-  /** Row gap when using different values for rows and columns */
   rowGap?: Gaps
-  /** Column gap when using different values for rows and columns */
   columnGap?: Gaps
-  /** Flag to enable SSR-compatible mode (simplified initial render) */
   ssrMode?: boolean
   children?: React.ReactNode
 } & ComponentsProps
 
-// Utils -----------------------------------------------------------------------
-
-/** Creates default stack styles with theme colors */
-const createDefaultStackStyles = (colors: Record<string, string>) => ({
-  '--bkkw': 'auto',
-  '--bkkh': 'auto',
-  '--bkkcl': colors.line,
-  '--bkkcf': colors.flat,
-  '--bkkci': colors.text,
-})
-
-/** Creates gap styles for the stack */
-const createStackGapStyles = (
-  rowGap?: number,
-  columnGap?: number,
-  gap?: number
-): Record<string, number | undefined> => ({
-  rowGap: gap !== undefined ? gap : rowGap,
-  columnGap: gap !== undefined ? gap : columnGap,
-})
-
-/**
- * A flexible container component aligning children to the baseline grid.
- *
- * @remarks
- * Stack provides a flex container that:
- * - Maintains baseline grid alignment
- * - Supports both row and column layouts
- * - Handles consistent spacing between items
- * - Includes visual debug overlays
- *
- * Key features:
- * - Automatic dimension management (defaults to auto)
- * - Direct padding application in non-debug mode
- * - Comprehensive alignment controls
- * - Theme-aware debug visuals
- *
- * @example
- * ```tsx
- * // Basic horizontal stack
- * <Stack gap={16}>
- *   <div>Item 1</div>
- *   <div>Item 2</div>
- * </Stack>
- *
- * // Vertical stack with alignment
- * <Stack
- *   direction="column"
- *   gap={24}
- *   align="center"
- *   justify="space-between"
- *   debugging="visible"
- * >
- *   <div>Top</div>
- *   <div>Middle</div>
- *   <div>Bottom</div>
- * </Stack>
- *
- * // Complex layout with padding
- * <Stack
- *   direction="row"
- *   gap={32}
- *   align="stretch"
- *   block={[16, 24]}
- *   inline={16}
- *   debugging="visible"
- * >
- *   <div>Panel 1</div>
- *   <div>Panel 2</div>
- * </Stack>
- * ```
- */
 export const Stack = React.memo(function Stack({
   align = 'flex-start',
   children,
@@ -142,25 +45,15 @@ export const Stack = React.memo(function Stack({
   ssrMode = false,
   ...spacingProps
 }: StackProps) {
-  // Read configuration from context or props
   const config = useConfig('stack')
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
-  // Add hydration state tracking
   const [isHydrated, setIsHydrated] = React.useState(false)
-
-  React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
+  React.useEffect(() => { setIsHydrated(true) }, [])
 
   const stackRef = React.useRef<HTMLDivElement | null>(null)
+  const { top, right, bottom, left } = parsePadding({ ...spacingProps })
 
-  // Process spacing props
-  const { top, right, bottom, left } = parsePadding({
-    ...spacingProps,
-  })
-
-  // Get padding calculation from useBaseline
   const baselinePadding = useBaseline(stackRef, {
     base: config.base,
     snapping: 'height',
@@ -168,110 +61,32 @@ export const Stack = React.memo(function Stack({
     warnOnMisalignment: debugging !== 'none',
   })
 
-  // Create stable initial padding for SSR
-  const stablePadding = {
-    padding: {
-      top: top || 0,
-      right: right || 0,
-      bottom: bottom || 0,
-      left: left || 0,
-    },
-  }
+  const stablePadding = { padding: { top: top || 0, right: right || 0, bottom: bottom || 0, left: left || 0 } }
+  const { padding } = hydratedValue(isHydrated && !ssrMode, stablePadding, baselinePadding)
 
-  // Use stable padding during SSR and initial render, then switch to dynamic padding
-  const { padding } = hydratedValue(
-    isHydrated && !ssrMode,
-    stablePadding,
-    baselinePadding
+  const descriptor = React.useMemo(
+    () => createStackDescriptor({
+      colors: config.colors,
+      direction,
+      justify,
+      align,
+      width: width as number | string | undefined,
+      height: height as number | string | undefined,
+      gap: gap !== undefined ? Number(gap) : undefined,
+      rowGap: rowGap !== undefined ? Number(rowGap) : undefined,
+      columnGap: columnGap !== undefined ? Number(columnGap) : undefined,
+    }),
+    [config.colors, direction, justify, align, width, height, gap, rowGap, columnGap]
   )
 
-  const stackGapStyles = React.useMemo(() => {
-    const formattedRowGap = rowGap !== undefined ? Number(rowGap) : undefined
-    const formattedColumnGap =
-      columnGap !== undefined ? Number(columnGap) : undefined
-    const formattedGap = gap !== undefined ? Number(gap) : undefined
-
-    return createStackGapStyles(
-      formattedRowGap,
-      formattedColumnGap,
-      formattedGap
-    )
-  }, [rowGap, columnGap, gap])
-
-  const defaultStackStyles = React.useMemo(
-    () => createDefaultStackStyles(config.colors),
-    [config.colors]
+  const containerStyles = React.useMemo(
+    () => mergeStyles(descriptor.containerStyle as React.CSSProperties, style),
+    [descriptor.containerStyle, style]
   )
 
-  const containerStyles = React.useMemo(() => {
-    const widthValue = formatValue(width || 'auto')
-    const heightValue = formatValue(height || 'auto')
-    const flexDirection = DIRECTION_AXIS[direction] || direction
-
-    // Define stack dimensions that should be skipped when set to auto
-    const dimensionVars = ['--bkkw', '--bkkh']
-
-    const customOverrides = {
-      ...createStyleOverride({
-        key: '--bkkw',
-        value: widthValue,
-        defaultStyles: defaultStackStyles,
-        skipDimensions: { auto: dimensionVars },
-      }),
-      ...createStyleOverride({
-        key: '--bkkh',
-        value: heightValue,
-        defaultStyles: defaultStackStyles,
-        skipDimensions: { auto: dimensionVars },
-      }),
-      ...createStyleOverride({
-        key: '--bkkcl',
-        value: config.colors.line,
-        defaultStyles: defaultStackStyles,
-      }),
-      ...createStyleOverride({
-        key: '--bkkcf',
-        value: config.colors.flat,
-        defaultStyles: defaultStackStyles,
-      }),
-      ...createStyleOverride({
-        key: '--bkkci',
-        value: config.colors.text,
-        defaultStyles: defaultStackStyles,
-      }),
-    } as React.CSSProperties
-
-    const baseStyles = {
-      flexDirection,
-      justifyContent: justify,
-      alignItems: align,
-      width,
-      height,
-    } as React.CSSProperties
-
-    return mergeStyles(baseStyles, stackGapStyles, customOverrides, style)
-  }, [
-    direction,
-    justify,
-    align,
-    width,
-    height,
-    config.colors.line,
-    config.colors.flat,
-    config.colors.text,
-    defaultStackStyles,
-    stackGapStyles,
-    style,
-  ])
-
-  const mergedContainerStyles =
-    debugging === 'none'
-      ? {
-          ...containerStyles,
-          paddingBlock: `${padding.top}px ${padding.bottom}px`,
-          paddingInline: `${padding.left}px ${padding.right}px`,
-        }
-      : containerStyles
+  const mergedContainerStyles = debugging === 'none'
+    ? { ...containerStyles, paddingBlock: `${padding.top}px ${padding.bottom}px`, paddingInline: `${padding.left}px ${padding.right}px` }
+    : containerStyles
 
   return (
     <Config spacer={{ variant: variant ?? 'line' }}>

@@ -17,7 +17,7 @@ export function createStyleOverride(
   params: StyleOverrideParams | string,
   value?: string,
   defaultStyles?: Record<string, string>
-): Record<string, string | number> {
+): Record<string, string> {
   const key = typeof params === 'string' ? params : params.key
   const val = typeof params === 'string' ? value! : params.value
   const defaults =
