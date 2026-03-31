@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '../../hooks'
-import { mergeClasses, parsePadding, createPadderDescriptor } from '@baseline-kit/core'
+import { cx, parsePadding, createPadderDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
 import { ComponentsProps, Variant } from '../types'
@@ -76,8 +76,9 @@ export const Padder = React.memo(
         height: height as number | string | undefined,
         padding,
         enableSpacers,
+        isVisible: isShown,
       }),
-      [config.base, config.color, width, height, padding, enableSpacers]
+      [config.base, config.color, width, height, padding, enableSpacers, isShown]
     )
 
     const containerStyles = React.useMemo(
@@ -92,14 +93,14 @@ export const Padder = React.memo(
 
     if (!enableSpacers) {
       return (
-        <div ref={setRefs} data-testid="padder" className={mergeClasses(styles.pad, className)} style={containerStyles}>
+        <div ref={setRefs} data-testid="padder" className={cx(...descriptor.classTokens.map(t => styles[t]), className)} style={containerStyles}>
           {children}
         </div>
       )
     }
 
     return (
-      <div ref={setRefs} data-testid="padder" className={mergeClasses(styles.pad, isShown && styles.v, className)} style={containerStyles}>
+      <div ref={setRefs} data-testid="padder" className={cx(...descriptor.classTokens.map(t => styles[t]), className)} style={containerStyles}>
         <>
           {padding.top >= 0 && <div style={{ gridColumn: '1 / -1' }}>{renderSpacer('100%', padding.top)}</div>}
           {padding.left >= 0 && <div style={{ gridRow: '2 / 3' }}>{renderSpacer(padding.left, '100%')}</div>}

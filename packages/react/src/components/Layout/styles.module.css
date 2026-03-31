@@ -2,20 +2,20 @@
   display: grid;
   position: relative;
   box-sizing: border-box;
-  width: var(--bklw, var(--bk-width-default, auto));
-  height: var(--bklh, var(--bk-height-default, auto));
+  width: var(--bkly-w, var(--bk-width-default, auto));
+  height: var(--bkly-h, var(--bk-height-default, auto));
   grid-template-columns: var(
-    --bklgtc,
+    --bkly-gtc,
     repeat(auto-fill, minmax(100px, 1fr))
   );
-  grid-template-rows: var(--bklgtr, auto);
-  gap: var(--bklg, 0);
-  column-gap: var(--bklcg, 0);
-  row-gap: var(--bklrg, 0);
-  justify-items: var(--bklji, stretch);
-  align-items: var(--bklai, stretch);
-  justify-content: var(--bkljc, start);
-  align-content: var(--bklac, start);
+  grid-template-rows: var(--bkly-gtr, auto);
+  gap: var(--bkly-g, 0);
+  column-gap: var(--bkly-cg, 0);
+  row-gap: var(--bkly-rg, 0);
+  justify-items: var(--bkly-ji, stretch);
+  align-items: var(--bkly-ai, stretch);
+  justify-content: var(--bkly-jc, start);
+  align-content: var(--bkly-ac, start);
 }
 
 .lay .line::after,
@@ -28,7 +28,7 @@
   position: absolute;
   inset: 0;
   border: 1px solid
-    var(--bklcl, var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6)));
+    var(--bkly-cl, var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6)));
   pointer-events: none;
-  z-index: var(--bkzio, 2);
+  z-index: var(--bk-zio, 2);
 }

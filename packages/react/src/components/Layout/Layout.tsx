@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type { Gaps } from '../types'
 import { useConfig, useDebug, useBaseline } from '../../hooks'
-import { parsePadding, mergeClasses, createLayoutDescriptor } from '@baseline-kit/core'
+import { parsePadding, cx, createLayoutDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles } from '../../utils/merge'
 import { Config } from '../Config'
@@ -107,7 +107,7 @@ export const Layout = React.memo(function Layout({
       >
         <div
           data-testid="layout"
-          className={mergeClasses(className, styles.lay)}
+          className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
           style={containerStyles}
           {...(spacingProps && Object.keys(spacingProps).length > 0
             ? Object.fromEntries(Object.entries(spacingProps).filter(([key]) => key !== 'ssrMode'))

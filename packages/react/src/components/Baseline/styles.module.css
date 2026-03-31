@@ -2,8 +2,8 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  width: var(--bkbw);
-  height: var(--bkbh);
+  width: var(--bkbl-w);
+  height: var(--bkbl-h);
   overflow: hidden;
 }
 
@@ -11,9 +11,9 @@
   left: 0;
   right: 0;
   position: absolute;
-  top: var(--bkrt);
-  height: var(--bkrh);
-  background-color: var(--bkbc);
+  top: var(--bkbl-rt);
+  height: var(--bkbl-rh);
+  background-color: var(--bkbl-c);
 }
 
 /* Style for SSR rendering */

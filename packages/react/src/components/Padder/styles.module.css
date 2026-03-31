@@ -3,8 +3,8 @@
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-rows: auto 1fr auto;
-  width: var(--bkpw, auto);
-  height: var(--bkph, auto);
+  width: var(--bkpd-w, auto);
+  height: var(--bkpd-h, auto);
 }
 
 .lay .line::after,
@@ -16,7 +16,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bkpc, var(--bk-padder-color-theme));
+  border: 1px solid var(--bkpd-c, var(--bk-padder-color-theme));
   pointer-events: none;
-  z-index: var(--bkzi);
+  z-index: var(--bk-zi);
 }

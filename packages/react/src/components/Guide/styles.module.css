@@ -2,7 +2,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  padding: var(--bkgpb) var(--bkgpi);
+  padding: var(--bkgd-pb) var(--bkgd-pi);
 }
 
 .line {
@@ -13,38 +13,38 @@
   position: absolute;
   inset: 0;
   display: grid;
-  column-gap: var(--bkgg);
+  column-gap: var(--bkgd-g);
   grid-template-rows: 1fr;
-  grid-template-columns: var(--bkgt);
-  justify-content: var(--bkgj);
-  width: var(--bkwf);
-  height: var(--bkhf);
+  grid-template-columns: var(--bkgd-t);
+  justify-content: var(--bkgd-j);
+  width: var(--bk-wf);
+  height: var(--bk-hf);
   overflow: hidden;
 }
 
 .col {
   min-width: 0;
-  width: var(--bkwf);
-  height: var(--bkhf);
+  width: var(--bk-wf);
+  height: var(--bk-hf);
 }
 
 /* Variant-specific styles */
 .col[data-variant='line'] {
   width: 1px;
-  background-color: var(--bkgcl);
+  background-color: var(--bkgd-cl);
 }
 
 .col[data-variant='pattern'] {
-  background-color: var(--bkgcp);
+  background-color: var(--bkgd-cp);
 }
 
 .col[data-variant='auto'] {
-  background-color: var(--bkgca);
+  background-color: var(--bkgd-ca);
   overflow: hidden;
 }
 
 .col[data-variant='fixed'] {
-  background-color: var(--bkgcf);
+  background-color: var(--bkgd-cf);
 }
 
 /* Style for SSR rendering */

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ComponentsProps } from '../types'
 import { useConfig, useDebug, useMeasure, useGuide } from '../../hooks'
-import { mergeClasses, createGuideDescriptor, createGuideConfig } from '@baseline-kit/core'
+import { cx, createGuideDescriptor, createGuideConfig } from '@baseline-kit/core'
 import type { GuideVariant, GuideConfig } from '@baseline-kit/core'
 import { mergeStyles } from '../../utils/merge'
 import { ClientOnly } from '../../utils/ssr'
@@ -47,7 +47,7 @@ export const Guide = React.memo(function Guide({
   if (!isShown) {
     return (
       <div
-        className={mergeClasses(styles.g, styles.h, className)}
+        className={cx(styles.g, styles.h, className)}
         style={style}
         data-testid="guide"
         data-variant={variant}
@@ -61,7 +61,7 @@ export const Guide = React.memo(function Guide({
 
   const ssrFallback = (
     <div
-      className={mergeClasses(styles.g, styles.h, styles.ssr, className)}
+      className={cx(styles.g, styles.h, styles.ssr, className)}
       style={{ width: width || '100%', height: height || '100%', maxWidth: maxWidth || 'none', ...style }}
       data-testid="guide"
       data-variant={variant}
@@ -156,7 +156,7 @@ const GuideImpl = React.memo(function GuideImpl({
       ref={containerRef}
       data-testid="guide"
       aria-hidden="true"
-      className={mergeClasses(styles.gde, className, isShown ? styles.v : styles.h, descriptor.isLineVariant && styles.line)}
+      className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
       data-variant={variant}
       style={containerStyles}
       {...props}

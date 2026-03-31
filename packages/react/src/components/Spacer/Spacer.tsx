@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useConfig, useDebug } from '../../hooks'
-import { mergeClasses, createSpacerDescriptor } from '@baseline-kit/core'
+import { cx, createSpacerDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles } from '../../utils/merge'
 import { ComponentsProps, Variant } from '../types'
@@ -49,8 +49,10 @@ export const Spacer = React.memo(function Spacer({
       width: widthProp as number | string | undefined,
       height: heightProp as number | string | undefined,
       color: colorProp,
+      variant,
+      isVisible: isShown,
     }),
-    [base, config.colors, widthProp, heightProp, colorProp]
+    [base, config.colors, widthProp, heightProp, colorProp, variant, isShown]
   )
 
   const shouldShowMeasurements = hydratedValue(isHydrated && !ssrMode, false, isShown && indicatorNode !== undefined)
@@ -76,7 +78,7 @@ export const Spacer = React.memo(function Spacer({
     <div
       ref={ref}
       data-testid="spacer"
-      className={mergeClasses(styles.spr, isShown && styles[variant], className)}
+      className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
       data-variant={variant}
       data-height={typeof descriptor.normHeight === 'number' ? `${descriptor.normHeight}px` : descriptor.normHeight}
       style={baseStyles}

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline } from '../../hooks'
-import { mergeClasses, parsePadding, createBoxDescriptor } from '@baseline-kit/core'
+import { cx, parsePadding, createBoxDescriptor } from '@baseline-kit/core'
 import type { SnappingMode } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
@@ -45,8 +45,8 @@ export const Box = React.memo(
     const { padding } = hydratedValue(isHydrated && !ssrMode, stablePadding, baselinePadding)
 
     const descriptor = React.useMemo(
-      () => createBoxDescriptor({ base: config.base, lineColor: config.colors.line, width, height, span, colSpan, rowSpan }),
-      [config.base, config.colors.line, width, height, span, colSpan, rowSpan]
+      () => createBoxDescriptor({ base: config.base, lineColor: config.colors.line, width, height, span, colSpan, rowSpan, isVisible: isShown }),
+      [config.base, config.colors.line, width, height, span, colSpan, rowSpan, isShown]
     )
 
     const boxStyles = React.useMemo(
@@ -58,7 +58,7 @@ export const Box = React.memo(
       <div
         ref={mergeRefs(ref, internalRef)}
         data-testid="box"
-        className={mergeClasses(styles.box, isShown && styles.v, className)}
+        className={cx(...descriptor.classTokens.map(t => styles[t]), className)}
         style={mergeStyles(boxStyles, descriptor.gridSpanStyle)}
       >
         <Config base={1} spacer={{ variant: 'flat' }}>

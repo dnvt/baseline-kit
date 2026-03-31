@@ -1,8 +1,8 @@
 .spr {
   position: relative;
   box-sizing: border-box;
-  width: var(--bksw, 100%);
-  height: var(--bksh, auto);
+  width: var(--bksp-w, 100%);
+  height: var(--bksp-h, auto);
   flex-shrink: 0;
   display: block;
   margin: 0;
@@ -13,10 +13,10 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bkscl, hsla(270, 60%, 40%, 0.6));
-  z-index: calc(var(--bkzi, 1));
+  border: 1px solid var(--bksp-cl, hsla(270, 60%, 40%, 0.6));
+  z-index: calc(var(--bk-zi, 1));
 }
 
 .flat {
-  background-color: var(--bkscf, hsla(230, 100%, 70%, 0.2));
+  background-color: var(--bksp-cf, hsla(230, 100%, 70%, 0.2));
 }

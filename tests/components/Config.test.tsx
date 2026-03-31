@@ -27,9 +27,9 @@ describe('Config component', () => {
 
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain(`--bkb: ${DEFAULT_CONFIG.base}px`)
-      expect(style).toContain(`--bkbcl: ${DEFAULT_CONFIG.baseline.colors.line}`)
-      expect(style).toContain(`--bkbcf: ${DEFAULT_CONFIG.baseline.colors.flat}`)
+      expect(style).toContain(`--bk-base: ${DEFAULT_CONFIG.base}px`)
+      expect(style).toContain(`--bkbl-cl: ${DEFAULT_CONFIG.baseline.colors.line}`)
+      expect(style).toContain(`--bkbl-cf: ${DEFAULT_CONFIG.baseline.colors.flat}`)
       expect(screen.getByText('Test Content')).toBeInTheDocument()
     })
   })
@@ -43,7 +43,7 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bkb: 16px')
+      expect(style).toContain('--bk-base: 16px')
     })
 
     it('allows overriding the baseline config', () => {
@@ -63,8 +63,8 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bkbcl: #FF0000')
-      expect(style).toContain('--bkbcf: #00FF00')
+      expect(style).toContain('--bkbl-cl: #FF0000')
+      expect(style).toContain('--bkbl-cf: #00FF00')
     })
 
     it('allows overriding the guide config', () => {
@@ -86,10 +86,10 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bkgcl: #FF0000')
-      expect(style).toContain('--bkgcp: #00FF00')
-      expect(style).toContain('--bkgca: #0000FF')
-      expect(style).toContain('--bkgcf: #FFFF00')
+      expect(style).toContain('--bkgd-cl: #FF0000')
+      expect(style).toContain('--bkgd-cp: #00FF00')
+      expect(style).toContain('--bkgd-ca: #0000FF')
+      expect(style).toContain('--bkgd-cf: #FFFF00')
     })
   })
 
@@ -104,7 +104,7 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('nested-child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bkb: 24px')
+      expect(style).toContain('--bk-base: 24px')
     })
   })
 
@@ -117,8 +117,8 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain(`--bkgcl: ${DEFAULT_CONFIG.guide.colors.line}`)
-      expect(style).toContain(`--bkgcp: ${DEFAULT_CONFIG.guide.colors.pattern}`)
+      expect(style).toContain(`--bkgd-cl: ${DEFAULT_CONFIG.guide.colors.line}`)
+      expect(style).toContain(`--bkgd-cp: ${DEFAULT_CONFIG.guide.colors.pattern}`)
     })
 
     it('handles partial color overrides correctly', () => {
@@ -136,8 +136,8 @@ describe('Config component', () => {
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
-      expect(style).toContain('--bkgcl: #FF0000')
-      expect(style).toContain(`--bkgcp: ${DEFAULT_CONFIG.guide.colors.pattern}`)
+      expect(style).toContain('--bkgd-cl: #FF0000')
+      expect(style).toContain(`--bkgd-cp: ${DEFAULT_CONFIG.guide.colors.pattern}`)
     })
   })
 })
