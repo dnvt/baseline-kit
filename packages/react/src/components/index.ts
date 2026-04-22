@@ -6,10 +6,8 @@
 import './styles/core.css'
 import './styles/theme.css'
 
-// Layout Components
-export * from './Layout'
+// Spacing Components
 export * from './Box'
-export * from './Stack'
 export * from './Spacer'
 export * from './Padder'
 

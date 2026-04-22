@@ -37,22 +37,6 @@ export const DEFAULT_CONFIG: ConfigSchema = {
       text: 'var(--bk-box-color-text-theme)',
     },
   },
-  stack: {
-    debugging: 'hidden',
-    colors: {
-      line: 'var(--bk-stack-color-line-theme)',
-      flat: 'var(--bk-stack-color-flat-theme)',
-      text: 'var(--bk-stack-color-text-theme)',
-    },
-  },
-  layout: {
-    debugging: 'hidden',
-    colors: {
-      line: 'var(--bk-layout-color-line-theme)',
-      flat: 'var(--bk-layout-color-flat-theme)',
-      text: 'var(--bk-layout-color-text-theme)',
-    },
-  },
   padder: {
     debugging: 'hidden',
     color: 'var(--bk-padder-color-theme)',

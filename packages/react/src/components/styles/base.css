@@ -29,13 +29,6 @@
   --bkbx-cf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
   --bkbx-ct: var(--bk-box-color-text-theme, hsla(300, 60%, 40%, 0.9));
 
-  /* Stack Component Variables */
-  --bksk-w: var(--bk-wf);
-  --bksk-h: var(--bk-height-default);
-  --bksk-cl: var(--bk-stack-color-line-theme, hsla(330, 60%, 40%, 0.6));
-  --bksk-cf: var(--bk-stack-color-flat-theme, hsla(0, 100%, 70%, 0.2));
-  --bksk-ct: var(--bk-stack-color-text-theme, hsla(330, 60%, 40%, 0.9));
-
   /* Baseline Component Variables */
   --bkbl-w: 100%;
   --bkbl-h: 100%;
@@ -56,22 +49,6 @@
   --bkgd-cp: var(--bk-guide-color-pattern-theme, hsla(230, 100%, 70%, 0.2));
   --bkgd-ca: var(--bk-guide-color-auto-theme, hsla(200, 100%, 70%, 0.15));
   --bkgd-cf: var(--bk-guide-color-fixed-theme, hsla(200, 100%, 70%, 0.15));
-
-  /* Layout Component Variables */
-  --bkly-w: var(--bk-width-default);
-  --bkly-h: var(--bk-height-default);
-  --bkly-cl: var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6));
-  --bkly-cf: var(--bk-layout-color-flat-theme, hsla(0, 100%, 70%, 0.2));
-  --bkly-ct: var(--bk-layout-color-text-theme, hsla(330, 60%, 40%, 0.9));
-  --bkly-gtc: repeat(auto-fill, minmax(100px, 1fr));
-  --bkly-gtr: auto;
-  --bkly-g: 0;
-  --bkly-cg: 0;
-  --bkly-rg: 0;
-  --bkly-ji: stretch;
-  --bkly-ai: stretch;
-  --bkly-jc: start;
-  --bkly-ac: start;
 
   /* Padder Component Variables */
   --bkpd-w: var(--bk-width-default);
@@ -107,16 +84,3 @@
   --bkbx-ct: var(--bk-box-color-text-theme, hsla(300, 60%, 40%, 0.9));
 }
 
-/* Stack Component */
-.stack {
-  --bksk-cl: var(--bk-stack-color-line-theme, hsla(330, 60%, 40%, 0.6));
-  --bksk-cf: var(--bk-stack-color-flat-theme, hsla(0, 100%, 70%, 0.2));
-  --bksk-ct: var(--bk-stack-color-text-theme, hsla(330, 60%, 40%, 0.9));
-}
-
-/* Layout Component */
-.layout {
-  --bkly-cl: var(--bk-layout-color-line-theme, hsla(330, 60%, 40%, 0.6));
-  --bkly-cf: var(--bk-layout-color-flat-theme, hsla(0, 100%, 70%, 0.2));
-  --bkly-ct: var(--bk-layout-color-text-theme, hsla(330, 60%, 40%, 0.9));
-}

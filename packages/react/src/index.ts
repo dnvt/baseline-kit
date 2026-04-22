@@ -13,8 +13,6 @@ export { Config } from './components/Config'
 export { Baseline } from './components/Baseline'
 export { Guide } from './components/Guide'
 export { Box } from './components/Box'
-export { Stack } from './components/Stack'
-export { Layout } from './components/Layout'
 export { Spacer } from './components/Spacer'
 export { Padder } from './components/Padder'
 
@@ -30,8 +28,6 @@ export type {
 export type { BaselineProps, BaselineVariant } from './components/Baseline'
 export type { BoxProps, SnappingMode } from './components/Box'
 export type { GuideProps } from './components/Guide'
-export type { LayoutProps } from './components/Layout'
-export type { StackProps } from './components/Stack'
 export type { IndicatorNode, SpacerProps } from './components/Spacer'
 export type { PadderProps } from './components/Padder'
 
