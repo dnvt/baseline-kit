@@ -82,7 +82,7 @@ describe('Timing Utils', () => {
 
     it('throttles the function to execute once per animation frame', async () => {
       const fn = vi.fn()
-      const throttled = rafThrottle(fn)
+      const [throttled] = rafThrottle(fn)
 
       throttled('first')
       throttled('second')
@@ -95,7 +95,7 @@ describe('Timing Utils', () => {
 
     it('allows subsequent calls after an animation frame has passed', async () => {
       const fn = vi.fn()
-      const throttled = rafThrottle(fn)
+      const [throttled] = rafThrottle(fn)
 
       throttled(1)
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
@@ -105,6 +105,20 @@ describe('Timing Utils', () => {
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
       expect(fn).toHaveBeenCalledTimes(2)
       expect(fn).toHaveBeenLastCalledWith(2)
+    })
+
+    it('cancel() prevents a scheduled frame from firing', async () => {
+      const fn = vi.fn()
+      const [throttled, cancel] = rafThrottle(fn)
+
+      throttled('hello')
+      cancel()
+
+      // Wait past two frames to be sure nothing fires
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      )
+      expect(fn).not.toHaveBeenCalled()
     })
   })
 })

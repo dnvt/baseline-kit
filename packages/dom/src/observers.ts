@@ -45,7 +45,7 @@ export function createMeasureObserver(
     }
   }
 
-  const throttledMeasure = rafThrottle(measure)
+  const [throttledMeasure, cancelMeasure] = rafThrottle(measure)
 
   // Initial measurement
   measure()
@@ -57,6 +57,7 @@ export function createMeasureObserver(
     refresh: throttledMeasure,
     disconnect() {
       observer.disconnect()
+      cancelMeasure()
     },
   }
 }
@@ -113,7 +114,7 @@ export function createVirtualTracker(
     }
   }
 
-  const throttledUpdate = rafThrottle(update)
+  const [throttledUpdate, cancelUpdate] = rafThrottle(update)
 
   // Window events
   window.addEventListener('scroll', throttledUpdate)
@@ -134,6 +135,7 @@ export function createVirtualTracker(
       window.removeEventListener('scroll', throttledUpdate)
       window.removeEventListener('resize', throttledUpdate)
       intersectionObserver.disconnect()
+      cancelUpdate()
     },
   }
 }

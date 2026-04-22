@@ -19,9 +19,19 @@ export const debounce = <T extends (...args: unknown[]) => void>(
   return [debounced, cancel]
 }
 
-export const rafThrottle = <T extends (...args: never[]) => void>(fn: T): T => {
+export const rafThrottle = <T extends (...args: never[]) => void>(
+  fn: T
+): [T, () => void] => {
   let rafId: number | null = null
   let lastArgs: Parameters<T> | null = null
+
+  const cancel = () => {
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId)
+      rafId = null
+      lastArgs = null
+    }
+  }
 
   const throttled = (...args: Parameters<T>) => {
     lastArgs = args
@@ -37,5 +47,5 @@ export const rafThrottle = <T extends (...args: never[]) => void>(fn: T): T => {
     })
   }
 
-  return throttled as T
+  return [throttled as T, cancel]
 }
