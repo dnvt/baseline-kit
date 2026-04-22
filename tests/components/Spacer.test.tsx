@@ -50,17 +50,17 @@ describe('Spacer Component', () => {
       const spacer = screen.getByTestId('spacer')
       // Check the actual style attribute string instead of computed style
       const styleAttr = spacer.getAttribute('style') || ''
-      expect(styleAttr).toContain('--bksw: 200px')
+      expect(styleAttr).toContain('--bksp-w: 200px')
       // The height is being normalized to 104px by the component, so we should expect that
-      expect(styleAttr).toContain('--bksh: 104px')
+      expect(styleAttr).toContain('--bksp-h: 104px')
     })
 
     it('normalizes numeric dimensions with base unit', () => {
       render(<Spacer width={16} height={24} />)
       const spacer = screen.getByTestId('spacer')
       expect(spacer).toHaveStyle({
-        '--bksw': '16px',
-        '--bksh': '24px',
+        '--bksp-w': '16px',
+        '--bksp-h': '24px',
       })
     })
   })
@@ -92,7 +92,7 @@ describe('Spacer Component', () => {
       render(<Spacer base={4} />)
       const spacer = screen.getByTestId('spacer')
       const styleAttr = spacer.getAttribute('style') || ''
-      expect(styleAttr).toContain('--bksb: 4px')
+      expect(styleAttr).toContain('--bksp-b: 4px')
     })
 
     it('uses config base unit when not provided', () => {
@@ -167,7 +167,7 @@ describe('Spacer Component', () => {
       render(<Spacer base={4} />)
       const spacer = screen.getByTestId('spacer')
       const styleAttr = spacer.getAttribute('style') || ''
-      expect(styleAttr).toContain('--bksb: 4px')
+      expect(styleAttr).toContain('--bksp-b: 4px')
     })
 
     it('uses config base unit when not provided', () => {

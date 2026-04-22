@@ -1,0 +1,86 @@
+/**
+ * Baseline Kit Base Styles
+ * 
+ * This file defines:
+ * 1. Core system variables used across components
+ * 2. Component-specific CSS variables with fallback values
+ * 3. Robust fallbacks for components to ensure cross-framework compatibility
+ */
+
+/* Core system variables */
+:root {
+  /* Core System Variables */
+  --bk-base: 8px; /* Base unit for spacing */
+  --bk-zi: 1; /* Base z-index */
+  --bk-zio: 2; /* Overlay z-index */
+  --bk-transition-base: 180ms ease; /* Standard transition */
+
+  /* Default Dimensions */
+  --bk-width-default: fit-content;
+  --bk-height-default: fit-content;
+  --bk-wf: 100%; /* Full width shorthand */
+  --bk-hf: 100%; /* Full height shorthand */
+
+  /* Box Component Variables */
+  --bkbx-b: var(--bk-base);
+  --bkbx-w: var(--bk-width-default);
+  --bkbx-h: var(--bk-height-default);
+  --bkbx-cl: var(--bk-box-color-line-theme, hsla(300, 60%, 40%, 0.6));
+  --bkbx-cf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
+  --bkbx-ct: var(--bk-box-color-text-theme, hsla(300, 60%, 40%, 0.9));
+
+  /* Baseline Component Variables */
+  --bkbl-w: 100%;
+  --bkbl-h: 100%;
+  --bkbl-rt: 0;
+  --bkbl-rh: 1px;
+  --bkbl-cl: var(--bk-baseline-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkbl-cf: var(--bk-baseline-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+
+  /* Guide Component Variables */
+  --bkgd-w: 100vw;
+  --bkgd-h: 100vh;
+  --bkgd-g: var(--bk-base);
+  --bkgd-j: center;
+  --bkgd-t: auto;
+  --bkgd-pb: 0;
+  --bkgd-pi: 0;
+  --bkgd-cl: var(--bk-guide-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkgd-cp: var(--bk-guide-color-pattern-theme, hsla(230, 100%, 70%, 0.2));
+  --bkgd-ca: var(--bk-guide-color-auto-theme, hsla(200, 100%, 70%, 0.15));
+  --bkgd-cf: var(--bk-guide-color-fixed-theme, hsla(200, 100%, 70%, 0.15));
+
+  /* Padder Component Variables */
+  --bkpd-w: var(--bk-width-default);
+  --bkpd-h: var(--bk-height-default);
+  --bkpd-c: var(--bk-padder-color-theme, hsla(270, 60%, 40%, 0.6));
+
+  /* Spacer Component Variables - with fallback values */
+  --bksp-w: var(--bk-wf);
+  --bksp-h: var(--bk-hf);
+  --bksp-cl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
+  --bksp-cf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+  --bksp-ct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
+}
+
+/* Guide Component */
+.guide {
+  --bkgd-cl: var(--bk-guide-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkgd-cp: var(--bk-guide-color-pattern-theme, hsla(230, 100%, 70%, 0.2));
+  --bkgd-ca: var(--bk-guide-color-auto-theme, hsla(200, 100%, 70%, 0.15));
+  --bkgd-cf: var(--bk-guide-color-fixed-theme, hsla(200, 100%, 70%, 0.15));
+}
+
+/* Baseline Component */
+.baseline {
+  --bkbl-cl: var(--bk-baseline-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkbl-cf: var(--bk-baseline-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+}
+
+/* Box Component */
+.box {
+  --bkbx-cl: var(--bk-box-color-line-theme, hsla(300, 60%, 40%, 0.6));
+  --bkbx-cf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
+  --bkbx-ct: var(--bk-box-color-text-theme, hsla(300, 60%, 40%, 0.9));
+}
+

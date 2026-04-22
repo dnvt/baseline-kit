@@ -1,0 +1,14 @@
+.box {
+  position: relative;
+  width: var(--bkbx-w);
+  height: var(--bkbx-h);
+}
+
+.v::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--bkbx-cl);
+  pointer-events: none;
+  z-index: var(--bk-zi);
+}

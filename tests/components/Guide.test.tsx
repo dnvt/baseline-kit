@@ -83,7 +83,7 @@ describe('Guide component', () => {
       <Guide variant="line" gap={10} debugging="visible" data-testid="guide" />
     )
     const guideEl = screen.getByTestId('guide')
-    expect(guideEl.getAttribute('style')).toContain('--bkgg: 10px')
+    expect(guideEl.getAttribute('style')).toContain('--bkgd-g: 10px')
   })
 
   it('handles "auto" variant with numeric columnWidth', () => {
@@ -99,8 +99,8 @@ describe('Guide component', () => {
     const guideEl = screen.getByTestId('guide')
     expect(guideEl.dataset.variant).toBe('auto')
     const columns = guideEl.querySelectorAll('[data-column-index]')
-    expect(columns.length).toBe(65)
-    expect(guideEl.getAttribute('style')).toContain('--bkgg: 16px')
+    expect(columns.length).toBe(10)
+    expect(guideEl.getAttribute('style')).toContain('--bkgd-g: 16px')
   })
 
   it('handles "pattern" variant array columns', () => {
@@ -116,9 +116,9 @@ describe('Guide component', () => {
     const guideEl = screen.getByTestId('guide')
     expect(guideEl.dataset.variant).toBe('pattern')
     const cols = guideEl.querySelectorAll('[data-column-index]')
-    expect(cols.length).toBe(103)
-    expect(guideEl.getAttribute('style')).toContain('--bkgt: 1fr 2fr 3fr')
-    expect(guideEl.getAttribute('style')).toContain('--bkgg: 10px')
+    expect(cols.length).toBe(3)
+    expect(guideEl.getAttribute('style')).toContain('--bkgd-t: 1fr 2fr 3fr')
+    expect(guideEl.getAttribute('style')).toContain('--bkgd-g: 10px')
   })
 
   it('handles "fixed" variant with 5 columns', () => {
@@ -135,9 +135,9 @@ describe('Guide component', () => {
     const guideEl = screen.getByTestId('guide')
     expect(guideEl.dataset.variant).toBe('fixed')
     const cols = guideEl.querySelectorAll('[data-column-index]')
-    expect(cols.length).toBe(86)
-    expect(guideEl.getAttribute('style')).toContain('--bkgg: 12px')
-    expect(guideEl.getAttribute('style')).toContain('--bkgt: repeat(5, 120px)')
+    expect(cols.length).toBe(5)
+    expect(guideEl.getAttribute('style')).toContain('--bkgd-g: 12px')
+    expect(guideEl.getAttribute('style')).toContain('--bkgd-t: repeat(5, 120px)')
   })
 
   it('renders hidden when debugging="hidden"', () => {

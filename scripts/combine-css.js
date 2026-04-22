@@ -17,7 +17,7 @@ const __dirname = path.dirname(__filename)
 
 // Paths
 const distDir = path.resolve(__dirname, '../dist')
-const themeSourceDir = path.resolve(__dirname, '../src/components/styles/theme')
+const themeSourceDir = path.resolve(__dirname, '../packages/react/src/components/styles/theme')
 const themeDestDir = path.resolve(distDir, 'theme')
 const coreCssPath = path.join(distDir, 'styles.css')
 const themeCssPath = path.join(distDir, 'theme.css')

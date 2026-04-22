@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { useConfig } from '@hooks'
-import type { Config } from '@components'
+import type { ConfigSchema as Config } from '@components'
 import * as ComponentsModule from '@components'
 
 const minimalGuideStub: Config['guide'] = {
