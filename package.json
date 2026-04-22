@@ -1,7 +1,8 @@
 {
   "scripts": {
-    "build": "vite build && bun run build:type && bun run build:combine-css",
+    "build": "vite build && bun run build:type && bun run build:dts && bun run build:combine-css",
     "build:type": "tsc -p tsconfig.build.json",
+    "build:dts": "rollup -c rollup.dts.config.mjs",
     "build:combine-css": "node scripts/combine-css.js",
     "changeset": "changeset",
     "dev": "vite",
