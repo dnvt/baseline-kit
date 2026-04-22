@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useConfig, useDebug, useBaseline } from '../../hooks'
+import { useConfig, useDebug, useBaseline, useIsClient } from '../../hooks'
 import { cx, parsePadding, createBoxDescriptor } from '@baseline-kit/core'
 import type { SnappingMode } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
@@ -41,11 +41,7 @@ export const Box = React.memo(
     const config = useConfig('box')
     const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
-    const [isHydrated, setIsHydrated] = React.useState(false)
-    React.useEffect(() => {
-      setIsHydrated(true)
-    }, [])
-
+    const isHydrated = useIsClient()
     const internalRef = React.useRef<HTMLDivElement | null>(null)
     const { top, bottom, left, right } = parsePadding(spacingProps)
 
@@ -53,7 +49,6 @@ export const Box = React.memo(
       base: config.base,
       snapping,
       spacing: { top, bottom, left, right },
-      warnOnMisalignment: debugging !== 'none',
     })
 
     const stablePadding = {

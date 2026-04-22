@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useConfig, useDebug, useBaseline } from '../../hooks'
+import { useConfig, useDebug, useBaseline, useIsClient } from '../../hooks'
 import { cx, parsePadding, createPadderDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
@@ -73,18 +73,13 @@ export const Padder = React.memo(
     )
     const enableSpacers = !isNone
 
-    const [isHydrated, setIsHydrated] = React.useState(false)
-    React.useEffect(() => {
-      setIsHydrated(true)
-    }, [])
-
+    const isHydrated = useIsClient()
     const internalRef = React.useRef<HTMLDivElement | null>(null)
 
     const baselinePadding = useBaseline(internalRef, {
       base: config.base,
       snapping: 'height',
       spacing: initialPadding,
-      warnOnMisalignment: !isNone,
     })
 
     const stablePadding = {

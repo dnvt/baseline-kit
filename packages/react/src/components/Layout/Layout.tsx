@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { Gaps } from '../types'
-import { useConfig, useDebug, useBaseline } from '../../hooks'
+import { useConfig, useDebug, useBaseline, useIsClient } from '../../hooks'
 import { cx, parsePadding, createLayoutDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { Config } from '../Config'
@@ -54,12 +54,8 @@ export const Layout = React.memo(function Layout({
   const config = useConfig('layout')
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
-  const [isHydrated, setIsHydrated] = React.useState(false)
-  React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-
-  const layoutRef = React.useRef<HTMLDivElement>(null)
+  const isHydrated = useIsClient()
+  const layoutRef = React.useRef<HTMLDivElement | null>(null)
   const initialPadding = React.useMemo(
     () => parsePadding(spacingProps),
     [spacingProps]
@@ -69,7 +65,6 @@ export const Layout = React.memo(function Layout({
     base: config.base,
     snapping: 'height',
     spacing: initialPadding,
-    warnOnMisalignment: true,
   })
 
   const stablePadding = {

@@ -25,6 +25,7 @@ vi.mock('@hooks', () => ({
     height: 0,
   })),
   useVirtual: vi.fn(() => ({ start: 0, end: 0 })),
+  useIsClient: vi.fn(() => true),
 }))
 
 // Mock @utils

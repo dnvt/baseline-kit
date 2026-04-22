@@ -7,8 +7,6 @@ export interface BaselineOptions {
   base?: number
   snapping?: SnappingMode
   spacing?: Partial<Padding> | number
-  /** @deprecated No longer emits warnings. Check `isAligned` in the result instead. */
-  warnOnMisalignment?: boolean
 }
 
 export interface BaselineResult {
