@@ -17,6 +17,16 @@ export interface BaselineResult {
 
 /**
  * Hook for managing baseline grid alignment in components.
+ *
+ * Snapping notes
+ * --------------
+ * `clamp` mode would oscillate without a latch: each snap tweaks the
+ * element's padding which changes its measured height, which would
+ * trigger another snap, and so on. We snap exactly once per mount on
+ * the *first non-zero* measurement, then keep returning the snapped
+ * padding for the rest of the element's life. Resizes after the first
+ * snap intentionally do not re-snap (avoids visual jitter and the
+ * `clamp` oscillation).
  */
 export function useBaseline(
   ref: React.RefObject<HTMLElement | null>,
@@ -27,7 +37,7 @@ export function useBaseline(
   }
 
   const { height } = useMeasure(ref)
-  const didSnapRef = React.useRef<boolean>(false)
+  const snappedPaddingRef = React.useRef<Padding | null>(null)
 
   return React.useMemo(() => {
     const initialPadding = parsePadding({ padding: spacing })
@@ -37,7 +47,16 @@ export function useBaseline(
       return { padding: initialPadding, isAligned, height }
     }
 
-    if (didSnapRef.current) {
+    // Reuse the cached snap on subsequent renders.
+    if (snappedPaddingRef.current) {
+      return { padding: snappedPaddingRef.current, isAligned, height }
+    }
+
+    // Wait for a real measurement before snapping. Without this guard
+    // the very first render (height = 0, before useMeasure settles)
+    // would compute a no-op snap and prematurely poison the cache,
+    // making real measurements never get snapped.
+    if (height === 0) {
       return { padding: initialPadding, isAligned, height }
     }
 
@@ -47,7 +66,7 @@ export function useBaseline(
       initialPadding,
       snapping
     )
-    didSnapRef.current = true
+    snappedPaddingRef.current = finalPadding
 
     return { padding: finalPadding, isAligned, height }
   }, [base, snapping, spacing, height])

@@ -136,4 +136,46 @@ describe('useBaseline', () => {
     )
     expect(result.current.isAligned).toBe(false)
   })
+
+  it('snaps on the first non-zero measurement (regression: latch was poisoned by height=0)', () => {
+    // Simulate the real flow: useMeasure returns 0 on first render, then
+    // settles to the actual measured height after the ResizeObserver fires.
+    useMeasureSpy.mockReturnValueOnce({ width: 100, height: 0 })
+    useMeasureSpy.mockReturnValue({ width: 100, height: 46 })
+    const ref = { current: document.createElement('div') }
+    const { result, rerender } = renderHook(() =>
+      useBaseline(ref, {
+        base: 8,
+        snapping: 'height',
+        spacing: { top: 10, bottom: 10, left: 0, right: 0 },
+      }),
+    )
+    // First render: no measurement yet, return raw spacing.
+    expect(result.current.padding.bottom).toBe(10)
+
+    // Second render with a real measurement: snap should happen.
+    rerender()
+    expect(result.current.padding.bottom).toBe(12)
+  })
+
+  it('reuses the snapped padding on resize after the first snap', () => {
+    // After the first snap the cached value should be returned even if
+    // useMeasure starts reporting different heights (avoids resize jitter
+    // and clamp-mode oscillation).
+    useMeasureSpy.mockReturnValue({ width: 100, height: 46 })
+    const ref = { current: document.createElement('div') }
+    const { result, rerender } = renderHook(() =>
+      useBaseline(ref, {
+        base: 8,
+        snapping: 'height',
+        spacing: { top: 10, bottom: 10, left: 0, right: 0 },
+      }),
+    )
+    expect(result.current.padding.bottom).toBe(12)
+
+    // Container resizes to a different unaligned height: snap stays.
+    useMeasureSpy.mockReturnValue({ width: 100, height: 50 })
+    rerender()
+    expect(result.current.padding.bottom).toBe(12)
+  })
 })
