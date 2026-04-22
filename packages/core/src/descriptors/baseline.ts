@@ -92,11 +92,8 @@ export function createBaselineDescriptor(
       defaultStyles,
       skipDimensions: { fullSize: dimensionVars },
     }),
-    ...createStyleOverride({
-      key: '--bkbl-b',
-      value: `${base}px`,
-      defaultStyles,
-    }),
+    // --bkbl-b omitted: value `${base}px` always equals the BASELINE_DEFAULTS
+    // entry, so the override would never emit. CSS layer carries the default.
     ...createStyleOverride({
       key: '--bkbl-cl',
       value: color || colors.line,

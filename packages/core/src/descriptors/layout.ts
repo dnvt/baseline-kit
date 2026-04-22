@@ -82,6 +82,10 @@ export function createLayoutDescriptor(
   if (rowGap !== undefined) gapStyles.rowGap = formatValue(rowGap)
   if (columnGap !== undefined) gapStyles.columnGap = formatValue(columnGap)
 
+  // --bkly-cl / --bkly-cf / --bkly-ct intentionally omitted: their runtime
+  // value equals the default (both derived from the same `colors` input that
+  // seeds LAYOUT_DEFAULTS), so inline overrides would never emit. Styling
+  // lands at the CSS layer via the module's declared defaults.
   const containerStyle: Record<string, string> = {
     ...createStyleOverride({
       key: '--bkly-w',
@@ -94,21 +98,6 @@ export function createLayoutDescriptor(
       value: formatValue(height || 'auto'),
       defaultStyles,
       skipDimensions: { auto: autoDimensions },
-    }),
-    ...createStyleOverride({
-      key: '--bkly-cl',
-      value: colors.line,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bkly-cf',
-      value: colors.flat,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bkly-ct',
-      value: colors.text,
-      defaultStyles,
     }),
     ...(gridTemplateColumns !== DEFAULT_GRID_TEMPLATE
       ? { '--bkly-gtc': gridTemplateColumns }

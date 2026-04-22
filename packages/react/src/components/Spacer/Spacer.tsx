@@ -70,8 +70,16 @@ export const Spacer = React.memo(function Spacer({
     const h = descriptor.normHeight
     return (
       <>
-        {h !== 0 && <span key="height">{indicatorNode!(h, 'height')}</span>}
-        {w !== 0 && <span key="width">{indicatorNode!(w, 'width')}</span>}
+        {h !== 0 && (
+          <span key="height" aria-hidden="true">
+            {indicatorNode!(h, 'height')}
+          </span>
+        )}
+        {w !== 0 && (
+          <span key="width" aria-hidden="true">
+            {indicatorNode!(w, 'width')}
+          </span>
+        )}
       </>
     )
   }, [

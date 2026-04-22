@@ -61,6 +61,10 @@ export function createStackDescriptor(
   const dimensionVars = ['--bksk-w', '--bksk-h']
   const flexDirection = DIRECTION_AXIS[direction] || direction
 
+  // --bksk-cl / --bksk-cf / --bksk-ct intentionally omitted: their runtime
+  // value equals the default (both derived from the same `colors` input that
+  // seeds STACK_DEFAULTS), so inline overrides would never emit. Styling
+  // lands at the CSS layer via the module's declared defaults.
   const containerStyle: Record<string, string> = {
     flexDirection,
     justifyContent: justify,
@@ -76,21 +80,6 @@ export function createStackDescriptor(
       value: formatValue(height || 'auto'),
       defaultStyles,
       skipDimensions: { auto: dimensionVars },
-    }),
-    ...createStyleOverride({
-      key: '--bksk-cl',
-      value: colors.line,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bksk-cf',
-      value: colors.flat,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bksk-ct',
-      value: colors.text,
-      defaultStyles,
     }),
     ...(gap !== undefined
       ? { rowGap: formatValue(gap), columnGap: formatValue(gap) }
