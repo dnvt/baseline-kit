@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useConfig, useDebug } from '../../hooks'
+import { useConfig, useDebug, useIsClient } from '../../hooks'
 import { cx, createSpacerDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { ComponentsProps, Variant } from '../types'
@@ -42,10 +42,7 @@ export const Spacer = React.memo(function Spacer({
   const variant = variantProp ?? config.variant
   const base = baseProp ?? config.base
 
-  const [isHydrated, setIsHydrated] = React.useState(false)
-  React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
+  const isHydrated = useIsClient()
 
   const descriptor = React.useMemo(
     () =>

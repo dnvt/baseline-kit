@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { Gaps } from '../types'
-import { useConfig, useDebug, useBaseline } from '../../hooks'
+import { useConfig, useDebug, useBaseline, useIsClient } from '../../hooks'
 import { cx, parsePadding, createStackDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { Padder } from '../Padder'
@@ -50,11 +50,7 @@ export const Stack = React.memo(function Stack({
   const config = useConfig('stack')
   const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
-  const [isHydrated, setIsHydrated] = React.useState(false)
-  React.useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-
+  const isHydrated = useIsClient()
   const stackRef = React.useRef<HTMLDivElement | null>(null)
   const { top, right, bottom, left } = parsePadding({ ...spacingProps })
 
@@ -62,7 +58,6 @@ export const Stack = React.memo(function Stack({
     base: config.base,
     snapping: 'height',
     spacing: { top, right, bottom, left },
-    warnOnMisalignment: debugging !== 'none',
   })
 
   const stablePadding = {

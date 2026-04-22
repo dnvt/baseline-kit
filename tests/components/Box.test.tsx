@@ -105,6 +105,7 @@ vi.mock('@hooks', () => ({
   }),
   useVirtual: vi.fn().mockReturnValue({ start: 0, end: 0 }),
   useMeasure: vi.fn().mockReturnValue({ width: 1024, height: 768 }),
+  useIsClient: vi.fn(() => true),
 }))
 
 describe('<Box /> component', () => {

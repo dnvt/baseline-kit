@@ -13,3 +13,6 @@ export * from './useGuide'
 // Configuration
 export * from './useConfig'
 export * from './useDebug'
+
+// Lifecycle
+export * from './useIsClient'
