@@ -197,21 +197,20 @@ debugging = "none"           // Removes debug elements entirely
 
 ### Component Hierarchy
 
-#### 1. Core Components
+#### 1. Spacing primitives
 
-- **`Box`** Basic container for text alignment
-- **`Padder`** Padding wrapper that snaps to the baseline grid
-- **`Spacer`** Spacing primitive with optional indicator overlay
+- **`Box`** Basic container that snaps its height to the baseline grid
+- **`Padder`** Padding wrapper that snaps padded content to baseline multiples
+- **`Spacer`** Fixed-size spacer with optional measurement indicator overlay
 
-#### 2. Development Tools
+#### 2. Debug overlays
 
-- **`Baseline`** Horizontal grid overlay
-- **`Guide`** Vertical grid overlay
-- **`Spacer`** Precise spacing measurement
+- **`Baseline`** Horizontal baseline-grid overlay
+- **`Guide`** Column-grid overlay (line / pattern / fixed / auto variants)
 
 #### 3. Configuration
 
-- **`Config`** Theme and settings provider
+- **`Config`** Theme and settings provider (base unit, colors, debug modes)
 
 ### Key Components
 
