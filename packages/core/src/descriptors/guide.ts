@@ -170,9 +170,9 @@ export function createGuideDescriptor(
       value: align || 'center',
       defaultStyles,
     }),
-    ...(template && template !== 'none'
-      ? { '--bkgd-t': template, gridTemplateColumns: template }
-      : {}),
+    // CSS module resolves grid-template-columns from --bkgd-t, so the inline
+    // gridTemplateColumns property would be redundant.
+    ...(template && template !== 'none' ? { '--bkgd-t': template } : {}),
   }
 
   const columnColor =
