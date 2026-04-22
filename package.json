@@ -19,7 +19,7 @@
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "typescript": "^5.8.2 || ^5.9.0"
+    "typescript": "^5.8.2 || ^6.0.0"
   },
   "main": "dist/index.cjs",
   "engines": {
@@ -67,14 +67,14 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "jsdom": "^26.1.0",
+    "jsdom": "^29.0.2",
     "postcss-preset-env": "^11.2.0",
     "prettier": "^3.8.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "rollup": "^4.41.1",
     "rollup-plugin-dts": "^6.4.1",
-    "rollup-plugin-visualizer": "^5.14.0",
+    "rollup-plugin-visualizer": "^7.0.1",
     "vite": "^8.0.3",
     "vite-plugin-static-copy": "^4.0.0",
     "vitest": "^4.1.2"
