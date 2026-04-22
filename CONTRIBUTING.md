@@ -1,6 +1,6 @@
-# Contributing to Padded Grid
+# Contributing to Baseline Kit
 
-We love your input! We want to make contributing to Padded Grid as easy and transparent as possible, whether it's:
+We love your input! We want to make contributing to Baseline Kit as easy and transparent as possible, whether it's:
 
 - Reporting a bug
 - Discussing the current state of the code
@@ -22,7 +22,7 @@ All changes happen through pull requests. Pull requests are the best way to prop
 ## Local Development
 
 ```bash
-# Install dependencies
+# Install dependencies (requires Node 22+)
 bun install
 
 # Start development server
@@ -30,6 +30,9 @@ bun run dev
 
 # Run tests
 bun run test
+
+# Type check
+bun run typecheck
 
 # Build package
 bun run build
@@ -40,14 +43,28 @@ bun run lint
 
 ## Project Structure
 
+Baseline Kit is a monorepo. Consumers install the top-level `baseline-kit`
+package (the React adapter); the inner packages are workspace-only.
+
 ```
-src/
-├── lib/              # Main library code
-│   ├── components/   # React components
-│   ├── hooks/        # Custom hooks
-│   ├── types/        # TypeScript types
-│   └── utils/        # Utility functions
+packages/
+├── core/src/          # @baseline-kit/core — pure TypeScript,
+│   ├── config/        #   zero dependencies, works in any JS runtime.
+│   ├── descriptors/   #   Types, headless descriptors, config schema,
+│   ├── utils/         #   pure math / grid / padding / snapping utils.
+│   └── validation/
+├── dom/src/           # @baseline-kit/dom — imperative observers and
+│                      #   browser-only helpers (ResizeObserver wrappers,
+│                      #   viewport context, SSR detection, rAF throttle).
+│   │                  #   Depends only on @baseline-kit/core.
+└── react/src/         # @baseline-kit/react — React adapter, published
+    ├── components/    #   as `baseline-kit`. React components, hooks,
+    ├── hooks/         #   styles, and type re-exports.
+    └── utils/
 ```
+
+Tests live in the top-level `tests/` directory and exercise each layer via
+the `@baseline-kit/*` workspace paths.
 
 ## Pull Request Process
 
