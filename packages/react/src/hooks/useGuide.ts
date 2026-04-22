@@ -1,6 +1,7 @@
 import * as React from 'react'
 import type { GuideConfig } from '@baseline-kit/core'
 import { calculateGuideTemplate } from '@baseline-kit/core'
+import { getViewportContext } from '@baseline-kit/dom'
 import { useMeasure } from './useMeasure'
 
 export type { GuideResult } from '@baseline-kit/core'
@@ -14,7 +15,7 @@ export function useGuide(
 ) {
   const { width } = useMeasure(ref)
   return React.useMemo(
-    () => calculateGuideTemplate(width, config),
+    () => calculateGuideTemplate(width, config, getViewportContext()),
     [config, width]
   )
 }

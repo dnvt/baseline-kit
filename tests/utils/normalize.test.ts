@@ -33,6 +33,17 @@ describe('Normalization Utils', () => {
       expect(warnSpy).not.toHaveBeenCalled()
       warnSpy.mockRestore()
     })
+
+    it('forwards context to convertValue for viewport-relative units', () => {
+      // 50vw against a 1000px viewport = 500px; default 1920 would give 960.
+      expect(
+        normalizeValue('50vw', {
+          base: 1,
+          round: false,
+          context: { viewportWidth: 1000 },
+        })
+      ).toBe(500)
+    })
   })
 
   describe('normalizeValuePair', () => {

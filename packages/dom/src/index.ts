@@ -7,3 +7,4 @@
 export * from './timing'
 export * from './ssr'
 export * from './observers'
+export * from './viewport'

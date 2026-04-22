@@ -2,7 +2,7 @@ import type { GuideConfig, GuideColumnsPattern } from '../types'
 import { isValidGuidePattern } from '../validation/guide'
 import { normalizeValue } from './normalize'
 import { formatValue } from './parse'
-import { convertValue } from './convert'
+import { convertValue, type ConversionContext } from './convert'
 
 export interface GuideResult {
   template: string
@@ -24,11 +24,12 @@ const INVALID_RESULT: GuideResult = {
  */
 export function calculateGuideTemplate(
   width: number,
-  config: GuideConfig
+  config: GuideConfig,
+  context?: ConversionContext
 ): GuideResult {
   const variant = config.variant ?? 'line'
   const base = config.base ?? 8
-  const gap = normalizeValue(config.gap ?? 0, { base })
+  const gap = normalizeValue(config.gap ?? 0, { base, context })
 
   if (!width) return INVALID_RESULT
 
@@ -104,7 +105,7 @@ export function calculateGuideTemplate(
 
       const colWidthStr =
         typeof colWidth === 'number' ? `${colWidth}px` : colWidth.toString()
-      const pxVal = convertValue(colWidthStr) ?? 0
+      const pxVal = convertValue(colWidthStr, context) ?? 0
       const columns =
         pxVal > 0 ? Math.max(1, Math.floor((width + gap) / (pxVal + gap))) : 1
 
