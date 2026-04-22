@@ -18,8 +18,6 @@
 @import '../Guide/styles.module.css';
 @import '../Padder/styles.module.css';
 @import '../Spacer/styles.module.css';
-@import '../Stack/styles.module.css';
-@import '../Layout/styles.module.css';
 @import '../Baseline/styles.module.css';
 
 /* Utility classes for visibility control */

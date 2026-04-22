@@ -20,8 +20,6 @@ type ConfigProps = {
   children: React.ReactNode
   base?: number
   baseline?: Partial<ConfigSchema['baseline']>
-  stack?: Partial<ConfigSchema['stack']>
-  layout?: Partial<ConfigSchema['layout']>
   guide?: Partial<ConfigSchema['guide']>
   spacer?: Partial<ConfigSchema['spacer']>
   box?: Partial<ConfigSchema['box']>
@@ -34,10 +32,8 @@ type ConfigProps = {
 export function Config({
   children,
   base,
-  stack,
   baseline,
   guide,
-  layout,
   spacer,
   box,
   padder,
@@ -52,11 +48,9 @@ export function Config({
       guide,
       spacer,
       box,
-      stack,
-      layout,
       padder,
     })
-  }, [parentConfig, base, baseline, guide, spacer, box, stack, layout, padder])
+  }, [parentConfig, base, baseline, guide, spacer, box, padder])
 
   return <ConfigContext value={value}>{children}</ConfigContext>
 }

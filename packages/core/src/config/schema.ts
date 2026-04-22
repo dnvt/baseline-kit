@@ -21,7 +21,5 @@ export type ConfigSchema = {
   }
   spacer: { variant: Variant; debugging: DebuggingMode; colors: DebugColors }
   box: { debugging: DebuggingMode; colors: DebugColors }
-  stack: { debugging: DebuggingMode; colors: DebugColors }
-  layout: { debugging: DebuggingMode; colors: DebugColors }
   padder: { debugging: DebuggingMode; color: string }
 }

@@ -28,15 +28,12 @@
   "keywords": [
     "react",
     "grid",
-    "layout",
     "typescript",
     "baseline",
     "guide",
     "box",
-    "layout",
     "typography",
     "spacing",
-    "stack",
     "padding",
     "debug",
     "dev-tool",
@@ -81,7 +78,7 @@
     "vitest": "^4.1.2"
   },
   "name": "baseline-kit",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "type": "module",
   "workspaces": [
     "packages/*"

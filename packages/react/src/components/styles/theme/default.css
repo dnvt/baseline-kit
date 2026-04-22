@@ -67,15 +67,6 @@
   --bk-box-color-flat-theme: hsla(var(--bk-color-pink-secondary), 0.2);
   --bk-box-color-text-theme: hsla(var(--bk-color-pink-primary), 0.9);
 
-  /* Stack Component Theme */
-  --bk-stack-color-line-theme: hsla(var(--bk-color-red-primary), 0.6);
-  --bk-stack-color-flat-theme: hsla(var(--bk-color-red-secondary), 0.2);
-  --bk-stack-color-text-theme: hsla(var(--bk-color-red-primary), 0.9);
-
-  /* Layout Component Theme */
-  --bk-layout-color-line-theme: hsla(var(--bk-color-red-primary), 0.6);
-  --bk-layout-color-flat-theme: hsla(var(--bk-color-red-secondary), 0.2);
-  --bk-layout-color-text-theme: hsla(var(--bk-color-red-primary), 0.9);
 
   /* Padder Component Theme */
   --bk-padder-color-theme: hsla(var(--bk-color-purple-primary), 0.6);
