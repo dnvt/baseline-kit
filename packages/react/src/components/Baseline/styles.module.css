@@ -5,6 +5,7 @@
   width: var(--bkbl-w);
   height: var(--bkbl-h);
   overflow: hidden;
+  contain: layout style paint;
 }
 
 .row {

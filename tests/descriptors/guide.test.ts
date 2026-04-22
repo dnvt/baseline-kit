@@ -61,10 +61,12 @@ describe('createGuideConfig', () => {
 })
 
 describe('createGuideDescriptor', () => {
-  it('passes template through to containerStyle and gridTemplateColumns', () => {
+  it('passes template through containerStyle via --bkgd-t CSS var', () => {
     const { containerStyle } = createGuideDescriptor(baseParams)
     expect(containerStyle['--bkgd-t']).toBe('repeat(48, 1px)')
-    expect(containerStyle.gridTemplateColumns).toBe('repeat(48, 1px)')
+    // The CSS module resolves grid-template-columns from the var, so no
+    // inline gridTemplateColumns is emitted.
+    expect(containerStyle.gridTemplateColumns).toBeUndefined()
   })
 
   it('emits calculated gap in px', () => {
@@ -103,9 +105,8 @@ describe('createGuideDescriptor', () => {
     ).toEqual(['gde', 'h', 'line'])
   })
 
-  it('skips template styles when template is empty or "none"', () => {
+  it('skips template CSS var when template is empty or "none"', () => {
     const noneTemplate = createGuideDescriptor({ ...baseParams, template: 'none' })
     expect(noneTemplate.containerStyle['--bkgd-t']).toBeUndefined()
-    expect(noneTemplate.containerStyle.gridTemplateColumns).toBeUndefined()
   })
 })
