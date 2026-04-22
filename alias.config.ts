@@ -10,8 +10,6 @@ export const alias = {
   '@': resolve(__dirname, 'packages/react/src'),
   '@kit': resolve(__dirname, '.'),
   '@components': resolve(__dirname, 'packages/react/src/components'),
-  '@context': resolve(__dirname, 'packages/react/src/context'),
   '@hooks': resolve(__dirname, 'packages/react/src/hooks'),
-  '@types': resolve(__dirname, 'packages/react/src/types'),
   '@utils': resolve(__dirname, 'packages/react/src/utils'),
 }
