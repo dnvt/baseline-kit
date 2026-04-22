@@ -1,4 +1,4 @@
-import { convertValue } from './convert'
+import { convertValue, type ConversionContext } from './convert'
 import { clamp } from './math'
 
 export interface NormalizationOptions {
@@ -6,13 +6,19 @@ export interface NormalizationOptions {
   round?: boolean
   clamp?: { min?: number; max?: number }
   suppressWarnings?: boolean
+  context?: ConversionContext
 }
 
 export function normalizeValue(
   value: string | number | undefined,
   options: NormalizationOptions = {}
 ): number {
-  const { base = 8, round: doRound = true, clamp: clampOptions } = options
+  const {
+    base = 8,
+    round: doRound = true,
+    clamp: clampOptions,
+    context,
+  } = options
 
   if (value === 'auto') return base
 
@@ -20,7 +26,7 @@ export function normalizeValue(
   if (typeof value === 'number') {
     num = value
   } else if (typeof value === 'string') {
-    num = convertValue(value) ?? base
+    num = convertValue(value, context) ?? base
   }
   if (num === null) num = base
 
