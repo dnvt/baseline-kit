@@ -93,10 +93,12 @@ export function createStackDescriptor(
       defaultStyles,
     }),
     ...(gap !== undefined
-      ? { rowGap: `${gap}`, columnGap: `${gap}` }
+      ? { rowGap: formatValue(gap), columnGap: formatValue(gap) }
       : {
-          ...(rowGap !== undefined ? { rowGap: `${rowGap}` } : {}),
-          ...(columnGap !== undefined ? { columnGap: `${columnGap}` } : {}),
+          ...(rowGap !== undefined ? { rowGap: formatValue(rowGap) } : {}),
+          ...(columnGap !== undefined
+            ? { columnGap: formatValue(columnGap) }
+            : {}),
         }),
   }
 
