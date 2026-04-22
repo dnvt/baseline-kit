@@ -4,7 +4,7 @@
 ![npm version](https://img.shields.io/npm/v/baseline-kit)
 ![License](https://img.shields.io/github/license/dnvt/baseline-kit)
 
-Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, flexible layout components, and theme-aware configuration—all optimized for performance and built with TypeScript. The library is based on the "Padded Grid" concept, originally explored in [this article](http://medium.com/design-bootcamp/the-padded-grid-a-designers-hack-to-achieve-baseline-fit-fc40d022bc84) on achieving perfect baseline alignment in digital layouts.
+Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, spacing primitives, and theme-aware configuration—all optimized for performance and built with TypeScript. The library is based on the "Padded Grid" concept, originally explored in [this article](http://medium.com/design-bootcamp/the-padded-grid-a-designers-hack-to-achieve-baseline-fit-fc40d022bc84) on achieving perfect baseline alignment in digital layouts.
 
 ![Demo visual](kit.png)
 
@@ -44,8 +44,7 @@ Baseline Kit is a lightweight development tool for visualizing and debugging gri
 - 📏 **Baseline Grid:** Core system for maintaining vertical rhythm and consistent spacing across your layouts
 - 🎯 **Column Grid Guide:** Customizable overlay system for visualizing column-based layouts and alignment
 - 📦 **Box Component:** Basic container with configurable spacing that snaps to the baseline grid
-- 🧩 **Layout Component:** CSS Grid-based container with automatic column calculations and baseline alignment
-- 📐 **Stack Component:** Flex-based container that maintains consistent spacing and baseline alignment
+- 🧱 **Padder & Spacer:** Spacing primitives with optional baseline snapping
 - 🎨 **Theme System:** Customizable colors and debug visuals through a centralized configuration
 
 ## Requirements
@@ -153,12 +152,12 @@ unit:
 
 ```tsx
 <Config base={8}>     // Sets 8px as the base unit
-  <Layout
+  <Padder
     block={17}        // Will be rounded to 16px (2 * base)
     inline={22}       // Will be rounded to 24px (3 * base)
   >
     {/* Content automatically aligned to the 8px grid */}
-  </Layout>
+  </Padder>
 </Config>
 ```
 
@@ -182,8 +181,7 @@ block={{ start: 2, end: 3 }}  // Same as above
 Components automatically adjust their spacing to maintain baseline grid alignment:
 
 - **Box**: Adjusts bottom padding to ensure total height aligns with base unit
-- **Stack**: Maintains baseline alignment in flex layouts
-- **Layout**: Ensures grid cells align with baseline
+- **Padder**: Snaps padded content to baseline-aligned multiples of the base unit
 
 ### Debugging Modes
 
@@ -199,21 +197,20 @@ debugging = "none"           // Removes debug elements entirely
 
 ### Component Hierarchy
 
-#### 1. Core Components
+#### 1. Spacing primitives
 
-- **`Box`** Basic container for text alignment
-- **`Stack`** Flex-based layouts (one-dimensional)
-- **`Layout`** Grid-based layouts (two-dimensional)
+- **`Box`** Basic container that snaps its height to the baseline grid
+- **`Padder`** Padding wrapper that snaps padded content to baseline multiples
+- **`Spacer`** Fixed-size spacer with optional measurement indicator overlay
 
-#### 2. Development Tools
+#### 2. Debug overlays
 
-- **`Baseline`** Horizontal grid overlay
-- **`Guide`** Vertical grid overlay
-- **`Spacer`** Precise spacing measurement
+- **`Baseline`** Horizontal baseline-grid overlay
+- **`Guide`** Column-grid overlay (line / pattern / fixed / auto variants)
 
 #### 3. Configuration
 
-- **`Config`** Theme and settings provider
+- **`Config`** Theme and settings provider (base unit, colors, debug modes)
 
 ### Key Components
 
@@ -255,7 +252,7 @@ debugging = "none"           // Removes debug elements entirely
 ```tsx
 <Box
   block={[2, 5]}         // Vertical padding in base units
-  span={2}               // Grid column span when used in Layout
+  span={2}               // Grid column span when placed in a CSS grid parent
   snapping="height"      // "none", "height", or "clamp"
 >
   <p>Content aligned to baseline grid</p>
@@ -366,9 +363,8 @@ For minor adjustments, use the Config component:
 | Baseline  | `--bk-baseline-color-[line/flat]-theme` | Colors for lines and backgrounds |
 | Guide     | `--bk-guide-color-[line/pattern/auto/fixed]-theme` | Colors for different guide variants |
 | Box       | `--bk-box-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
-| Stack     | `--bk-stack-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
-| Layout    | `--bk-layout-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
 | Spacer    | `--bk-spacer-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
+| Padder    | `--bk-padder-color-theme` | Padder edge color |
 
 See the [tokens file](https://github.com/dnvt/baseline-kit/blob/main/dist/theme/tokens.css) for a complete list of available variables.
 

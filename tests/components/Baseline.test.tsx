@@ -5,25 +5,32 @@ import { Baseline } from '@/components/Baseline'
 // We'll store IntersectionObserver callbacks in a map, keyed by element.
 const observerMap = new Map<Element, IntersectionObserverCallback>()
 
-// Mock IntersectionObserver
-const mockIntersectionObserver = vi.fn((callback: IntersectionObserverCallback) => ({
-  observe: (element: Element) => {
-    observerMap.set(element, callback)
-  },
-  unobserve: (element: Element) => {
+// Mock IntersectionObserver (must use class for Vitest 4 constructor support)
+class MockIntersectionObserver {
+  callback: IntersectionObserverCallback
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback
+  }
+  observe(element: Element) {
+    observerMap.set(element, this.callback)
+  }
+  unobserve(element: Element) {
     observerMap.delete(element)
-  },
-  disconnect: () => {
+  }
+  disconnect() {
     observerMap.clear()
-  },
-}))
+  }
+}
 
-// For ResizeObserver
-type ResizeObserverCallback = (entries: ResizeObserverEntry[], observer: ResizeObserver) => void
-const mockResizeObserver = vi.fn((callback: ResizeObserverCallback) => ({
-  observe: vi.fn((target: Element) => {
-    // Immediately trigger the callback with an initial size (1024x768)
-    callback(
+// Mock ResizeObserver (must use class for Vitest 4 constructor support)
+class MockResizeObserver {
+  constructor(callback: (entries: ResizeObserverEntry[], observer: ResizeObserver) => void) {
+    // Store for potential use, but immediately trigger on observe
+    this._callback = callback
+  }
+  _callback: (entries: ResizeObserverEntry[], observer: ResizeObserver) => void
+  observe(target: Element) {
+    this._callback(
       [
         {
           contentRect: { width: 1024, height: 768 },
@@ -35,16 +42,16 @@ const mockResizeObserver = vi.fn((callback: ResizeObserverCallback) => ({
       ],
       {} as ResizeObserver,
     )
-  }),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+  }
+  unobserve() {}
+  disconnect() {}
+}
 
 describe('Baseline', () => {
   beforeAll(() => {
     vi.useFakeTimers()
-    vi.stubGlobal('IntersectionObserver', mockIntersectionObserver)
-    vi.stubGlobal('ResizeObserver', mockResizeObserver)
+    vi.stubGlobal('IntersectionObserver', MockIntersectionObserver)
+    vi.stubGlobal('ResizeObserver', MockResizeObserver)
 
     // Set up window dimensions (these are optional if your tests rely on them).
     Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true })
@@ -122,8 +129,8 @@ describe('Baseline', () => {
 
     // Use getComputedStyle to check the computed styles
     const computedStyle = window.getComputedStyle(firstLine)
-    expect(firstLine.style.getPropertyValue('--bkrt')).toBe('0px')
-    expect(computedStyle.getPropertyValue('--bkrh')).toBe('8px')
+    expect(firstLine.style.getPropertyValue('--bkbl-rt')).toBe('0px')
+    expect(computedStyle.getPropertyValue('--bkbl-rh')).toBe('8px')
   })
 
   it('respects custom numeric height', () => {
@@ -134,10 +141,11 @@ describe('Baseline', () => {
   })
 
   it('respects custom string height e.g. "50vh"', () => {
+    // Core uses static viewport defaults (1080px height) — 50vh = 540px → 540/8 = 67 rows
     render(<Baseline debugging="visible" height="50vh" />)
     const baseline = screen.getByTestId('baseline')
     const lines = baseline.querySelectorAll('[data-row-index]')
-    expect(lines.length).toBe(48)
+    expect(lines.length).toBe(68)
   })
 
   it('applies top/bottom spacing if provided', () => {

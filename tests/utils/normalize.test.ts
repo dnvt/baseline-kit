@@ -27,20 +27,22 @@ describe('Normalization Utils', () => {
       expect(normalizeValue(6, { base: 8, clamp: { min: 8 } })).toBe(8)
     })
 
-    it('suppresses warnings when suppressWarnings is true', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
-      })
-      normalizeValue(14, { base: 8, clamp: { max: 12 }, suppressWarnings: true })
+    it('does not emit console warnings during normalization', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      normalizeValue(14, { base: 8, clamp: { max: 12 } })
       expect(warnSpy).not.toHaveBeenCalled()
       warnSpy.mockRestore()
     })
 
-    it('logs a warning when the normalized value is clamped and warnings are not suppressed', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {
-      })
-      normalizeValue(14, { base: 8, clamp: { max: 12 }, suppressWarnings: false })
-      expect(warnSpy).toHaveBeenCalled()
-      warnSpy.mockRestore()
+    it('forwards context to convertValue for viewport-relative units', () => {
+      // 50vw against a 1000px viewport = 500px; default 1920 would give 960.
+      expect(
+        normalizeValue('50vw', {
+          base: 1,
+          round: false,
+          context: { viewportWidth: 1000 },
+        })
+      ).toBe(500)
     })
   })
 
