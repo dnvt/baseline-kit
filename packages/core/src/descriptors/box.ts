@@ -44,6 +44,10 @@ export function createBoxDescriptor(
   const defaultStyles = BOX_DEFAULTS(base, lineColor)
   const dimensionVars = ['--bkbx-w', '--bkbx-h']
 
+  // --bkbx-b and --bkbx-cl intentionally omitted: their runtime value
+  // always equals the default (both are derived from the same base/lineColor
+  // inputs that seed BOX_DEFAULTS), so inline overrides would never emit.
+  // Styling happens at the CSS layer via the module's declared defaults.
   const boxStyle: Record<string, string> = {
     ...createStyleOverride({
       key: '--bkbx-w',
@@ -56,16 +60,6 @@ export function createBoxDescriptor(
       value: formatValue(height || 'fit-content'),
       defaultStyles,
       skipDimensions: { fitContent: dimensionVars },
-    }),
-    ...createStyleOverride({
-      key: '--bkbx-b',
-      value: `${base}px`,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bkbx-cl',
-      value: lineColor,
-      defaultStyles,
     }),
   }
 
