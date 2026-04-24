@@ -5,8 +5,6 @@ const baseParams = {
   colors: { line: 'red', pattern: 'green', fixed: 'blue', auto: 'orange' },
   variant: 'line' as const,
   align: 'center',
-  containerWidth: 1024,
-  containerHeight: 768,
   template: 'repeat(48, 1px)',
   columnsCount: 48,
   calculatedGap: 7,

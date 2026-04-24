@@ -129,8 +129,7 @@ const GuideImpl = React.memo(function GuideImpl({
   const config = useConfig('guide')
   const { isShown } = useDebug(debugging, config.debugging)
   const containerRef = React.useRef<HTMLDivElement | null>(null)
-  const { width: containerWidth, height: containerHeight } =
-    useMeasure(containerRef)
+  useMeasure(containerRef)
 
   const resolvedVariant = (variant ?? config.variant) as GuideVariant
   const resolvedGap = typeof gap === 'number' ? gap : 0
@@ -164,8 +163,6 @@ const GuideImpl = React.memo(function GuideImpl({
         columnWidth,
         maxWidth,
         color,
-        containerWidth,
-        containerHeight,
         template,
         columnsCount,
         calculatedGap,
@@ -181,8 +178,6 @@ const GuideImpl = React.memo(function GuideImpl({
       columnWidth,
       maxWidth,
       color,
-      containerWidth,
-      containerHeight,
       template,
       columnsCount,
       calculatedGap,

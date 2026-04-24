@@ -11,8 +11,6 @@ export interface GuideDescriptorParams {
   columnWidth?: number | string
   maxWidth?: number | string
   color?: string
-  containerWidth: number
-  containerHeight: number
   /** Pre-computed guide template result (from useGuide or calculateGuideTemplate) */
   template: string
   columnsCount: number
@@ -112,8 +110,6 @@ export function createGuideDescriptor(
     columnWidth,
     maxWidth,
     color,
-    containerWidth,
-    containerHeight,
     template,
     columnsCount,
     calculatedGap,

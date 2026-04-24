@@ -143,9 +143,9 @@ describe('Guide component', () => {
       ),
       'utf8'
     )
-    expect(css).toContain('width: var(--bkgd-w)')
-    expect(css).toContain('height: var(--bkgd-h)')
-    expect(css).toContain('max-width: var(--bkgd-mw)')
+    expect(css).toContain('width: var(--bkgd-w, 100%)')
+    expect(css).toContain('height: var(--bkgd-h, 100%)')
+    expect(css).toContain('max-width: var(--bkgd-mw, none)')
   })
 
   it('keeps the simplified fallback when ssrMode is enabled', () => {

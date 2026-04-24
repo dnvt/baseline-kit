@@ -1,8 +1,6 @@
 import * as React from 'react'
 import type { ConfigSchema } from '@baseline-kit/core/config/schema'
-import {
-  DEFAULT_CONFIG,
-} from '@baseline-kit/core/config/defaults'
+import { DEFAULT_CONFIG } from '@baseline-kit/core/config/defaults'
 import {
   mergeConfig,
   createCSSVariables,
