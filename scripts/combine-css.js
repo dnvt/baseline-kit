@@ -3,7 +3,7 @@
 /**
  * combine-css.js
  * Script to:
- * 1. Combine core.css and theme.css into a single baseline-kit.css file
+ * 1. Combine root component styles and theme.css into baseline-kit.css
  * 2. Copy theme files to dist directory
  */
 
@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename)
 const distDir = path.resolve(__dirname, '../dist')
 const themeSourceDir = path.resolve(__dirname, '../packages/react/src/components/styles/theme')
 const themeDestDir = path.resolve(distDir, 'theme')
-const coreCssPath = path.join(distDir, 'styles.css')
+const stylesCssPath = path.join(distDir, 'styles.css')
 const themeCssPath = path.join(distDir, 'theme.css')
 const combinedCssPath = path.join(distDir, 'baseline-kit.css')
 
@@ -44,23 +44,23 @@ function checkFileExists(filePath, fileName) {
 }
 
 // Check if input files exist
-const coreExists = checkFileExists(coreCssPath, 'styles.css')
+const stylesExists = checkFileExists(stylesCssPath, 'styles.css')
 const themeExists = checkFileExists(themeCssPath, 'theme.css')
 
-if (!coreExists || !themeExists) {
+if (!stylesExists || !themeExists) {
   process.exit(1)
 }
 
 // Read input files
-const coreCSS = fs.readFileSync(coreCssPath, 'utf8')
+const stylesCSS = fs.readFileSync(stylesCssPath, 'utf8')
 const themeCSS = fs.readFileSync(themeCssPath, 'utf8')
 
 // Combine CSS files
 const combinedCSS = `/* Baseline Kit - Combined CSS */
-/* This file contains both core styles and theme */
+/* This file contains component styles and theme variables */
 
-/* Core Styles */
-${coreCSS}
+/* Component Styles */
+${stylesCSS}
 
 /* Theme */
 ${themeCSS}

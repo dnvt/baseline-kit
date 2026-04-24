@@ -123,7 +123,7 @@ export const Baseline = React.memo(function Baseline({
   if (!isShown) {
     return (
       <div
-        className={cx(styles.b, styles.h, className)}
+        className={cx(styles.bas, styles.h, className)}
         style={style}
         data-testid="baseline"
         aria-hidden="true"
@@ -134,16 +134,20 @@ export const Baseline = React.memo(function Baseline({
 
   const ssrFallback = (
     <div
-      className={cx(styles.b, styles.h, styles.ssr, className)}
+      className={cx(styles.bas, styles.h, styles.ssr, className)}
       style={{
-        width: widthProp || '100%',
-        height: heightProp || '100%',
+        width: widthProp ?? '100%',
+        height: heightProp ?? '100%',
         ...style,
       }}
       data-testid="baseline"
       aria-hidden="true"
     />
   )
+
+  if (ssrMode) {
+    return ssrFallback
+  }
 
   return (
     <ClientOnly fallback={ssrFallback}>
@@ -156,7 +160,6 @@ export const Baseline = React.memo(function Baseline({
         width={widthProp}
         base={base}
         color={colorProp}
-        ssrMode={ssrMode}
         {...spacingProps}
       />
     </ClientOnly>

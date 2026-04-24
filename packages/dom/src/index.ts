@@ -6,5 +6,7 @@
 
 export * from './timing'
 export * from './ssr'
+export * from './measure'
+export * from './virtual'
 export * from './observers'
 export * from './viewport'

@@ -63,24 +63,3 @@
   --bksp-ct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
 }
 
-/* Guide Component */
-.guide {
-  --bkgd-cl: var(--bk-guide-color-line-theme, hsla(240, 60%, 40%, 0.15));
-  --bkgd-cp: var(--bk-guide-color-pattern-theme, hsla(230, 100%, 70%, 0.2));
-  --bkgd-ca: var(--bk-guide-color-auto-theme, hsla(200, 100%, 70%, 0.15));
-  --bkgd-cf: var(--bk-guide-color-fixed-theme, hsla(200, 100%, 70%, 0.15));
-}
-
-/* Baseline Component */
-.baseline {
-  --bkbl-cl: var(--bk-baseline-color-line-theme, hsla(240, 60%, 40%, 0.15));
-  --bkbl-cf: var(--bk-baseline-color-flat-theme, hsla(230, 100%, 70%, 0.2));
-}
-
-/* Box Component */
-.box {
-  --bkbx-cl: var(--bk-box-color-line-theme, hsla(300, 60%, 40%, 0.6));
-  --bkbx-cf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
-  --bkbx-ct: var(--bk-box-color-text-theme, hsla(300, 60%, 40%, 0.9));
-}
-

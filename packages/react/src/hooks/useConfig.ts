@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import type { ConfigSchema } from '@baseline-kit/core'
-import { useDefaultConfig } from '@components'
+import type { ConfigSchema } from '@baseline-kit/core/config/schema'
+import { useDefaultConfig } from '../components/Config/Config'
 
 /** Type helper that merges base configuration with component-specific settings. */
 export type ComponentConfig<K extends keyof ConfigSchema> = ConfigSchema[K] & {

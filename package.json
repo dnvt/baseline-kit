@@ -1,15 +1,17 @@
 {
   "scripts": {
-    "build": "vite build && bun run build:type && bun run build:dts && bun run build:combine-css",
-    "build:type": "tsc -p tsconfig.build.json",
-    "build:dts": "rollup -c rollup.dts.config.mjs",
-    "build:combine-css": "node scripts/combine-css.js",
+    "build": "vite build && bun run build:guide && bun run emit:declarations && bun run bundle:declarations && bun run build:css && bun run verify:artifacts",
+    "build:guide": "vite build --config vite.guide.config.ts",
+    "emit:declarations": "tsc -p tsconfig.build.json",
+    "bundle:declarations": "rollup -c rollup.declarations.config.mjs",
+    "build:css": "node scripts/combine-css.js",
+    "verify:artifacts": "node scripts/verify-artifacts.js",
     "changeset": "changeset",
     "dev": "vite",
     "format": "prettier --write \"packages/**/*.{ts,tsx,css}\"",
     "lint": "eslint packages --fix",
-    "prepare": "bun run build && bun run build:type",
-    "prepublishOnly": "bun run build && bun run build:type",
+    "prepack": "bun run build",
+    "prepublishOnly": "bun run build",
     "release": "changeset publish",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -92,10 +94,42 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.mjs"
     },
+    "./guide": {
+      "types": "./dist/guide.d.ts",
+      "import": "./dist/guide.mjs",
+      "require": "./dist/guide.cjs",
+      "default": "./dist/guide.mjs"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.mjs",
+      "require": "./dist/core.cjs",
+      "default": "./dist/core.mjs"
+    },
     "./styles": {
       "import": "./dist/styles.css",
       "require": "./dist/styles.css",
       "default": "./dist/styles.css"
+    },
+    "./styles/guide": {
+      "import": "./dist/guide.css",
+      "require": "./dist/guide.css",
+      "default": "./dist/guide.css"
+    },
+    "./styles/full": {
+      "import": "./dist/baseline-kit.css",
+      "require": "./dist/baseline-kit.css",
+      "default": "./dist/baseline-kit.css"
+    },
+    "./styles/reset": {
+      "import": "./dist/reset.css",
+      "require": "./dist/reset.css",
+      "default": "./dist/reset.css"
+    },
+    "./reset": {
+      "import": "./dist/reset.css",
+      "require": "./dist/reset.css",
+      "default": "./dist/reset.css"
     },
     "./theme": {
       "import": "./dist/theme.css",
@@ -123,6 +157,8 @@
       "default": "./dist/baseline-kit.css"
     },
     "./dist/styles.css": "./dist/styles.css",
+    "./dist/guide.css": "./dist/guide.css",
+    "./dist/reset.css": "./dist/reset.css",
     "./dist/theme.css": "./dist/theme.css",
     "./dist/theme/default.css": "./dist/theme/default.css",
     "./dist/theme/dark.css": "./dist/theme/dark.css",
@@ -138,6 +174,8 @@
   "style": "dist/styles.css",
   "sideEffects": [
     "dist/styles.css",
+    "dist/guide.css",
+    "dist/reset.css",
     "dist/theme.css",
     "dist/theme/default.css",
     "dist/theme/dark.css",

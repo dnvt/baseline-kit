@@ -84,8 +84,8 @@ const GUIDE_DEFAULTS = (
   base: number,
   lineColor: string
 ): Record<string, string> => ({
-  '--bkgd-w': 'auto',
-  '--bkgd-h': 'auto',
+  '--bkgd-w': '100%',
+  '--bkgd-h': '100%',
   '--bkgd-mw': 'none',
   '--bkgd-cw': '60px',
   '--bkgd-gw': '24px',
@@ -121,23 +121,23 @@ export function createGuideDescriptor(
   } = params
 
   const defaultStyles = GUIDE_DEFAULTS(base, colors.line)
-  const autoDimensions = ['--bkgd-w', '--bkgd-h']
+  const fullDimensions = ['--bkgd-w', '--bkgd-h']
 
-  const widthValue = formatValue(width || containerWidth || 'auto')
-  const heightValue = formatValue(height || containerHeight || 'auto')
+  const widthValue = formatValue(width ?? '100%')
+  const heightValue = formatValue(height ?? '100%')
 
   const containerStyle: Record<string, string> = {
     ...createStyleOverride({
       key: '--bkgd-w',
       value: widthValue,
       defaultStyles,
-      skipDimensions: { auto: autoDimensions },
+      skipDimensions: { fullSize: fullDimensions },
     }),
     ...createStyleOverride({
       key: '--bkgd-h',
       value: heightValue,
       defaultStyles,
-      skipDimensions: { auto: autoDimensions },
+      skipDimensions: { fullSize: fullDimensions },
     }),
     ...createStyleOverride({
       key: '--bkgd-mw',
@@ -183,6 +183,11 @@ export function createGuideDescriptor(
   const isLineVariant = variant === 'line'
   const classTokens = ['gde', isVisible ? 'v' : 'h']
   if (isLineVariant) classTokens.push('line')
+
+  if (isLineVariant) {
+    containerStyle['--bkgd-line-color'] = color ?? colors.line
+    containerStyle['--bkgd-line-period'] = `${calculatedGap + 1}px`
+  }
 
   return {
     containerStyle,

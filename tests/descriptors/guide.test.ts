@@ -74,6 +74,22 @@ describe('createGuideDescriptor', () => {
     expect(containerStyle['--bkgd-g']).toBe('7px')
   })
 
+  it('emits explicit sizing variables only when sizing props are provided', () => {
+    const defaultDescriptor = createGuideDescriptor(baseParams)
+    expect(defaultDescriptor.containerStyle['--bkgd-w']).toBeUndefined()
+    expect(defaultDescriptor.containerStyle['--bkgd-h']).toBeUndefined()
+
+    const sizedDescriptor = createGuideDescriptor({
+      ...baseParams,
+      width: '1200px',
+      height: '80vh',
+      maxWidth: '90vw',
+    })
+    expect(sizedDescriptor.containerStyle['--bkgd-w']).toBe('1200px')
+    expect(sizedDescriptor.containerStyle['--bkgd-h']).toBe('80vh')
+    expect(sizedDescriptor.containerStyle['--bkgd-mw']).toBe('90vw')
+  })
+
   it('flags isLineVariant for line variant', () => {
     expect(createGuideDescriptor(baseParams).isLineVariant).toBe(true)
     expect(
