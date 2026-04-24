@@ -41,6 +41,9 @@ jobs:
       - name: Run Tests with Coverage
         run: bun run test
 
+      - name: Build Package
+        run: bun run build
+
       - name: Debug Environment
         run: uname -a
 

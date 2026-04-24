@@ -1,8 +1,29 @@
 .gde {
   position: absolute;
   inset: 0;
+  box-sizing: border-box;
+  width: var(--bkgd-w, 100%);
+  height: var(--bkgd-h, 100%);
+  max-width: var(--bkgd-mw, none);
+  margin-inline: auto;
   pointer-events: none;
-  padding: var(--bkgd-pb) var(--bkgd-pi);
+  padding: var(--bkgd-pb, 0) var(--bkgd-pi, 0);
+}
+
+.v {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--bk-transition-base),
+    visibility 0ms linear;
+}
+
+.h {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--bk-transition-base),
+    visibility 0ms linear 180ms;
 }
 
 .line {
@@ -33,6 +54,15 @@
 .col[data-variant='line'] {
   width: 1px;
   background-color: var(--bkgd-cl);
+}
+
+.cols[data-variant='line'] {
+  display: block;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--bkgd-line-color, var(--bkgd-cl)) 0 1px,
+    transparent 1px var(--bkgd-line-period, 1px)
+  );
 }
 
 .col[data-variant='pattern'] {

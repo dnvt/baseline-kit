@@ -11,9 +11,9 @@ const kitAliases = {
   '@baseline-kit/react': resolve(__dirname, 'packages/react/src'),
 }
 
-export default defineConfig({
-  input: 'packages/react/src/index.ts',
-  output: { file: 'dist/index.d.ts', format: 'es' },
+const makeConfig = (input, file) => ({
+  input,
+  output: { file, format: 'es' },
   external: ['react', 'react-dom', /^react\//, /^react-dom\//, /\.css$/],
   plugins: [
     {
@@ -31,3 +31,9 @@ export default defineConfig({
     dts({ respectExternal: true }),
   ],
 })
+
+export default defineConfig([
+  makeConfig('packages/react/src/index.ts', 'dist/index.d.ts'),
+  makeConfig('packages/react/src/guide.ts', 'dist/guide.d.ts'),
+  makeConfig('packages/core/src/index.ts', 'dist/core.d.ts'),
+])

@@ -1,6 +1,6 @@
 import { RefObject, useCallback, useLayoutEffect, useState } from 'react'
-import { createVirtualTracker } from '@baseline-kit/dom'
-import type { VirtualRange } from '@baseline-kit/dom'
+import { createVirtualTracker } from '@baseline-kit/dom/virtual'
+import type { VirtualRange } from '@baseline-kit/dom/virtual'
 
 type VirtualOptions = {
   totalLines: number

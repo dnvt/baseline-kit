@@ -8,6 +8,22 @@
   contain: layout style paint;
 }
 
+.v {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--bk-transition-base),
+    visibility 0ms linear;
+}
+
+.h {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--bk-transition-base),
+    visibility 0ms linear 180ms;
+}
+
 .row {
   left: 0;
   right: 0;

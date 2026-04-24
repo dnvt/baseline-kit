@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { resolveDebugState } from '@baseline-kit/core'
-import type { DebuggingMode } from '@baseline-kit/core'
+import { resolveDebugState } from '@baseline-kit/core/utils/merge'
+import type { DebuggingMode } from '@baseline-kit/core/types'
 
 /**
  * Hook for managing component debug state and visibility.

@@ -1,13 +1,14 @@
 import * as React from 'react'
-import type { ConfigSchema } from '@baseline-kit/core'
+import type { ConfigSchema } from '@baseline-kit/core/config/schema'
+import { DEFAULT_CONFIG } from '@baseline-kit/core/config/defaults'
 import {
-  DEFAULT_CONFIG,
   mergeConfig,
   createCSSVariables,
-} from '@baseline-kit/core'
+} from '@baseline-kit/core/config/merge'
 
 // Re-export types that consumers need
-export type { DebuggingMode, ConfigSchema } from '@baseline-kit/core'
+export type { DebuggingMode } from '@baseline-kit/core/types'
+export type { ConfigSchema } from '@baseline-kit/core/config/schema'
 
 // Create the context
 const ConfigContext = React.createContext<ConfigSchema>(DEFAULT_CONFIG)
