@@ -446,8 +446,10 @@ bun run dev
 bun run test
 ```
 
-The `.maestro` directory is a workflow submodule. Generated local workflow
-surfaces such as `.claude/`, `maestro/`, `progress/`, and `plans/` are ignored.
+The `.maestro/source` directory is a workflow submodule. Generated local
+workflow surfaces such as `.claude/`, `maestro/`, `progress/`, and `plans/` are
+ignored. Do not run the Maestro layout migration until the submodule source is
+mounted at `.maestro/source` and the migration plan has been reviewed.
 
 ## Performance Features
 
