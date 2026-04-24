@@ -2,12 +2,12 @@
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  width: var(--bkgd-w);
-  height: var(--bkgd-h);
-  max-width: var(--bkgd-mw);
+  width: var(--bkgd-w, 100%);
+  height: var(--bkgd-h, 100%);
+  max-width: var(--bkgd-mw, none);
   margin-inline: auto;
   pointer-events: none;
-  padding: var(--bkgd-pb) var(--bkgd-pi);
+  padding: var(--bkgd-pb, 0) var(--bkgd-pi, 0);
 }
 
 .v {

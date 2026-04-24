@@ -33,6 +33,18 @@ export function createVirtualTracker(
 ): VirtualTrackerHandle {
   const { totalItems, itemHeight, buffer = 0 } = options
 
+  if (!Number.isFinite(itemHeight) || itemHeight <= 0) {
+    throw new Error(
+      'createVirtualTracker requires itemHeight to be greater than 0'
+    )
+  }
+
+  if (!Number.isFinite(totalItems) || totalItems < 0) {
+    throw new Error(
+      'createVirtualTracker requires totalItems to be 0 or greater'
+    )
+  }
+
   const calculateRange = (): VirtualRange => {
     const rect = el.getBoundingClientRect()
     const offsetTop = rect.top + window.scrollY
@@ -56,8 +68,10 @@ export function createVirtualTracker(
 
   const [throttledUpdate, cancelUpdate] = rafThrottle(update)
 
-  window.addEventListener('scroll', throttledUpdate)
-  window.addEventListener('resize', throttledUpdate)
+  const listenerOptions: AddEventListenerOptions = { passive: true }
+
+  window.addEventListener('scroll', throttledUpdate, listenerOptions)
+  window.addEventListener('resize', throttledUpdate, listenerOptions)
 
   const intersectionObserver = new IntersectionObserver(throttledUpdate, {
     threshold: 0,
@@ -69,8 +83,8 @@ export function createVirtualTracker(
   return {
     refresh: throttledUpdate,
     disconnect() {
-      window.removeEventListener('scroll', throttledUpdate)
-      window.removeEventListener('resize', throttledUpdate)
+      window.removeEventListener('scroll', throttledUpdate, listenerOptions)
+      window.removeEventListener('resize', throttledUpdate, listenerOptions)
       intersectionObserver.disconnect()
       cancelUpdate()
     },
