@@ -75,6 +75,19 @@ Thumbs.db
 demo/
 examples/
 
+# Maestro workflow
+/.claude/
+/.maestro-project/
+/maestro.toml
+/maestro/
+/progress/
+/plans/
+/analysis/
+/docs/decisions/
+/AGENTS.md
+/CLAUDE.md
+/MEMORY.md
+
 # Misc
 .DS_Store
 *.log

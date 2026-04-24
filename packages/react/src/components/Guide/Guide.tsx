@@ -1,12 +1,15 @@
 import * as React from 'react'
-import { ComponentsProps } from '../types'
-import { useConfig, useDebug, useMeasure, useGuide } from '../../hooks'
+import type { ComponentsProps } from '../types'
+import { useConfig } from '../../hooks/useConfig'
+import { useDebug } from '../../hooks/useDebug'
+import { useMeasure } from '../../hooks/useMeasure'
+import { useGuide } from '../../hooks/useGuide'
+import { cx } from '@baseline-kit/core/utils/merge'
 import {
-  cx,
   createGuideDescriptor,
   createGuideConfig,
-} from '@baseline-kit/core'
-import type { GuideVariant, GuideConfig } from '@baseline-kit/core'
+} from '@baseline-kit/core/descriptors/guide'
+import type { GuideVariant, GuideConfig } from '@baseline-kit/core/types'
 import { ClientOnly } from '../../utils/ssr'
 import { mergeStyles } from '../../utils/merge'
 import styles from './styles.module.css'
@@ -51,7 +54,7 @@ export const Guide = React.memo(function Guide({
   if (!isShown) {
     return (
       <div
-        className={cx(styles.g, styles.h, className)}
+        className={cx(styles.gde, styles.h, className)}
         style={style}
         data-testid="guide"
         data-variant={variant}
@@ -65,11 +68,11 @@ export const Guide = React.memo(function Guide({
 
   const ssrFallback = (
     <div
-      className={cx(styles.g, styles.h, styles.ssr, className)}
+      className={cx(styles.gde, styles.h, styles.ssr, className)}
       style={{
-        width: width || '100%',
-        height: height || '100%',
-        maxWidth: maxWidth || 'none',
+        width: width ?? '100%',
+        height: height ?? '100%',
+        maxWidth: maxWidth ?? 'none',
         ...style,
       }}
       data-testid="guide"
@@ -79,6 +82,10 @@ export const Guide = React.memo(function Guide({
       {children}
     </div>
   )
+
+  if (ssrMode) {
+    return ssrFallback
+  }
 
   return (
     <ClientOnly fallback={ssrFallback}>
@@ -95,7 +102,6 @@ export const Guide = React.memo(function Guide({
         columnWidth={columnWidth}
         maxWidth={maxWidth}
         color={color}
-        ssrMode={ssrMode}
         {...props}
       >
         {children}
@@ -201,15 +207,16 @@ const GuideImpl = React.memo(function GuideImpl({
     >
       {isShown && (
         <div className={styles.cols} data-variant={variant}>
-          {Array.from({ length: descriptor.columnsCount }, (_, i) => (
-            <div
-              key={i}
-              className={styles.col}
-              data-column-index={i}
-              data-variant={variant}
-              style={{ backgroundColor: descriptor.columnColor }}
-            />
-          ))}
+          {!descriptor.isLineVariant &&
+            Array.from({ length: descriptor.columnsCount }, (_, i) => (
+              <div
+                key={i}
+                className={styles.col}
+                data-column-index={i}
+                data-variant={variant}
+                style={{ backgroundColor: descriptor.columnColor }}
+              />
+            ))}
         </div>
       )}
       {children}
