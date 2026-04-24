@@ -22,13 +22,9 @@ const INVALID_RESULT: GuideResult = {
  * Pure calculation of grid template from container width and guide config.
  * Framework-agnostic — can be used outside React.
  *
- * Sizing note: the `line` variant at `gap = 0` emits one template track per
- * CSS pixel of width, which the `Guide` React component renders as one DOM
- * node each. That scales to a few thousand nodes on 4K+ containers. Typical
- * debugging use (gap >= 4) keeps the count well under a thousand and is
- * cheap. If high-density line grids on very wide surfaces become a real
- * bottleneck, replace the per-column divs with a repeating-linear-gradient
- * background at the component layer.
+ * Sizing note: the `line` variant still reports the number of pixel tracks as
+ * metadata, but React renders line guides with a CSS gradient so dense grids do
+ * not allocate one DOM node per line.
  */
 export function calculateGuideTemplate(
   width: number,

@@ -140,6 +140,21 @@ describe('Baseline', () => {
     expect(lines.length).toBe(25)
   })
 
+  it('keeps the simplified fallback when ssrMode is enabled', () => {
+    render(<Baseline debugging="visible" height={200} ssrMode />)
+    const baseline = screen.getByTestId('baseline')
+    expect(baseline.className).toMatch(/ssr/i)
+    expect(baseline.className).toMatch(/h/i)
+    expect(baseline.querySelectorAll('[data-row-index]').length).toBe(0)
+  })
+
+  it('preserves zero sizing values in ssrMode fallback', () => {
+    render(<Baseline debugging="visible" width={0} height={0} ssrMode />)
+    const baseline = screen.getByTestId('baseline')
+    expect(baseline.getAttribute('style')).toContain('width: 0px')
+    expect(baseline.getAttribute('style')).toContain('height: 0px')
+  })
+
   it('respects custom string height e.g. "50vh"', () => {
     // Core uses static viewport defaults (1080px height) — 50vh = 540px → 540/8 = 67 rows
     render(<Baseline debugging="visible" height="50vh" />)

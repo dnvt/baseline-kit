@@ -65,34 +65,43 @@ yarn add baseline-kit
 pnpm add baseline-kit
 ```
 
-After installation, import both the styles and theme in your application:
+After installation, import the smallest entry point that matches your use case.
+For a development grid overlay, use the guide-only React and CSS subpaths:
 
 ```tsx
-// Import in your main entry file (e.g., index.js, App.js)
-import 'baseline-kit/styles';  // Required core styles
-import 'baseline-kit/theme';   // Recommended theme (or use your own)
+import 'baseline-kit/styles/guide'
+import { Config, Guide } from 'baseline-kit/guide'
 ```
 
 For frameworks like Remix that use URL imports in a links function:
 
 ```tsx
 export const links = () => [
-  { rel: "stylesheet", href: "baseline-kit/styles" },
-  { rel: "stylesheet", href: "baseline-kit/theme" }
-];
+  { rel: 'stylesheet', href: 'baseline-kit/styles/guide' },
+]
 ```
 
-If you prefer a single CSS file that includes everything:
+For the full component set, import the root package and root component styles:
 
 ```tsx
-// Alternative: Import everything in one file
-import 'baseline-kit/full';
+import 'baseline-kit/styles'
+import 'baseline-kit/theme'
+import { Config, Guide, Baseline, Box } from 'baseline-kit'
+```
+
+If you prefer a single CSS file for every component plus the theme:
+
+```tsx
+import 'baseline-kit/styles/full'
 
 // For Remix:
 export const links = () => [
-  { rel: "stylesheet", href: "baseline-kit/full" }
-];
+  { rel: 'stylesheet', href: 'baseline-kit/styles/full' },
+]
 ```
+
+The browser reset is not included by default. Import `baseline-kit/reset` or
+`baseline-kit/styles/reset` only when you want Baseline Kit to provide one.
 
 Baseline Kit is written in TypeScript and includes built-in type definitions—no additional packages required.
 
@@ -263,21 +272,29 @@ debugging = "none"           // Removes debug elements entirely
 
 Baseline Kit comes with a flexible CSS structure and theming system:
 
-1. `core.css` - Contains the core component styles required for functionality (imported via `baseline-kit/styles`)
-2. `theme.css` - Contains color variables and theming with automatic dark mode support (imported via `baseline-kit/theme`)
-3. `baseline-kit.css` - Combined file with both core and theme styles (imported via `baseline-kit/full`)
+1. `guide.css` - Guide-only overlay styles (imported via `baseline-kit/styles/guide`)
+2. `styles.css` - Root component styles and base variables (imported via `baseline-kit/styles`)
+3. `theme.css` - Color variables and theming with automatic dark mode support (imported via `baseline-kit/theme`)
+4. `reset.css` - Optional browser reset (imported via `baseline-kit/reset` or `baseline-kit/styles/reset`)
+5. `baseline-kit.css` - Combined root component styles and theme (imported via `baseline-kit/styles/full`)
 
 ### CSS Import Options
 
 Baseline Kit gives you flexibility in how you include the styles:
 
 ```tsx
-// Option 1: Import core styles and theme separately (recommended)
-import 'baseline-kit/styles';
-import 'baseline-kit/theme';
+// Guide-only overlay styles
+import 'baseline-kit/styles/guide'
 
-// Option 2: Import everything in one file
-import 'baseline-kit/full';
+// Root component styles and theme separately
+import 'baseline-kit/styles'
+import 'baseline-kit/theme'
+
+// Root component styles and theme in one file
+import 'baseline-kit/styles/full'
+
+// Optional reset
+import 'baseline-kit/reset'
 ```
 
 ### Theme Options
@@ -287,21 +304,21 @@ You now have four options for using the theme system:
 #### 1. Use the Built-in Theme (with automatic dark mode)
 
 ```tsx
-import 'baseline-kit/theme';  // Default theme with light/dark mode support
+import 'baseline-kit/theme' // Default theme with light/dark mode support
 ```
 
 #### 2. Use Specific Theme Variants
 
 ```tsx
 // Use only the light theme (no dark mode)
-import 'baseline-kit/theme/default';
+import 'baseline-kit/theme/default'
 
 // Use only the dark theme
-import 'baseline-kit/theme/dark';
+import 'baseline-kit/theme/dark'
 
 // Example: Apply dark theme regardless of system preference
-import 'baseline-kit/styles';
-import 'baseline-kit/theme/dark';
+import 'baseline-kit/styles'
+import 'baseline-kit/theme/dark'
 ```
 
 #### 3. Create a Custom Theme
@@ -310,7 +327,7 @@ You can use the tokens template as a starting point:
 
 ```tsx
 // First check the token template to see available variables
-import 'baseline-kit/theme/tokens';  // Just for reference (contains no values)
+import 'baseline-kit/theme/tokens' // Just for reference (contains no values)
 ```
 
 Then create your own custom theme file:
@@ -335,8 +352,8 @@ Then create your own custom theme file:
 Then import your custom theme:
 
 ```tsx
-import 'baseline-kit/styles';            // Required core styles
-import './path/to/yourCustomTheme.css';  // Your custom theme
+import 'baseline-kit/styles' // Required component styles
+import './path/to/yourCustomTheme.css' // Your custom theme
 ```
 
 #### 4. Override via Config
@@ -408,12 +425,16 @@ Components accept an `ssrMode` prop to explicitly optimize for server rendering:
 ```
 
 With `ssrMode` enabled, components use simplified rendering during SSR and initial hydration, then enhance with full features after client-side hydration completes.
+For debug overlays such as `Guide` and `Baseline`, `ssrMode` keeps the simplified fallback markup to avoid client measurement and row/column rendering in SSR-sensitive paths.
 
 ## Development
 
 ```shell
 # Clone the repository
-git clone https://github.com/dnvt/baseline-kit.git
+git clone --recurse-submodules https://github.com/dnvt/baseline-kit.git
+
+# If you already cloned without submodules
+git submodule update --init --recursive
 
 # Install dependencies
 bun install
@@ -424,6 +445,11 @@ bun run dev
 # Run tests
 bun run test
 ```
+
+The `.maestro/source` directory is a workflow submodule. Generated local
+workflow surfaces such as `.claude/`, `maestro/`, `progress/`, and `plans/` are
+ignored. Do not run the Maestro layout migration until the submodule source is
+mounted at `.maestro/source` and the migration plan has been reviewed.
 
 ## Performance Features
 

@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { createMeasureObserver } from '@baseline-kit/dom'
-import type { MeasureRect } from '@baseline-kit/dom'
+import { createMeasureObserver } from '@baseline-kit/dom/measure'
+import type { MeasureRect } from '@baseline-kit/dom/measure'
 
 export interface MeasureResult extends MeasureRect {
   refresh: () => void

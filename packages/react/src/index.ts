@@ -5,7 +5,7 @@
  * Re-exports from @baseline-kit/core and @baseline-kit/dom for convenience.
  */
 
-// Core styles (base variables, reset, component CSS)
+// Component styles and base variables. Reset is opt-in via baseline-kit/reset.
 import './components/styles/core.css'
 
 // Public API Components

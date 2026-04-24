@@ -12,6 +12,11 @@ export default defineConfig(({ command }) => ({
       targets: [
         { src: 'README.md', dest: '.' },
         {
+          src: 'packages/react/src/components/styles/reset.css',
+          dest: '.',
+          rename: { stripBase: true },
+        },
+        {
           src: 'packages/react/src/components/styles/theme.css',
           dest: '.',
           rename: { stripBase: true },
@@ -33,13 +38,17 @@ export default defineConfig(({ command }) => ({
     transformer: 'postcss' as const,
   },
   build: {
-    cssCodeSplit: false,
+    cssCodeSplit: true,
     cssMinify: true,
     lib: {
-      entry: resolve(__dirname, 'packages/react/src/index.ts'),
+      entry: {
+        index: resolve(__dirname, 'packages/react/src/index.ts'),
+        core: resolve(__dirname, 'packages/core/src/index.ts'),
+      },
       name: 'BaselineKit',
       formats: ['es', 'cjs'],
-      fileName: (format) => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
+      fileName: (format, entryName) =>
+        `${entryName}.${format === 'es' ? 'mjs' : 'cjs'}`,
     },
     rolldownOptions: {
       external: [
@@ -57,15 +66,15 @@ export default defineConfig(({ command }) => ({
         },
         assetFileNames: (assetInfo) => {
           if (!assetInfo.name) return '[name]-[hash][extname]'
+          const assetName = assetInfo.name.toLowerCase()
 
-          if (assetInfo.name.endsWith('theme.css')) {
+          if (assetName.endsWith('theme.css')) {
             return 'theme.css'
           }
-          if (assetInfo.name.endsWith('core.css')) {
-            return 'styles.css'
-          }
-          if (assetInfo.name.endsWith('.css')) {
-            return 'styles.css'
+          if (assetName.endsWith('.css')) {
+            if (assetName.includes('guide')) return 'guide.css'
+            if (assetName.includes('index')) return 'styles.css'
+            return '[name][extname]'
           }
 
           return '[name]-[hash][extname]'
