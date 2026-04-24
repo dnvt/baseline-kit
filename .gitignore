@@ -77,6 +77,7 @@ examples/
 
 # Maestro workflow
 /.claude/
+/.maestro/project/
 /.maestro/generated/
 /.maestro/state/
 /.maestro/cache/
