@@ -71,12 +71,12 @@ export const Spacer = React.memo(function Spacer({
     return (
       <>
         {h !== 0 && (
-          <span key="height" aria-hidden="true">
+          <span key="height" className={styles.indicator} aria-hidden="true">
             {indicatorNode!(h, 'height')}
           </span>
         )}
         {w !== 0 && (
-          <span key="width" aria-hidden="true">
+          <span key="width" className={styles.indicator} aria-hidden="true">
             {indicatorNode!(w, 'width')}
           </span>
         )}

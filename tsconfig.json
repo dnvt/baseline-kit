@@ -1,41 +1,28 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "types": [
-      "vitest/globals",
-      "node"
-    ],
+    "types": ["vitest/globals", "node"],
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "module": "ESNext",
     "skipLibCheck": true,
     "target": "ES2020",
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "strict": true,
     "paths": {
-      "@baseline-kit/core": ["packages/core/src/index.ts"],
-      "@baseline-kit/core/*": ["packages/core/src/*"],
-      "@baseline-kit/dom": ["packages/dom/src/index.ts"],
-      "@baseline-kit/dom/*": ["packages/dom/src/*"],
-      "@baseline-kit/react": ["packages/react/src/index.ts"],
-      "@baseline-kit/react/*": ["packages/react/src/*"],
-      "@/*": ["packages/react/src/*"],
-      "@components": ["packages/react/src/components/index.ts"],
-      "@hooks": ["packages/react/src/hooks/index.ts"],
-      "@utils": ["packages/react/src/utils/index.ts"]
+      "@baseline-kit/core": ["./packages/core/src/index.ts"],
+      "@baseline-kit/core/*": ["./packages/core/src/*"],
+      "@baseline-kit/dom": ["./packages/dom/src/index.ts"],
+      "@baseline-kit/dom/*": ["./packages/dom/src/*"],
+      "@baseline-kit/react": ["./packages/react/src/index.ts"],
+      "@baseline-kit/react/*": ["./packages/react/src/*"],
+      "@baseline-kit/remix": ["./packages/remix/src/index.ts"],
+      "@baseline-kit/remix/*": ["./packages/remix/src/*"],
+      "@/*": ["./packages/react/src/*"],
+      "@components": ["./packages/react/src/components/index.ts"],
+      "@hooks": ["./packages/react/src/hooks/index.ts"],
+      "@utils": ["./packages/react/src/utils/index.ts"]
     }
   },
-  "include": [
-    "packages/**/*",
-    "vitest.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "demo"
-  ]
+  "include": ["packages/**/*", "vitest.d.ts"],
+  "exclude": ["node_modules", "dist", "demo"]
 }

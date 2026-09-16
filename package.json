@@ -1,27 +1,51 @@
 {
   "scripts": {
-    "build": "vite build && bun run build:guide && bun run emit:declarations && bun run bundle:declarations && bun run build:css && bun run verify:artifacts",
+    "build": "vite build && bun run build:guide && bun run build:remix && bun run emit:declarations && bun run bundle:declarations && bun run build:css && bun run verify:artifacts",
     "build:guide": "vite build --config vite.guide.config.ts",
+    "build:remix": "vite build --config vite.remix.config.ts && vite build --config vite.remix-server.config.ts",
     "emit:declarations": "tsc -p tsconfig.build.json",
     "bundle:declarations": "rollup -c rollup.declarations.config.mjs",
     "build:css": "node scripts/combine-css.js",
     "verify:artifacts": "node scripts/verify-artifacts.js",
     "changeset": "changeset",
-    "dev": "vite",
+    "dev": "vite --config tests/browser/vite.config.ts",
     "format": "prettier --write \"packages/**/*.{ts,tsx,css}\"",
     "lint": "eslint packages --fix",
+    "lint:check": "eslint packages",
     "prepack": "bun run build",
     "prepublishOnly": "bun run build",
     "release": "changeset publish",
     "test": "vitest",
+    "test:browser": "playwright test",
+    "test:integration:remix": "node scripts/test-remix-package.js",
+    "test:react-core": "vitest run --exclude tests/remix/**",
+    "test:remix": "vitest run tests/remix",
+    "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
+    "verify:integration": "bun run typecheck && bun run lint:check && bun run test:unit && bun run build && bun run test:integration:remix && bun run test:browser",
     "version": "changeset version"
   },
+  "packageManager": "bun@1.3.12",
   "peerDependencies": {
+    "remix": "3.0.0-rc.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "typescript": "^5.8.2 || ^6.0.0"
+    "typescript": "^5.8.2 || ^6.0.0 || ^7.0.2"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "remix": {
+      "optional": true
+    },
+    "typescript": {
+      "optional": true
+    }
   },
   "main": "dist/index.cjs",
   "engines": {
@@ -47,44 +71,45 @@
     "url": "git+https://github.com/dnvt/baseline-kit.git"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.30.0",
-    "@eslint/js": "^9.39.4",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@types/node": "^22.19.15",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@typescript-eslint/eslint-plugin": "^8.57.2",
-    "@typescript-eslint/parser": "^8.57.2",
-    "@vitejs/plugin-react-swc": "^4.3.0",
-    "@vitest/coverage-v8": "^4.1.2",
-    "autoprefixer": "^10.4.27",
-    "cssnano": "^7.1.3",
-    "eslint": "^9.39.4",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.5",
+    "@changesets/cli": "^3.0.3",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@typescript/typescript6": "^6.0.2",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^22.20.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/parser": "^8.70.0",
+    "@vitejs/plugin-react-swc": "^4.3.3",
+    "@vitest/coverage-v8": "^5.0.1",
+    "eslint": "^10.10.0",
+    "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "jsdom": "^29.0.2",
-    "postcss-preset-env": "^11.2.0",
-    "prettier": "^3.8.1",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "rollup": "^4.41.1",
-    "rollup-plugin-dts": "^6.4.1",
-    "rollup-plugin-visualizer": "^7.0.1",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.3",
-    "vite-plugin-static-copy": "^4.0.0",
-    "vitest": "^4.1.2"
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "jsdom": "^30.0.1",
+    "prettier": "^3.9.7",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remix": "3.0.0-rc.2",
+    "rollup": "^4.63.3",
+    "rollup-plugin-dts": "^6.5.1",
+    "rollup-plugin-visualizer": "^7.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vite-plugin-static-copy": "^4.1.1",
+    "vitest": "^5.0.1"
   },
   "name": "baseline-kit",
   "version": "5.0.0",
   "type": "module",
   "workspaces": [
+    ".",
     "packages/*"
   ],
+  "overrides": {
+    "esbuild": "0.28.2"
+  },
   "homepage": "https://github.com/dnvt/baseline-kit#readme",
   "types": "dist/index.d.ts",
   "exports": {
@@ -105,6 +130,21 @@
       "import": "./dist/core.mjs",
       "require": "./dist/core.cjs",
       "default": "./dist/core.mjs"
+    },
+    "./remix": {
+      "types": "./dist/remix.d.ts",
+      "import": "./dist/remix.mjs",
+      "default": "./dist/remix.mjs"
+    },
+    "./remix/server": {
+      "types": "./dist/remix-server.d.ts",
+      "node": "./dist/remix-server.mjs",
+      "default": "./dist/remix-server.mjs"
+    },
+    "./styles/remix": {
+      "import": "./dist/remix.css",
+      "require": "./dist/remix.css",
+      "default": "./dist/remix.css"
     },
     "./styles": {
       "import": "./dist/styles.css",
@@ -167,13 +207,21 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist",
+    "dist/*.mjs",
+    "dist/*.cjs",
+    "dist/*.js",
+    "dist/*.map",
+    "dist/*.d.ts",
+    "dist/*.css",
+    "dist/theme",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "style": "dist/styles.css",
   "sideEffects": [
     "dist/styles.css",
+    "dist/remix.css",
     "dist/guide.css",
     "dist/reset.css",
     "dist/theme.css",
@@ -191,5 +239,5 @@
     "access": "public"
   },
   "author": "Francois Denavaut",
-  "description": "Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, flexible spacing components, and theme-aware configuration—all optimized for performance and built with TypeScript."
+  "description": "React 19 baseline and column-grid overlays, spacing primitives, themeable debug visuals, and a React-free Remix 3 adapter."
 }

@@ -1,93 +1,100 @@
 # Contributing to Baseline Kit
 
-We love your input! We want to make contributing to Baseline Kit as easy and transparent as possible, whether it's:
+Contributions are welcome through pull requests. Please keep changes focused,
+add regression coverage for behavior changes, and update the README or
+CHANGELOG when the public API or consumer workflow changes.
 
-- Reporting a bug
-- Discussing the current state of the code
-- Submitting a fix
-- Proposing new features
-- Becoming a maintainer
+## Local development
 
-## Development Process
+Requirements: Node.js 24.15+, Bun 1.3.12, and a modern browser. Install the
+repository dependencies with the lockfile:
 
-All changes happen through pull requests. Pull requests are the best way to propose changes to the codebase.
+```shell
+bun install --frozen-lockfile
+```
 
-1. Fork the repo and create your branch from `main`.
-2. If you've added code that should be tested, add tests.
-3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes.
-5. Make sure your code lints.
-6. Issue that pull request!
+Useful commands:
 
-## Local Development
-
-```bash
-# Install dependencies (requires Node 22+)
-bun install
-
-# Start development server
-bun run dev
-
-# Run tests
-bun run test
-
-# Type check
+```shell
 bun run typecheck
-
-# Build package
+bun run lint:check
+bun run test:unit
+bunx playwright install chromium firefox webkit
+bun run test:browser
 bun run build
-
-# Lint code
-bun run lint
+bun run test:integration:remix
 ```
 
-## Project Structure
+`bun run lint` applies ESLint fixes. Use `bun run lint:check` in CI and before
+opening a pull request. `bun run test` starts Vitest in watch mode;
+`bun run test:unit` is the deterministic one-shot suite.
 
-Baseline Kit is a monorepo. Consumers install the top-level `baseline-kit`
-package (the React adapter); the inner packages are workspace-only.
+`bun run dev` serves the regression fixtures: `/` for React and `/remix.html`
+for native Remix. They include deliberately tall overlays to test scrolling;
+they are not a styled product demo. Set `BASELINE_BROWSER_PORT` to isolate a
+browser test server when another test session is running.
 
+### Firefox on hosts that cannot launch its native binary
+
+Use a local Linux browser server if macOS blocks the Firefox profile. This does
+not change OS security settings or skip Firefox assertions. In one terminal:
+
+```shell
+docker run --rm --init --name baseline-kit-firefox --user pwuser \
+  --workdir /home/pwuser -p 127.0.0.1:33001:3000 \
+  mcr.microsoft.com/playwright:v1.63.0-noble \
+  sh -c 'npx -y playwright@1.63.0 run-server --port 3000 --host 0.0.0.0'
 ```
+
+In another terminal:
+
+```shell
+BASELINE_FIREFOX_WS_ENDPOINT=ws://127.0.0.1:33001/ bun run verify:integration
+```
+
+Only Firefox uses this endpoint; Chromium/WebKit remain local. The test runner
+forwards loopback traffic to its fixture server. Keep the server local and the
+Playwright versions matched. Stop the container when finished. See the
+[Playwright Docker guide](https://playwright.dev/docs/docker#remote-connection).
+Packed integration also runs all three engines.
+
+## Project structure
+
+Baseline Kit is a workspace repository. The published package is the root
+`baseline-kit` package; the inner packages provide private implementation layers
+and must not be published independently.
+
+```text
 packages/
-├── core/src/          # @baseline-kit/core — pure TypeScript,
-│   ├── config/        #   zero dependencies, works in any JS runtime.
-│   ├── descriptors/   #   Types, headless descriptors, config schema,
-│   ├── utils/         #   pure math / grid / padding / snapping utils.
-│   └── validation/
-├── dom/src/           # @baseline-kit/dom — imperative observers and
-│                      #   browser-only helpers (ResizeObserver wrappers,
-│                      #   viewport context, SSR detection, rAF throttle).
-│   │                  #   Depends only on @baseline-kit/core.
-└── react/src/         # @baseline-kit/react — React adapter, published
-    ├── components/    #   as `baseline-kit`. React components, hooks,
-    ├── hooks/         #   styles, and type re-exports.
-    └── utils/
+├── core/src/       # Pure types, config, validation, descriptors, and math
+├── dom/src/        # Browser observers, measurement, timing, and SSR helpers
+├── react/src/      # React 19 components, hooks, and CSS
+└── remix/src/      # React-free Remix 3 UI adapter and CSS
 ```
 
-Tests live in the top-level `tests/` directory and exercise each layer via
-the `@baseline-kit/*` workspace paths.
+Tests live in `tests/` and cover the core, DOM, React, Remix, build artifacts,
+and packed-consumer integration paths.
 
-## Pull Request Process
+## Pull requests
 
-1. Update the README.md with details of changes to the interface
-2. Update the CHANGELOG.md with a note describing your changes
-3. The PR will be merged once you have the sign-off of the maintainers
+1. Branch from `main`.
+2. Keep the public API and generated artifacts consistent.
+3. Add or update tests for behavior changes.
+4. Update documentation and add a Changeset for publishable changes.
+5. Run the focused checks above, then `bun run verify:integration` for a
+   release-bound change.
 
-## Any contributions you make will be under the MIT Software License
+## Release notes
 
-In short, when you submit code changes, your submissions are understood to be under the
-same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the
-maintainers if that's a concern.
+Create a Changeset for user-facing changes:
 
-## Report bugs using Github's [issue tracker](https://github.com/dnvt/baseline-kit/issues)
+```shell
+bun run changeset
+```
 
-We use GitHub issues to track public bugs. Report a bug
-by [opening a new issue](https://github.com/dnvt/baseline-kit/issues/new).
+The release workflow validates the package, creates the version/changelog pull
+request, and publishes through Changesets after that pull request is merged.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under its MIT License.
-
-## References
-
-This document was adapted from the open-source contribution guidelines
-for [Facebook's Draft](https://github.com/facebook/draft-js/blob/a9316a723f9e918afde44dea68b5f9f39b7d9b00/CONTRIBUTING.md).
+By contributing, you agree that your work is provided under the MIT License.

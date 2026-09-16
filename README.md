@@ -4,464 +4,327 @@
 ![npm version](https://img.shields.io/npm/v/baseline-kit)
 ![License](https://img.shields.io/github/license/dnvt/baseline-kit)
 
-Baseline Kit is a lightweight development tool for visualizing and debugging grid systems and spacing in React applications. It provides configurable overlays for both column-based and baseline grids, spacing primitives, and theme-aware configuration—all optimized for performance and built with TypeScript. The library is based on the "Padded Grid" concept, originally explored in [this article](http://medium.com/design-bootcamp/the-padded-grid-a-designers-hack-to-achieve-baseline-fit-fc40d022bc84) on achieving perfect baseline alignment in digital layouts.
+Baseline Kit is a development overlay and spacing toolkit for React 19. It
+provides baseline and column grids, spacing primitives, scoped configuration,
+and themeable debug visuals. It also ships a React-free adapter for the Remix 3
+UI runtime.
 
-![Demo visual](kit.png)
+![Demo visual](https://raw.githubusercontent.com/dnvt/baseline-kit/main/kit.png)
 
-## Table of Contents
-  - [Features](#features)
-  - [Requirements](#requirements)
-  - [Installation](#installation)
-  - [Quick Start](#quick-start)
-  - [Core Concepts](#core-concepts)
-    - [Base Unit](#base-unit)
-    - [Spacing Values](#spacing-values)
-    - [Grid Snapping](#grid-snapping)
-    - [Debugging Modes](#debugging-modes)
-  - [Components](#components)
-    - [Component Hierarchy](#component-hierarchy)
-    - [Key Components](#key-components)
-      - [Config](#config)
-      - [Baseline](#baseline)
-      - [Guide](#guide)
-      - [Box](#box)
-  - [Theme System](#theme-system)
-    - [CSS Import Options](#css-import-options)
-    - [Theme Options](#theme-options)
-    - [Theme Variables Reference](#theme-variables-reference)
-  - [Browser Support](#browser-support)
-  - [React 19 Features](#react-19-features)
-  - [Server-Side Rendering (SSR)](#server-side-rendering-ssr)
-    - [SSR-Friendly Design](#ssr-friendly-design)
-    - [SSR Mode Prop](#ssr-mode-prop)
-  - [Development](#development)
-  - [Performance Features](#performance-features)
-  - [Contributing](#contributing)
-  - [License](#license)
+## What it includes
 
-## Features
-
-- 📏 **Baseline Grid:** Core system for maintaining vertical rhythm and consistent spacing across your layouts
-- 🎯 **Column Grid Guide:** Customizable overlay system for visualizing column-based layouts and alignment
-- 📦 **Box Component:** Basic container with configurable spacing that snaps to the baseline grid
-- 🧱 **Padder & Spacer:** Spacing primitives with optional baseline snapping
-- 🎨 **Theme System:** Customizable colors and debug visuals through a centralized configuration
+- **`Baseline`** — a horizontal baseline-grid overlay.
+- **`Guide`** — a column-grid overlay with line, pattern, fixed, and auto modes.
+- **`Box`**, **`Padder`**, and **`Spacer`** — spacing primitives that can align
+  content to the baseline grid.
+- **`Config`** — scoped defaults for the base unit, colors, variants, and
+  debugging visibility.
+- **React-free Remix support** — native `remix/ui` components with SSR,
+  hydration, measurement, and cleanup support.
 
 ## Requirements
 
-- **React 19**: Baseline Kit is built for React 19 and uses the latest React features like the `use` hook
-- **Modern Browsers**: Supporting the latest CSS features
+- React 19 for the default and `baseline-kit/guide` entries.
+- The React/core package declares Node.js 18+; native Remix requires
+  `remix@3.0.0-rc.2` and its Node.js 24.3+ runtime. Other Remix versions need
+  a compatibility check. Repository development requires Node.js 24.15+.
+- TypeScript 5.8+, 6, or 7 when using TypeScript.
+- A modern browser with CSS Grid and CSS custom property support.
 
 ## Installation
 
 ```shell
-# Using npm
-npm install baseline-kit
-
-# Using yarn
-yarn add baseline-kit
-
-# Using pnpm
-pnpm add baseline-kit
+npm install baseline-kit react@19 react-dom@19
+# or
+bun add baseline-kit react@19 react-dom@19
 ```
 
-After installation, import the smallest entry point that matches your use case.
-For a development grid overlay, use the guide-only React and CSS subpaths:
+Choose the smallest entry point that matches the application:
 
-```tsx
-import 'baseline-kit/styles/guide'
-import { Config, Guide } from 'baseline-kit/guide'
-```
+| Use case                        | JavaScript entry     | CSS entry                                           |
+| ------------------------------- | -------------------- | --------------------------------------------------- |
+| React components                | `baseline-kit`       | `baseline-kit/styles` plus `baseline-kit/theme`     |
+| React guide only                | `baseline-kit/guide` | `baseline-kit/styles/guide`                         |
+| React-free Remix 3 UI           | `baseline-kit/remix` | `baseline-kit/styles/remix`                         |
+| Framework-independent utilities | `baseline-kit/core`  | None                                                |
+| All React styles and theme      | —                    | `baseline-kit/styles/full`                          |
+| Optional reset                  | —                    | `baseline-kit/reset` or `baseline-kit/styles/reset` |
 
-For frameworks like Remix that use URL imports in a links function:
+Baseline Kit includes its own TypeScript declarations. React and Remix remain
+optional peer dependencies, so an application only installs the runtime it
+uses.
 
-```tsx
-export const links = () => [
-  { rel: 'stylesheet', href: 'baseline-kit/styles/guide' },
-]
-```
-
-For the full component set, import the root package and root component styles:
+## Quick start
 
 ```tsx
 import 'baseline-kit/styles'
 import 'baseline-kit/theme'
-import { Config, Guide, Baseline, Box } from 'baseline-kit'
-```
+import { Baseline, Box, Config, Guide } from 'baseline-kit'
 
-If you prefer a single CSS file for every component plus the theme:
-
-```tsx
-import 'baseline-kit/styles/full'
-
-// For Remix:
-export const links = () => [
-  { rel: 'stylesheet', href: 'baseline-kit/styles/full' },
-]
-```
-
-The browser reset is not included by default. Import `baseline-kit/reset` or
-`baseline-kit/styles/reset` only when you want Baseline Kit to provide one.
-
-Baseline Kit is written in TypeScript and includes built-in type definitions—no additional packages required.
-
-## Quick Start
-
-```tsx
-import React from 'react'
-import { Config, Guide, Baseline, Box } from 'baseline-kit'
-
-function App() {
-  const isDev = process.env.NODE_ENV === 'development'
-  const debugging = isDev ? 'visible' : 'hidden'
-
+export function App() {
   return (
     <Config
       base={8}
-      baseline={{ debugging }}
-      box={{ debugging }}
-      guide={{ debugging }}
-      spacer={{ debugging }}
+      baseline={{ debugging: 'visible' }}
+      guide={{ debugging: 'visible' }}
+      box={{ debugging: 'visible' }}
     >
-      {/* Baseline Grid for typography alignment */}
-      <Baseline
-        height="100vh"
-        debugging="visible"
-      />
-
-      {/* Column Grid Guide */}
-      <Guide
-        variant="pattern"
-        columns={['100px', '200px', '100px']}
-        gap={16}
-        align="center"
-        width="1200px"
-      />
-
-      {/* Box with baseline alignment */}
-      <Box
-        block={[2, 5]}
-        debugging="visible"
-      >
-        <h1>Content Aligned to the Grid</h1>
-      </Box>
-
-      <main>Your main content goes here...</main>
+      <main style={{ position: 'relative', height: '100vh' }}>
+        <Baseline height="100%" />
+        <Guide variant="fixed" columns={12} width="100%" />
+        <Box block={[16, 24]} snapping="height">
+          Content aligned to the grid
+        </Box>
+      </main>
     </Config>
   )
 }
 ```
 
-## Core Concepts
+## Core concepts
 
-### Base Unit
+### Base unit and sizing
 
-The base unit is the foundation of Baseline Kit's spacing system. All measurements are calculated as multiples of this
-unit:
+`base` is the baseline interval in CSS pixels; it defaults to `8`. Numeric
+spacing values are CSS pixel values, not multipliers. CSS dimensions such as
+`100vh`, `50%`, `1rem`, and `calc(...)` on Baseline dimensions remain relative
+and are resolved by the browser. Overlays are absolutely positioned: give their
+parent `position: relative` and a definite height for percentage heights.
 
 ```tsx
-<Config base={8}>     // Sets 8px as the base unit
-  <Padder
-    block={17}        // Will be rounded to 16px (2 * base)
-    inline={22}       // Will be rounded to 24px (3 * base)
-  >
-    {/* Content automatically aligned to the 8px grid */}
+<Config base={8}>
+  <Padder block={[16, 24]} inline={{ start: 8, end: 16 }}>
+    Content
   </Padder>
 </Config>
 ```
 
-### Spacing Values
+Spacing props accept the following shapes:
 
-Spacing props (`block`, `inline`, `gap`) accept values in three formats:
+- `padding={16}` — all four sides.
+- `padding={[8, 16]}` — 8px top/bottom and 16px left/right; three- and
+  four-value arrays follow CSS padding shorthand.
+- `block={[16, 24]}` — block-start and block-end.
+- `inline={{ start: 8, end: 16 }}` — inline-start and inline-end.
 
-```
-// Single number (applies to both sides)
-block={16}                  // 16px top and bottom
+### Grid snapping
 
-// Array [start, end]
-block={[2, 3]}                // 2px top, 3px bottom
+`Box` defaults to `snapping="clamp"`. `height` adds bottom spacing to round the
+measured height up to the next base interval; `clamp` also reduces the top and
+bottom spacing modulo the base. Use `snapping="none"` to keep explicit spacing.
+Snapping happens once after the first nonzero measurement, not continuously on
+resize. `Padder` uses height snapping in both adapters. Set `ssrMode` on Padder
+to retain explicit padding without applying its measured snap.
 
-// Object with explicit values
-block={{ start: 2, end: 3 }}  // Same as above
-```
+### Debugging modes
 
-### Grid Snapping
+Every visual component supports one of these modes:
 
-Components automatically adjust their spacing to maintain baseline grid alignment:
+- `visible` — render and show the debug visual.
+- `hidden` — hide debug paint while preserving content and spacing.
+- `none` — disable debug paint and use ordinary padding instead of debug spacers.
 
-- **Box**: Adjusts bottom padding to ensure total height aligns with base unit
-- **Padder**: Snaps padded content to baseline-aligned multiples of the base unit
-
-### Debugging Modes
-
-Three modes are available for development and testing:
-
-```tsx
-debugging = "visible"        // Shows all grid lines and measurements
-debugging = "hidden"         // Elements exist but are invisible
-debugging = "none"           // Removes debug elements entirely
-```
+Baseline and Guide keep an empty host in both hidden modes. They are debug
+overlays marked `aria-hidden`; keep meaningful application content outside them.
 
 ## Components
 
-### Component Hierarchy
+| Component  | Purpose                                                       |
+| ---------- | ------------------------------------------------------------- |
+| `Config`   | Supplies scoped base, variant, color, and debugging defaults. |
+| `Baseline` | Renders horizontal baseline rows.                             |
+| `Guide`    | Renders a responsive or fixed column guide.                   |
+| `Box`      | Wraps content and optionally snaps its measured height.       |
+| `Padder`   | Adds baseline-aware padding and optional measurement spacers. |
+| `Spacer`   | Adds a fixed-size spacer with an optional debug indicator.    |
 
-#### 1. Spacing primitives
+`Box` and `Padder` use `text-box-trim: trim-both` and
+`text-box-edge: ex alphabetic` where the browser supports them, keeping text
+edges aligned to the x-height and alphabetic baseline. Unsupported browsers
+retain normal text layout. Trimming does not remove child margins or change a
+nested heading's own line-box rules.
+For nested text, set the same properties on its text container. See the
+[CSS text-box-edge reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-edge)
+for browser compatibility and alternative metrics such as `ex alphabetic`.
 
-- **`Box`** Basic container that snaps its height to the baseline grid
-- **`Padder`** Padding wrapper that snaps padded content to baseline multiples
-- **`Spacer`** Fixed-size spacer with optional measurement indicator overlay
+## Styles and themes
 
-#### 2. Debug overlays
-
-- **`Baseline`** Horizontal baseline-grid overlay
-- **`Guide`** Column-grid overlay (line / pattern / fixed / auto variants)
-
-#### 3. Configuration
-
-- **`Config`** Theme and settings provider (base unit, colors, debug modes)
-
-### Key Components
-
-#### Config
-
-```tsx
-<Config
-  base={8}                         // Base unit for calculations
-  baseline={{ debugging }}         // Baseline grid visibility
-  guide={{ debugging }}            // Guide customization
->
-  {children}
-</Config>
-```
-
-#### Baseline
+Import styles explicitly so applications control their CSS footprint:
 
 ```tsx
-<Baseline
-  height="100vh"          // Overlay height
-  variant="line"          // "line" or "flat"
-  debugging="visible"     // Show the grid overlay
-/>
-```
-
-#### Guide
-
-```tsx
-<Guide
-  variant="pattern"                     // "line", "pattern", "fixed", or "auto"
-  columns={['100px', '1fr', '100px']}   // Column definition
-  gap={8}                               // Gap value
-  width="1200px"                        // Container width
-/>
-```
-
-#### Box
-
-```tsx
-<Box
-  block={[2, 5]}         // Vertical padding in base units
-  span={2}               // Grid column span when placed in a CSS grid parent
-  snapping="height"      // "none", "height", or "clamp"
->
-  <p>Content aligned to baseline grid</p>
-</Box>
-```
-
-## Theme System
-
-Baseline Kit comes with a flexible CSS structure and theming system:
-
-1. `guide.css` - Guide-only overlay styles (imported via `baseline-kit/styles/guide`)
-2. `styles.css` - Root component styles and base variables (imported via `baseline-kit/styles`)
-3. `theme.css` - Color variables and theming with automatic dark mode support (imported via `baseline-kit/theme`)
-4. `reset.css` - Optional browser reset (imported via `baseline-kit/reset` or `baseline-kit/styles/reset`)
-5. `baseline-kit.css` - Combined root component styles and theme (imported via `baseline-kit/styles/full`)
-
-### CSS Import Options
-
-Baseline Kit gives you flexibility in how you include the styles:
-
-```tsx
-// Guide-only overlay styles
-import 'baseline-kit/styles/guide'
-
-// Root component styles and theme separately
+// React component styles and the default light/dark theme
 import 'baseline-kit/styles'
 import 'baseline-kit/theme'
 
-// Root component styles and theme in one file
+// Or one combined file
 import 'baseline-kit/styles/full'
+
+// Guide-only styles
+import 'baseline-kit/styles/guide'
 
 // Optional reset
 import 'baseline-kit/reset'
 ```
 
-### Theme Options
+The built-in theme follows `prefers-color-scheme`. For a fixed theme, import
+`baseline-kit/theme/default` or `baseline-kit/theme/dark`. For a custom theme,
+copy the token template from `baseline-kit/theme/tokens` and define the CSS
+variables your application needs.
 
-You now have four options for using the theme system:
-
-#### 1. Use the Built-in Theme (with automatic dark mode)
-
-```tsx
-import 'baseline-kit/theme' // Default theme with light/dark mode support
-```
-
-#### 2. Use Specific Theme Variants
-
-```tsx
-// Use only the light theme (no dark mode)
-import 'baseline-kit/theme/default'
-
-// Use only the dark theme
-import 'baseline-kit/theme/dark'
-
-// Example: Apply dark theme regardless of system preference
-import 'baseline-kit/styles'
-import 'baseline-kit/theme/dark'
-```
-
-#### 3. Create a Custom Theme
-
-You can use the tokens template as a starting point:
-
-```tsx
-// First check the token template to see available variables
-import 'baseline-kit/theme/tokens' // Just for reference (contains no values)
-```
-
-Then create your own custom theme file:
-
-```css
-/* yourCustomTheme.css */
-:root {
-  /* Component-specific colors */
-  --bk-baseline-color-line-theme: hsla(210, 100%, 50%, 0.15);
-  --bk-baseline-color-flat-theme: hsla(270, 100%, 60%, 0.2);
-  /* Add other component colors as needed */
-}
-
-/* Optional dark mode support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bk-baseline-color-line-theme: hsla(210, 100%, 50%, 0.2);
-  }
-}
-```
-
-Then import your custom theme:
-
-```tsx
-import 'baseline-kit/styles' // Required component styles
-import './path/to/yourCustomTheme.css' // Your custom theme
-```
-
-#### 4. Override via Config
-
-For minor adjustments, use the Config component:
+Use `Config` for scoped overrides:
 
 ```tsx
 <Config
+  base={8}
   baseline={{
     colors: {
-      line: 'rgba(255,0,0,0.1)',   // Custom red baseline lines
-      flat: 'rgba(255,0,0,0.05)',  // Custom red baseline backgrounds
-    }
+      line: 'rgba(255, 0, 0, 0.1)',
+      flat: 'rgba(255, 0, 0, 0.05)',
+    },
   }}
 >
-  {/* Your components here */}
+  {children}
 </Config>
 ```
 
-### Theme Variables Reference
+Theme variables are grouped by component:
 
-| Component | Variable Pattern | Purpose |
-|-----------|-----------------|---------|
-| Baseline  | `--bk-baseline-color-[line/flat]-theme` | Colors for lines and backgrounds |
-| Guide     | `--bk-guide-color-[line/pattern/auto/fixed]-theme` | Colors for different guide variants |
-| Box       | `--bk-box-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
-| Spacer    | `--bk-spacer-color-[line/flat/text]-theme` | Colors for borders, backgrounds and text |
-| Padder    | `--bk-padder-color-theme` | Padder edge color |
+| Component | Variable prefix         |
+| --------- | ----------------------- |
+| Baseline  | `--bk-baseline-color-*` |
+| Guide     | `--bk-guide-color-*`    |
+| Box       | `--bk-box-color-*`      |
+| Spacer    | `--bk-spacer-color-*`   |
+| Padder    | `--bk-padder-color-*`   |
 
-See the [tokens file](https://github.com/dnvt/baseline-kit/blob/main/dist/theme/tokens.css) for a complete list of available variables.
+See the [token template](https://github.com/dnvt/baseline-kit/blob/main/packages/react/src/components/styles/theme/tokens.css)
+for the complete list.
 
-## Browser Support
+## Remix 3 UI runtime
 
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- Requires CSS Grid Layout support and CSS Custom Properties
-- Falls back gracefully in unsupported browsers
+For Node SSR, use **`baseline-kit/remix/server`**, not `remix/ui/server`.
+The pinned Remix RC loses provider context while serializing component-valued
+children. This server entry corrects that traversal in an isolated renderer,
+preserving nested `Config` scopes even when app or library entries hydrate late.
+It does not change files in `node_modules` or install process-wide module hooks.
 
-## React 19 Features
-
-Baseline Kit leverages React 19's latest features:
-- **`use` Hook**: Replaces `useContext` for better performance and cleaner code
-- **Streamlined Context API**: Uses the simplified Context Provider syntax
-- **JSX Transform**: Takes advantage of the mandatory JSX transform in React 19
-
-These modern features allow for cleaner code and better performance, but require React 19.
-
-## Server-Side Rendering (SSR)
-
-Baseline Kit is fully compatible with React's Server-Side Rendering in frameworks like Next.js, Remix, and other React Router-based applications.
-
-### SSR-Friendly Design
-
-Components are designed to:
-- Provide consistent rendering between server and client
-- Avoid hydration mismatches by using deterministic initial values
-- Progressively enhance with client-side measurements after hydration
-- Work with frameworks that use streaming SSR
-
-### SSR Mode Prop
-
-Components accept an `ssrMode` prop to explicitly optimize for server rendering:
+This is a Node-only compatibility entry, not an edge/browser renderer. It loads
+the installed `@remix-run/ui@0.9.0` server implementation and verifies its exact
+SHA-256 before applying the correction in memory. Keep the installed Remix
+runtime files available in production; do not use a standalone bundle that
+omits them. Modified or upgraded implementations fail with an explicit error
+until compatibility is revalidated. Import `ImportMap` from this same entry if
+used; `Frame` and client components still come from `remix/ui`.
 
 ```tsx
-<Baseline
-  height="100vh"
-  ssrMode={true}
-  debugging="visible"
-/>
+import { renderToStream, ImportMap } from 'baseline-kit/remix/server'
+
+// If app contains an ImportMap component, use the export above.
+const stream = renderToStream(app, { resolveClientEntry })
+return new Response(stream, { headers: { 'Content-Type': 'text/html' } })
 ```
 
-With `ssrMode` enabled, components use simplified rendering during SSR and initial hydration, then enhance with full features after client-side hydration completes.
-For debug overlays such as `Guide` and `Baseline`, `ssrMode` keeps the simplified fallback markup to avoid client measurement and row/column rendering in SSR-sensitive paths.
+The React-free adapter uses `remix/ui` and does not import React or React DOM:
+
+```shell
+npm install baseline-kit remix@3.0.0-rc.2
+```
+
+```tsx
+import 'baseline-kit/styles/remix'
+import { Baseline, Box, Config, Guide, Spacer } from 'baseline-kit/remix'
+import { jsx } from 'remix/ui/jsx-runtime'
+
+export function App() {
+  return jsx(Config, {
+    base: 8,
+    baseline: { debugging: 'visible' },
+    children: [
+      jsx(Baseline, { height: '100vh' }),
+      jsx(Guide, { variant: 'fixed', columns: 12 }),
+      jsx(Box, { children: 'Native Remix content' }),
+      jsx(Spacer, { height: 16, variant: 'flat' }),
+    ],
+  })
+}
+```
+
+The `resolveClientEntry` callback needs an app-owned mapping from each entry to a **browser-served
+JavaScript asset**. A server filesystem URL or bare npm specifier is not a
+browser asset. The mapping must handle the app's own client entries as well.
+See the runnable [server resolver](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/remix-ssr.ts)
+and [asset-serving fixture](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/vite.config.ts).
+
+Once the server supplies public URLs, load the actual module and named export:
+
+```tsx
+import { run } from 'remix/ui'
+run({
+  loadModule: async (moduleUrl, exportName) => {
+    const module = await import(
+      /* @vite-ignore */ new URL(moduleUrl, document.baseURI).href
+    )
+    return module[exportName]
+  },
+})
+```
+
+Callbacks such as `indicatorNode` must be created inside the hydrated module;
+functions cannot cross an SSR client-entry boundary. Keep `Config` and its
+consumers within an app-owned hydrated component for interactive config updates.
+This adapter is separate from React-based Remix/React Router applications,
+which use the regular React entry.
+
+In a Vite-based React application with a `links()` function, import the CSS as a
+URL; a bare package specifier in `href` will not resolve:
+
+```tsx
+import stylesheetUrl from 'baseline-kit/styles?url'
+
+export const links = () => [{ rel: 'stylesheet', href: stylesheetUrl }]
+```
+
+See [Vite's explicit URL imports](https://vite.dev/guide/assets.html#explicit-url-imports).
+
+## Server-side rendering
+
+React Baseline/Guide begin with a hidden fallback, then measure and paint after
+hydration. Native Remix uses client-entry SSR and hydration through the resolver
+above. `ssrMode` on Baseline/Guide **keeps the hidden fallback permanently** while
+true: it disables client measurement and rows/columns. Leave it false (the
+default) for visible, interactive overlays:
+
+```tsx
+<Baseline height="100vh" ssrMode debugging="visible" />
+```
 
 ## Development
 
 ```shell
-# Clone the repository
-git clone --recurse-submodules https://github.com/dnvt/baseline-kit.git
+git clone https://github.com/dnvt/baseline-kit.git
+cd baseline-kit
+bun install --frozen-lockfile
 
-# If you already cloned without submodules
-git submodule update --init --recursive
-
-# Install dependencies
-bun install
-
-# Start development server
-bun run dev
-
-# Run tests
-bun run test
+bun run typecheck
+bun run lint:check
+bun run test:unit
+bun run build
+bun run test:integration:remix
 ```
 
-The `.maestro/source` directory is a workflow submodule. Generated local
-workflow surfaces such as `.claude/`, `maestro/`, `progress/`, and `plans/` are
-ignored. Do not run the Maestro layout migration until the submodule source is
-mounted at `.maestro/source` and the migration plan has been reviewed.
+Run the Chromium and WebKit browser regressions locally with:
 
-## Performance Features
+```shell
+bun run test:browser -- --project=chromium --project=webkit
+```
 
-- Virtualizes large grid overlays
-- Client-side only rendering for dynamic components
-- Optimized resize event handling
-- Optimizes re-renders using React.memo and useMemo
-- Supports tree-shaking for minimal bundle size
+The release workflow runs the complete browser matrix, builds the package, and
+publishes through Changesets after the verification gates pass.
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](https://github.com/dnvt/baseline-kit/blob/main/CONTRIBUTING.md) for contribution and pull-request
+guidelines.
 
 ## License
 

@@ -1,4 +1,4 @@
-import { formatValue, createStyleOverride, normalizeValuePair } from '../utils'
+import { formatValue, normalizeValuePair } from '../utils'
 
 export interface SpacerDescriptorParams {
   base: number
@@ -17,20 +17,6 @@ export interface SpacerDescriptor {
   classTokens: string[]
 }
 
-const SPACER_DEFAULTS = (
-  base: number,
-  textColor: string,
-  flatColor: string,
-  lineColor: string
-): Record<string, string> => ({
-  '--bksp-w': '100%',
-  '--bksp-h': '100%',
-  '--bksp-b': `${base}px`,
-  '--bksp-ct': textColor,
-  '--bksp-cf': flatColor,
-  '--bksp-cl': lineColor,
-})
-
 /**
  * Computes styles needed to render a Spacer component.
  * Pure function — framework-agnostic.
@@ -45,43 +31,15 @@ export function createSpacerDescriptor(
     suppressWarnings: true,
   })
 
-  const defaultStyles = SPACER_DEFAULTS(
-    base,
-    colors.text,
-    colors.flat,
-    colors.line
-  )
-  const dimensionVars = ['--bksp-w', '--bksp-h']
-
   const style: Record<string, string> = {
-    ...createStyleOverride({
-      key: '--bksp-h',
-      value: formatValue(normHeight || '100%'),
-      defaultStyles,
-      skipDimensions: { fullSize: dimensionVars },
-    }),
-    ...createStyleOverride({
-      key: '--bksp-w',
-      value: formatValue(normWidth || '100%'),
-      defaultStyles,
-      skipDimensions: { fullSize: dimensionVars },
-    }),
+    ...(height !== undefined ? { '--bksp-h': formatValue(normHeight) } : {}),
+    ...(width !== undefined ? { '--bksp-w': formatValue(normWidth) } : {}),
     '--bksp-b': `${base}px`,
-    ...createStyleOverride({
-      key: '--bksp-ct',
-      value: color ?? colors.text,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bksp-cl',
-      value: color ?? colors.line,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bksp-cf',
-      value: color ?? colors.flat,
-      defaultStyles,
-    }),
+    // Emit all resolved painted channels on the consumer. Config is
+    // wrapperless, so comparing against defaults would erase custom values.
+    '--bksp-ct': color ?? colors.text,
+    '--bksp-cl': color ?? colors.line,
+    '--bksp-cf': color ?? colors.flat,
   }
 
   const classTokens = ['spr']

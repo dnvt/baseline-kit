@@ -1,5 +1,6 @@
 {
   "name": "@baseline-kit/dom",
+  "private": true,
   "version": "1.0.0",
   "description": "DOM utilities for baseline-kit: timing, SSR detection, and browser APIs",
   "type": "module",

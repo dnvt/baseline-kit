@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+/// <reference types="vite/client" />
 
 interface CustomMatchers<R = unknown> {
   toHaveGridStyle(expected: Record<string, string | number>): R;

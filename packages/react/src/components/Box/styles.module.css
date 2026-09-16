@@ -2,6 +2,8 @@
   position: relative;
   width: var(--bkbx-w);
   height: var(--bkbx-h);
+  text-box-trim: trim-both;
+  text-box-edge: ex alphabetic;
 }
 
 .v::after {

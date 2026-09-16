@@ -49,7 +49,7 @@ describe('useVirtual', () => {
         totalLines: 100,
         lineHeight,
         containerRef: ref,
-      }),
+      })
     )
 
     act(() => {
@@ -57,10 +57,24 @@ describe('useVirtual', () => {
       callback?.([
         {
           isIntersecting: true,
-          boundingClientRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          boundingClientRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           target: ref.current,
           intersectionRatio: 1,
-          intersectionRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          intersectionRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           rootBounds: null,
           time: Date.now(),
         } as IntersectionObserverEntry,
@@ -74,8 +88,8 @@ describe('useVirtual', () => {
     // But the test title says "default numeric buffer"—if your hook actually expects 160 by default,
     // then you must update your hook default parameter.
     // In our case, we assume the default buffer provided by the hook is 0.
-    const bufferLines = Math.ceil(0 / lineHeight)  // equals 0
-    const viewportLines = Math.ceil(800 / lineHeight)  // equals 100
+    const bufferLines = Math.ceil(0 / lineHeight) // equals 0
+    const viewportLines = Math.ceil(800 / lineHeight) // equals 100
     expect(result.current.end).toBe(Math.min(100, viewportLines + bufferLines))
   })
 
@@ -88,7 +102,7 @@ describe('useVirtual', () => {
         totalLines,
         lineHeight: 8,
         containerRef: ref,
-      }),
+      })
     )
 
     act(() => {
@@ -96,10 +110,24 @@ describe('useVirtual', () => {
       callback?.([
         {
           isIntersecting: true,
-          boundingClientRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          boundingClientRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           target: ref.current,
           intersectionRatio: 1,
-          intersectionRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          intersectionRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           rootBounds: null,
           time: Date.now(),
         } as IntersectionObserverEntry,
@@ -118,7 +146,7 @@ describe('useVirtual', () => {
         lineHeight: 8,
         containerRef: ref,
         buffer: customBuffer,
-      }),
+      })
     )
 
     act(() => {
@@ -126,10 +154,24 @@ describe('useVirtual', () => {
       callback?.([
         {
           isIntersecting: true,
-          boundingClientRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          boundingClientRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           target: ref.current,
           intersectionRatio: 1,
-          intersectionRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          intersectionRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           rootBounds: null,
           time: Date.now(),
         } as IntersectionObserverEntry,
@@ -151,7 +193,7 @@ describe('useVirtual', () => {
         lineHeight: 8,
         containerRef: ref,
         buffer: '10vh',
-      }),
+      })
     )
 
     // Expected numericBuffer = parseInt("10vh",10) = 10.
@@ -161,10 +203,24 @@ describe('useVirtual', () => {
       callback?.([
         {
           isIntersecting: true,
-          boundingClientRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          boundingClientRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           target: ref.current,
           intersectionRatio: 1,
-          intersectionRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          intersectionRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           rootBounds: null,
           time: Date.now(),
         } as IntersectionObserverEntry,
@@ -172,7 +228,9 @@ describe('useVirtual', () => {
     })
 
     const viewportLines = Math.ceil(800 / 8)
-    expect(result.current.end).toBe(Math.min(100, viewportLines + expectedBufferLines))
+    expect(result.current.end).toBe(
+      Math.min(100, viewportLines + expectedBufferLines)
+    )
   })
 
   it('returns full range if containerRef.current is null', () => {
@@ -182,10 +240,29 @@ describe('useVirtual', () => {
         totalLines: 100,
         lineHeight: 8,
         containerRef: ref,
-      }),
+      })
     )
     expect(result.current.start).toBe(0)
     expect(result.current.end).toBe(100)
+  })
+
+  it('resets the mounted range when the measured total increases', () => {
+    const ref = { current: document.createElement('div') }
+    const { result, rerender } = renderHook(
+      ({ totalLines }) =>
+        useVirtual({
+          totalLines,
+          lineHeight: 8,
+          containerRef: ref,
+        }),
+      { initialProps: { totalLines: 1 } }
+    )
+
+    expect(result.current.end).toBe(1)
+
+    rerender({ totalLines: 20 })
+
+    expect(result.current).toEqual({ start: 0, end: 20 })
   })
 
   it('returns full range if element is inside a ".content-block"', () => {
@@ -199,7 +276,7 @@ describe('useVirtual', () => {
         totalLines: 100,
         lineHeight: 8,
         containerRef: ref,
-      }),
+      })
     )
     expect(result.current.start).toBe(0)
     expect(result.current.end).toBe(100)
@@ -213,7 +290,7 @@ describe('useVirtual', () => {
         lineHeight: 8,
         containerRef: ref,
         buffer: 'invalid',
-      }),
+      })
     )
 
     act(() => {
@@ -221,10 +298,24 @@ describe('useVirtual', () => {
       callback?.([
         {
           isIntersecting: true,
-          boundingClientRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          boundingClientRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           target: ref.current,
           intersectionRatio: 1,
-          intersectionRect: { top: 0, bottom: 800, left: 0, right: 0, width: 0, height: 800 },
+          intersectionRect: {
+            top: 0,
+            bottom: 800,
+            left: 0,
+            right: 0,
+            width: 0,
+            height: 800,
+          },
           rootBounds: null,
           time: Date.now(),
         } as IntersectionObserverEntry,
@@ -254,7 +345,7 @@ describe('useVirtual', () => {
         lineHeight: 8,
         containerRef: ref,
         buffer: 0,
-      }),
+      })
     )
     expect(result.current.start).toBe(0)
     expect(result.current.end).toBe(Math.ceil(800 / 8))

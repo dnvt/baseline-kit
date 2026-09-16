@@ -117,24 +117,17 @@ export function createGuideDescriptor(
   } = params
 
   const defaultStyles = GUIDE_DEFAULTS(base, colors.line)
-  const fullDimensions = ['--bkgd-w', '--bkgd-h']
-
-  const widthValue = formatValue(width ?? '100%')
-  const heightValue = formatValue(height ?? '100%')
-
   const containerStyle: Record<string, string> = {
-    ...createStyleOverride({
-      key: '--bkgd-w',
-      value: widthValue,
-      defaultStyles,
-      skipDimensions: { fullSize: fullDimensions },
-    }),
-    ...createStyleOverride({
-      key: '--bkgd-h',
-      value: heightValue,
-      defaultStyles,
-      skipDimensions: { fullSize: fullDimensions },
-    }),
+    // Config is wrapperless, so every guide color channel must travel with
+    // the consuming guide rather than relying on root CSS variables.
+    '--bkgd-cl': color ?? colors.line,
+    '--bkgd-cp': color ?? colors.pattern,
+    '--bkgd-ca': color ?? colors.auto,
+    '--bkgd-cf': color ?? colors.fixed,
+    // Always declare the containing-block default and preserve explicit CSS
+    // dimensions. A viewport size is not equivalent to 100% of the parent.
+    '--bkgd-w': formatValue(width ?? '100%'),
+    '--bkgd-h': formatValue(height ?? '100%'),
     ...createStyleOverride({
       key: '--bkgd-mw',
       value: formatValue(maxWidth || 'none'),
@@ -172,16 +165,18 @@ export function createGuideDescriptor(
   }
 
   const columnColor =
+    color ??
     (variant && variant in colors
       ? colors[variant as keyof typeof colors]
-      : undefined) ?? colors.line
+      : undefined) ??
+    colors.line
 
   const isLineVariant = variant === 'line'
   const classTokens = ['gde', isVisible ? 'v' : 'h']
   if (isLineVariant) classTokens.push('line')
 
   if (isLineVariant) {
-    containerStyle['--bkgd-line-color'] = color ?? colors.line
+    containerStyle['--bkgd-line-color'] = 'var(--bkgd-cl)'
     containerStyle['--bkgd-line-period'] = `${calculatedGap + 1}px`
   }
 

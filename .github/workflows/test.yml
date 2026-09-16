@@ -22,35 +22,68 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24.15.0'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: '1.3.12'
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Type Check
         run: bun run typecheck
 
       - name: Lint Check
-        run: bun run lint
+        run: bun run lint:check
 
-      - name: Run Tests with Coverage
-        run: bun run test
+      - name: Run Unit Tests
+        run: bun run test:unit
+
+      - name: Install Browser Engines
+        run: bunx playwright install --with-deps chromium firefox webkit
+
+      - name: Run Browser Regression Tests
+        run: bun run test:browser
 
       - name: Build Package
         run: bun run build
 
-      - name: Debug Environment
-        run: uname -a
+      - name: Run Packed Remix Integration
+        run: bun run test:integration:remix
 
       - name: Verify Package Contents
         run: |
           test -f dist/index.mjs || (echo "Missing index.mjs" && exit 1)
           test -f dist/index.cjs || (echo "Missing index.cjs" && exit 1)
+          test -f dist/remix.mjs || (echo "Missing remix.mjs" && exit 1)
+          test -f dist/remix.d.ts || (echo "Missing remix.d.ts" && exit 1)
+          test -f dist/remix.css || (echo "Missing remix.css" && exit 1)
           test -f dist/styles.css || (echo "Missing styles.css" && exit 1)
           test -f dist/baseline-kit.css || (echo "Missing baseline-kit.css" && exit 1)
           test -d dist/theme || (echo "Missing theme directory" && exit 1)
+
+  react-core:
+    name: React/Core Node 22 Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.22.2'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: '1.3.12'
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run React/Core Tests
+        run: bun run test:react-core

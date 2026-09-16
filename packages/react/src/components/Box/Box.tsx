@@ -111,7 +111,8 @@ export const Box = React.memo(
             width="fit-content"
             height={height}
             debugging={debugging}
-            ssrMode={ssrMode}
+            // Box owns snapping; the inner Padder renders its resolved edges.
+            ssrMode
           >
             {children}
           </Padder>

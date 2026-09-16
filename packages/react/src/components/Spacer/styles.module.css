@@ -20,3 +20,7 @@
 .flat {
   background-color: var(--bksp-cf, hsla(230, 100%, 70%, 0.2));
 }
+
+.indicator {
+  color: var(--bksp-ct, hsla(270, 60%, 40%, 1));
+}

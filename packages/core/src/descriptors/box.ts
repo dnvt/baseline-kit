@@ -1,8 +1,4 @@
-import {
-  formatValue,
-  createStyleOverride,
-  createGridSpanStyles,
-} from '../utils'
+import { formatValue, createGridSpanStyles } from '../utils'
 
 export interface BoxDescriptorParams {
   base: number
@@ -21,16 +17,6 @@ export interface BoxDescriptor {
   classTokens: string[]
 }
 
-const BOX_DEFAULTS = (
-  base: number,
-  lineColor: string
-): Record<string, string> => ({
-  '--bkbx-w': 'auto',
-  '--bkbx-h': 'auto',
-  '--bkbx-cl': lineColor,
-  '--bkbx-b': `${base}px`,
-})
-
 /**
  * Computes styles needed to render a Box component.
  * Pure function — framework-agnostic.
@@ -38,29 +24,15 @@ const BOX_DEFAULTS = (
 export function createBoxDescriptor(
   params: BoxDescriptorParams
 ): BoxDescriptor {
-  const { base, lineColor, width, height, span, colSpan, rowSpan, isVisible } =
-    params
+  const { lineColor, width, height, span, colSpan, rowSpan, isVisible } = params
 
-  const defaultStyles = BOX_DEFAULTS(base, lineColor)
-  const dimensionVars = ['--bkbx-w', '--bkbx-h']
-
-  // --bkbx-b and --bkbx-cl intentionally omitted: their runtime value
-  // always equals the default (both are derived from the same base/lineColor
-  // inputs that seed BOX_DEFAULTS), so inline overrides would never emit.
-  // Styling happens at the CSS layer via the module's declared defaults.
   const boxStyle: Record<string, string> = {
-    ...createStyleOverride({
-      key: '--bkbx-w',
-      value: formatValue(width || 'fit-content'),
-      defaultStyles,
-      skipDimensions: { fitContent: dimensionVars },
-    }),
-    ...createStyleOverride({
-      key: '--bkbx-h',
-      value: formatValue(height || 'fit-content'),
-      defaultStyles,
-      skipDimensions: { fitContent: dimensionVars },
-    }),
+    ...(width !== undefined ? { '--bkbx-w': formatValue(width) } : {}),
+    ...(height !== undefined ? { '--bkbx-h': formatValue(height) } : {}),
+    // Config is context, not a DOM wrapper. The consuming Box must receive
+    // its resolved painted value directly so nested/sibling Config scopes do
+    // not depend on a root-level custom property.
+    '--bkbx-cl': lineColor,
   }
 
   const gridSpanStyle = createGridSpanStyles(span, colSpan, rowSpan)

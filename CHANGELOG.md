@@ -1,5 +1,27 @@
 # baseline-kit
 
+## Unreleased
+
+### Improvements
+
+- Added the React-free Remix 3 entry point and its dedicated CSS entry.
+- Added a Node-only Remix SSR compatibility entry that preserves nested Config
+  context during serialization and fails closed if the pinned Remix renderer
+  changes.
+- Added TypeScript 7 compiler support while keeping lint and declaration tools
+  on the official TypeScript 6 compatibility API until their TypeScript 7 APIs
+  are released.
+- Simplified the public documentation around entry points, sizing, themes,
+  text-box alignment, SSR, and release checks.
+- Removed unused CSS and linting dependencies, including `cssnano`.
+
+### Bug fixes
+
+- Fixed relative browser sizing, scoped Config color propagation, and delayed
+  hydration regressions across the React and native Remix adapters.
+- Box and Padder now opt into `text-box: trim-both ex alphabetic` when the
+  browser supports it, while retaining normal line boxes as a fallback.
+
 ## 5.0.0
 
 ### Breaking changes
@@ -40,9 +62,9 @@
 - `Stack` gap / rowGap / columnGap values are now emitted with `px` units.
   Numeric gaps were stringified to unitless values (`"8"`), which browsers
   drop for non-zero `row-gap` / `column-gap` declarations, silently breaking
-  spacing. *(This fix landed before the `Stack` component was retired; it
+  spacing. _(This fix landed before the `Stack` component was retired; it
   matters now for any code still using `createStackDescriptor` from the core
-  package up to 5.0.0 — though that descriptor itself has also been removed.)*
+  package up to 5.0.0 — though that descriptor itself has also been removed.)_
 - `useBaseline` snapping now fires on the first real measurement. The previous
   implementation flipped a "did-snap" latch during the initial render (when
   `useMeasure` has not yet reported a height), so `Box` and `Padder` using

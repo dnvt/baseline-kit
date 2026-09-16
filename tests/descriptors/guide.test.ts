@@ -72,10 +72,10 @@ describe('createGuideDescriptor', () => {
     expect(containerStyle['--bkgd-g']).toBe('7px')
   })
 
-  it('emits explicit sizing variables only when sizing props are provided', () => {
+  it('defaults to its parent and preserves explicit dimensions', () => {
     const defaultDescriptor = createGuideDescriptor(baseParams)
-    expect(defaultDescriptor.containerStyle['--bkgd-w']).toBeUndefined()
-    expect(defaultDescriptor.containerStyle['--bkgd-h']).toBeUndefined()
+    expect(defaultDescriptor.containerStyle['--bkgd-w']).toBe('100%')
+    expect(defaultDescriptor.containerStyle['--bkgd-h']).toBe('100%')
 
     const sizedDescriptor = createGuideDescriptor({
       ...baseParams,
@@ -105,6 +105,15 @@ describe('createGuideDescriptor', () => {
     ).toBe('green')
   })
 
+  it('uses an explicit color for both painted guide columns and channels', () => {
+    const descriptor = createGuideDescriptor({ ...baseParams, color: 'pink' })
+    expect(descriptor.columnColor).toBe('pink')
+    expect(descriptor.containerStyle['--bkgd-cl']).toBe('pink')
+    expect(descriptor.containerStyle['--bkgd-cp']).toBe('pink')
+    expect(descriptor.containerStyle['--bkgd-ca']).toBe('pink')
+    expect(descriptor.containerStyle['--bkgd-cf']).toBe('pink')
+  })
+
   it('classTokens includes line for line variant and visibility marker', () => {
     expect(createGuideDescriptor(baseParams).classTokens).toEqual([
       'gde',
@@ -120,7 +129,10 @@ describe('createGuideDescriptor', () => {
   })
 
   it('skips template CSS var when template is empty or "none"', () => {
-    const noneTemplate = createGuideDescriptor({ ...baseParams, template: 'none' })
+    const noneTemplate = createGuideDescriptor({
+      ...baseParams,
+      template: 'none',
+    })
     expect(noneTemplate.containerStyle['--bkgd-t']).toBeUndefined()
   })
 })

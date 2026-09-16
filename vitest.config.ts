@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import { alias } from './alias.config'
+import { alias } from './alias.config.ts'
 
 export default defineConfig({
   test: {

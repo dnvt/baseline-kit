@@ -164,7 +164,13 @@ export const Padder = React.memo(
             <div style={GRID_MID_COL}>{renderSpacer(padding.left, '100%')}</div>
           )}
         </>
-        <div style={GRID_CENTER}>{children}</div>
+        <div
+          data-testid="padder-content"
+          className={styles.content}
+          style={GRID_CENTER}
+        >
+          {children}
+        </div>
         <>
           {padding.right >= 0 && (
             <div style={GRID_MID_COL}>
