@@ -15,6 +15,7 @@ import {
   resolveDebugging,
   createElementObserverBridge,
   createVirtualBridge,
+  queueNativeUpdate,
   type NativeComponent,
 } from './shared'
 import { Config } from './Config'
@@ -41,14 +42,8 @@ type RuntimeBaselineProps = BaselineProps & {
 
 function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
   let dimensions = { width: 0, height: 0 }
-  let updatePending = false
   const requestUpdate = () => {
-    if (updatePending || handle.signal.aborted) return
-    updatePending = true
-    queueMicrotask(() => {
-      updatePending = false
-      void handle.update().catch(() => undefined)
-    })
+    queueNativeUpdate(handle)
   }
   const observer = createElementObserverBridge((next) => {
     if (next.width === dimensions.width && next.height === dimensions.height)

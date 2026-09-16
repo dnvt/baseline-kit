@@ -166,27 +166,31 @@ try {
     }
   )
 
-  run(
-    resolve(repoRoot, 'node_modules/.bin/playwright'),
-    [
-      'test',
-      '--project=chromium',
-      '--project=firefox',
-      '--project=webkit',
-      '--grep',
-      'native Remix adapter',
-    ],
-    {
-      cwd: repoRoot,
-      env: {
-        ...process.env,
-        BASELINE_KIT_PACKAGE_ROOT: resolve(
-          fixtureDir,
-          'node_modules/baseline-kit'
-        ),
-      },
-    }
-  )
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    console.log(`\nPacked Remix browser pass ${attempt}/3`)
+    run(
+      resolve(repoRoot, 'node_modules/.bin/playwright'),
+      [
+        'test',
+        '--project=chromium',
+        '--project=firefox',
+        '--project=webkit',
+        '--retries=0',
+        '--grep',
+        'native Remix adapter',
+      ],
+      {
+        cwd: repoRoot,
+        env: {
+          ...process.env,
+          BASELINE_KIT_PACKAGE_ROOT: resolve(
+            fixtureDir,
+            'node_modules/baseline-kit'
+          ),
+        },
+      }
+    )
+  }
 
   const fixture = await import(
     pathToFileURL(resolve(fixtureDir, 'fixture.mjs')).href

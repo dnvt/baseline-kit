@@ -13,7 +13,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),
-  retries: process.env.CI ? 2 : 0,
+  // Release gates must expose a failure; repetition is handled explicitly by
+  // the checked-in browser gate script instead of retrying a failed test.
+  retries: 0,
   reporter: [['list']],
   use: {
     baseURL: browserBaseURL,

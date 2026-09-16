@@ -1,3 +1,4 @@
+import { Frame } from 'remix/ui'
 import { jsx } from 'remix/ui/jsx-runtime'
 import { Forwarder } from './remix-entries'
 import {
@@ -64,6 +65,34 @@ export function createRemixApp() {
 
   return jsx('main', {
     children: [
+      jsx('section', {
+        id: 'remix-frame-lifecycle',
+        children: [
+          jsx('nav', {
+            id: 'remix-frame-navigation',
+            children: [
+              jsx('a', {
+                id: 'remix-frame-nav-a',
+                href: '/remix-lifecycle-a',
+                'data-rmx-target': 'lifecycle',
+                'data-rmx-history': 'push',
+                children: 'Frame A',
+              }),
+              jsx('a', {
+                id: 'remix-frame-nav-b',
+                href: '/remix-lifecycle-b',
+                'data-rmx-target': 'lifecycle',
+                'data-rmx-history': 'push',
+                children: 'Frame B',
+              }),
+            ],
+          }),
+          jsx(Frame, {
+            name: 'lifecycle',
+            src: '/remix-lifecycle-a',
+          }),
+        ],
+      }),
       ...['children', 'content'].map((slot) =>
         jsx('section', {
           id: `remix-entry-${slot}`,

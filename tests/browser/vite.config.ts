@@ -87,18 +87,50 @@ export default defineConfig({
       : []),
   ],
   resolve: {
-    alias: {
-      '@baseline-kit/remix/server': packageRoot
-        ? resolve(packageRoot, 'dist/remix-server.mjs')
-        : resolve(import.meta.dirname, '../../packages/remix/src/server.ts'),
-      ...alias,
+    alias: [
+      {
+        find: '@baseline-kit/remix/server',
+        replacement: packageRoot
+          ? resolve(packageRoot, 'dist/remix-server.mjs')
+          : resolve(import.meta.dirname, '../../packages/remix/src/server.ts'),
+      },
+      ...Object.entries(alias).map(([find, replacement]) => ({
+        find,
+        replacement,
+      })),
       ...(packageRoot
-        ? {
-            '@baseline-kit/react': resolve(packageRoot, 'dist/index.mjs'),
-            '@baseline-kit/remix': resolve(packageRoot, 'dist/remix.mjs'),
-          }
-        : {}),
-    },
+        ? [
+            // The packed fixture owns its Remix installation. Vite aliases
+            // bypass package exports, so point the public subpath imports at
+            // the installed distribution files explicitly. Keeping these
+            // files on the same Remix instance is required for the server
+            // renderer's Frame identity to match client hydration.
+            {
+              find: /^remix\/ui\/jsx-runtime$/,
+              replacement: resolve(
+                packageRoot,
+                '..',
+                'remix',
+                'dist',
+                'ui',
+                'jsx-runtime.js'
+              ),
+            },
+            {
+              find: /^remix\/ui$/,
+              replacement: resolve(packageRoot, '..', 'remix', 'dist', 'ui.js'),
+            },
+            {
+              find: '@baseline-kit/react',
+              replacement: resolve(packageRoot, 'dist/index.mjs'),
+            },
+            {
+              find: '@baseline-kit/remix',
+              replacement: resolve(packageRoot, 'dist/remix.mjs'),
+            },
+          ]
+        : []),
+    ],
   },
   css: {
     modules: {

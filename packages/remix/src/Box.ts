@@ -17,6 +17,7 @@ import {
   createElementObserverBridge,
   getConfig,
   mergeStyles,
+  queueNativeUpdate,
   resolveDebugging,
   type NativeComponent,
 } from './shared'
@@ -50,15 +51,9 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   let currentSnapping: SnappingMode = 'clamp'
   let currentInitialPadding: Padding = parsePadding({})
   let snappedPadding: Padding | null = null
-  let updatePending = false
 
   const requestUpdate = () => {
-    if (updatePending || handle.signal.aborted) return
-    updatePending = true
-    queueMicrotask(() => {
-      updatePending = false
-      void handle.update().catch(() => undefined)
-    })
+    queueNativeUpdate(handle)
   }
 
   const observer = createElementObserverBridge((next) => {

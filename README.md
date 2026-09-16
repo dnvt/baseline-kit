@@ -318,8 +318,15 @@ Run the Chromium and WebKit browser regressions locally with:
 bun run test:browser -- --project=chromium --project=webkit
 ```
 
-The release workflow runs the complete browser matrix, builds the package, and
-publishes through Changesets after the verification gates pass.
+For the release-equivalent browser gate, use three zero-retry passes:
+
+```shell
+bun run test:browser:repeat
+```
+
+The release workflow runs that gate across Chromium, Firefox, and WebKit,
+builds the package, verifies the packed Remix fixture three times, and
+publishes through Changesets after all verification gates pass.
 
 ## Contributing
 

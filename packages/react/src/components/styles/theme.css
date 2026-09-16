@@ -113,7 +113,10 @@
     --bk-box-color-text-theme: hsla(var(--bk-color-pink-primary), 0.9);
 
     --bk-guide-color-line-theme: hsla(var(--bk-color-white-primary), 0.1);
-    --bk-guide-color-pattern-theme: hsla(var(--bk-color-purple-secondary), 0.25);
+    --bk-guide-color-pattern-theme: hsla(
+      var(--bk-color-purple-secondary),
+      0.25
+    );
     --bk-guide-color-auto-theme: hsla(var(--bk-color-blue-secondary), 0.2);
     --bk-guide-color-fixed-theme: hsla(var(--bk-color-blue-secondary), 0.2);
 
