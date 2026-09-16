@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.RELEASE_TOKEN }}
+          token: ${{ github.token }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -52,5 +52,5 @@ jobs:
           commit: 'chore: update version and changelog'
           title: 'chore: update version and changelog'
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
