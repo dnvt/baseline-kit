@@ -45,7 +45,7 @@ jobs:
         run: bunx playwright install --with-deps chromium firefox webkit
 
       - name: Run Browser Regression Tests
-        run: bun run test:browser
+        run: bun run test:browser:repeat
 
       - name: Build Package
         run: bun run build

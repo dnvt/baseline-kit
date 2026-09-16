@@ -62,6 +62,146 @@ async function readTextBoxStyles(page: Page, selector: string) {
   )
 }
 
+async function installNativeLifecycleProbe(page: Page) {
+  await page.addInitScript(() => {
+    const probe = {
+      resizeActive: 0,
+      intersectionActive: 0,
+      windowListeners: new Map<
+        string,
+        Set<EventListenerOrEventListenerObject>
+      >(),
+      callbacksAfterDisconnect: 0,
+    }
+    const resizeRecords = new WeakMap<object, { disconnected: boolean }>()
+    const intersectionRecords = new WeakMap<object, { disconnected: boolean }>()
+    const target = window as typeof window & {
+      __baselineNativeLifecycleProbe: typeof probe
+      ResizeObserver: typeof ResizeObserver
+      IntersectionObserver: typeof IntersectionObserver
+    }
+    target.__baselineNativeLifecycleProbe = probe
+
+    const OriginalResizeObserver = target.ResizeObserver
+    if (OriginalResizeObserver) {
+      target.ResizeObserver = class extends OriginalResizeObserver {
+        constructor(callback: ResizeObserverCallback) {
+          let record: { disconnected: boolean } | undefined
+          super((entries, observer) => {
+            if (record?.disconnected) probe.callbacksAfterDisconnect += 1
+            callback(entries, observer)
+          })
+          record = { disconnected: false }
+          resizeRecords.set(this, record)
+          probe.resizeActive += 1
+        }
+
+        disconnect() {
+          const record = resizeRecords.get(this)
+          if (record && !record.disconnected) {
+            record.disconnected = true
+            probe.resizeActive -= 1
+          }
+          return super.disconnect()
+        }
+      } as typeof ResizeObserver
+    }
+
+    const OriginalIntersectionObserver = target.IntersectionObserver
+    if (OriginalIntersectionObserver) {
+      target.IntersectionObserver = class extends OriginalIntersectionObserver {
+        constructor(
+          callback: IntersectionObserverCallback,
+          options?: IntersectionObserverInit
+        ) {
+          let record: { disconnected: boolean } | undefined
+          super((entries, observer) => {
+            if (record?.disconnected) probe.callbacksAfterDisconnect += 1
+            callback(entries, observer)
+          }, options)
+          record = { disconnected: false }
+          intersectionRecords.set(this, record)
+          probe.intersectionActive += 1
+        }
+
+        disconnect() {
+          const record = intersectionRecords.get(this)
+          if (record && !record.disconnected) {
+            record.disconnected = true
+            probe.intersectionActive -= 1
+          }
+          return super.disconnect()
+        }
+      } as typeof IntersectionObserver
+    }
+
+    const eventTypes = new Set(['scroll', 'resize'])
+    const captureOf = (
+      options: boolean | AddEventListenerOptions | undefined
+    ) => (typeof options === 'boolean' ? options : Boolean(options?.capture))
+    const listenerKey = (
+      type: string,
+      options: boolean | AddEventListenerOptions | undefined
+    ) => `${type}:${captureOf(options)}`
+    const originalAddEventListener = window.addEventListener.bind(window)
+    const originalRemoveEventListener = window.removeEventListener.bind(window)
+
+    window.addEventListener = ((type, listener, options) => {
+      if (listener && eventTypes.has(type)) {
+        const key = listenerKey(type, options)
+        const listeners =
+          probe.windowListeners.get(key) ??
+          new Set<EventListenerOrEventListenerObject>()
+        listeners.add(listener)
+        probe.windowListeners.set(key, listeners)
+      }
+      return originalAddEventListener(type, listener, options)
+    }) as typeof window.addEventListener
+
+    window.removeEventListener = ((type, listener, options) => {
+      if (listener && eventTypes.has(type)) {
+        probe.windowListeners.get(listenerKey(type, options))?.delete(listener)
+      }
+      return originalRemoveEventListener(type, listener, options)
+    }) as typeof window.removeEventListener
+  })
+}
+
+async function readNativeLifecycleProbe(page: Page) {
+  return page.evaluate(() => {
+    const probe = (
+      window as unknown as {
+        __baselineNativeLifecycleProbe: {
+          resizeActive: number
+          intersectionActive: number
+          windowListeners: Map<string, Set<unknown>>
+          callbacksAfterDisconnect: number
+        }
+      }
+    ).__baselineNativeLifecycleProbe
+    return {
+      resizeActive: probe.resizeActive,
+      intersectionActive: probe.intersectionActive,
+      windowListeners: [...probe.windowListeners.values()].reduce(
+        (total, listeners) => total + listeners.size,
+        0
+      ),
+      callbacksAfterDisconnect: probe.callbacksAfterDisconnect,
+    }
+  })
+}
+
+async function waitForAnimationFrames(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      )
+  )
+}
+
+const nativeCascadingWarnings = new WeakMap<Page, string[]>()
+
 function assertDimensionMatrix(
   measurements: Awaited<ReturnType<typeof readDimensionMatrix>>
 ) {
@@ -108,9 +248,27 @@ test.beforeEach(async ({ page }, testInfo) => {
     throw error
   })
 
+  if (testInfo.titlePath.includes('native Remix adapter')) {
+    const warnings: string[] = []
+    nativeCascadingWarnings.set(page, warnings)
+    page.on('console', (message) => {
+      if (
+        message.type() === 'warning' &&
+        message.text().includes('cascading component updates')
+      ) {
+        warnings.push(message.text())
+      }
+    })
+  }
+
   if (testInfo.titlePath.includes('native Remix adapter')) return
 
   await page.goto('/')
+})
+
+test.afterEach(({ page }, testInfo) => {
+  if (!testInfo.titlePath.includes('native Remix adapter')) return
+  expect(nativeCascadingWarnings.get(page) ?? []).toEqual([])
 })
 
 test('SSR fallback keeps content and geometry usable without JavaScript', async ({
@@ -891,25 +1049,101 @@ test.describe('native Remix adapter', () => {
       .toBe(0)
   })
 
-  test('disposes native observers through the Remix root lifecycle', async ({
+  test('owns native observers through frame reload, replacement, and remount', async ({
     page,
   }) => {
+    await installNativeLifecycleProbe(page)
     await page.goto('/remix.html')
     await page.evaluate(
       () =>
         (window as unknown as { __baselineRemixReady: Promise<void> })
           .__baselineRemixReady
     )
-    await expect(page.locator('[data-testid="baseline"]').first()).toBeVisible()
 
-    const disconnects = await page.evaluate(() => {
-      const originalDisconnect = ResizeObserver.prototype.disconnect
-      let count = 0
-      ResizeObserver.prototype.disconnect = function disconnect() {
-        count += 1
-        return originalDisconnect.call(this)
-      }
+    const baseline = await readNativeLifecycleProbe(page)
+    await page.evaluate(async () => {
+      const controls = (
+        window as unknown as {
+          __baselineRemixLifecycle: {
+            reload: (src: string) => Promise<void>
+          }
+        }
+      ).__baselineRemixLifecycle
+      await controls.reload('/remix-lifecycle-a')
+    })
+    await expect(page.locator('#remix-frame-view-a')).toBeVisible()
+    await expect(
+      page.locator('#remix-frame-view-a [data-row-index]').first()
+    ).toBeVisible()
+    const afterReload = await readNativeLifecycleProbe(page)
+    expect(afterReload.resizeActive).toBeGreaterThan(baseline.resizeActive)
+    expect(afterReload.intersectionActive).toBeGreaterThan(
+      baseline.intersectionActive
+    )
 
+    const detachedFrame = await page
+      .locator('#remix-frame-view-a')
+      .elementHandle()
+    await page.evaluate(async () => {
+      const controls = (
+        window as unknown as {
+          __baselineRemixLifecycle: {
+            replace: (src: string) => Promise<void>
+          }
+        }
+      ).__baselineRemixLifecycle
+      await controls.replace('/remix-lifecycle-b')
+    })
+    await expect(page.locator('#remix-frame-view-b')).toBeVisible()
+    expect(
+      await detachedFrame?.evaluate((element) => element.isConnected)
+    ).toBe(false)
+    await waitForAnimationFrames(page)
+    const afterReplacement = await readNativeLifecycleProbe(page)
+    expect(afterReplacement.resizeActive).toBe(afterReload.resizeActive)
+    expect(afterReplacement.intersectionActive).toBe(
+      afterReload.intersectionActive
+    )
+    expect(afterReplacement.callbacksAfterDisconnect).toBe(0)
+
+    await page.evaluate(async () => {
+      const controls = (
+        window as unknown as {
+          __baselineRemixLifecycle: {
+            replaceStatic: () => Promise<void>
+          }
+        }
+      ).__baselineRemixLifecycle
+      await controls.replaceStatic()
+    })
+    await expect(page.locator('#remix-frame-static')).toBeVisible()
+    await waitForAnimationFrames(page)
+    const afterStaticReplacement = await readNativeLifecycleProbe(page)
+    expect(afterStaticReplacement.resizeActive).toBe(baseline.resizeActive)
+    expect(afterStaticReplacement.intersectionActive).toBe(
+      baseline.intersectionActive
+    )
+    expect(afterStaticReplacement.windowListeners).toBe(
+      baseline.windowListeners
+    )
+    expect(afterStaticReplacement.callbacksAfterDisconnect).toBe(0)
+
+    await page.evaluate(async () => {
+      const controls = (
+        window as unknown as {
+          __baselineRemixLifecycle: {
+            reload: (src: string) => Promise<void>
+          }
+        }
+      ).__baselineRemixLifecycle
+      await controls.reload('/remix-lifecycle-a')
+    })
+    await expect(page.locator('#remix-frame-view-a')).toBeVisible()
+    const afterRemount = await readNativeLifecycleProbe(page)
+    expect(afterRemount.resizeActive).toBe(afterReload.resizeActive)
+    expect(afterRemount.intersectionActive).toBe(afterReload.intersectionActive)
+
+    await page.evaluate(() => {
       const runtime = (
         window as unknown as {
           __baselineRemixRuntime: { dispose: () => void; flush: () => void }
@@ -917,9 +1151,91 @@ test.describe('native Remix adapter', () => {
       ).__baselineRemixRuntime
       runtime.dispose()
       runtime.flush()
-      return count
     })
+    await waitForAnimationFrames(page)
+    const afterDispose = await readNativeLifecycleProbe(page)
+    expect(afterDispose.resizeActive).toBe(0)
+    expect(afterDispose.intersectionActive).toBe(0)
+    expect(afterDispose.windowListeners).toBe(0)
+    expect(afterDispose.callbacksAfterDisconnect).toBe(0)
+  })
 
-    expect(disconnects).toBeGreaterThan(0)
+  test('preserves native frame state across enhanced navigation and history', async ({
+    page,
+  }) => {
+    await installNativeLifecycleProbe(page)
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    const supportsEnhancedNavigation = await page.evaluate(() => {
+      const candidate = (
+        window as unknown as {
+          NavigateEvent?: { prototype?: object }
+        }
+      ).NavigateEvent
+      return Boolean(
+        'navigation' in window &&
+        candidate?.prototype &&
+        'sourceElement' in candidate.prototype
+      )
+    })
+    test.skip(
+      !supportsEnhancedNavigation,
+      'This browser does not expose the Navigation API; direct Frame lifecycle coverage remains cross-engine.'
+    )
+
+    const baseline = await readNativeLifecycleProbe(page)
+    await page.locator('#remix-frame-nav-b').click()
+    await expect(page.locator('#remix-frame-view-b')).toBeVisible()
+    await expect
+      .poll(() => page.evaluate(() => location.pathname))
+      .toBe('/remix-lifecycle-b')
+    const afterNavigation = await readNativeLifecycleProbe(page)
+    expect(afterNavigation.resizeActive).toBeGreaterThan(baseline.resizeActive)
+
+    await page.evaluate(() => history.back())
+    await expect
+      .poll(() => page.evaluate(() => location.pathname))
+      .toBe('/remix.html')
+    await expect(page.locator('#remix-frame-view-a')).toBeVisible()
+    const afterBack = await readNativeLifecycleProbe(page)
+    expect(afterBack.resizeActive).toBe(afterNavigation.resizeActive)
+    expect(afterBack.intersectionActive).toBe(
+      afterNavigation.intersectionActive
+    )
+    expect(afterBack.windowListeners).toBe(afterNavigation.windowListeners)
+
+    await page.evaluate(() => history.forward())
+    await expect
+      .poll(() => page.evaluate(() => location.pathname))
+      .toBe('/remix-lifecycle-b')
+    await expect(page.locator('#remix-frame-view-b')).toBeVisible()
+    await expect(page.locator('[data-remix-frame-view]')).toHaveCount(1)
+    const afterForward = await readNativeLifecycleProbe(page)
+    expect(afterForward.resizeActive).toBe(afterNavigation.resizeActive)
+    expect(afterForward.intersectionActive).toBe(
+      afterNavigation.intersectionActive
+    )
+    expect(afterForward.windowListeners).toBe(afterNavigation.windowListeners)
+
+    await page.evaluate(() => {
+      const runtime = (
+        window as unknown as {
+          __baselineRemixRuntime: { dispose: () => void; flush: () => void }
+        }
+      ).__baselineRemixRuntime
+      runtime.dispose()
+      runtime.flush()
+    })
+    await waitForAnimationFrames(page)
+    const afterDispose = await readNativeLifecycleProbe(page)
+    expect(afterDispose.resizeActive).toBe(0)
+    expect(afterDispose.intersectionActive).toBe(0)
+    expect(afterDispose.windowListeners).toBe(0)
+    expect(afterDispose.callbacksAfterDisconnect).toBe(0)
   })
 })

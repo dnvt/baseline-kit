@@ -16,6 +16,7 @@ import {
   createElementObserverBridge,
   getConfig,
   mergeStyles,
+  queueNativeUpdate,
   resolveDebugging,
   type NativeComponent,
 } from './shared'
@@ -43,14 +44,8 @@ type RuntimeGuideProps = GuideProps & {
 
 function GuideImpl(handle: Handle<RuntimeGuideProps>) {
   let dimensions = { width: 0, height: 0 }
-  let updatePending = false
   const requestUpdate = () => {
-    if (updatePending || handle.signal.aborted) return
-    updatePending = true
-    queueMicrotask(() => {
-      updatePending = false
-      void handle.update().catch(() => undefined)
-    })
+    queueNativeUpdate(handle)
   }
   const observer = createElementObserverBridge((next) => {
     if (next.width === dimensions.width && next.height === dimensions.height)

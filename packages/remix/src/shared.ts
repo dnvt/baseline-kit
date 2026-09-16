@@ -84,7 +84,64 @@ export interface ElementObserverBridge {
   getElement: () => Element | null
 }
 
-export type RuntimeHandle = Pick<Handle, 'signal'>
+export type RuntimeHandle = Pick<Handle, 'signal' | 'update'>
+
+// Remix counts component updates that happen before control returns to the
+// event loop. A page with many independent measured components can otherwise
+// trip that diagnostic during hydration even when every update is bounded and
+// legitimate. Keep the queue below the upstream warning threshold and spread
+// larger batches over animation frames; this also gives each batch a chance to
+// settle before the next one is reconciled.
+const MAX_NATIVE_UPDATES_PER_FRAME = 40
+const pendingNativeUpdates = new WeakSet<RuntimeHandle>()
+let nativeUpdateQueue: RuntimeHandle[] = []
+let nativeUpdateFlushScheduled = false
+
+function flushNativeUpdates() {
+  nativeUpdateFlushScheduled = false
+
+  const batch = nativeUpdateQueue.splice(0, MAX_NATIVE_UPDATES_PER_FRAME)
+  for (const handle of batch) {
+    if (handle.signal.aborted) {
+      pendingNativeUpdates.delete(handle)
+      continue
+    }
+
+    try {
+      void handle
+        .update()
+        .catch(() => undefined)
+        .finally(() => pendingNativeUpdates.delete(handle))
+    } catch {
+      pendingNativeUpdates.delete(handle)
+    }
+  }
+
+  if (nativeUpdateQueue.length > 0) scheduleNativeUpdateFlush()
+}
+
+function scheduleNativeUpdateFlush() {
+  if (nativeUpdateFlushScheduled) return
+  nativeUpdateFlushScheduled = true
+
+  if (typeof requestAnimationFrame === 'function') {
+    // Yield through a timer before requesting the next frame. Remix resets
+    // its cascading-update counter with a timer; scheduling the next frame
+    // directly can let WebKit run it first and merge two capped batches.
+    setTimeout(() => requestAnimationFrame(flushNativeUpdates), 0)
+  } else {
+    // The extra turn keeps the fallback equally isolated from a scheduler
+    // counter reset queued by the preceding update.
+    setTimeout(() => setTimeout(flushNativeUpdates, 0), 0)
+  }
+}
+
+export function queueNativeUpdate(handle: RuntimeHandle) {
+  if (handle.signal.aborted || pendingNativeUpdates.has(handle)) return
+  pendingNativeUpdates.add(handle)
+  nativeUpdateQueue.push(handle)
+  scheduleNativeUpdateFlush()
+}
 
 export type NativeComponent<Props> = (handle: Handle<Props>) => () => RemixNode
 

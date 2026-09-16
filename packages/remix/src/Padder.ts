@@ -17,6 +17,7 @@ import {
   createElementObserverBridge,
   getConfig,
   mergeStyles,
+  queueNativeUpdate,
   resolveDebugging,
   type NativeComponent,
 } from './shared'
@@ -55,7 +56,7 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
       initialPadding,
       'height'
     )
-    void handle.update().catch(() => undefined)
+    queueNativeUpdate(handle)
   })
 
   return () => {

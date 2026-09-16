@@ -62,4 +62,3 @@
   --bksp-cf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
   --bksp-ct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
 }
-
