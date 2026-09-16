@@ -2,6 +2,7 @@ import * as React from 'react'
 import type { ConfigSchema } from '@baseline-kit/core/config/schema'
 import { DEFAULT_CONFIG } from '@baseline-kit/core/config/defaults'
 import {
+  type ConfigOverrides,
   mergeConfig,
   createCSSVariables,
 } from '@baseline-kit/core/config/merge'
@@ -10,21 +11,22 @@ import {
 export type { DebuggingMode } from '@baseline-kit/core/types'
 export type { ConfigSchema } from '@baseline-kit/core/config/schema'
 
-// Create the context
-const ConfigContext = React.createContext<ConfigSchema>(DEFAULT_CONFIG)
+// Root and guide are published as separate bundles. Keep their context
+// identity shared when an application imports both entry points.
+const CONFIG_CONTEXT_KEY = '__baseline_kit_config_context__'
+const contextStore = globalThis as typeof globalThis & {
+  [CONFIG_CONTEXT_KEY]?: React.Context<ConfigSchema>
+}
+const ConfigContext =
+  contextStore[CONFIG_CONTEXT_KEY] ??
+  (contextStore[CONFIG_CONTEXT_KEY] = React.createContext(DEFAULT_CONFIG))
 ConfigContext.displayName = 'ConfigContext'
 
 // Update to use React 19's use hook instead of useContext
 export const useDefaultConfig = () => React.use(ConfigContext)
 
-type ConfigProps = {
+type ConfigProps = ConfigOverrides & {
   children: React.ReactNode
-  base?: number
-  baseline?: Partial<ConfigSchema['baseline']>
-  guide?: Partial<ConfigSchema['guide']>
-  spacer?: Partial<ConfigSchema['spacer']>
-  box?: Partial<ConfigSchema['box']>
-  padder?: Partial<ConfigSchema['padder']>
 }
 
 /**

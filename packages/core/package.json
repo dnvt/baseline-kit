@@ -1,5 +1,6 @@
 {
   "name": "@baseline-kit/core",
+  "private": true,
   "version": "1.0.0",
   "description": "Pure TypeScript core: types, utilities, config, and validation for baseline-kit",
   "type": "module",

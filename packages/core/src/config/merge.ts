@@ -1,13 +1,20 @@
 import type { ConfigSchema } from './schema'
 
-type MergeConfigParams = {
-  parentConfig: ConfigSchema
+type PartialColors<T> = T extends { colors: infer Colors }
+  ? Omit<Partial<T>, 'colors'> & { colors?: Partial<Colors> }
+  : Partial<T>
+
+export type ConfigOverrides = {
   base?: number
-  baseline?: Partial<ConfigSchema['baseline']>
-  guide?: Partial<ConfigSchema['guide']>
-  spacer?: Partial<ConfigSchema['spacer']>
-  box?: Partial<ConfigSchema['box']>
+  baseline?: PartialColors<ConfigSchema['baseline']>
+  guide?: PartialColors<ConfigSchema['guide']>
+  spacer?: PartialColors<ConfigSchema['spacer']>
+  box?: PartialColors<ConfigSchema['box']>
   padder?: Partial<ConfigSchema['padder']>
+}
+
+type MergeConfigParams = ConfigOverrides & {
+  parentConfig: ConfigSchema
 }
 
 const COMPONENT_KEYS = ['baseline', 'guide', 'spacer', 'box', 'padder'] as const
@@ -17,7 +24,23 @@ export const mergeConfig = (params: MergeConfigParams): ConfigSchema => {
   const merged = {} as Record<string, unknown>
 
   for (const key of COMPONENT_KEYS) {
-    merged[key] = { ...parentConfig[key], ...params[key] }
+    const override = params[key]
+    const inherited = parentConfig[key]
+    const next = { ...inherited, ...override } as Record<string, unknown>
+
+    if (
+      override &&
+      'colors' in override &&
+      override.colors &&
+      'colors' in inherited
+    ) {
+      next.colors = {
+        ...(inherited.colors as Record<string, string>),
+        ...(override.colors as Record<string, string>),
+      }
+    }
+
+    merged[key] = next
   }
 
   return { base: base ?? parentConfig.base, ...merged } as ConfigSchema

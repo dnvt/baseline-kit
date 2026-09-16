@@ -1,6 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import { Config, DEFAULT_CONFIG, useDefaultConfig, createCSSVariables } from '@components'
+import {
+  Box,
+  Config,
+  DEFAULT_CONFIG,
+  Spacer,
+  useDefaultConfig,
+  createCSSVariables,
+} from '@components'
 
 describe('Config component', () => {
   // Create a test consumer component that uses the config context
@@ -126,7 +133,6 @@ describe('Config component', () => {
         <Config
           guide={{
             colors: {
-              ...DEFAULT_CONFIG.guide.colors,
               line: '#FF0000', // Only override line color
             },
           }}
@@ -138,6 +144,90 @@ describe('Config component', () => {
       const style = child.getAttribute('style') || ''
       expect(style).toContain('--bkgd-cl: #FF0000')
       expect(style).toContain(`--bkgd-cp: ${DEFAULT_CONFIG.guide.colors.pattern}`)
+    })
+  })
+
+  describe('actual component consumers', () => {
+    it('propagates Config colors to Box without a test-only wrapper', () => {
+      render(
+        <Config
+          box={{
+            debugging: 'visible',
+            colors: {
+              line: '#ff0000',
+              flat: '#00ff00',
+              text: '#0000ff',
+            },
+          }}
+        >
+          <Box>Box content</Box>
+        </Config>
+      )
+
+      expect(screen.getByTestId('box').getAttribute('style')).toContain(
+        '--bkbx-cl: #ff0000'
+      )
+    })
+
+    it('propagates Config colors to Spacer without a test-only wrapper', () => {
+      render(
+        <Config
+          spacer={{
+            debugging: 'visible',
+            colors: {
+              line: '#ff0000',
+              flat: '#00ff00',
+              text: '#0000ff',
+            },
+          }}
+        >
+          <Spacer height={16} variant="flat" />
+        </Config>
+      )
+
+      expect(screen.getByTestId('spacer').getAttribute('style')).toEqual(
+        expect.stringContaining('--bksp-cf: #00ff00')
+      )
+    })
+
+    it('updates actual consumers when a Config scope changes', () => {
+      const { rerender } = render(
+        <Config
+          box={{
+            debugging: 'visible',
+            colors: {
+              line: '#ff0000',
+              flat: '#00ff00',
+              text: '#0000ff',
+            },
+          }}
+        >
+          <Box>Box content</Box>
+        </Config>
+      )
+
+      expect(screen.getByTestId('box').getAttribute('style')).toContain(
+        '--bkbx-cl: #ff0000'
+      )
+
+      rerender(
+        <Config
+          box={{
+            debugging: 'visible',
+            colors: {
+              line: '#0000ff',
+              flat: '#00ff00',
+              text: '#ff0000',
+            },
+          }}
+        >
+          <Box>Box content</Box>
+        </Config>
+      )
+
+      expect(screen.getByTestId('box').getAttribute('style')).toContain(
+        '--bkbx-cl: #0000ff'
+      )
     })
   })
 })

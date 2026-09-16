@@ -5,6 +5,7 @@
     "declarationDir": "dist",
     "emitDeclarationOnly": true,
     "outDir": "dist",
+    "rootDir": ".",
     "stripInternal": true,
     "moduleResolution": "bundler",
     "module": "ESNext",
@@ -13,13 +14,8 @@
   "include": [
     "packages/core/src",
     "packages/dom/src",
-    "packages/react/src"
+    "packages/react/src",
+    "packages/remix/src"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.*",
-    "src/test",
-    "vitest.*"
-  ]
+  "exclude": ["node_modules", "dist", "**/*.test.*", "src/test", "vitest.*"]
 }

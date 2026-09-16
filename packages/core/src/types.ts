@@ -5,9 +5,7 @@
 
 // Spacing Types
 export type Spacing =
-  | number
-  | [number, number]
-  | { start?: number; end?: number }
+  number | [number, number] | { start?: number; end?: number }
 
 export type PaddingValue =
   | number

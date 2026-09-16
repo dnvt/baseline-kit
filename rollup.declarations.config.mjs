@@ -9,12 +9,22 @@ const kitAliases = {
   '@baseline-kit/core': resolve(__dirname, 'packages/core/src'),
   '@baseline-kit/dom': resolve(__dirname, 'packages/dom/src'),
   '@baseline-kit/react': resolve(__dirname, 'packages/react/src'),
+  '@baseline-kit/remix': resolve(__dirname, 'packages/remix/src'),
 }
 
 const makeConfig = (input, file) => ({
   input,
   output: { file, format: 'es' },
-  external: ['react', 'react-dom', /^react\//, /^react-dom\//, /\.css$/],
+  external: [
+    'react',
+    'react-dom',
+    /^react\//,
+    /^react-dom\//,
+    'remix',
+    /^remix\//,
+    /^@remix-run\//,
+    /\.css$/,
+  ],
   plugins: [
     {
       name: 'resolve-baseline-kit-workspaces',
@@ -36,4 +46,6 @@ export default defineConfig([
   makeConfig('packages/react/src/index.ts', 'dist/index.d.ts'),
   makeConfig('packages/react/src/guide.ts', 'dist/guide.d.ts'),
   makeConfig('packages/core/src/index.ts', 'dist/core.d.ts'),
+  makeConfig('packages/remix/src/index.ts', 'dist/remix.d.ts'),
+  makeConfig('packages/remix/src/server.ts', 'dist/remix-server.d.ts'),
 ])

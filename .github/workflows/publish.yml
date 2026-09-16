@@ -9,7 +9,10 @@ permissions:
   contents: write
   pull-requests: write
   id-token: write
-  issues: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -22,26 +25,23 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
 
-      - name: Cleanup
-        run: |
-          git clean -fd
-          git reset --hard
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24.15.0'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: '1.3.12'
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
-      - name: Build
-        run: bun run build
+      - name: Verify before release
+        run: |
+          bunx playwright install --with-deps chromium firefox webkit
+          bun run verify:integration
 
       - name: Create Release Pull Request or Publish
         id: changesets
@@ -49,23 +49,8 @@ jobs:
         with:
           publish: bun run release
           version: bun run version
-          commit: "chore: update version and changelog"
-          title: "chore: update version and changelog"
+          commit: 'chore: update version and changelog'
+          title: 'chore: update version and changelog'
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Debug File Paths
-        run: ls -R
-
-      - name: Create GitHub Release
-        if: steps.changesets.outputs.published == 'true'
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.changesets.outputs.version }}
-          body_path: CHANGELOG.md
-          files: |
-            dist/*
-            LICENSE
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

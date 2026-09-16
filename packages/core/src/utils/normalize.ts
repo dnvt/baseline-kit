@@ -45,8 +45,7 @@ export function normalizeValue(
 
 export function normalizeValuePair(
   values:
-    | [string | number | undefined, string | number | undefined]
-    | undefined,
+    [string | number | undefined, string | number | undefined] | undefined,
   defaults: [number, number],
   options?: NormalizationOptions
 ): [number, number] {

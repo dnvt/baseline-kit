@@ -1,7 +1,6 @@
 import type { BaselineVariant } from '../types'
 import {
   formatValue,
-  createStyleOverride,
   normalizeValuePair,
   parsePadding,
   calculateRowCount,
@@ -29,18 +28,6 @@ export interface BaselineDescriptor {
   classTokens: string[]
 }
 
-const BASELINE_DEFAULTS = (
-  base: number,
-  lineColor: string,
-  flatColor: string
-): Record<string, string> => ({
-  '--bkbl-w': '100%',
-  '--bkbl-h': '100%',
-  '--bkbl-b': `${base}px`,
-  '--bkbl-cl': lineColor,
-  '--bkbl-cf': flatColor,
-})
-
 /**
  * Computes all styles and data needed to render a Baseline component.
  * Pure function — framework-agnostic.
@@ -61,10 +48,6 @@ export function createBaselineDescriptor(
     isVisible,
   } = params
 
-  const [, normHeight] = normalizeValuePair(
-    [width, height],
-    [containerWidth, containerHeight]
-  )
   const { top, right, bottom, left } = parsePadding(spacing)
 
   const paddingValues = [top, right, bottom, left]
@@ -72,45 +55,43 @@ export function createBaselineDescriptor(
     .join(' ')
   const padding = paddingValues !== '0 0 0 0' ? paddingValues : undefined
 
-  const rowCount = calculateRowCount({ height: normHeight, top, bottom, base })
-
-  const chosenColor = color || (variant === 'line' ? colors.line : colors.flat)
-
-  const defaultStyles = BASELINE_DEFAULTS(base, colors.line, colors.flat)
-  const dimensionVars = ['--bkbl-w', '--bkbl-h']
+  // The browser resolves declared CSS dimensions. A non-zero measured
+  // rectangle is therefore the only reliable height for deciding how many
+  // baseline rows are needed; normalizing `height` here incorrectly treats
+  // relative values as if they were pixel values in a synthetic conversion
+  // context. The fallback only supports DOM-less test/SSR environments before
+  // the first layout measurement arrives.
+  const layoutHeight =
+    containerHeight > 0
+      ? containerHeight
+      : normalizeValuePair([undefined, height], [containerWidth, 0])[1]
+  const rowCount = calculateRowCount({
+    height: layoutHeight,
+    top,
+    bottom,
+    base,
+  })
 
   const containerStyle: Record<string, string> = {
-    ...createStyleOverride({
-      key: '--bkbl-w',
-      value: formatValue(width || '100%'),
-      defaultStyles,
-      skipDimensions: { fullSize: dimensionVars },
-    }),
-    ...createStyleOverride({
-      key: '--bkbl-h',
-      value: formatValue(height || '100%'),
-      defaultStyles,
-      skipDimensions: { fullSize: dimensionVars },
-    }),
-    // --bkbl-b omitted: value `${base}px` always equals the BASELINE_DEFAULTS
-    // entry, so the override would never emit. CSS layer carries the default.
-    ...createStyleOverride({
-      key: '--bkbl-cl',
-      value: color || colors.line,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bkbl-cf',
-      value: color || colors.flat,
-      defaultStyles,
-    }),
+    // Preserve explicit dimensions verbatim. In particular, `100vh`,
+    // `100vw`, `calc(...)`, and zero must not be collapsed to the 100% CSS
+    // fallback.
+    ...(width !== undefined ? { '--bkbl-w': formatValue(width) } : {}),
+    ...(height !== undefined ? { '--bkbl-h': formatValue(height) } : {}),
+    // Config is wrapperless. Emit the resolved paint channels on the
+    // consuming element even when they happen to match the descriptor's
+    // defaults; CSS variables on an ancestor cannot express nested scopes.
+    '--bkbl-cl': color ?? colors.line,
+    '--bkbl-cf': color ?? colors.flat,
+    // Rows inherit the active channel. Keeping this as a reference rather
+    // than a copied literal preserves caller style overrides on the host.
+    '--bkbl-c': variant === 'line' ? 'var(--bkbl-cl)' : 'var(--bkbl-cf)',
     ...(padding ? { padding } : {}),
   }
 
   const getRowStyle = (index: number): Record<string, string> => ({
     '--bkbl-rt': index === 0 ? '0px' : `${index * base}px`,
     '--bkbl-rh': variant === 'line' ? '1px' : `${base}px`,
-    '--bkbl-c': chosenColor,
   })
 
   const classTokens = ['bas', isVisible ? 'v' : 'h']

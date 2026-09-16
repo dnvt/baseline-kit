@@ -5,11 +5,13 @@
   grid-template-rows: auto 1fr auto;
   width: var(--bkpd-w, auto);
   height: var(--bkpd-h, auto);
+  text-box-trim: trim-both;
+  text-box-edge: ex alphabetic;
 }
 
-.lay .line::after,
-.stk .line::after {
-  border: none;
+.content {
+  text-box-trim: trim-both;
+  text-box-edge: ex alphabetic;
 }
 
 .v::after {

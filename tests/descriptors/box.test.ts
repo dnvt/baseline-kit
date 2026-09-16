@@ -7,10 +7,9 @@ const baseParams = {
 }
 
 describe('createBoxDescriptor', () => {
-  it('omits CSS vars that match defaults', () => {
-    // base=8 matches BOX_DEFAULTS, lineColor=red matches -> empty override
+  it('emits the configured line color for the consuming element', () => {
     const { boxStyle } = createBoxDescriptor(baseParams)
-    expect(boxStyle).toEqual({})
+    expect(boxStyle).toEqual({ '--bkbx-cl': 'red' })
   })
 
   it('emits width/height CSS vars with px for numeric overrides', () => {
@@ -33,17 +32,14 @@ describe('createBoxDescriptor', () => {
     expect(boxStyle['--bkbx-h']).toBe('10rem')
   })
 
-  it('does not emit base/color overrides (defaults mirror inputs)', () => {
-    // BOX_DEFAULTS is parameterized by the same base/lineColor passed to
-    // createStyleOverride, so value === default and the override is skipped.
-    // Styling for these vars happens at the CSS layer, not via inline style.
+  it('does not emit the unused border-base variable', () => {
     const { boxStyle } = createBoxDescriptor({
       ...baseParams,
       base: 4,
       lineColor: '#ff0',
     })
     expect(boxStyle['--bkbx-b']).toBeUndefined()
-    expect(boxStyle['--bkbx-cl']).toBeUndefined()
+    expect(boxStyle['--bkbx-cl']).toBe('#ff0')
   })
 
   it('adds visibility token when isVisible', () => {

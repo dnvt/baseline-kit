@@ -36,6 +36,16 @@ export function useVirtual({
   useLayoutEffect(() => {
     if (!containerRef.current) return
 
+    // The first client measurement can change the descriptor's total line
+    // count (for example, from a relative CSS height to the measured pixels).
+    // Reset the range for that new total before tracking it; otherwise the
+    // previous one-item fallback can remain mounted forever.
+    setVisibleRange((prev) =>
+      prev.start === 0 && prev.end === totalLines
+        ? prev
+        : { start: 0, end: totalLines }
+    )
+
     const handle = createVirtualTracker(
       containerRef.current,
       { totalItems: totalLines, itemHeight: lineHeight, buffer: numericBuffer },

@@ -23,12 +23,10 @@ describe('createBaselineDescriptor', () => {
     expect(getRowStyle(0)).toEqual({
       '--bkbl-rt': '0px',
       '--bkbl-rh': '1px',
-      '--bkbl-c': 'red',
     })
     expect(getRowStyle(5)).toEqual({
       '--bkbl-rt': '40px', // 5 * 8
       '--bkbl-rh': '1px',
-      '--bkbl-c': 'red',
     })
   })
 
@@ -39,7 +37,6 @@ describe('createBaselineDescriptor', () => {
     })
     const style = getRowStyle(1)
     expect(style['--bkbl-rh']).toBe('8px')
-    expect(style['--bkbl-c']).toBe('blue')
   })
 
   it('honors explicit color override', () => {
@@ -47,7 +44,18 @@ describe('createBaselineDescriptor', () => {
       ...baseParams,
       color: '#abc',
     })
-    expect(getRowStyle(0)['--bkbl-c']).toBe('#abc')
+    expect(
+      createBaselineDescriptor({ ...baseParams, color: '#abc' }).containerStyle[
+        '--bkbl-cl'
+      ]
+    ).toBe('#abc')
+  })
+
+  it('emits configured paint channels on the consuming element', () => {
+    const { containerStyle } = createBaselineDescriptor(baseParams)
+    expect(containerStyle['--bkbl-cl']).toBe('red')
+    expect(containerStyle['--bkbl-cf']).toBe('blue')
+    expect(containerStyle['--bkbl-c']).toBe('var(--bkbl-cl)')
   })
 
   it('classTokens uses v/h for visibility', () => {
@@ -71,5 +79,76 @@ describe('createBaselineDescriptor', () => {
   it('leaves padding undefined when spacing is empty/zero', () => {
     const { padding } = createBaselineDescriptor(baseParams)
     expect(padding).toBeUndefined()
+  })
+
+  it('uses the measured height when height is a relative CSS value', () => {
+    expect(
+      createBaselineDescriptor({
+        ...baseParams,
+        height: '100%',
+        containerHeight: 160,
+      }).rowCount
+    ).toBe(20)
+
+    expect(
+      createBaselineDescriptor({
+        ...baseParams,
+        height: '100vh',
+        containerHeight: 160,
+      }).rowCount
+    ).toBe(20)
+  })
+
+  it('uses measured layout rather than normalizing a declared pixel height', () => {
+    expect(
+      createBaselineDescriptor({
+        ...baseParams,
+        base: 10,
+        height: '100px',
+        containerHeight: 94,
+      }).rowCount
+    ).toBe(9)
+  })
+
+  it.each([
+    ['50%', '50%'],
+    ['100%', '100%'],
+    ['100vh', '100vh'],
+    ['100vw', '100vw'],
+    ['100dvh', '100dvh'],
+    ['10rem', '10rem'],
+    ['10em', '10em'],
+    ['calc(100% - 1rem)', 'calc(100% - 1rem)'],
+    [160, '160px'],
+    [0, '0px'],
+  ] as const)('preserves explicit CSS height %s', (height, expected) => {
+    const { containerStyle } = createBaselineDescriptor({
+      ...baseParams,
+      height,
+    })
+
+    expect(containerStyle['--bkbl-h']).toBe(expected)
+  })
+
+  it.each([
+    ['50%', '50%'],
+    ['100vw', '100vw'],
+    ['calc(100% - 1rem)', 'calc(100% - 1rem)'],
+    [160, '160px'],
+    [0, '0px'],
+  ] as const)('preserves explicit CSS width %s', (width, expected) => {
+    const { containerStyle } = createBaselineDescriptor({
+      ...baseParams,
+      width,
+    })
+
+    expect(containerStyle['--bkbl-w']).toBe(expected)
+  })
+
+  it('leaves omitted dimensions to the stylesheet defaults', () => {
+    const { containerStyle } = createBaselineDescriptor(baseParams)
+
+    expect(containerStyle['--bkbl-w']).toBeUndefined()
+    expect(containerStyle['--bkbl-h']).toBeUndefined()
   })
 })

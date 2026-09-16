@@ -24,7 +24,9 @@ class MockIntersectionObserver {
 
 // Mock ResizeObserver (must use class for Vitest 4 constructor support)
 class MockResizeObserver {
-  constructor(callback: (entries: ResizeObserverEntry[], observer: ResizeObserver) => void) {
+  constructor(
+    callback: (entries: ResizeObserverEntry[], observer: ResizeObserver) => void
+  ) {
     // Store for potential use, but immediately trigger on observe
     this._callback = callback
   }
@@ -40,7 +42,7 @@ class MockResizeObserver {
           devicePixelContentBoxSize: [],
         } as unknown as ResizeObserverEntry,
       ],
-      {} as ResizeObserver,
+      {} as ResizeObserver
     )
   }
   unobserve() {}
@@ -54,8 +56,14 @@ describe('Baseline', () => {
     vi.stubGlobal('ResizeObserver', MockResizeObserver)
 
     // Set up window dimensions (these are optional if your tests rely on them).
-    Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true })
-    Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true })
+    Object.defineProperty(window, 'innerHeight', {
+      value: 768,
+      configurable: true,
+    })
+    Object.defineProperty(window, 'innerWidth', {
+      value: 1024,
+      configurable: true,
+    })
   })
 
   afterAll(() => {
@@ -72,7 +80,7 @@ describe('Baseline', () => {
   const triggerIntersection = (
     element: Element,
     isIntersecting = true,
-    customRect?: Partial<DOMRect>,
+    customRect?: Partial<DOMRect>
   ) => {
     const callback = observerMap.get(element)
     if (callback) {
@@ -86,18 +94,20 @@ describe('Baseline', () => {
         left: 0,
         right: 1024,
       }
-      callback([
-        {
-          isIntersecting,
-          target: element,
-          boundingClientRect: { ...defaultRect, ...customRect },
-          intersectionRatio: isIntersecting ? 1 : 0,
-          intersectionRect: { ...defaultRect, ...customRect },
-          rootBounds: defaultRect,
-          time: Date.now(),
-        } as IntersectionObserverEntry,
-      ], new IntersectionObserver(() => {
-      }))
+      callback(
+        [
+          {
+            isIntersecting,
+            target: element,
+            boundingClientRect: { ...defaultRect, ...customRect },
+            intersectionRatio: isIntersecting ? 1 : 0,
+            intersectionRect: { ...defaultRect, ...customRect },
+            rootBounds: defaultRect,
+            time: Date.now(),
+          } as IntersectionObserverEntry,
+        ],
+        new IntersectionObserver(() => {})
+      )
     }
   }
 
@@ -123,11 +133,6 @@ describe('Baseline', () => {
     expect(lines.length).toBe(8)
     const firstLine = lines[0] as HTMLElement
 
-    // Log the style attribute and computed styles for debugging
-    console.log('Style attribute:', firstLine.getAttribute('style'))
-    console.log('Computed styles:', window.getComputedStyle(firstLine).cssText)
-
-    // Use getComputedStyle to check the computed styles
     const computedStyle = window.getComputedStyle(firstLine)
     expect(firstLine.style.getPropertyValue('--bkbl-rt')).toBe('0px')
     expect(computedStyle.getPropertyValue('--bkbl-rh')).toBe('8px')
@@ -181,7 +186,11 @@ describe('Baseline', () => {
 
   it('applies custom className, style props, and renders children', () => {
     render(
-      <Baseline debugging="visible" className="custom-class" style={{ background: 'red' }} />,
+      <Baseline
+        debugging="visible"
+        className="custom-class"
+        style={{ background: 'red' }}
+      />
     )
     const baseline = screen.getByTestId('baseline')
     expect(baseline).toHaveClass('custom-class')

@@ -1,0 +1,23 @@
+{
+  "name": "@baseline-kit/remix",
+  "private": true,
+  "version": "1.0.0",
+  "description": "React-free Baseline Kit adapter for the Remix 3 UI runtime",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts",
+    "./styles.css": "./src/styles.css"
+  },
+  "dependencies": {
+    "@baseline-kit/core": "workspace:*",
+    "@baseline-kit/dom": "workspace:*"
+  },
+  "peerDependencies": {
+    "remix": "3.0.0-rc.2"
+  },
+  "license": "MIT",
+  "author": "Francois Denavaut"
+}

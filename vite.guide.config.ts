@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import { alias } from './alias.config'
+import { alias } from './alias.config.ts'
 import { resolve } from 'path'
 
 export default defineConfig({
@@ -18,7 +18,7 @@ export default defineConfig({
     cssCodeSplit: false,
     cssMinify: true,
     lib: {
-      entry: resolve(__dirname, 'packages/react/src/guide.ts'),
+      entry: resolve(import.meta.dirname, 'packages/react/src/guide.ts'),
       name: 'BaselineKitGuide',
       formats: ['es', 'cjs'],
       fileName: (format) => `guide.${format === 'es' ? 'mjs' : 'cjs'}`,

@@ -18,6 +18,7 @@ yarn-error.log*
 # Bun
 bun.lockb
 bun.lock
+!bun.lock
 .bun/
 
 # Build and distribution files
@@ -42,6 +43,8 @@ tsup.config.tsbuildinfo
 coverage/
 .nyc_output/
 vitest.d.ts
+test-results/
+playwright-report/
 
 # Editor directories and files
 .vscode/*

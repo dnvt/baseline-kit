@@ -209,7 +209,6 @@ const GuideImpl = React.memo(function GuideImpl({
                 className={styles.col}
                 data-column-index={i}
                 data-variant={variant}
-                style={{ backgroundColor: descriptor.columnColor }}
               />
             ))}
         </div>

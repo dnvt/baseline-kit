@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import { alias } from './alias.config'
+import { alias } from './alias.config.ts'
 import { resolve } from 'path'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import { visualizer } from 'rollup-plugin-visualizer'
@@ -10,7 +10,6 @@ export default defineConfig(({ command }) => ({
     react(),
     viteStaticCopy({
       targets: [
-        { src: 'README.md', dest: '.' },
         {
           src: 'packages/react/src/components/styles/reset.css',
           dest: '.',
@@ -42,8 +41,8 @@ export default defineConfig(({ command }) => ({
     cssMinify: true,
     lib: {
       entry: {
-        index: resolve(__dirname, 'packages/react/src/index.ts'),
-        core: resolve(__dirname, 'packages/core/src/index.ts'),
+        index: resolve(import.meta.dirname, 'packages/react/src/index.ts'),
+        core: resolve(import.meta.dirname, 'packages/core/src/index.ts'),
       },
       name: 'BaselineKit',
       formats: ['es', 'cjs'],

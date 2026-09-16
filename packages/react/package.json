@@ -1,5 +1,6 @@
 {
   "name": "@baseline-kit/react",
+  "private": true,
   "version": "1.0.0",
   "description": "React adapter for baseline-kit: components, hooks, and React-specific utilities",
   "type": "module",
