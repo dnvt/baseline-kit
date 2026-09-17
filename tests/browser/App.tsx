@@ -44,6 +44,17 @@ export function App() {
         </Padder>
       </section>
 
+      <section id="box-snap-top">
+        <Box
+          snapping="height"
+          snapEdge="top"
+          debugging="visible"
+          block={[0, 0]}
+        >
+          <div style={{ width: 20, height: 10 }}>React top snap consumer</div>
+        </Box>
+      </section>
+
       <section
         id="baseline-percent"
         style={{ position: 'relative', width: 320, height: 160 }}

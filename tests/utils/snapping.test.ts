@@ -32,6 +32,33 @@ describe('calculateSnappedSpacing', () => {
       const result = calculateSnappedSpacing(48, base, initial, 'height')
       expect(result).toEqual(initial)
     })
+
+    it('adjusts only the top padding when snapEdge is "top"', () => {
+      // With base=8 and height=46, the 2px complement is added to top.
+      const initial = { top: 10, right: 10, bottom: 10, left: 10 }
+      const result = calculateSnappedSpacing(46, base, initial, {
+        mode: 'height',
+        snapEdge: 'top',
+      })
+      expect(result).toEqual({ top: 12, right: 10, bottom: 10, left: 10 })
+    })
+
+    it('keeps bottom as the default snap edge', () => {
+      const initial = { top: 10, right: 10, bottom: 10, left: 10 }
+      const result = calculateSnappedSpacing(46, base, initial, 'height')
+      expect(result).toEqual({ top: 10, right: 10, bottom: 12, left: 10 })
+    })
+
+    it('preserves fractional CSS pixels when closing a subpixel remainder', () => {
+      const height = 6.123
+      const result = calculateSnappedSpacing(height, base, 0, {
+        mode: 'height',
+        snapEdge: 'top',
+      })
+
+      expect(result.top).toBeCloseTo(1.877, 10)
+      expect(height + result.top).toBeCloseTo(base, 10)
+    })
   })
 
   describe('when snapping is "clamp"', () => {

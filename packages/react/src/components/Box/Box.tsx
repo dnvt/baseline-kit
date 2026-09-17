@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline, useIsClient } from '../../hooks'
 import { cx, parsePadding, createBoxDescriptor } from '@baseline-kit/core'
-import type { SnappingMode } from '@baseline-kit/core'
+import type { SnapEdge, SnappingMode } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
 import { Config } from '../Config/Config'
@@ -9,13 +9,14 @@ import { Padder } from '../Padder'
 import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
 
-export type { SnappingMode }
+export type { SnapEdge, SnappingMode }
 
 export type BoxProps = {
   colSpan?: number
   rowSpan?: number
   span?: number
   snapping?: SnappingMode
+  snapEdge?: SnapEdge
   ssrMode?: boolean
   children?: React.ReactNode
 } & ComponentsProps
@@ -25,6 +26,7 @@ export const Box = React.memo(
     {
       children,
       snapping = 'clamp',
+      snapEdge = 'bottom',
       debugging: debuggingProp,
       className,
       colSpan,
@@ -48,6 +50,7 @@ export const Box = React.memo(
     const baselinePadding = useBaseline(internalRef, {
       base: config.base,
       snapping,
+      snapEdge,
       spacing: { top, bottom, left, right },
     })
 

@@ -329,6 +329,19 @@ export function createRemixApp() {
           }),
         }),
       }),
+      jsx('div', {
+        id: 'remix-snap-box-top',
+        children: jsx(Box, {
+          snapping: 'height',
+          snapEdge: 'top',
+          debugging: 'visible',
+          block: [0, 0],
+          children: jsx('div', {
+            style: { height: 10 },
+            children: 'Native top snap consumer',
+          }),
+        }),
+      }),
     ],
   })
 }
