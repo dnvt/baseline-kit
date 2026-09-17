@@ -1,5 +1,6 @@
+/** @jsxImportSource remix/ui */
+
 import { type Handle } from 'remix/ui'
-import { jsx } from 'remix/ui/jsx-runtime'
 import {
   DEFAULT_CONFIG,
   calculateSnappedSpacing,
@@ -9,7 +10,7 @@ import {
   type Padding,
   type ConfigSchema,
 } from '@baseline-kit/core'
-import { Config } from './Config'
+import { Config, type ConfigProps } from './Config'
 import { configuredClientEntry } from './shared'
 import { Padder } from './Padder'
 import {
@@ -45,6 +46,10 @@ export type BoxProps = {
 type RuntimeBoxProps = BoxProps & {
   __baselineConfig?: ConfigSchema
 }
+
+const RuntimeConfig = Config as unknown as NativeComponent<
+  ConfigProps & { __baselineConfig?: ConfigSchema }
+>
 
 function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   let currentBase = DEFAULT_CONFIG.base
@@ -97,40 +102,48 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
       isVisible: debug.isShown,
     })
 
-    const padder = jsx(Padder, {
-      block: [padding.top, padding.bottom],
-      inline: [padding.left, padding.right],
-      width: 'fit-content',
-      height: props.height,
-      debugging: debug.debugging,
-      // Box owns the measured snap; the inner Padder must honor each new
-      // padding value instead of caching a second independent measurement.
-      ssrMode: true,
-      children: props.children,
-    })
+    const padder = (
+      <Padder
+        block={[padding.top, padding.bottom]}
+        inline={[padding.left, padding.right]}
+        width="fit-content"
+        height={props.height}
+        debugging={debug.debugging}
+        // Box owns the measured snap; the inner Padder must honor each new
+        // padding value instead of caching a second independent measurement.
+        ssrMode={true}
+      >
+        {props.children}
+      </Padder>
+    )
 
-    return jsx('div', {
-      className: classNames(
-        ...descriptor.classTokens.map((token) => `bk-${token}`),
-        props.className
-      ),
-      'data-testid': 'box',
-      style: mergeStyles(
-        descriptor.boxStyle,
-        descriptor.gridSpanStyle,
-        props.style
-      ),
-      mix:
-        typeof window === 'undefined' || props.ssrMode || snapping === 'none'
-          ? undefined
-          : observer.attach,
-      children: jsx(Config, {
-        __baselineConfig: config,
-        base: 1,
-        spacer: { variant: 'flat' },
-        children: padder,
-      }),
-    })
+    return (
+      <div
+        className={classNames(
+          ...descriptor.classTokens.map((token) => `bk-${token}`),
+          props.className
+        )}
+        data-testid="box"
+        style={mergeStyles(
+          descriptor.boxStyle,
+          descriptor.gridSpanStyle,
+          props.style
+        )}
+        mix={
+          typeof window === 'undefined' || props.ssrMode || snapping === 'none'
+            ? undefined
+            : observer.attach
+        }
+      >
+        <RuntimeConfig
+          __baselineConfig={config}
+          base={1}
+          spacer={{ variant: 'flat' }}
+        >
+          {padder}
+        </RuntimeConfig>
+      </div>
+    )
   }
 }
 

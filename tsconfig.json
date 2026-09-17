@@ -23,6 +23,6 @@
       "@utils": ["./packages/react/src/utils/index.ts"]
     }
   },
-  "include": ["packages/**/*", "vitest.d.ts"],
+  "include": ["packages/**/*", "tests/vitest.d.ts"],
   "exclude": ["node_modules", "dist", "demo"]
 }

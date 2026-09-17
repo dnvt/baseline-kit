@@ -18,7 +18,7 @@ try {
   nodeModule._load = function loadTypescriptEslintDependency(
     request,
     parent,
-    isMain,
+    isMain
   ) {
     if (request === 'typescript') {
       return originalModuleLoad(typescriptApi, parent, isMain)
@@ -86,6 +86,16 @@ export default [
       semi: 'off',
       quotes: 'off',
       'prettier/prettier': 'error',
+    },
+  },
+  {
+    files: ['packages/remix/src/**/*.{ts,tsx}'],
+    rules: {
+      // Remix supplies its own JSX runtime; importing React here would make
+      // the React-free adapter depend on React at runtime.
+      'react/react-in-jsx-scope': 'off',
+      // `mix` is a Remix host-element prop, not a React DOM attribute.
+      'react/no-unknown-property': ['error', { ignore: ['mix'] }],
     },
   },
 ]

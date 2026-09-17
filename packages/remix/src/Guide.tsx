@@ -1,5 +1,6 @@
+/** @jsxImportSource remix/ui */
+
 import { type Handle, type RemixNode } from 'remix/ui'
-import { jsx } from 'remix/ui/jsx-runtime'
 import {
   DEFAULT_CONFIG,
   calculateGuideTemplate,
@@ -90,60 +91,66 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
     })
 
     if (props.ssrMode) {
-      return jsx('div', {
-        className: classNames('bk-gde', 'bk-h', 'bk-ssr', props.className),
-        'data-testid': 'guide',
-        'data-variant': variant,
-        'aria-hidden': true,
-        style: mergeStyles(
-          {
-            width: props.width ?? '100%',
-            height: props.height ?? '100%',
-            maxWidth: props.maxWidth ?? 'none',
-          },
-          props.style
-        ),
-        children: props.children,
-      })
+      return (
+        <div
+          className={classNames('bk-gde', 'bk-h', 'bk-ssr', props.className)}
+          data-testid="guide"
+          data-variant={variant}
+          aria-hidden={true}
+          style={mergeStyles(
+            {
+              width: props.width ?? '100%',
+              height: props.height ?? '100%',
+              maxWidth: props.maxWidth ?? 'none',
+            },
+            props.style
+          )}
+        >
+          {props.children}
+        </div>
+      )
     }
 
     const columns =
       !descriptor.isLineVariant && debug.isShown
-        ? Array.from({ length: descriptor.columnsCount }, (_, index) =>
-            jsx('div', {
-              key: index,
-              className: 'bk-col',
-              'data-column-index': index,
-              'data-variant': variant,
-            })
-          )
+        ? Array.from({ length: descriptor.columnsCount }, (_, index) => (
+            <div
+              key={index}
+              className="bk-col"
+              data-column-index={index}
+              data-variant={variant}
+            />
+          ))
         : null
-    const overlay = debug.isShown
-      ? jsx('div', {
-          className: 'bk-cols',
-          'data-variant': variant,
-          children: columns,
-        })
-      : null
+    const overlay = debug.isShown ? (
+      <div className="bk-cols" data-variant={variant}>
+        {columns}
+      </div>
+    ) : null
 
-    return jsx('div', {
-      className: classNames(
-        ...descriptor.classTokens.map((token) => `bk-${token}`),
-        props.className
-      ),
-      'data-testid': 'guide',
-      'data-variant': variant,
-      'aria-hidden': true,
-      style: mergeStyles(descriptor.containerStyle, props.style),
-      // Runtime mixins contain callbacks and must not be serialized into a
-      // parent client entry's props during SSR. The client entry recreates
-      // the descriptor while hydrating.
-      mix:
-        typeof window === 'undefined' || props.ssrMode
-          ? undefined
-          : observer.attach,
-      children: [overlay, props.children],
-    })
+    // Runtime mixins contain callbacks and must not be serialized into a
+    // parent client entry's props during SSR. The client entry recreates
+    // the descriptor while hydrating.
+    return (
+      <div
+        className={classNames(
+          ...descriptor.classTokens.map((token) => `bk-${token}`),
+          props.className
+        )}
+        data-testid="guide"
+        data-variant={variant}
+        aria-hidden={true}
+        style={mergeStyles(descriptor.containerStyle, props.style)}
+        mix={
+          typeof window === 'undefined' || props.ssrMode
+            ? undefined
+            : observer.attach
+        }
+      >
+        {overlay}
+        {props.children}
+      </div>
+    )
   }
 }
 

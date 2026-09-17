@@ -1,3 +1,5 @@
+/** @jsxImportSource remix/ui */
+
 import { type Handle, type RemixNode } from 'remix/ui'
 import {
   DEFAULT_CONFIG,
@@ -8,10 +10,9 @@ import {
   type Padding,
   type Spacing,
 } from '@baseline-kit/core'
-import { jsx } from 'remix/ui/jsx-runtime'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
-import { Spacer } from './Spacer'
+import { Spacer, type SpacerProps } from './Spacer'
 import {
   classNames,
   createElementObserverBridge,
@@ -39,6 +40,10 @@ export type PadderProps = {
 type RuntimePadderProps = PadderProps & {
   __baselineConfig?: ConfigSchema
 }
+
+const RuntimeSpacer = Spacer as unknown as NativeComponent<
+  SpacerProps & { __baselineConfig?: ConfigSchema }
+>
 
 const fullRow = { gridColumn: '1 / -1' }
 const middleColumn = { gridRow: '2 / 3' }
@@ -88,77 +93,77 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     })
 
     if (debug.isNone) {
-      return jsx('div', {
-        className: classNames(
-          ...descriptor.classTokens.map((token) => `bk-${token}`),
-          props.className
-        ),
-        'data-testid': 'padder',
-        mix,
-        style: mergeStyles(descriptor.containerStyle, props.style),
-        children: props.children,
-      })
+      return (
+        <div
+          className={classNames(
+            ...descriptor.classTokens.map((token) => `bk-${token}`),
+            props.className
+          )}
+          data-testid="padder"
+          mix={mix}
+          style={mergeStyles(descriptor.containerStyle, props.style)}
+        >
+          {props.children}
+        </div>
+      )
     }
 
     const spacerVariant = config.spacer.variant
-    const renderSpacer = (width: number | string, height: number | string) =>
-      jsx(Spacer, {
-        __baselineConfig: config,
-        width: width === '100%' ? undefined : width,
-        height: height === '100%' ? undefined : height,
-        variant: spacerVariant,
-        debugging: debug.debugging,
-        indicatorNode: props.indicatorNode,
-      })
+    const renderSpacer = (width: number | string, height: number | string) => (
+      <RuntimeSpacer
+        __baselineConfig={config}
+        width={width === '100%' ? undefined : width}
+        height={height === '100%' ? undefined : height}
+        variant={spacerVariant}
+        debugging={debug.debugging}
+        indicatorNode={props.indicatorNode}
+      />
+    )
 
     const children = [
-      padding.top >= 0
-        ? jsx('div', {
-            key: 'top',
-            style: fullRow,
-            children: renderSpacer('100%', padding.top),
-          })
-        : null,
-      padding.left >= 0
-        ? jsx('div', {
-            key: 'left',
-            style: middleColumn,
-            children: renderSpacer(padding.left, '100%'),
-          })
-        : null,
-      jsx('div', {
-        key: 'content',
-        className: 'bk-pad-content',
-        'data-testid': 'padder-content',
-        style: center,
-        children: props.children,
-      }),
-      padding.right >= 0
-        ? jsx('div', {
-            key: 'right',
-            style: middleColumn,
-            children: renderSpacer(padding.right, '100%'),
-          })
-        : null,
-      padding.bottom >= 0
-        ? jsx('div', {
-            key: 'bottom',
-            style: fullRow,
-            children: renderSpacer('100%', padding.bottom),
-          })
-        : null,
+      padding.top >= 0 ? (
+        <div key="top" style={fullRow}>
+          {renderSpacer('100%', padding.top)}
+        </div>
+      ) : null,
+      padding.left >= 0 ? (
+        <div key="left" style={middleColumn}>
+          {renderSpacer(padding.left, '100%')}
+        </div>
+      ) : null,
+      <div
+        key="content"
+        className="bk-pad-content"
+        data-testid="padder-content"
+        style={center}
+      >
+        {props.children}
+      </div>,
+      padding.right >= 0 ? (
+        <div key="right" style={middleColumn}>
+          {renderSpacer(padding.right, '100%')}
+        </div>
+      ) : null,
+      padding.bottom >= 0 ? (
+        <div key="bottom" style={fullRow}>
+          {renderSpacer('100%', padding.bottom)}
+        </div>
+      ) : null,
     ]
 
-    return jsx('div', {
-      className: classNames(
-        ...descriptor.classTokens.map((token) => `bk-${token}`),
-        props.className
-      ),
-      'data-testid': 'padder',
-      mix,
-      style: mergeStyles(descriptor.containerStyle, props.style),
-      children,
-    })
+    return (
+      <div
+        className={classNames(
+          ...descriptor.classTokens.map((token) => `bk-${token}`),
+          props.className
+        )}
+        data-testid="padder"
+        mix={mix}
+        style={mergeStyles(descriptor.containerStyle, props.style)}
+      >
+        {children}
+      </div>
+    )
   }
 }
 
