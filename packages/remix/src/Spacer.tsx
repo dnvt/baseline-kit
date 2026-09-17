@@ -1,3 +1,5 @@
+/** @jsxImportSource remix/ui */
+
 import { type Handle, type RemixNode } from 'remix/ui'
 import {
   DEFAULT_CONFIG,
@@ -5,7 +7,6 @@ import {
   type Variant,
   type ConfigSchema,
 } from '@baseline-kit/core'
-import { jsx } from 'remix/ui/jsx-runtime'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 import {
@@ -60,39 +61,34 @@ function SpacerImpl(handle: Handle<RuntimeSpacerProps>) {
     const measurements =
       debugging.isShown && props.indicatorNode
         ? [
-            descriptor.normHeight !== 0
-              ? jsx('span', {
-                  key: 'height',
-                  className: 'bk-indicator',
-                  'aria-hidden': true,
-                  children: props.indicatorNode(
-                    descriptor.normHeight,
-                    'height'
-                  ),
-                })
-              : null,
-            descriptor.normWidth !== 0
-              ? jsx('span', {
-                  key: 'width',
-                  className: 'bk-indicator',
-                  'aria-hidden': true,
-                  children: props.indicatorNode(descriptor.normWidth, 'width'),
-                })
-              : null,
+            descriptor.normHeight !== 0 ? (
+              <span key="height" className="bk-indicator" aria-hidden={true}>
+                {props.indicatorNode(descriptor.normHeight, 'height')}
+              </span>
+            ) : null,
+            descriptor.normWidth !== 0 ? (
+              <span key="width" className="bk-indicator" aria-hidden={true}>
+                {props.indicatorNode(descriptor.normWidth, 'width')}
+              </span>
+            ) : null,
           ]
         : null
 
-    return jsx('div', {
-      className: classNames(
-        ...descriptor.classTokens.map((token) => `bk-${token}`),
-        props.className
-      ),
-      'data-testid': 'spacer',
-      'data-variant': variant,
-      'data-height': `${descriptor.normHeight}px`,
-      style: mergeStyles(descriptor.style, props.style),
-      children: [measurements, props.children],
-    })
+    return (
+      <div
+        className={classNames(
+          ...descriptor.classTokens.map((token) => `bk-${token}`),
+          props.className
+        )}
+        data-testid="spacer"
+        data-variant={variant}
+        data-height={`${descriptor.normHeight}px`}
+        style={mergeStyles(descriptor.style, props.style)}
+      >
+        {measurements}
+        {props.children}
+      </div>
+    )
   }
 }
 

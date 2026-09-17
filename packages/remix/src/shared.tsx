@@ -1,3 +1,5 @@
+/** @jsxImportSource remix/ui */
+
 import {
   clientEntry,
   ref,
@@ -6,7 +8,6 @@ import {
   type RemixNode,
   type SerializableProps,
 } from 'remix/ui'
-import { jsx } from 'remix/ui/jsx-runtime'
 import { DEFAULT_CONFIG } from '@baseline-kit/core'
 import { Config } from './Config'
 import {
@@ -145,6 +146,10 @@ export function queueNativeUpdate(handle: RuntimeHandle) {
 
 export type NativeComponent<Props> = (handle: Handle<Props>) => () => RemixNode
 
+type RuntimeEntryProps = SerializableProps & {
+  __baselineConfig?: ConfigSchema
+}
+
 /** Capture provider context before Remix serializes an independent entry.
  * The public wrapper also works when an app component creates the consumer
  * during SSR, where walking Config's authored children cannot reach it.
@@ -156,7 +161,7 @@ export function configuredClientEntry<P extends object>(
   const Entry = clientEntry(
     entryId,
     implementation as unknown as NativeComponent<SerializableProps>
-  )
+  ) as unknown as NativeComponent<RuntimeEntryProps>
   const Consumer = ((handle: Handle<P & { __baselineConfig?: ConfigSchema }>) =>
     () => {
       const inheritedConfig = handle.context.get(Config) as
@@ -168,7 +173,12 @@ export function configuredClientEntry<P extends object>(
         // boundary; only fall back to live ancestry when no snapshot exists.
         inheritedConfig ??
         DEFAULT_CONFIG
-      return jsx(Entry, { ...handle.props, __baselineConfig: config })
+      return (
+        <Entry
+          {...(handle.props as unknown as SerializableProps)}
+          __baselineConfig={config}
+        />
+      )
     }) as NativeComponent<P>
   return Consumer
 }

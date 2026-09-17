@@ -42,7 +42,6 @@ tsup.config.tsbuildinfo
 # Testing
 coverage/
 .nyc_output/
-vitest.d.ts
 test-results/
 playwright-report/
 
@@ -78,19 +77,15 @@ Thumbs.db
 demo/
 examples/
 
-# Maestro workflow
+# Maestro workflow (local-only)
 /.claude/
-/.maestro/project/
-/.maestro/generated/
-/.maestro/state/
-/.maestro/cache/
-/.maestro/backups/
+/.maestro/
 /.maestro-project/
 /maestro.toml
-/maestro/
 /progress/
 /plans/
 /analysis/
+/decisions/
 /docs/decisions/
 /AGENTS.md
 /CLAUDE.md

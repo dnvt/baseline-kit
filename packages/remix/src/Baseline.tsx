@@ -1,5 +1,6 @@
+/** @jsxImportSource remix/ui */
+
 import { type Handle, type RemixNode } from 'remix/ui'
-import { jsx } from 'remix/ui/jsx-runtime'
 import {
   DEFAULT_CONFIG,
   createBaselineDescriptor,
@@ -85,19 +86,21 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
     })
 
     if (props.ssrMode) {
-      return jsx('div', {
-        className: classNames('bk-bas', 'bk-h', 'bk-ssr', props.className),
-        'data-testid': 'baseline',
-        'aria-hidden': true,
-        style: mergeStyles(
-          descriptor.containerStyle,
-          {
-            width: formatValue(props.width ?? '100%'),
-            height: formatValue(props.height ?? '100%'),
-          },
-          props.style
-        ),
-      })
+      return (
+        <div
+          className={classNames('bk-bas', 'bk-h', 'bk-ssr', props.className)}
+          data-testid="baseline"
+          aria-hidden={true}
+          style={mergeStyles(
+            descriptor.containerStyle,
+            {
+              width: formatValue(props.width ?? '100%'),
+              height: formatValue(props.height ?? '100%'),
+            },
+            props.style
+          )}
+        />
+      )
     }
 
     if (debugging.isShown) {
@@ -110,42 +113,48 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
           { length: Math.max(0, range.end - range.start) },
           (_, index) => {
             const rowIndex = range.start + index
-            return jsx('div', {
-              className: 'bk-row',
-              key: rowIndex,
-              'data-row-index': rowIndex,
-              style: descriptor.getRowStyle(rowIndex),
-            })
+            return (
+              <div
+                className="bk-row"
+                key={rowIndex}
+                data-row-index={rowIndex}
+                style={descriptor.getRowStyle(rowIndex)}
+              />
+            )
           }
         )
       : []
 
-    return jsx('div', {
-      className: classNames(
-        ...descriptor.classTokens.map((token) => `bk-${token}`),
-        props.className
-      ),
-      'data-testid': 'baseline',
-      'aria-hidden': true,
-      style: mergeStyles(
-        descriptor.containerStyle,
-        {
-          // Keep the SSR document useful even before the package stylesheet
-          // is loaded. The CSS variables remain the canonical runtime path.
-          width: formatValue(props.width ?? '100%'),
-          height: formatValue(props.height ?? '100%'),
-        },
-        props.style
-      ),
-      // Runtime mixins contain callbacks and must not be serialized into a
-      // parent client entry's props during SSR. The client entry recreates
-      // the descriptor while hydrating.
-      mix:
-        typeof window === 'undefined' || props.ssrMode
-          ? undefined
-          : observer.attach,
-      children: rows,
-    })
+    // Runtime mixins contain callbacks and must not be serialized into a
+    // parent client entry's props during SSR. The client entry recreates
+    // the descriptor while hydrating.
+    return (
+      <div
+        className={classNames(
+          ...descriptor.classTokens.map((token) => `bk-${token}`),
+          props.className
+        )}
+        data-testid="baseline"
+        aria-hidden={true}
+        style={mergeStyles(
+          descriptor.containerStyle,
+          {
+            // Keep the SSR document useful even before the package stylesheet
+            // is loaded. The CSS variables remain the canonical runtime path.
+            width: formatValue(props.width ?? '100%'),
+            height: formatValue(props.height ?? '100%'),
+          },
+          props.style
+        )}
+        mix={
+          typeof window === 'undefined' || props.ssrMode
+            ? undefined
+            : observer.attach
+        }
+      >
+        {rows}
+      </div>
+    )
   }
 }
 
