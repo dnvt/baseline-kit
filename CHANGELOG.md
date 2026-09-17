@@ -22,6 +22,14 @@
 - Box and Padder now opt into `text-box: trim-both ex alphabetic` when the
   browser supports it, while retaining normal line boxes as a fallback.
 
+## 5.2.0
+
+### Minor Changes
+
+- 906488c: Use readable TSX source for the native Remix adapter, keep Maestro workflow
+  state local-only, and let Box choose whether height-snap correction goes to the
+  top or bottom padding edge.
+
 ## 5.1.0
 
 ### Minor Changes
