@@ -42,6 +42,7 @@ export type PaddedVariant = (typeof PADD_VARIANTS)[number]
 export type Variant = 'line' | 'flat' | 'pattern'
 export type BaselineVariant = Exclude<Variant, 'pattern'>
 export type SnappingMode = 'none' | 'height' | 'clamp'
+export type SnapEdge = 'top' | 'bottom'
 export type DebuggingMode = 'none' | 'hidden' | 'visible'
 
 // Guide Config Types (framework-agnostic)

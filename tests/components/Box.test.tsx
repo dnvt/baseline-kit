@@ -1,7 +1,14 @@
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import type { CSSProperties, PropsWithChildren } from 'react'
-import { Box, ComponentsProps, DebuggingMode, Padding, SnappingMode } from '@components'
+import {
+  Box,
+  ComponentsProps,
+  DebuggingMode,
+  Padding,
+  SnappingMode,
+} from '@components'
+import { useBaseline } from '@hooks'
 
 // Mock CSS modules
 vi.mock('./styles.module.css', () => ({
@@ -17,22 +24,36 @@ vi.mock('@components/Padder', () => ({
   Padder: ({ children, block, inline }: PropsWithChildren<ComponentsProps>) => (
     <div data-testid="padder">
       {/* Vertical spacers */}
-      {(block && Array.isArray(block) && block.map((height, i) => (
-        <div
-          key={`v-${i}`}
-          data-testid="spacer"
-          style={{ '--bk-spacer-height': height, '--bk-spacer-width': '100%' } as CSSProperties}
-        />
-      )))}
+      {block &&
+        Array.isArray(block) &&
+        block.map((height, i) => (
+          <div
+            key={`v-${i}`}
+            data-testid="spacer"
+            style={
+              {
+                '--bk-spacer-height': height,
+                '--bk-spacer-width': '100%',
+              } as CSSProperties
+            }
+          />
+        ))}
       {children}
       {/* Horizontal spacers */}
-      {(inline && Array.isArray(inline) && inline.map((width, i) => (
-        <div
-          key={`h-${i}`}
-          data-testid="spacer"
-          style={{ '--bk-spacer-width': width, '--bk-spacer-height': '100%' } as CSSProperties}
-        />
-      )))}
+      {inline &&
+        Array.isArray(inline) &&
+        inline.map((width, i) => (
+          <div
+            key={`h-${i}`}
+            data-testid="spacer"
+            style={
+              {
+                '--bk-spacer-width': width,
+                '--bk-spacer-height': '100%',
+              } as CSSProperties
+            }
+          />
+        ))}
     </div>
   ),
 }))
@@ -72,37 +93,55 @@ vi.mock('@hooks', () => ({
     }
     return {}
   }),
-  useDebug: vi.fn().mockImplementation((debug: DebuggingMode, configDebug: never) => ({
-    isShown: (debug ?? configDebug) === 'visible',
-    isHidden: (debug ?? configDebug) === 'hidden',
-    isNone: (debug ?? configDebug) === 'none',
-  })),
-  useBaseline: vi.fn().mockImplementation((_ref: never, { snapping, spacing }: {
-    snapping: SnappingMode,
-    spacing: Padding
-  }) => {
-    const { top = 0, bottom = 0, left = 0, right = 0 } = spacing || {}
-    let finalTop = top, finalBottom = bottom, finalLeft = left, finalRight = right
-    if (snapping === 'clamp') {
-      finalTop = 6
-      finalBottom = 6
-      finalLeft = 10
-      finalRight = 10
-    } else if (snapping === 'none') {
-      finalTop = 16
-      finalBottom = 24
-      finalLeft = 8
-      finalRight = 8
-    } else if (snapping === 'height') {
-      if (top === 6) finalTop = 8
-      if (bottom === 10) finalBottom = 16
+  useDebug: vi
+    .fn()
+    .mockImplementation((debug: DebuggingMode, configDebug: never) => ({
+      isShown: (debug ?? configDebug) === 'visible',
+      isHidden: (debug ?? configDebug) === 'hidden',
+      isNone: (debug ?? configDebug) === 'none',
+    })),
+  useBaseline: vi.fn().mockImplementation(
+    (
+      _ref: never,
+      {
+        snapping,
+        spacing,
+      }: {
+        snapping: SnappingMode
+        spacing: Padding
+      }
+    ) => {
+      const { top = 0, bottom = 0, left = 0, right = 0 } = spacing || {}
+      let finalTop = top,
+        finalBottom = bottom,
+        finalLeft = left,
+        finalRight = right
+      if (snapping === 'clamp') {
+        finalTop = 6
+        finalBottom = 6
+        finalLeft = 10
+        finalRight = 10
+      } else if (snapping === 'none') {
+        finalTop = 16
+        finalBottom = 24
+        finalLeft = 8
+        finalRight = 8
+      } else if (snapping === 'height') {
+        if (top === 6) finalTop = 8
+        if (bottom === 10) finalBottom = 16
+      }
+      return {
+        padding: {
+          top: finalTop,
+          bottom: finalBottom,
+          left: finalLeft,
+          right: finalRight,
+        },
+        isAligned: true,
+        height: 100,
+      }
     }
-    return {
-      padding: { top: finalTop, bottom: finalBottom, left: finalLeft, right: finalRight },
-      isAligned: true,
-      height: 100,
-    }
-  }),
+  ),
   useVirtual: vi.fn().mockReturnValue({ start: 0, end: 0 }),
   useMeasure: vi.fn().mockReturnValue({ width: 1024, height: 768 }),
   useIsClient: vi.fn(() => true),
@@ -132,35 +171,35 @@ describe('<Box /> component', () => {
     render(
       <Box block={[14, 22]} inline={10}>
         Child
-      </Box>,
+      </Box>
     )
 
     // Query for elements that represent spacers.
     const spacers = screen.getAllByTestId('spacer')
 
     // Filter based on style attribute values (as strings).
-    const verticalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--bk-spacer-width: 100%'),
+    const verticalSpacers = spacers.filter((s) =>
+      s.getAttribute('style')?.includes('--bk-spacer-width: 100%')
     )
-    const horizontalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--bk-spacer-height: 100%'),
+    const horizontalSpacers = spacers.filter((s) =>
+      s.getAttribute('style')?.includes('--bk-spacer-height: 100%')
     )
 
     // For our mock, in clamp mode, vertical spacers should be set to 6.
     expect(verticalSpacers[0]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 6'),
+      expect.stringContaining('--bk-spacer-height: 6')
     )
     expect(verticalSpacers[1]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 6'),
+      expect.stringContaining('--bk-spacer-height: 6')
     )
 
     // For horizontal spacers, if inline=10, the mock returns 10 (or a desired value).
-    horizontalSpacers.forEach(spacer => {
+    horizontalSpacers.forEach((spacer) => {
       expect(spacer).toHaveAttribute(
         'style',
-        expect.stringContaining('--bk-spacer-width: 10'),
+        expect.stringContaining('--bk-spacer-width: 10')
       )
     })
   })
@@ -169,30 +208,30 @@ describe('<Box /> component', () => {
     render(
       <Box block={[14, 22]} inline={10} snapping="none">
         No modulo
-      </Box>,
+      </Box>
     )
     const spacers = screen.getAllByTestId('spacer')
 
-    const verticalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--bk-spacer-width: 100%'),
+    const verticalSpacers = spacers.filter((s) =>
+      s.getAttribute('style')?.includes('--bk-spacer-width: 100%')
     )
-    const horizontalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--bk-spacer-height: 100%'),
+    const horizontalSpacers = spacers.filter((s) =>
+      s.getAttribute('style')?.includes('--bk-spacer-height: 100%')
     )
 
     // Based on our mock for "none" mode, we expect:
     expect(verticalSpacers[0]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 16'),
+      expect.stringContaining('--bk-spacer-height: 16')
     )
     expect(verticalSpacers[1]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 24'),
+      expect.stringContaining('--bk-spacer-height: 24')
     )
-    horizontalSpacers.forEach(spacer => {
+    horizontalSpacers.forEach((spacer) => {
       expect(spacer).toHaveAttribute(
         'style',
-        expect.stringContaining('--bk-spacer-width: 8'),
+        expect.stringContaining('--bk-spacer-width: 8')
       )
     })
   })
@@ -201,20 +240,33 @@ describe('<Box /> component', () => {
     render(
       <Box block={[6, 10]} snapping="height">
         Some content
-      </Box>,
+      </Box>
     )
     const spacers = screen.getAllByTestId('spacer')
-    const verticalSpacers = spacers.filter(s =>
-      s.getAttribute('style')?.includes('--bk-spacer-width: 100%'),
+    const verticalSpacers = spacers.filter((s) =>
+      s.getAttribute('style')?.includes('--bk-spacer-width: 100%')
     )
     // For our "height" mode mock, we expect top to be 8 and bottom to be 16.
     expect(verticalSpacers[0]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 8'),
+      expect.stringContaining('--bk-spacer-height: 8')
     )
     expect(verticalSpacers[1]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 16'),
+      expect.stringContaining('--bk-spacer-height: 16')
+    )
+  })
+
+  it('passes snapEdge through to the baseline measurement hook', () => {
+    render(
+      <Box snapping="height" snapEdge="top">
+        Top snap
+      </Box>
+    )
+
+    expect(useBaseline).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ snapEdge: 'top' })
     )
   })
 
@@ -225,7 +277,7 @@ describe('<Box /> component', () => {
         style={{ backgroundColor: 'red', '--my-var': 'foo' } as CSSProperties}
       >
         Something
-      </Box>,
+      </Box>
     )
     const boxEl = screen.getByTestId('box')
     expect(boxEl).toHaveClass('my-custom-box')

@@ -1,13 +1,26 @@
-import type { SnappingMode, Padding, PaddingValue } from '../types'
+import type { SnapEdge, SnappingMode, Padding, PaddingValue } from '../types'
 import { parsePadding } from './padding'
+
+export type SnappingOptions = {
+  mode: SnappingMode
+  snapEdge?: SnapEdge
+}
+
+type SnappingInput = SnappingMode | SnappingOptions
 
 export function calculateSnappedSpacing(
   height: number,
   base: number,
   initial: PaddingValue,
-  snapping: SnappingMode
+  snappingInput: SnappingInput
 ): Padding {
   const pad: Padding = parsePadding({ padding: initial })
+  const snapping =
+    typeof snappingInput === 'string' ? snappingInput : snappingInput.mode
+  const snapEdge =
+    typeof snappingInput === 'string'
+      ? 'bottom'
+      : (snappingInput.snapEdge ?? 'bottom')
 
   if (snapping === 'none') {
     return pad
@@ -16,7 +29,12 @@ export function calculateSnappedSpacing(
   if (snapping === 'height') {
     const remainder = height % base
     if (remainder !== 0) {
-      pad.bottom += base - remainder
+      const adjustment = base - remainder
+      if (snapEdge === 'top') {
+        pad.top += adjustment
+      } else {
+        pad.bottom += adjustment
+      }
     }
   }
 

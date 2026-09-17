@@ -109,12 +109,16 @@ Spacing props accept the following shapes:
 
 ### Grid snapping
 
-`Box` defaults to `snapping="clamp"`. `height` adds bottom spacing to round the
-measured height up to the next base interval; `clamp` also reduces the top and
-bottom spacing modulo the base. Use `snapping="none"` to keep explicit spacing.
-Snapping happens once after the first nonzero measurement, not continuously on
-resize. `Padder` uses height snapping in both adapters. Set `ssrMode` on Padder
-to retain explicit padding without applying its measured snap.
+`Box` defaults to `snapping="clamp"`. `height` adds spacing to round the measured
+height up to the next base interval; it adds that correction to the bottom by
+default. Use `snapEdge="top"` with `snapping="height"` when the text's trimmed
+alphabetic edge should stay anchored while the top padding absorbs the
+correction. `snapEdge="bottom"` is the explicit equivalent of the default.
+`clamp` reduces the top and bottom spacing modulo the base, and
+`snapping="none"` keeps explicit spacing. Snapping happens once after the first
+nonzero measurement, not continuously on resize. `Padder` uses height snapping
+with bottom correction in both adapters. Set `ssrMode` on Padder to retain
+explicit padding without applying its measured snap.
 
 ### Debugging modes
 

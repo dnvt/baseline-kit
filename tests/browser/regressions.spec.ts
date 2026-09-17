@@ -603,6 +603,26 @@ test('React Guide keeps viewport dimensions and Padder snaps', async ({
     .toBe(16)
 })
 
+test('React Box can snap height correction to the top edge', async ({
+  page,
+}) => {
+  await expect
+    .poll(() =>
+      page
+        .locator('#box-snap-top [data-testid="spacer"]')
+        .evaluateAll((elements) =>
+          elements
+            .filter(
+              (element) =>
+                (element.parentElement as HTMLElement).style.gridColumn ===
+                '1 / -1'
+            )
+            .map((element) => element.getAttribute('data-height'))
+        )
+    )
+    .toEqual(['6px', '0px'])
+})
+
 test.describe('native Remix adapter', () => {
   test('nested Config survives delayed application entry and generated consumers', async ({
     page,
@@ -948,6 +968,33 @@ test.describe('native Remix adapter', () => {
           )
       )
       .toContain('6px')
+  })
+
+  test('native Box can snap height correction to the top edge', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    await expect
+      .poll(() =>
+        page
+          .locator('#remix-snap-box-top [data-testid="spacer"]')
+          .evaluateAll((elements) =>
+            elements
+              .filter(
+                (element) =>
+                  (element.parentElement as HTMLElement).style.gridColumn ===
+                  '1 / -1'
+              )
+              .map((element) => element.getAttribute('data-height'))
+          )
+      )
+      .toEqual(['6px', '0px'])
   })
 
   test('native rows respond to a containing-block resize', async ({ page }) => {

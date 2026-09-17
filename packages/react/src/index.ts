@@ -26,7 +26,7 @@ export type {
   Variant,
 } from '@baseline-kit/core'
 export type { BaselineProps, BaselineVariant } from './components/Baseline'
-export type { BoxProps, SnappingMode } from './components/Box'
+export type { BoxProps, SnapEdge, SnappingMode } from './components/Box'
 export type { GuideProps } from './components/Guide'
 export type { IndicatorNode, SpacerProps } from './components/Spacer'
 export type { PadderProps } from './components/Padder'

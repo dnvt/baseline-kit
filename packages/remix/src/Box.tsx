@@ -6,6 +6,7 @@ import {
   calculateSnappedSpacing,
   createBoxDescriptor,
   parsePadding,
+  type SnapEdge,
   type SnappingMode,
   type Padding,
   type ConfigSchema,
@@ -24,13 +25,14 @@ import {
 } from './shared'
 import type { RemixNode } from 'remix/ui'
 
-export type { SnappingMode }
+export type { SnapEdge, SnappingMode }
 
 export type BoxProps = {
   colSpan?: number
   rowSpan?: number
   span?: number
   snapping?: SnappingMode
+  snapEdge?: SnapEdge
   width?: number | string
   height?: number | string
   debugging?: 'none' | 'hidden' | 'visible'
@@ -54,6 +56,7 @@ const RuntimeConfig = Config as unknown as NativeComponent<
 function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   let currentBase = DEFAULT_CONFIG.base
   let currentSnapping: SnappingMode = 'clamp'
+  let currentSnapEdge: SnapEdge = 'bottom'
   let currentInitialPadding: Padding = parsePadding({})
   let snappedPadding: Padding | null = null
 
@@ -70,7 +73,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
       next.height,
       currentBase,
       currentInitialPadding,
-      currentSnapping
+      { mode: currentSnapping, snapEdge: currentSnapEdge }
     )
     requestUpdate()
   })
@@ -80,6 +83,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     const config =
       props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
     const snapping = props.snapping ?? 'clamp'
+    const snapEdge = props.snapEdge ?? 'bottom'
     const debug = resolveDebugging(props.debugging, config.box.debugging)
     const initialPadding = parsePadding({
       padding: props.padding,
@@ -88,6 +92,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     })
     currentBase = config.base
     currentSnapping = snapping
+    currentSnapEdge = snapEdge
     currentInitialPadding = initialPadding
     const padding =
       snapping === 'none' ? initialPadding : (snappedPadding ?? initialPadding)
