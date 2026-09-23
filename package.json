@@ -102,7 +102,7 @@
     "vitest": "^5.0.1"
   },
   "name": "baseline-kit",
-  "version": "5.2.0",
+  "version": "6.0.0",
   "type": "module",
   "workspaces": [
     ".",
