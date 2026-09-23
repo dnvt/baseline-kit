@@ -1,8 +1,14 @@
 .spr {
+  --bksp-w: var(--bk-wf, 100%);
+  --bksp-h: var(--bk-hf, auto);
+  --bksp-b: 8px;
+  --bksp-cl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
+  --bksp-cf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+  --bksp-ct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
   position: relative;
   box-sizing: border-box;
-  width: var(--bksp-w, 100%);
-  height: var(--bksp-h, auto);
+  width: var(--bksp-w);
+  height: var(--bksp-h);
   flex-shrink: 0;
   display: block;
   margin: 0;
@@ -13,14 +19,14 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bksp-cl, hsla(270, 60%, 40%, 0.6));
+  border: 1px solid var(--bksp-cl);
   z-index: calc(var(--bk-zi, 1));
 }
 
 .flat {
-  background-color: var(--bksp-cf, hsla(230, 100%, 70%, 0.2));
+  background-color: var(--bksp-cf);
 }
 
 .indicator {
-  color: var(--bksp-ct, hsla(270, 60%, 40%, 1));
+  color: var(--bksp-ct);
 }

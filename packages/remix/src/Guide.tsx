@@ -3,9 +3,11 @@
 import { type Handle, type RemixNode } from 'remix/ui'
 import {
   DEFAULT_CONFIG,
+  canCompactFixedGuide,
   calculateGuideTemplate,
   createGuideConfig,
   createGuideDescriptor,
+  formatValue,
   type GuideVariant,
   type GuideColumnValue,
   type ConfigSchema,
@@ -14,15 +16,19 @@ import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 import {
   classNames,
+  compactStyle,
+  getDOMAttributes,
   createElementObserverBridge,
   getConfig,
   mergeStyles,
+  normalizeConfigSnapshot,
   queueNativeUpdate,
   resolveDebugging,
   type NativeComponent,
+  type NativeDOMAttributes,
 } from './shared'
 
-export type GuideProps = {
+export type GuideProps = NativeDOMAttributes & {
   align?: string
   variant?: GuideVariant
   columns?: number | readonly GuideColumnValue[]
@@ -57,8 +63,9 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
 
   return () => {
     const props = handle.props
-    const config =
+    const config = normalizeConfigSnapshot(
       props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
+    )
     const variant = props.variant ?? config.guide.variant
     const debug = resolveDebugging(props.debugging, config.guide.debugging)
     const guideConfig = createGuideConfig({
@@ -89,22 +96,45 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
       calculatedGap: result.calculatedGap,
       isVisible: debug.isShown,
     })
+    const compactFixedGuide = canCompactFixedGuide({
+      variant,
+      columns: props.columns,
+      columnWidth: props.columnWidth,
+      gap: props.gap ?? 0,
+      align: props.align ?? 'center',
+      domDiagnostics: config.domDiagnostics,
+      className: props.className,
+      style:
+        props.style && typeof props.style === 'object'
+          ? props.style
+          : undefined,
+    })
 
     if (props.ssrMode) {
       return (
         <div
-          className={classNames('bk-gde', 'bk-h', 'bk-ssr', props.className)}
-          data-testid="guide"
-          data-variant={variant}
+          className={classNames(
+            'bk-gde',
+            'bk-h',
+            'bk-ssr',
+            `bk-${variant}`,
+            props.className
+          )}
+          data-testid={config.domDiagnostics ? 'guide' : undefined}
+          data-variant={config.domDiagnostics ? variant : undefined}
           aria-hidden={true}
           style={mergeStyles(
-            {
-              width: props.width ?? '100%',
-              height: props.height ?? '100%',
-              maxWidth: props.maxWidth ?? 'none',
-            },
+            compactStyle(
+              {
+                width: formatValue(props.width ?? '100%'),
+                height: formatValue(props.height ?? '100%'),
+                maxWidth: formatValue(props.maxWidth ?? 'none'),
+              },
+              { width: '100%', height: '100%', maxWidth: 'none' }
+            ),
             props.style
           )}
+          {...getDOMAttributes(props)}
         >
           {props.children}
         </div>
@@ -112,18 +142,25 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
     }
 
     const columns =
-      !descriptor.isLineVariant && debug.isShown
+      !descriptor.isLineVariant && debug.isShown && !compactFixedGuide
         ? Array.from({ length: descriptor.columnsCount }, (_, index) => (
             <div
               key={index}
-              className="bk-col"
-              data-column-index={index}
-              data-variant={variant}
+              className={classNames('bk-col', `bk-${variant}`)}
+              data-column-index={config.domDiagnostics ? index : undefined}
+              data-variant={config.domDiagnostics ? variant : undefined}
             />
           ))
         : null
     const overlay = debug.isShown ? (
-      <div className="bk-cols" data-variant={variant}>
+      <div
+        className={classNames(
+          'bk-cols',
+          `bk-${variant}`,
+          compactFixedGuide && 'bk-cols-compact-fixed'
+        )}
+        data-variant={config.domDiagnostics ? variant : undefined}
+      >
         {columns}
       </div>
     ) : null
@@ -135,12 +172,32 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
       <div
         className={classNames(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
+          !descriptor.classTokens.includes(variant) && `bk-${variant}`,
           props.className
         )}
-        data-testid="guide"
-        data-variant={variant}
+        data-testid={config.domDiagnostics ? 'guide' : undefined}
+        data-variant={config.domDiagnostics ? variant : undefined}
         aria-hidden={true}
-        style={mergeStyles(descriptor.containerStyle, props.style)}
+        style={mergeStyles(
+          compactStyle(descriptor.containerStyle, {
+            '--bkgd-w': '100%',
+            '--bkgd-h': '100%',
+            '--bkgd-mw': 'none',
+            '--bkgd-cw': '60px',
+            '--bkgd-n': '12',
+            '--bkgd-b': '0',
+            '--bkgd-cl': DEFAULT_CONFIG.guide.colors.line,
+            '--bkgd-cp': DEFAULT_CONFIG.guide.colors.pattern,
+            '--bkgd-ca': DEFAULT_CONFIG.guide.colors.auto,
+            '--bkgd-cf': DEFAULT_CONFIG.guide.colors.fixed,
+            '--bkgd-g': '0px',
+            '--bkgd-j': 'center',
+            '--bkgd-t': 'none',
+            '--bkgd-line-color': 'var(--bkgd-cl)',
+          }),
+          props.style
+        )}
+        {...getDOMAttributes(props)}
         mix={
           typeof window === 'undefined' || props.ssrMode
             ? undefined

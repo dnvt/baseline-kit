@@ -1,4 +1,17 @@
 .gde {
+  --bkgd-w: 100%;
+  --bkgd-h: 100%;
+  --bkgd-mw: none;
+  --bkgd-cw: 60px;
+  --bkgd-n: 12;
+  --bkgd-b: 0;
+  --bkgd-cl: var(--bk-guide-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkgd-cp: var(--bk-guide-color-pattern-theme, hsla(230, 100%, 70%, 0.2));
+  --bkgd-ca: var(--bk-guide-color-auto-theme, hsla(200, 100%, 70%, 0.15));
+  --bkgd-cf: var(--bk-guide-color-fixed-theme, hsla(200, 100%, 70%, 0.15));
+  --bkgd-g: 0;
+  --bkgd-j: center;
+  --bkgd-t: none;
   position: absolute;
   inset: 0;
   box-sizing: border-box;
@@ -51,12 +64,12 @@
 }
 
 /* Variant-specific styles */
-.col[data-variant='line'] {
+.col.line {
   width: 1px;
   background-color: var(--bkgd-cl);
 }
 
-.cols[data-variant='line'] {
+.cols.line {
   display: block;
   background-image: repeating-linear-gradient(
     to right,
@@ -65,16 +78,25 @@
   );
 }
 
-.col[data-variant='pattern'] {
+.col.pattern {
   background-color: var(--bkgd-cp);
 }
 
-.col[data-variant='auto'] {
+.col.auto {
   background-color: var(--bkgd-ca);
   overflow: hidden;
 }
 
-.col[data-variant='fixed'] {
+.col.fixed {
+  background-color: var(--bkgd-cf);
+}
+
+.cols.compactFixed {
+  display: block;
+  left: 50%;
+  right: auto;
+  width: 240px;
+  transform: translateX(-50%);
   background-color: var(--bkgd-cf);
 }
 

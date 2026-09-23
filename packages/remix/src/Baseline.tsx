@@ -3,6 +3,7 @@
 import { type Handle, type RemixNode } from 'remix/ui'
 import {
   DEFAULT_CONFIG,
+  canCompactBaselinePaint,
   createBaselineDescriptor,
   formatValue,
   type BaselineVariant,
@@ -12,30 +13,35 @@ import {
 import {
   getConfig,
   classNames,
+  compactStyle,
+  getDOMAttributes,
   mergeStyles,
+  normalizeConfigSnapshot,
   resolveDebugging,
   createElementObserverBridge,
   createVirtualBridge,
   queueNativeUpdate,
   type NativeComponent,
+  type NativeDOMAttributes,
 } from './shared'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 
 export type { BaselineVariant }
 
-export type BaselineProps = SpacingProps & {
-  variant?: BaselineVariant
-  width?: number | string
-  height?: number | string
-  base?: number
-  color?: string
-  debugging?: 'none' | 'hidden' | 'visible'
-  className?: string
-  style?: Record<string, string | number | null | undefined>
-  children?: RemixNode
-  ssrMode?: boolean
-}
+export type BaselineProps = SpacingProps &
+  NativeDOMAttributes & {
+    variant?: BaselineVariant
+    width?: number | string
+    height?: number | string
+    base?: number
+    color?: string
+    debugging?: 'none' | 'hidden' | 'visible'
+    className?: string
+    style?: Record<string, string | number | null | undefined>
+    children?: RemixNode
+    ssrMode?: boolean
+  }
 
 type RuntimeBaselineProps = BaselineProps & {
   __baselineConfig?: ConfigSchema
@@ -60,8 +66,9 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
 
   return () => {
     const props = handle.props
-    const config =
+    const config = normalizeConfigSnapshot(
       props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
+    )
     const base = props.base ?? config.base
     const variant = props.variant ?? config.baseline.variant
     const debugging = resolveDebugging(
@@ -84,21 +91,45 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
       },
       isVisible: debugging.isShown,
     })
+    const compactPaint = canCompactBaselinePaint({
+      base,
+      contentHeight: descriptor.contentHeight,
+      domDiagnostics: config.domDiagnostics,
+      className: props.className,
+      style: props.style,
+    })
 
     if (props.ssrMode) {
       return (
         <div
-          className={classNames('bk-bas', 'bk-h', 'bk-ssr', props.className)}
-          data-testid="baseline"
+          className={classNames(
+            'bk-bas',
+            'bk-h',
+            'bk-ssr',
+            `bk-${variant}`,
+            props.className
+          )}
+          data-testid={config.domDiagnostics ? 'baseline' : undefined}
           aria-hidden={true}
           style={mergeStyles(
-            descriptor.containerStyle,
-            {
-              width: formatValue(props.width ?? '100%'),
-              height: formatValue(props.height ?? '100%'),
-            },
+            compactStyle(descriptor.containerStyle, {
+              '--bkbl-w': '100%',
+              '--bkbl-h': '100%',
+              '--bkbl-cl': DEFAULT_CONFIG.baseline.colors.line,
+              '--bkbl-cf': DEFAULT_CONFIG.baseline.colors.flat,
+              '--bkbl-c':
+                variant === 'line' ? 'var(--bkbl-cl)' : 'var(--bkbl-cf)',
+            }),
+            compactStyle(
+              {
+                width: formatValue(props.width ?? '100%'),
+                height: formatValue(props.height ?? '100%'),
+              },
+              { width: '100%', height: '100%' }
+            ),
             props.style
           )}
+          {...getDOMAttributes(props)}
         />
       )
     }
@@ -108,22 +139,23 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
     }
 
     const range = virtual.getRange(descriptor.rowCount)
-    const rows = debugging.isShown
-      ? Array.from(
-          { length: Math.max(0, range.end - range.start) },
-          (_, index) => {
-            const rowIndex = range.start + index
-            return (
-              <div
-                className="bk-row"
-                key={rowIndex}
-                data-row-index={rowIndex}
-                style={descriptor.getRowStyle(rowIndex)}
-              />
-            )
-          }
-        )
-      : []
+    const rows =
+      debugging.isShown && !compactPaint
+        ? Array.from(
+            { length: Math.max(0, range.end - range.start) },
+            (_, index) => {
+              const rowIndex = range.start + index
+              return (
+                <div
+                  className="bk-row"
+                  key={rowIndex}
+                  data-row-index={config.domDiagnostics ? rowIndex : undefined}
+                  style={descriptor.getRowStyle(rowIndex)}
+                />
+              )
+            }
+          )
+        : []
 
     // Runtime mixins contain callbacks and must not be serialized into a
     // parent client entry's props during SSR. The client entry recreates
@@ -132,20 +164,38 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
       <div
         className={classNames(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
+          `bk-${variant}`,
+          compactPaint && 'bk-compact',
           props.className
         )}
-        data-testid="baseline"
+        data-testid={config.domDiagnostics ? 'baseline' : undefined}
         aria-hidden={true}
         style={mergeStyles(
-          descriptor.containerStyle,
-          {
-            // Keep the SSR document useful even before the package stylesheet
-            // is loaded. The CSS variables remain the canonical runtime path.
-            width: formatValue(props.width ?? '100%'),
-            height: formatValue(props.height ?? '100%'),
-          },
+          compactStyle(
+            {
+              ...descriptor.containerStyle,
+              ...(compactPaint ? { '--bkbl-b': `${base}px` } : {}),
+            },
+            {
+              '--bkbl-w': '100%',
+              '--bkbl-h': '100%',
+              '--bkbl-b': '8px',
+              '--bkbl-cl': DEFAULT_CONFIG.baseline.colors.line,
+              '--bkbl-cf': DEFAULT_CONFIG.baseline.colors.flat,
+              '--bkbl-c':
+                variant === 'line' ? 'var(--bkbl-cl)' : 'var(--bkbl-cf)',
+            }
+          ),
+          compactStyle(
+            {
+              width: formatValue(props.width ?? '100%'),
+              height: formatValue(props.height ?? '100%'),
+            },
+            { width: '100%', height: '100%' }
+          ),
           props.style
         )}
+        {...getDOMAttributes(props)}
         mix={
           typeof window === 'undefined' || props.ssrMode
             ? undefined

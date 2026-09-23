@@ -27,6 +27,7 @@ function ConfigImpl(handle: Handle<RuntimeConfigProps, ConfigSchema>) {
     const value = mergeConfig({
       parentConfig,
       base: handle.props.base,
+      domDiagnostics: handle.props.domDiagnostics,
       baseline: handle.props.baseline,
       guide: handle.props.guide,
       spacer: handle.props.spacer,

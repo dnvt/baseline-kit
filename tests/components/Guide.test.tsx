@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { render } from '../render'
 import '@testing-library/jest-dom'
 import { CSSProperties } from 'react'
-import { Guide } from '@components'
+import { Config, Guide } from '@components'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -93,7 +94,58 @@ describe('Guide component', () => {
     const cols = guideEl.querySelectorAll('[data-column-index]')
     expect(cols.length).toBe(5)
     expect(guideEl.getAttribute('style')).toContain('--bkgd-g: 16px')
-    expect(guideEl.getAttribute('style')).toContain('--bkgd-t: repeat(5, 120px)')
+    expect(guideEl.getAttribute('style')).toContain(
+      '--bkgd-t: repeat(5, 120px)'
+    )
+  })
+
+  it('compacts only the default uniform fixed Guide when diagnostics are off', () => {
+    render(
+      <Config domDiagnostics={false}>
+        <Guide
+          variant="fixed"
+          columns={4}
+          debugging="visible"
+          data-testid="compact-guide"
+        />
+      </Config>
+    )
+
+    const guideEl = screen.getByTestId('compact-guide')
+    expect(guideEl.querySelector(':scope > div')).toBeInTheDocument()
+    expect(guideEl.querySelectorAll(':scope > div > div')).toHaveLength(0)
+    expect(guideEl).not.toHaveAttribute('data-variant')
+  })
+
+  it('keeps fixed Guide columns when diagnostics or custom layout is requested', () => {
+    const { rerender } = render(
+      <Config domDiagnostics>
+        <Guide
+          variant="fixed"
+          columns={4}
+          debugging="visible"
+          data-testid="fixed-guide"
+        />
+      </Config>
+    )
+    expect(
+      screen.getByTestId('fixed-guide').querySelectorAll(':scope > div > div')
+    ).toHaveLength(4)
+
+    rerender(
+      <Config domDiagnostics={false}>
+        <Guide
+          variant="fixed"
+          columns={4}
+          gap={8}
+          debugging="visible"
+          data-testid="fixed-guide"
+        />
+      </Config>
+    )
+    expect(
+      screen.getByTestId('fixed-guide').querySelectorAll(':scope > div > div')
+    ).toHaveLength(4)
   })
 
   it('renders hidden when debugging="hidden"', () => {
@@ -154,6 +206,39 @@ describe('Guide component', () => {
     expect(guideEl.className).toContain('ssr')
     expect(guideEl.className).toContain('h')
     expect(guideEl.querySelectorAll('[data-column-index]').length).toBe(0)
+  })
+
+  it('preserves CSS pixel units for numeric SSR fallback dimensions', () => {
+    render(
+      <Guide
+        debugging="visible"
+        width={120}
+        height={80}
+        maxWidth={240}
+        ssrMode
+        data-testid="numeric-guide"
+      />
+    )
+    const guide = screen.getByTestId('numeric-guide')
+    const style = guide.getAttribute('style') || ''
+    expect(style).toContain('width: 120px')
+    expect(style).toContain('height: 80px')
+    expect(style).toContain('max-width: 240px')
+  })
+
+  it('preserves caller attributes in the SSR fallback', () => {
+    render(
+      <Guide
+        debugging="visible"
+        ssrMode
+        id="caller-guide"
+        aria-label="Caller guide"
+        data-owner="application"
+      />
+    )
+    const guideEl = screen.getByLabelText('Caller guide')
+    expect(guideEl).toHaveAttribute('id', 'caller-guide')
+    expect(guideEl).toHaveAttribute('data-owner', 'application')
   })
 
   it('applies custom CSS props from style', () => {

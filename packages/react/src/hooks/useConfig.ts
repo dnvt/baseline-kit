@@ -5,6 +5,7 @@ import { useDefaultConfig } from '../components/Config/Config'
 /** Type helper that merges base configuration with component-specific settings. */
 export type ComponentConfig<K extends keyof ConfigSchema> = ConfigSchema[K] & {
   base: number
+  domDiagnostics: boolean
 }
 
 /**
@@ -16,7 +17,10 @@ export function useConfig<K extends keyof ConfigSchema>(
   const defaultConfig = useDefaultConfig()
   return useMemo(() => {
     return Object.assign(
-      { base: defaultConfig.base },
+      {
+        base: defaultConfig.base,
+        domDiagnostics: defaultConfig.domDiagnostics,
+      },
       defaultConfig[component]
     ) as ComponentConfig<K>
   }, [defaultConfig, component])

@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { render, renderPlain } from '../render'
 import '@testing-library/jest-dom'
 import {
   Box,
@@ -10,8 +11,37 @@ import {
 } from '@components'
 
 describe('Config component', () => {
+  it('omits library diagnostics by default and supports false-to-true opt-in', () => {
+    const ui = (domDiagnostics: boolean) => (
+      <Config domDiagnostics={domDiagnostics}>
+        <Spacer
+          height={24}
+          data-user-probe="preserved"
+          aria-label="sample spacer"
+        />
+      </Config>
+    )
+    const { container, rerender } = renderPlain(ui(false))
+    let spacer = container.firstElementChild
+    expect(spacer).not.toHaveAttribute('data-testid')
+    expect(spacer).not.toHaveAttribute('data-height')
+    expect(spacer).not.toHaveAttribute('data-variant')
+    expect(spacer).toHaveAttribute('data-user-probe', 'preserved')
+    expect(spacer).toHaveAttribute('aria-label', 'sample spacer')
+
+    rerender(ui(true))
+    spacer = container.firstElementChild
+    expect(spacer).toHaveAttribute('data-testid', 'spacer')
+    expect(spacer).toHaveAttribute('data-height', '24px')
+    expect(spacer).toHaveAttribute('data-variant', 'line')
+    expect(spacer).toHaveAttribute('data-user-probe', 'preserved')
+  })
+
   // Create a test consumer component that uses the config context
-  const TestConsumer = ({ children, ...props }: React.HTMLProps<HTMLDivElement>) => {
+  const TestConsumer = ({
+    children,
+    ...props
+  }: React.HTMLProps<HTMLDivElement>) => {
     const config = useDefaultConfig()
     return (
       <div
@@ -29,14 +59,18 @@ describe('Config component', () => {
       render(
         <Config>
           <TestConsumer data-testid="child">Test Content</TestConsumer>
-        </Config>,
+        </Config>
       )
 
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
       expect(style).toContain(`--bk-base: ${DEFAULT_CONFIG.base}px`)
-      expect(style).toContain(`--bkbl-cl: ${DEFAULT_CONFIG.baseline.colors.line}`)
-      expect(style).toContain(`--bkbl-cf: ${DEFAULT_CONFIG.baseline.colors.flat}`)
+      expect(style).toContain(
+        `--bkbl-cl: ${DEFAULT_CONFIG.baseline.colors.line}`
+      )
+      expect(style).toContain(
+        `--bkbl-cf: ${DEFAULT_CONFIG.baseline.colors.flat}`
+      )
       expect(screen.getByText('Test Content')).toBeInTheDocument()
     })
   })
@@ -46,7 +80,7 @@ describe('Config component', () => {
       render(
         <Config base={16}>
           <TestConsumer data-testid="child">Content</TestConsumer>
-        </Config>,
+        </Config>
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
@@ -66,7 +100,7 @@ describe('Config component', () => {
           }}
         >
           <TestConsumer data-testid="child">Content</TestConsumer>
-        </Config>,
+        </Config>
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
@@ -89,7 +123,7 @@ describe('Config component', () => {
           }}
         >
           <TestConsumer data-testid="child">Content</TestConsumer>
-        </Config>,
+        </Config>
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
@@ -104,10 +138,16 @@ describe('Config component', () => {
     it('merges nested configs correctly', () => {
       render(
         <Config base={16}>
-          <Config base={24} guide={{ debugging: 'visible' }} baseline={{ variant: 'flat' }}>
-            <TestConsumer data-testid="nested-child">Nested Content</TestConsumer>
+          <Config
+            base={24}
+            guide={{ debugging: 'visible' }}
+            baseline={{ variant: 'flat' }}
+          >
+            <TestConsumer data-testid="nested-child">
+              Nested Content
+            </TestConsumer>
           </Config>
-        </Config>,
+        </Config>
       )
       const child = screen.getByTestId('nested-child')
       const style = child.getAttribute('style') || ''
@@ -120,12 +160,14 @@ describe('Config component', () => {
       render(
         <Config guide={{ debugging: 'visible' }}>
           <TestConsumer data-testid="child">Content</TestConsumer>
-        </Config>,
+        </Config>
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
       expect(style).toContain(`--bkgd-cl: ${DEFAULT_CONFIG.guide.colors.line}`)
-      expect(style).toContain(`--bkgd-cp: ${DEFAULT_CONFIG.guide.colors.pattern}`)
+      expect(style).toContain(
+        `--bkgd-cp: ${DEFAULT_CONFIG.guide.colors.pattern}`
+      )
     })
 
     it('handles partial color overrides correctly', () => {
@@ -138,12 +180,14 @@ describe('Config component', () => {
           }}
         >
           <TestConsumer data-testid="child">Content</TestConsumer>
-        </Config>,
+        </Config>
       )
       const child = screen.getByTestId('child')
       const style = child.getAttribute('style') || ''
       expect(style).toContain('--bkgd-cl: #FF0000')
-      expect(style).toContain(`--bkgd-cp: ${DEFAULT_CONFIG.guide.colors.pattern}`)
+      expect(style).toContain(
+        `--bkgd-cp: ${DEFAULT_CONFIG.guide.colors.pattern}`
+      )
     })
   })
 

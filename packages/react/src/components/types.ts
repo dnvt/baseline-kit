@@ -30,7 +30,17 @@ export type ComponentsProps = {
   style?: React.CSSProperties
   height?: React.CSSProperties['height']
   width?: React.CSSProperties['width']
-} & SpacingProps
+} & SpacingProps &
+  React.AriaAttributes & {
+    id?: string
+    title?: string
+    role?: React.AriaRole
+    tabIndex?: number
+    lang?: string
+    dir?: string
+    hidden?: boolean
+    [key: `data-${string}`]: string | number | boolean | undefined
+  }
 
 /** Base configuration for components that support padding. */
 export type PaddedBaseConfig = {

@@ -1,14 +1,21 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/react'
+import { render } from '../render'
 import '@testing-library/jest-dom'
-import type { CSSProperties, PropsWithChildren } from 'react'
-import {
-  Box,
-  ComponentsProps,
-  DebuggingMode,
-  Padding,
-  SnappingMode,
-} from '@components'
+import type { CSSProperties } from 'react'
+import { useState } from 'react'
+import { Box, DebuggingMode, Padding, SnappingMode } from '@components'
 import { useBaseline } from '@hooks'
+
+function StatefulField() {
+  const [value, setValue] = useState('before')
+  return (
+    <input
+      aria-label="stateful Box child"
+      value={value}
+      onChange={(event) => setValue(event.currentTarget.value)}
+    />
+  )
+}
 
 // Mock CSS modules
 vi.mock('./styles.module.css', () => ({
@@ -19,42 +26,23 @@ vi.mock('./styles.module.css', () => ({
   },
 }))
 
-// Mock the Padder component so that it simply renders its children and adds a test id.
-vi.mock('@components/Padder', () => ({
-  Padder: ({ children, block, inline }: PropsWithChildren<ComponentsProps>) => (
-    <div data-testid="padder">
-      {/* Vertical spacers */}
-      {block &&
-        Array.isArray(block) &&
-        block.map((height, i) => (
-          <div
-            key={`v-${i}`}
-            data-testid="spacer"
-            style={
-              {
-                '--bk-spacer-height': height,
-                '--bk-spacer-width': '100%',
-              } as CSSProperties
-            }
-          />
-        ))}
-      {children}
-      {/* Horizontal spacers */}
-      {inline &&
-        Array.isArray(inline) &&
-        inline.map((width, i) => (
-          <div
-            key={`h-${i}`}
-            data-testid="spacer"
-            style={
-              {
-                '--bk-spacer-width': width,
-                '--bk-spacer-height': '100%',
-              } as CSSProperties
-            }
-          />
-        ))}
-    </div>
+vi.mock('@components/Spacer', () => ({
+  Spacer: ({
+    width,
+    height,
+  }: {
+    width?: number | string
+    height?: number | string
+  }) => (
+    <div
+      data-testid="spacer"
+      style={
+        {
+          '--bk-spacer-height': height ?? '100%',
+          '--bk-spacer-width': width ?? '100%',
+        } as CSSProperties
+      }
+    />
   ),
 }))
 
@@ -63,6 +51,7 @@ vi.mock('@hooks', () => ({
   useConfig: vi.fn((component: string) => {
     if (component === 'box') {
       return {
+        domDiagnostics: true,
         base: 8,
         debugging: 'visible',
         colors: {
@@ -74,6 +63,7 @@ vi.mock('@hooks', () => ({
     }
     if (component === 'padder') {
       return {
+        domDiagnostics: true,
         base: 8,
         debugging: 'visible',
         color: '#FF00FF',
@@ -81,6 +71,7 @@ vi.mock('@hooks', () => ({
     }
     if (component === 'spacer') {
       return {
+        domDiagnostics: true,
         base: 8,
         debugging: 'visible',
         variant: 'flat',
@@ -96,6 +87,7 @@ vi.mock('@hooks', () => ({
   useDebug: vi
     .fn()
     .mockImplementation((debug: DebuggingMode, configDebug: never) => ({
+      debugging: debug ?? configDebug,
       isShown: (debug ?? configDebug) === 'visible',
       isHidden: (debug ?? configDebug) === 'hidden',
       isNone: (debug ?? configDebug) === 'none',
@@ -153,12 +145,71 @@ describe('<Box /> component', () => {
   })
 
   it('renders with default props and displays children', () => {
-    render(<Box>Box content</Box>)
+    const { container } = render(<Box>Box content</Box>)
     const boxEl = screen.getByTestId('box')
     expect(boxEl).toBeInTheDocument()
-    // Default debugging from our mock config for "box" is "visible".
+    // Visible diagnostics stay on the compact merged host by default.
     expect(boxEl.className).toContain('v')
+    expect(container.querySelectorAll('*')).toHaveLength(2)
+    expect(screen.queryByTestId('padder')).not.toBeInTheDocument()
     expect(screen.getByText('Box content')).toBeInTheDocument()
+  })
+
+  it('uses one Padder outline on the separate path', () => {
+    render(
+      <Box className="custom-layout" debugging="visible">
+        Box content
+      </Box>
+    )
+    const boxEl = screen.getByTestId('box')
+    expect(screen.getByTestId('padder')).toBeInTheDocument()
+    expect(boxEl.className).not.toMatch(/padderVisible/i)
+  })
+
+  it('keeps merged Box children mounted across debug-mode changes', () => {
+    const { rerender } = render(
+      <Box debugging="visible">
+        <StatefulField />
+      </Box>
+    )
+    const field = screen.getByRole('textbox', { name: 'stateful Box child' })
+    fireEvent.change(field, { target: { value: 'edited' } })
+    field.focus()
+
+    rerender(
+      <Box debugging="hidden">
+        <StatefulField />
+      </Box>
+    )
+
+    expect(screen.getByRole('textbox', { name: 'stateful Box child' })).toBe(
+      field
+    )
+    expect(field).toHaveValue('edited')
+    expect(document.activeElement).toBe(field)
+  })
+
+  it('keeps separate Padder children mounted when debugging becomes none', () => {
+    const { rerender } = render(
+      <Box className="custom-layout" debugging="visible">
+        <StatefulField />
+      </Box>
+    )
+    const field = screen.getByRole('textbox', { name: 'stateful Box child' })
+    fireEvent.change(field, { target: { value: 'edited' } })
+    field.focus()
+
+    rerender(
+      <Box className="custom-layout" debugging="none">
+        <StatefulField />
+      </Box>
+    )
+
+    expect(screen.getByRole('textbox', { name: 'stateful Box child' })).toBe(
+      field
+    )
+    expect(field).toHaveValue('edited')
+    expect(document.activeElement).toBe(field)
   })
 
   it('renders hidden if debugging="hidden"', () => {
@@ -169,7 +220,7 @@ describe('<Box /> component', () => {
 
   it('snapping defaults to "clamp", so it moduloizes block or inline spacing', () => {
     render(
-      <Box block={[14, 22]} inline={10}>
+      <Box className="layout" block={[14, 22]} inline={10}>
         Child
       </Box>
     )
@@ -206,7 +257,7 @@ describe('<Box /> component', () => {
 
   it('uses raw spacing if snapping="none"', () => {
     render(
-      <Box block={[14, 22]} inline={10} snapping="none">
+      <Box className="layout" block={[14, 22]} inline={10} snapping="none">
         No modulo
       </Box>
     )
@@ -238,7 +289,7 @@ describe('<Box /> component', () => {
 
   it('snaps the final box height if snapping="height"', () => {
     render(
-      <Box block={[6, 10]} snapping="height">
+      <Box className="layout" block={[6, 10]} snapping="height">
         Some content
       </Box>
     )

@@ -9,6 +9,7 @@ type DebugColors = { line: string; flat: string; text: string }
 
 export type ConfigSchema = {
   base: number
+  domDiagnostics: boolean
   baseline: {
     variant: BaselineVariant
     debugging: DebuggingMode

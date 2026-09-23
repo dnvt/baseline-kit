@@ -6,6 +6,37 @@ import {
   calculateRowCount,
 } from '../utils'
 
+export function canCompactBaselinePaint(params: {
+  base: number
+  contentHeight: number
+  domDiagnostics: boolean
+  className?: string
+  style?: object
+}): boolean {
+  if (
+    params.domDiagnostics ||
+    params.base <= 1 ||
+    !Number.isInteger(params.base) ||
+    params.className
+  ) {
+    return false
+  }
+
+  if (
+    params.contentHeight >= params.base &&
+    Math.abs(
+      params.contentHeight -
+        Math.floor(params.contentHeight / params.base) * params.base
+    ) > 0.001
+  ) {
+    return false
+  }
+
+  return !Object.keys(params.style ?? {}).some(
+    (property) => property.startsWith('background') || property === '--bkbl-b'
+  )
+}
+
 export interface BaselineDescriptorParams {
   base: number
   colors: Record<BaselineVariant, string>
@@ -22,6 +53,7 @@ export interface BaselineDescriptorParams {
 export interface BaselineDescriptor {
   containerStyle: Record<string, string>
   rowCount: number
+  contentHeight: number
   getRowStyle: (index: number) => Record<string, string>
   padding: string | undefined
   isVisible: boolean
@@ -65,6 +97,7 @@ export function createBaselineDescriptor(
     containerHeight > 0
       ? containerHeight
       : normalizeValuePair([undefined, height], [containerWidth, 0])[1]
+  const contentHeight = layoutHeight - top - bottom
   const rowCount = calculateRowCount({
     height: layoutHeight,
     top,
@@ -99,6 +132,7 @@ export function createBaselineDescriptor(
   return {
     containerStyle,
     rowCount,
+    contentHeight,
     getRowStyle,
     padding,
     isVisible,

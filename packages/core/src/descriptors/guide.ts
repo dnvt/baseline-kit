@@ -29,6 +29,41 @@ export interface GuideDescriptor {
   classTokens: string[]
 }
 
+export function canCompactFixedGuide(params: {
+  variant: GuideVariant
+  columns?: number | readonly unknown[]
+  columnWidth?: number | string
+  gap: number
+  align?: string
+  domDiagnostics: boolean
+  className?: string
+  style?: object
+}): boolean {
+  const colorOverrides = new Set([
+    '--bkgd-cl',
+    '--bkgd-cp',
+    '--bkgd-ca',
+    '--bkgd-cf',
+    '--bkgd-line-color',
+  ])
+  const hasLayoutStyle =
+    params.style &&
+    Object.keys(params.style).some((property) => !colorOverrides.has(property))
+
+  return (
+    !params.domDiagnostics &&
+    !params.className &&
+    !hasLayoutStyle &&
+    params.variant === 'fixed' &&
+    params.columns === 4 &&
+    (params.columnWidth === undefined ||
+      params.columnWidth === 60 ||
+      params.columnWidth === '60px') &&
+    params.gap === 0 &&
+    (params.align || 'center') === 'center'
+  )
+}
+
 export interface GuideConfigParams {
   variant: GuideVariant
   base: number

@@ -35,6 +35,7 @@ type ConfigProps = ConfigOverrides & {
 export function Config({
   children,
   base,
+  domDiagnostics,
   baseline,
   guide,
   spacer,
@@ -47,13 +48,14 @@ export function Config({
     return mergeConfig({
       parentConfig,
       base,
+      domDiagnostics,
       baseline,
       guide,
       spacer,
       box,
       padder,
     })
-  }, [parentConfig, base, baseline, guide, spacer, box, padder])
+  }, [parentConfig, base, domDiagnostics, baseline, guide, spacer, box, padder])
 
   return <ConfigContext value={value}>{children}</ConfigContext>
 }

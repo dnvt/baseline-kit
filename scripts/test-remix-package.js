@@ -19,6 +19,12 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const fixtureSource = resolve(repoRoot, 'tests/integration/remix-v3')
 const tempRoot = mkdtempSync(join(tmpdir(), 'baseline-kit-remix-v3-'))
 const fixtureDir = join(tempRoot, 'fixture')
+const browserProjects = (
+  process.env.BASELINE_BROWSER_PROJECTS ?? 'chromium,firefox,webkit'
+)
+  .split(',')
+  .map((project) => project.trim())
+  .filter(Boolean)
 
 const run = (command, args, options = {}) =>
   execFileSync(command, args, {
@@ -120,6 +126,7 @@ try {
     react.createElement(
       reactEntry.Config,
       {
+        domDiagnostics: true,
         guide: {
           debugging: 'visible',
           variant: 'fixed',
@@ -172,9 +179,7 @@ try {
       resolve(repoRoot, 'node_modules/.bin/playwright'),
       [
         'test',
-        '--project=chromium',
-        '--project=firefox',
-        '--project=webkit',
+        ...browserProjects.map((project) => `--project=${project}`),
         '--retries=0',
         '--grep',
         'native Remix adapter',

@@ -11,10 +11,14 @@ import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 import {
   classNames,
+  compactStyle,
+  getDOMAttributes,
   getConfig,
   mergeStyles,
+  normalizeConfigSnapshot,
   resolveDebugging,
   type NativeComponent,
+  type NativeDOMAttributes,
 } from './shared'
 
 export type IndicatorNode = (
@@ -22,7 +26,7 @@ export type IndicatorNode = (
   type: 'width' | 'height'
 ) => RemixNode
 
-export type SpacerProps = {
+export type SpacerProps = NativeDOMAttributes & {
   width?: number | string
   height?: number | string
   variant?: Variant
@@ -43,8 +47,9 @@ type RuntimeSpacerProps = SpacerProps & {
 function SpacerImpl(handle: Handle<RuntimeSpacerProps>) {
   return () => {
     const props = handle.props
-    const config =
+    const config = normalizeConfigSnapshot(
       props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
+    )
     const base = props.base ?? config.base
     const variant = props.variant ?? config.spacer.variant
     const debugging = resolveDebugging(props.debugging, config.spacer.debugging)
@@ -80,10 +85,23 @@ function SpacerImpl(handle: Handle<RuntimeSpacerProps>) {
           ...descriptor.classTokens.map((token) => `bk-${token}`),
           props.className
         )}
-        data-testid="spacer"
-        data-variant={variant}
-        data-height={`${descriptor.normHeight}px`}
-        style={mergeStyles(descriptor.style, props.style)}
+        data-testid={config.domDiagnostics ? 'spacer' : undefined}
+        data-variant={config.domDiagnostics ? variant : undefined}
+        data-height={
+          config.domDiagnostics ? `${descriptor.normHeight}px` : undefined
+        }
+        style={mergeStyles(
+          compactStyle(descriptor.style, {
+            '--bksp-w': 'var(--bk-wf, 100%)',
+            '--bksp-h': 'var(--bk-hf, auto)',
+            '--bksp-b': '8px',
+            '--bksp-cl': DEFAULT_CONFIG.spacer.colors.line,
+            '--bksp-cf': DEFAULT_CONFIG.spacer.colors.flat,
+            '--bksp-ct': DEFAULT_CONFIG.spacer.colors.text,
+          }),
+          props.style
+        )}
+        {...getDOMAttributes(props)}
       >
         {measurements}
         {props.children}
