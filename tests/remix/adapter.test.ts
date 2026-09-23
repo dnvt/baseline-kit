@@ -34,6 +34,7 @@ describe('Remix adapter', () => {
 
     const html = await renderToString(
       jsx(Config, {
+        domDiagnostics: true,
         baseline: {
           debugging: 'visible',
           colors: { line: '#ff0000', flat: '#00ff00' },
@@ -78,6 +79,31 @@ describe('Remix adapter', () => {
     expect(html).toContain('data-testid="guide"')
   })
 
+  it('omits generated DOM diagnostics by default and preserves caller attributes', async () => {
+    const defaultHtml = await renderToString(
+      jsx(Spacer, {
+        height: 24,
+        'data-user-probe': 'kept',
+        'aria-label': 'sample spacer',
+      })
+    )
+    expect(defaultHtml).not.toContain('data-testid="spacer"')
+    expect(defaultHtml).not.toContain('data-variant=')
+    expect(defaultHtml).not.toContain('data-height=')
+    expect(defaultHtml).toContain('data-user-probe="kept"')
+    expect(defaultHtml).toContain('aria-label="sample spacer"')
+
+    const enabledHtml = await renderToString(
+      jsx(Config, {
+        domDiagnostics: true,
+        children: jsx(Spacer, { height: 24 }),
+      })
+    )
+    expect(enabledHtml).toContain('data-testid="spacer"')
+    expect(enabledHtml).toContain('data-variant="line"')
+    expect(enabledHtml).toContain('data-height="24px"')
+  })
+
   it('keeps ssrMode as a permanent non-measuring fallback', async () => {
     const baselineHtml = await renderToString(
       jsx(Baseline, {
@@ -88,7 +114,7 @@ describe('Remix adapter', () => {
         base: 8,
       })
     )
-    expect(baselineHtml).toContain('class="bk-bas bk-h bk-ssr"')
+    expect(baselineHtml).toContain('class="bk-bas bk-h bk-ssr bk-line"')
     expect(baselineHtml).not.toContain('data-row-index')
     expect(baselineHtml).toContain('width: 120px')
     expect(baselineHtml).toContain('height: 80px')
@@ -102,7 +128,7 @@ describe('Remix adapter', () => {
         children: 'SSR guide content',
       })
     )
-    expect(guideHtml).toContain('class="bk-gde bk-h bk-ssr"')
+    expect(guideHtml).toContain('class="bk-gde bk-h bk-ssr bk-line"')
     expect(guideHtml).toContain('SSR guide content')
   })
 })

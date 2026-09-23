@@ -1,13 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { render } from '../render'
 import '@testing-library/jest-dom'
-import type { CSSProperties, PropsWithChildren } from 'react'
-import {
-  Box,
-  ComponentsProps,
-  DebuggingMode,
-  Padding,
-  SnappingMode,
-} from '@components'
+import type { CSSProperties } from 'react'
+import { Box, DebuggingMode, Padding, SnappingMode } from '@components'
 import { useBaseline } from '@hooks'
 
 // Mock CSS modules
@@ -19,42 +14,23 @@ vi.mock('./styles.module.css', () => ({
   },
 }))
 
-// Mock the Padder component so that it simply renders its children and adds a test id.
-vi.mock('@components/Padder', () => ({
-  Padder: ({ children, block, inline }: PropsWithChildren<ComponentsProps>) => (
-    <div data-testid="padder">
-      {/* Vertical spacers */}
-      {block &&
-        Array.isArray(block) &&
-        block.map((height, i) => (
-          <div
-            key={`v-${i}`}
-            data-testid="spacer"
-            style={
-              {
-                '--bk-spacer-height': height,
-                '--bk-spacer-width': '100%',
-              } as CSSProperties
-            }
-          />
-        ))}
-      {children}
-      {/* Horizontal spacers */}
-      {inline &&
-        Array.isArray(inline) &&
-        inline.map((width, i) => (
-          <div
-            key={`h-${i}`}
-            data-testid="spacer"
-            style={
-              {
-                '--bk-spacer-width': width,
-                '--bk-spacer-height': '100%',
-              } as CSSProperties
-            }
-          />
-        ))}
-    </div>
+vi.mock('@components/Spacer', () => ({
+  Spacer: ({
+    width,
+    height,
+  }: {
+    width?: number | string
+    height?: number | string
+  }) => (
+    <div
+      data-testid="spacer"
+      style={
+        {
+          '--bk-spacer-height': height ?? '100%',
+          '--bk-spacer-width': width ?? '100%',
+        } as CSSProperties
+      }
+    />
   ),
 }))
 
@@ -63,6 +39,7 @@ vi.mock('@hooks', () => ({
   useConfig: vi.fn((component: string) => {
     if (component === 'box') {
       return {
+        domDiagnostics: true,
         base: 8,
         debugging: 'visible',
         colors: {
@@ -74,6 +51,7 @@ vi.mock('@hooks', () => ({
     }
     if (component === 'padder') {
       return {
+        domDiagnostics: true,
         base: 8,
         debugging: 'visible',
         color: '#FF00FF',
@@ -81,6 +59,7 @@ vi.mock('@hooks', () => ({
     }
     if (component === 'spacer') {
       return {
+        domDiagnostics: true,
         base: 8,
         debugging: 'visible',
         variant: 'flat',
@@ -96,6 +75,7 @@ vi.mock('@hooks', () => ({
   useDebug: vi
     .fn()
     .mockImplementation((debug: DebuggingMode, configDebug: never) => ({
+      debugging: debug ?? configDebug,
       isShown: (debug ?? configDebug) === 'visible',
       isHidden: (debug ?? configDebug) === 'hidden',
       isNone: (debug ?? configDebug) === 'none',

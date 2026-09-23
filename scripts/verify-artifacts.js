@@ -79,12 +79,16 @@ assert(
   'styles.css must not append guide.css; root build already includes Guide CSS'
 )
 assert(
-  count(stylesCSS, 'repeating-linear-gradient') === 1,
-  'styles.css must contain Guide line gradient exactly once'
+  count(stylesCSS, 'repeating-linear-gradient') === 2,
+  'styles.css must contain one Guide and one Baseline gradient'
 )
 assert(
-  count(fullCSS, 'repeating-linear-gradient') === 1,
-  'baseline-kit.css must contain Guide line gradient exactly once'
+  count(fullCSS, 'repeating-linear-gradient') === 2,
+  'baseline-kit.css must contain one Guide and one Baseline gradient'
+)
+assert(
+  count(guideCSS, 'repeating-linear-gradient') === 1,
+  'guide.css must contain only the Guide line gradient'
 )
 
 const globalLeakPattern =

@@ -2,6 +2,7 @@ import type { ConfigSchema } from './schema'
 
 export const DEFAULT_CONFIG: ConfigSchema = {
   base: 8,
+  domDiagnostics: false,
   baseline: {
     variant: 'line',
     debugging: 'hidden',

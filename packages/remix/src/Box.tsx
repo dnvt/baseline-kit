@@ -4,7 +4,9 @@ import { type Handle } from 'remix/ui'
 import {
   DEFAULT_CONFIG,
   calculateSnappedSpacing,
+  mergeConfig,
   createBoxDescriptor,
+  requiresSeparatePadder,
   parsePadding,
   type SnapEdge,
   type SnappingMode,
@@ -13,21 +15,25 @@ import {
 } from '@baseline-kit/core'
 import { Config, type ConfigProps } from './Config'
 import { configuredClientEntry } from './shared'
-import { Padder } from './Padder'
+import { Padder, type PadderProps } from './Padder'
 import {
   classNames,
+  compactStyle,
+  getDOMAttributes,
   createElementObserverBridge,
   getConfig,
   mergeStyles,
+  normalizeConfigSnapshot,
   queueNativeUpdate,
   resolveDebugging,
   type NativeComponent,
+  type NativeDOMAttributes,
 } from './shared'
 import type { RemixNode } from 'remix/ui'
 
 export type { SnapEdge, SnappingMode }
 
-export type BoxProps = {
+export type BoxProps = NativeDOMAttributes & {
   colSpan?: number
   rowSpan?: number
   span?: number
@@ -51,6 +57,9 @@ type RuntimeBoxProps = BoxProps & {
 
 const RuntimeConfig = Config as unknown as NativeComponent<
   ConfigProps & { __baselineConfig?: ConfigSchema }
+>
+const RuntimePadder = Padder as unknown as NativeComponent<
+  PadderProps & { __baselineConfig?: ConfigSchema }
 >
 
 function BoxImpl(handle: Handle<RuntimeBoxProps>) {
@@ -80,8 +89,9 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
 
   return () => {
     const props = handle.props
-    const config =
+    const config = normalizeConfigSnapshot(
       props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
+    )
     const snapping = props.snapping ?? 'clamp'
     const snapEdge = props.snapEdge ?? 'bottom'
     const debug = resolveDebugging(props.debugging, config.box.debugging)
@@ -96,6 +106,17 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     currentInitialPadding = initialPadding
     const padding =
       snapping === 'none' ? initialPadding : (snappedPadding ?? initialPadding)
+    const paddedConfig = mergeConfig({
+      parentConfig: config,
+      base: 1,
+      spacer: { variant: 'flat' },
+    })
+    const separatePadder = requiresSeparatePadder({
+      className: props.className,
+      style: props.style,
+      width: props.width,
+      debugging: debug.debugging,
+    })
     const descriptor = createBoxDescriptor({
       base: config.base,
       lineColor: config.box.colors.line,
@@ -107,33 +128,54 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
       isVisible: debug.isShown,
     })
 
-    const padder = (
-      <Padder
-        block={[padding.top, padding.bottom]}
-        inline={[padding.left, padding.right]}
-        width="fit-content"
-        height={props.height}
-        debugging={debug.debugging}
-        // Box owns the measured snap; the inner Padder must honor each new
-        // padding value instead of caching a second independent measurement.
-        ssrMode={true}
-      >
-        {props.children}
-      </Padder>
-    )
+    const mergedSpacingStyle = separatePadder
+      ? undefined
+      : compactStyle(
+          {
+            ...(padding.top > 0 || padding.bottom > 0
+              ? {
+                  gridTemplateRows: `${padding.top}px 1fr ${padding.bottom}px`,
+                }
+              : {}),
+            ...(padding.left > 0 || padding.right > 0
+              ? {
+                  gridTemplateColumns: `${padding.left}px 1fr ${padding.right}px`,
+                }
+              : {}),
+          },
+          {
+            gridTemplateRows: 'auto 1fr auto',
+            gridTemplateColumns: 'auto 1fr auto',
+          }
+        )
 
     return (
       <div
         className={classNames(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
+          separatePadder && 'bk-box-separate-padder',
+          debug.isShown && !debug.isNone && 'bk-box-pad-visible',
           props.className
         )}
-        data-testid="box"
+        data-testid={config.domDiagnostics ? 'box' : undefined}
         style={mergeStyles(
-          descriptor.boxStyle,
+          compactStyle(descriptor.boxStyle, {
+            '--bkbx-w': 'fit-content',
+            '--bkbx-h': 'fit-content',
+            '--bkbx-cl': DEFAULT_CONFIG.box.colors.line,
+          }),
+          separatePadder
+            ? debug.isShown && !debug.isNone
+              ? compactStyle(
+                  { '--bkpd-c': config.padder.color },
+                  { '--bkpd-c': DEFAULT_CONFIG.padder.color }
+                )
+              : undefined
+            : mergedSpacingStyle,
           descriptor.gridSpanStyle,
           props.style
         )}
+        {...getDOMAttributes(props)}
         mix={
           typeof window === 'undefined' || props.ssrMode || snapping === 'none'
             ? undefined
@@ -145,7 +187,26 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
           base={1}
           spacer={{ variant: 'flat' }}
         >
-          {padder}
+          {separatePadder ? (
+            <RuntimePadder
+              __baselineConfig={paddedConfig}
+              block={[padding.top, padding.bottom]}
+              inline={[padding.left, padding.right]}
+              width="fit-content"
+              height={props.height}
+              debugging={debug.debugging}
+              ssrMode
+            >
+              {props.children}
+            </RuntimePadder>
+          ) : (
+            <div
+              className="bk-pad-content"
+              data-testid={config.domDiagnostics ? 'padder-content' : undefined}
+            >
+              {props.children}
+            </div>
+          )}
         </RuntimeConfig>
       </div>
     )

@@ -1,4 +1,9 @@
 .bas {
+  --bkbl-w: 100%;
+  --bkbl-h: 100%;
+  --bkbl-b: 8px;
+  --bkbl-cl: var(--bk-baseline-color-line-theme, hsla(240, 60%, 40%, 0.15));
+  --bkbl-cf: var(--bk-baseline-color-flat-theme, hsla(230, 100%, 70%, 0.2));
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -6,6 +11,26 @@
   height: var(--bkbl-h);
   overflow: hidden;
   contain: layout style paint;
+}
+
+.bas.line {
+  --bkbl-c: var(--bkbl-cl);
+}
+
+.bas.flat {
+  --bkbl-c: var(--bkbl-cf);
+}
+
+.bas.compact.line {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--bkbl-c) 0 1px,
+    transparent 1px var(--bkbl-b)
+  );
+}
+
+.bas.compact.flat {
+  background-color: var(--bkbl-c);
 }
 
 .v {

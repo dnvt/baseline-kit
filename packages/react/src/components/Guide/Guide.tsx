@@ -6,12 +6,15 @@ import { useMeasure } from '../../hooks/useMeasure'
 import { useGuide } from '../../hooks/useGuide'
 import { cx } from '@baseline-kit/core/utils/merge'
 import {
+  canCompactFixedGuide,
   createGuideDescriptor,
   createGuideConfig,
 } from '@baseline-kit/core/descriptors/guide'
+import { DEFAULT_CONFIG } from '@baseline-kit/core'
 import type { GuideVariant, GuideConfig } from '@baseline-kit/core/types'
 import { ClientOnly } from '../../utils/ssr'
 import { mergeStyles } from '../../utils/merge'
+import { compactStyle } from '../../utils/dom'
 import styles from './styles.module.css'
 
 export type { GuideConfig }
@@ -54,10 +57,10 @@ export const Guide = React.memo(function Guide({
   if (!isShown) {
     return (
       <div
-        className={cx(styles.gde, styles.h, className)}
+        className={cx(styles.gde, styles.h, styles[variant], className)}
         style={style}
-        data-testid="guide"
-        data-variant={variant}
+        data-testid={config.domDiagnostics ? 'guide' : undefined}
+        data-variant={config.domDiagnostics ? variant : undefined}
         aria-hidden="true"
         {...props}
       >
@@ -68,16 +71,28 @@ export const Guide = React.memo(function Guide({
 
   const ssrFallback = (
     <div
-      className={cx(styles.gde, styles.h, styles.ssr, className)}
-      style={{
-        width: width ?? '100%',
-        height: height ?? '100%',
-        maxWidth: maxWidth ?? 'none',
-        ...style,
-      }}
-      data-testid="guide"
-      data-variant={variant}
+      className={cx(
+        styles.gde,
+        styles.h,
+        styles.ssr,
+        styles[variant],
+        className
+      )}
+      style={mergeStyles(
+        compactStyle(
+          {
+            width: String(width ?? '100%'),
+            height: String(height ?? '100%'),
+            maxWidth: String(maxWidth ?? 'none'),
+          },
+          { width: '100%', height: '100%', maxWidth: 'none' }
+        ),
+        style
+      )}
+      data-testid={config.domDiagnostics ? 'guide' : undefined}
+      data-variant={config.domDiagnostics ? variant : undefined}
       aria-hidden="true"
+      {...props}
     >
       {children}
     </div>
@@ -151,6 +166,17 @@ const GuideImpl = React.memo(function GuideImpl({
     gridConfig
   )
 
+  const compactFixedGuide = canCompactFixedGuide({
+    variant: resolvedVariant,
+    columns,
+    columnWidth,
+    gap: resolvedGap,
+    align,
+    domDiagnostics: config.domDiagnostics,
+    className,
+    style,
+  })
+
   const descriptor = React.useMemo(
     () =>
       createGuideDescriptor({
@@ -186,29 +212,63 @@ const GuideImpl = React.memo(function GuideImpl({
   )
 
   const containerStyles = React.useMemo(
-    () => mergeStyles(descriptor.containerStyle, style),
+    () =>
+      mergeStyles(
+        compactStyle(descriptor.containerStyle, {
+          '--bkgd-w': '100%',
+          '--bkgd-h': '100%',
+          '--bkgd-mw': 'none',
+          '--bkgd-cw': '60px',
+          '--bkgd-n': '12',
+          '--bkgd-b': '0',
+          '--bkgd-cl': DEFAULT_CONFIG.guide.colors.line,
+          '--bkgd-cp': DEFAULT_CONFIG.guide.colors.pattern,
+          '--bkgd-ca': DEFAULT_CONFIG.guide.colors.auto,
+          '--bkgd-cf': DEFAULT_CONFIG.guide.colors.fixed,
+          '--bkgd-g': '0px',
+          '--bkgd-j': 'center',
+          '--bkgd-t': 'none',
+          '--bkgd-line-color': 'var(--bkgd-cl)',
+        }),
+        style
+      ),
     [descriptor.containerStyle, style]
   )
 
   return (
     <div
       ref={containerRef}
-      data-testid="guide"
+      data-testid={config.domDiagnostics ? 'guide' : undefined}
       aria-hidden="true"
-      className={cx(...descriptor.classTokens.map((t) => styles[t]), className)}
-      data-variant={variant}
+      className={cx(
+        ...descriptor.classTokens.map((t) => styles[t]),
+        !descriptor.classTokens.includes(resolvedVariant) &&
+          styles[resolvedVariant],
+        className
+      )}
+      data-variant={config.domDiagnostics ? resolvedVariant : undefined}
       style={containerStyles}
       {...props}
     >
       {isShown && (
-        <div className={styles.cols} data-variant={variant}>
+        <div
+          className={cx(
+            styles.cols,
+            styles[resolvedVariant],
+            compactFixedGuide && styles.compactFixed
+          )}
+          data-variant={config.domDiagnostics ? resolvedVariant : undefined}
+        >
           {!descriptor.isLineVariant &&
+            !compactFixedGuide &&
             Array.from({ length: descriptor.columnsCount }, (_, i) => (
               <div
                 key={i}
-                className={styles.col}
-                data-column-index={i}
-                data-variant={variant}
+                className={cx(styles.col, styles[resolvedVariant])}
+                data-column-index={config.domDiagnostics ? i : undefined}
+                data-variant={
+                  config.domDiagnostics ? resolvedVariant : undefined
+                }
               />
             ))}
         </div>

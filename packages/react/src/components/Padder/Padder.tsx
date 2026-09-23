@@ -1,8 +1,15 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline, useIsClient } from '../../hooks'
-import { cx, parsePadding, createPadderDescriptor } from '@baseline-kit/core'
+import {
+  DEFAULT_CONFIG,
+  cx,
+  parsePadding,
+  createPadderDescriptor,
+} from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
+import { getDOMAttributes } from '../../utils/dom'
+import { compactStyle } from '../../utils/dom'
 import { ComponentsProps, Variant } from '../types'
 import { Spacer, IndicatorNode } from '../Spacer'
 import type { DebuggingMode } from '../types'
@@ -36,14 +43,6 @@ const createRenderSpacerFn = (
   )
   SpacerElement.displayName = 'PadderSpacer'
   return SpacerElement
-}
-
-// Static grid position styles — hoisted to avoid re-creation on render
-const GRID_FULL_ROW: React.CSSProperties = { gridColumn: '1 / -1' }
-const GRID_MID_COL: React.CSSProperties = { gridRow: '2 / 3' }
-const GRID_CENTER: React.CSSProperties = {
-  gridRow: '2 / 3',
-  gridColumn: '2 / 3',
 }
 
 export const Padder = React.memo(
@@ -121,7 +120,16 @@ export const Padder = React.memo(
     )
 
     const containerStyles = React.useMemo(
-      () => mergeStyles(descriptor.containerStyle, style),
+      () =>
+        mergeStyles(
+          compactStyle(descriptor.containerStyle, {
+            '--bkpd-w': 'fit-content',
+            '--bkpd-h': 'fit-content',
+            '--bkpd-b': '8px',
+            '--bkpd-c': DEFAULT_CONFIG.padder.color,
+          }),
+          style
+        ),
       [descriptor.containerStyle, style]
     )
 
@@ -134,12 +142,13 @@ export const Padder = React.memo(
       return (
         <div
           ref={setRefs}
-          data-testid="padder"
+          data-testid={config.domDiagnostics ? 'padder' : undefined}
           className={cx(
             ...descriptor.classTokens.map((t) => styles[t]),
             className
           )}
           style={containerStyles}
+          {...getDOMAttributes(spacingProps)}
         >
           {children}
         </div>
@@ -149,36 +158,40 @@ export const Padder = React.memo(
     return (
       <div
         ref={setRefs}
-        data-testid="padder"
+        data-testid={config.domDiagnostics ? 'padder' : undefined}
         className={cx(
           ...descriptor.classTokens.map((t) => styles[t]),
           className
         )}
         style={containerStyles}
+        {...getDOMAttributes(spacingProps)}
       >
         <>
-          {padding.top >= 0 && (
-            <div style={GRID_FULL_ROW}>{renderSpacer('100%', padding.top)}</div>
+          {padding.top > 0 && (
+            <div className={styles.topEdge}>
+              {renderSpacer('100%', padding.top)}
+            </div>
           )}
-          {padding.left >= 0 && (
-            <div style={GRID_MID_COL}>{renderSpacer(padding.left, '100%')}</div>
+          {padding.left > 0 && (
+            <div className={styles.leftEdge}>
+              {renderSpacer(padding.left, '100%')}
+            </div>
           )}
         </>
         <div
-          data-testid="padder-content"
+          data-testid={config.domDiagnostics ? 'padder-content' : undefined}
           className={styles.content}
-          style={GRID_CENTER}
         >
           {children}
         </div>
         <>
-          {padding.right >= 0 && (
-            <div style={GRID_MID_COL}>
+          {padding.right > 0 && (
+            <div className={styles.rightEdge}>
               {renderSpacer(padding.right, '100%')}
             </div>
           )}
-          {padding.bottom >= 0 && (
-            <div style={GRID_FULL_ROW}>
+          {padding.bottom > 0 && (
+            <div className={styles.bottomEdge}>
               {renderSpacer('100%', padding.bottom)}
             </div>
           )}

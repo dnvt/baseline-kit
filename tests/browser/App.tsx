@@ -6,7 +6,7 @@ import {
   Padder,
   Spacer,
 } from '@baseline-kit/react'
-import type { CSSProperties } from 'react'
+import { Fragment, useState, type CSSProperties } from 'react'
 
 const dimensionCases = [
   { id: 'width-omitted', axis: 'width', value: undefined },
@@ -28,8 +28,90 @@ const dimensionCases = [
   { id: 'height-zero', axis: 'height', value: 0 },
 ] as const
 
-export function App() {
+function StatefulPadderProbe() {
+  const [domDiagnostics, setDomDiagnostics] = useState(true)
+  const [clicks, setClicks] = useState(0)
+
   return (
+    <Config domDiagnostics={domDiagnostics}>
+      <section id="padder-diagnostics-transition">
+        <Padder id="padder-diagnostics-host" debugging="visible" ssrMode>
+          <button
+            id="padder-diagnostics-child"
+            onClick={() => setClicks((value) => value + 1)}
+          >
+            Clicks {clicks}
+          </button>
+        </Padder>
+        <button
+          id="padder-diagnostics-toggle"
+          onClick={() => setDomDiagnostics((value) => !value)}
+        >
+          Toggle diagnostics
+        </button>
+      </section>
+    </Config>
+  )
+}
+
+function StatefulBoxChild() {
+  const [clicks, setClicks] = useState(0)
+
+  return (
+    <button
+      id="box-snap-stateful-child"
+      onClick={() => setClicks((value) => value + 1)}
+    >
+      Box clicks {clicks}
+    </button>
+  )
+}
+
+function StatefulSnappingBoxProbe() {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <section id="box-snap-state-transition">
+      <Box id="box-snap-stateful-host" snapping="clamp">
+        <div style={{ height: expanded ? 20 : 10 }}>
+          <StatefulBoxChild />
+        </div>
+      </Box>
+      <button id="box-snap-expand-content" onClick={() => setExpanded(true)}>
+        Expand content
+      </button>
+    </section>
+  )
+}
+
+function StatefulBoxDiagnosticsProbe() {
+  const [domDiagnostics, setDomDiagnostics] = useState(true)
+  const [clicks, setClicks] = useState(0)
+
+  return (
+    <section id="box-diagnostics-transition">
+      <Config domDiagnostics={domDiagnostics}>
+        <Box id="box-diagnostics-host" snapping="none">
+          <button
+            id="box-diagnostics-child"
+            onClick={() => setClicks((value) => value + 1)}
+          >
+            Box clicks {clicks}
+          </button>
+        </Box>
+      </Config>
+      <button
+        id="box-diagnostics-toggle"
+        onClick={() => setDomDiagnostics((value) => !value)}
+      >
+        Toggle Box diagnostics
+      </button>
+    </section>
+  )
+}
+
+export function App() {
+  const content = (
     <main>
       <p id="ssr-content">Server-rendered content remains available.</p>
       <section
@@ -43,6 +125,141 @@ export function App() {
           <div style={{ width: 20, height: 10 }} />
         </Padder>
       </section>
+
+      <StatefulPadderProbe />
+      <StatefulSnappingBoxProbe />
+      <StatefulBoxDiagnosticsProbe />
+
+      <section id="guide-paint-parity">
+        <div
+          id="guide-paint-reference"
+          style={{ position: 'relative', width: 320, height: 32 }}
+        >
+          <Config domDiagnostics>
+            <Guide
+              id="guide-paint-reference-host"
+              variant="fixed"
+              columns={4}
+              debugging="visible"
+            />
+          </Config>
+        </div>
+        <Config domDiagnostics={false}>
+          <div
+            id="guide-paint-compact"
+            style={{ position: 'relative', width: 320, height: 32 }}
+          >
+            <Guide
+              id="guide-paint-compact-host"
+              variant="fixed"
+              columns={4}
+              debugging="visible"
+            />
+          </div>
+        </Config>
+      </section>
+
+      <Config domDiagnostics={false}>
+        <section id="zero-padding-components">
+          <Box id="zero-padding-box" debugging="hidden" ssrMode>
+            <span id="zero-padding-box-child">Box child</span>
+          </Box>
+          <Padder id="zero-padding-padder" debugging="visible" ssrMode>
+            <span id="zero-padding-padder-child">Padder child</span>
+          </Padder>
+          <Padder
+            id="right-only-padder"
+            padding={{ right: 24 }}
+            debugging="hidden"
+            ssrMode
+          >
+            <div id="right-only-content" style={{ width: 100, height: 20 }} />
+          </Padder>
+          <Padder
+            id="bottom-only-padder"
+            padding={{ bottom: 24 }}
+            debugging="hidden"
+            ssrMode
+          >
+            <div id="bottom-only-content" style={{ width: 100, height: 20 }} />
+          </Padder>
+        </section>
+      </Config>
+
+      <section id="box-caller-layout">
+        <Box
+          id="caller-layout-box"
+          style={{ display: 'flex' }}
+          block={8}
+          debugging="visible"
+          snapping="none"
+        >
+          <span id="caller-layout-box-child">Caller layout</span>
+        </Box>
+        <Box
+          id="box-inline-size-fallback"
+          style={{ width: '100%', height: 32 }}
+          block={8}
+          debugging="visible"
+          snapping="none"
+        >
+          <span>Caller-sized Box</span>
+        </Box>
+      </section>
+
+      <Config domDiagnostics>
+        <Box
+          id="box-visible-debug-fallback"
+          debugging="visible"
+          snapping="none"
+          block={[8, 8]}
+          inline={[16, 16]}
+        >
+          <span>Visible debug fallback</span>
+        </Box>
+      </Config>
+
+      <Config domDiagnostics={false}>
+        <section id="box-merge-paint-parity">
+          <div
+            id="box-merge-reference"
+            style={{ position: 'relative', width: 320, height: 32 }}
+          >
+            <Box
+              id="box-merge-reference-host"
+              style={{ display: 'grid' }}
+              height="100%"
+              block={[8, 8]}
+              inline={[16, 16]}
+              debugging="hidden"
+              snapping="none"
+            >
+              <div
+                id="box-merge-reference-child"
+                style={{ width: 40, height: 16, backgroundColor: '#123456' }}
+              />
+            </Box>
+          </div>
+          <div
+            id="box-merge-candidate"
+            style={{ position: 'relative', width: 320, height: 32 }}
+          >
+            <Box
+              id="box-merge-candidate-host"
+              height="100%"
+              block={[8, 8]}
+              inline={[16, 16]}
+              debugging="hidden"
+              snapping="none"
+            >
+              <div
+                id="box-merge-candidate-child"
+                style={{ width: 40, height: 16, backgroundColor: '#123456' }}
+              />
+            </Box>
+          </div>
+        </section>
+      </Config>
 
       <section id="box-snap-top">
         <Box
@@ -67,6 +284,57 @@ export function App() {
         style={{ position: 'relative', width: 320, height: 16 }}
       >
         <Baseline debugging="visible" base={8} width="100%" height={16} />
+      </section>
+
+      <section id="baseline-paint-parity">
+        {[
+          { name: 'line', base: 8, variant: 'line' as const, color: undefined },
+          {
+            name: 'flat',
+            base: 8,
+            variant: 'flat' as const,
+            color: '#283c50',
+          },
+          {
+            name: 'fractional',
+            base: 4.5,
+            variant: 'line' as const,
+            color: '#123456',
+          },
+        ].map(({ name, base, variant, color }) => (
+          <Fragment key={name}>
+            <div
+              id={`baseline-reference-${name}`}
+              style={{ position: 'relative', width: 320, height: 32 }}
+            >
+              <Baseline
+                id={`baseline-reference-host-${name}`}
+                debugging="visible"
+                base={base}
+                variant={variant}
+                color={color}
+                width="100%"
+                height="100%"
+              />
+            </div>
+            <Config domDiagnostics={false}>
+              <div
+                id={`baseline-compact-${name}`}
+                style={{ position: 'relative', width: 320, height: 32 }}
+              >
+                <Baseline
+                  id={`baseline-compact-host-${name}`}
+                  debugging="visible"
+                  base={base}
+                  variant={variant}
+                  color={color}
+                  width="100%"
+                  height="100%"
+                />
+              </div>
+            </Config>
+          </Fragment>
+        ))}
       </section>
 
       <section
@@ -118,6 +386,7 @@ export function App() {
                 text: '#0000ff',
               },
             }}
+            padder={{ debugging: 'visible', color: '#707070' }}
           >
             <Box>Box consumer</Box>
           </Config>
@@ -224,4 +493,5 @@ export function App() {
       </section>
     </main>
   )
+  return <Config domDiagnostics>{content}</Config>
 }

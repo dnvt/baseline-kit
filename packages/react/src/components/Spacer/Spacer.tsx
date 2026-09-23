@@ -1,9 +1,10 @@
 import * as React from 'react'
 import { useConfig, useDebug, useIsClient } from '../../hooks'
-import { cx, createSpacerDescriptor } from '@baseline-kit/core'
+import { DEFAULT_CONFIG, cx, createSpacerDescriptor } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { ComponentsProps, Variant } from '../types'
 import { mergeStyles } from '../../utils/merge'
+import { compactStyle } from '../../utils/dom'
 import styles from './styles.module.css'
 
 export type IndicatorNode = (
@@ -90,20 +91,33 @@ export const Spacer = React.memo(function Spacer({
   ])
 
   const baseStyles = React.useMemo(
-    () => mergeStyles(descriptor.style, style),
+    () =>
+      mergeStyles(
+        compactStyle(descriptor.style, {
+          '--bksp-w': 'var(--bk-wf, 100%)',
+          '--bksp-h': 'var(--bk-hf, auto)',
+          '--bksp-b': '8px',
+          '--bksp-cl': DEFAULT_CONFIG.spacer.colors.line,
+          '--bksp-cf': DEFAULT_CONFIG.spacer.colors.flat,
+          '--bksp-ct': DEFAULT_CONFIG.spacer.colors.text,
+        }),
+        style
+      ),
     [descriptor.style, style]
   )
 
   return (
     <div
       ref={ref}
-      data-testid="spacer"
+      data-testid={config.domDiagnostics ? 'spacer' : undefined}
       className={cx(...descriptor.classTokens.map((t) => styles[t]), className)}
-      data-variant={variant}
+      data-variant={config.domDiagnostics ? variant : undefined}
       data-height={
-        typeof descriptor.normHeight === 'number'
-          ? `${descriptor.normHeight}px`
-          : descriptor.normHeight
+        config.domDiagnostics
+          ? typeof descriptor.normHeight === 'number'
+            ? `${descriptor.normHeight}px`
+            : descriptor.normHeight
+          : undefined
       }
       style={baseStyles}
       {...props}

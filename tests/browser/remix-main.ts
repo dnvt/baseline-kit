@@ -17,6 +17,7 @@ function createLifecycleFrame(src: string) {
         'data-remix-frame-view': version,
         style: { position: 'relative', width: 320, height: 160 },
         children: jsx(Config, {
+          domDiagnostics: true,
           baseline: {
             debugging: 'visible',
             colors: { line: color, flat: color },

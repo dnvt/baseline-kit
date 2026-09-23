@@ -12,6 +12,7 @@ import {
 export async function renderFixture() {
   return renderToString(
     jsx(Config, {
+      domDiagnostics: true,
       baseline: {
         debugging: 'visible',
         colors: { line: '#ff0000', flat: '#00ff00' },

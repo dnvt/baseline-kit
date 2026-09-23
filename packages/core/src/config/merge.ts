@@ -6,6 +6,7 @@ type PartialColors<T> = T extends { colors: infer Colors }
 
 export type ConfigOverrides = {
   base?: number
+  domDiagnostics?: boolean
   baseline?: PartialColors<ConfigSchema['baseline']>
   guide?: PartialColors<ConfigSchema['guide']>
   spacer?: PartialColors<ConfigSchema['spacer']>
@@ -20,7 +21,7 @@ type MergeConfigParams = ConfigOverrides & {
 const COMPONENT_KEYS = ['baseline', 'guide', 'spacer', 'box', 'padder'] as const
 
 export const mergeConfig = (params: MergeConfigParams): ConfigSchema => {
-  const { parentConfig, base } = params
+  const { parentConfig, base, domDiagnostics } = params
   const merged = {} as Record<string, unknown>
 
   for (const key of COMPONENT_KEYS) {
@@ -43,7 +44,11 @@ export const mergeConfig = (params: MergeConfigParams): ConfigSchema => {
     merged[key] = next
   }
 
-  return { base: base ?? parentConfig.base, ...merged } as ConfigSchema
+  return {
+    base: base ?? parentConfig.base,
+    domDiagnostics: domDiagnostics ?? parentConfig.domDiagnostics ?? false,
+    ...merged,
+  } as ConfigSchema
 }
 
 type CSSVariablesParams = {

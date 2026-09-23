@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 
 const dimensionCases = [
   { id: 'width-omitted', axis: 'width' },
@@ -60,6 +60,148 @@ async function readTextBoxStyles(page: Page, selector: string) {
       }
     })
   )
+}
+
+async function compareScreenshotPixels(
+  page: Page,
+  reference: Buffer,
+  candidate: Buffer
+) {
+  return page.evaluate(
+    async ({ referenceImage, candidateImage }) => {
+      const decode = async (source: string) => {
+        const image = new Image()
+        image.src = `data:image/png;base64,${source}`
+        await image.decode()
+        const canvas = document.createElement('canvas')
+        canvas.width = image.naturalWidth
+        canvas.height = image.naturalHeight
+        const context = canvas.getContext('2d')!
+        context.drawImage(image, 0, 0)
+        return {
+          width: canvas.width,
+          height: canvas.height,
+          pixels: context.getImageData(0, 0, canvas.width, canvas.height).data,
+        }
+      }
+
+      const [first, second] = await Promise.all([
+        decode(referenceImage),
+        decode(candidateImage),
+      ])
+      if (first.width !== second.width || first.height !== second.height) {
+        return {
+          width: second.width,
+          height: second.height,
+          differingPixels: -1,
+          differingRows: [],
+          firstMismatch: null,
+        }
+      }
+
+      let differingPixels = 0
+      let maxChannelDelta = 0
+      const differingRows = new Set<number>()
+      let firstMismatch: {
+        x: number
+        y: number
+        reference: number[]
+        candidate: number[]
+      } | null = null
+      for (let offset = 0; offset < first.pixels.length; offset += 4) {
+        if (
+          first.pixels[offset] !== second.pixels[offset] ||
+          first.pixels[offset + 1] !== second.pixels[offset + 1] ||
+          first.pixels[offset + 2] !== second.pixels[offset + 2] ||
+          first.pixels[offset + 3] !== second.pixels[offset + 3]
+        ) {
+          differingPixels += 1
+          const x = (offset / 4) % first.width
+          const y = Math.floor(offset / (4 * first.width))
+          differingRows.add(y)
+          firstMismatch ??= {
+            x,
+            y,
+            reference: Array.from(first.pixels.slice(offset, offset + 4)),
+            candidate: Array.from(second.pixels.slice(offset, offset + 4)),
+          }
+        }
+        for (let channel = 0; channel < 4; channel += 1) {
+          maxChannelDelta = Math.max(
+            maxChannelDelta,
+            Math.abs(
+              first.pixels[offset + channel] - second.pixels[offset + channel]
+            )
+          )
+        }
+      }
+
+      return {
+        width: second.width,
+        height: second.height,
+        differingPixels,
+        maxChannelDelta,
+        differingRows: Array.from(differingRows),
+        firstMismatch,
+      }
+    },
+    {
+      referenceImage: reference.toString('base64'),
+      candidateImage: candidate.toString('base64'),
+    }
+  )
+}
+
+async function captureAlignedPaintPair(
+  page: Page,
+  reference: Locator,
+  candidate: Locator,
+  referenceParent: string,
+  candidateParent: string
+) {
+  await page.evaluate(
+    ({ referenceParent, candidateParent }) => {
+      for (const selector of [referenceParent, candidateParent]) {
+        const parent = document.querySelector<HTMLElement>(selector)
+        if (!parent) throw new Error(`Missing paint fixture: ${selector}`)
+        Object.assign(parent.style, {
+          position: 'fixed',
+          top: '0px',
+          left: '0px',
+          width: '320px',
+          height: '32px',
+          margin: '0px',
+          backgroundColor: 'white',
+          opacity: '1',
+          zIndex: '100000',
+        })
+      }
+      document.querySelector<HTMLElement>(candidateParent)!.style.opacity = '0'
+    },
+    { referenceParent, candidateParent }
+  )
+  const referenceImage = await reference.screenshot({ animations: 'disabled' })
+
+  await page.evaluate(
+    ({ referenceParent, candidateParent }) => {
+      document.querySelector<HTMLElement>(referenceParent)!.style.opacity = '0'
+      document.querySelector<HTMLElement>(candidateParent)!.style.opacity = '1'
+    },
+    { referenceParent, candidateParent }
+  )
+  const candidateImage = await candidate.screenshot({ animations: 'disabled' })
+  await page.evaluate(
+    ({ referenceParent, candidateParent }) => {
+      document
+        .querySelector<HTMLElement>(referenceParent)!
+        .style.removeProperty('opacity')
+      document
+        .querySelector<HTMLElement>(candidateParent)!
+        .style.removeProperty('opacity')
+    },
+    { referenceParent, candidateParent }
+  )
+  return { referenceImage, candidateImage }
 }
 
 async function installNativeLifecycleProbe(page: Page) {
@@ -219,7 +361,7 @@ function assertDimensionMatrix(
     'width-zero': { width: 0, declared: '0px' },
     'height-omitted': { height: 240, declared: '' },
     'height-half': { height: 120, declared: '50%' },
-    'height-full': { height: 240, declared: '100%' },
+    'height-full': { height: 240, declared: '' },
     'height-vh': { height: viewportHeight, declared: '100vh' },
     'height-vw': { height: viewportWidth, declared: '100vw' },
     'height-dvh': { height: viewportHeight, declared: '100dvh' },
@@ -313,7 +455,7 @@ test('Baseline rows follow the browser-resolved percentage height', async ({
     }
   })
 
-  expect(measurements.declaredHeight).toBe('100%')
+  expect(measurements.declaredHeight).toBe('')
   expect(measurements.height).toBe(160)
   expect(measurements.rows).toBe(Math.ceil(measurements.height / 8))
 })
@@ -332,6 +474,403 @@ test('default paint remains visible without theme CSS', async ({ page }) => {
       })
     )
     .not.toBe('rgba(0, 0, 0, 0)')
+})
+
+test('React fixed Guide compact paint matches its grid and stays under 360 bytes', async ({
+  page,
+}) => {
+  const reference = page.locator('#guide-paint-reference-host')
+  const compact = page.locator('#guide-paint-compact-host')
+  await expect(reference.locator(':scope > div > div')).toHaveCount(4)
+  await expect(compact.locator(':scope > div > div')).toHaveCount(0)
+
+  const { referenceImage, candidateImage } = await captureAlignedPaintPair(
+    page,
+    reference,
+    compact,
+    '#guide-paint-reference',
+    '#guide-paint-compact'
+  )
+
+  const geometry = await page.evaluate(() => {
+    const reference = document.querySelector<HTMLElement>(
+      '#guide-paint-reference-host'
+    )!
+    const compact = document.querySelector<HTMLElement>(
+      '#guide-paint-compact-host'
+    )!
+    const tracks = Array.from(reference.firstElementChild!.children).map(
+      (track) => {
+        const rect = track.getBoundingClientRect()
+        return { left: rect.left, width: rect.width, height: rect.height }
+      }
+    )
+    const compactRect = compact.firstElementChild!.getBoundingClientRect()
+    compact.removeAttribute('id')
+    return {
+      tracks,
+      compact: {
+        left: compactRect.left,
+        width: compactRect.width,
+        height: compactRect.height,
+      },
+      bytes: new TextEncoder().encode(compact.outerHTML).length,
+    }
+  })
+  expect(geometry.bytes).toBeLessThanOrEqual(360)
+  expect(geometry.tracks).toHaveLength(4)
+  expect(geometry.compact.left).toBeCloseTo(geometry.tracks[0].left, 1)
+  expect(geometry.compact.width).toBeCloseTo(
+    geometry.tracks.reduce((sum, track) => sum + track.width, 0),
+    1
+  )
+  expect(geometry.compact.height).toBeCloseTo(geometry.tracks[0].height, 1)
+
+  const parity = await compareScreenshotPixels(
+    page,
+    referenceImage,
+    candidateImage
+  )
+  expect(parity.maxChannelDelta).toBe(0)
+})
+
+test('zero-padding Box and Padder omit empty helper nodes without diagnostics', async ({
+  page,
+}) => {
+  const box = page.locator('#zero-padding-box')
+  const padder = page.locator('#zero-padding-padder')
+  await expect(box).not.toHaveAttribute('data-testid')
+  await expect(padder).not.toHaveAttribute('data-testid')
+
+  const structure = await page.evaluate(() => {
+    const box = document.querySelector('#zero-padding-box')!
+    const padder = document.querySelector('#zero-padding-padder')!
+    return {
+      boxDescendants: box.querySelectorAll('*').length,
+      boxChildKeepsContentHost:
+        box.querySelector('#zero-padding-box-child')?.parentElement
+          ?.parentElement === box,
+      padderDescendants: padder.querySelectorAll('*').length,
+      padderChildKeepsContentHost:
+        padder.querySelector('#zero-padding-padder-child')?.parentElement !==
+        padder,
+    }
+  })
+
+  expect(structure).toEqual({
+    boxDescendants: 2,
+    boxChildKeepsContentHost: true,
+    padderDescendants: 2,
+    padderChildKeepsContentHost: true,
+  })
+  await expect(box).toHaveClass(/box/)
+  await expect(padder).toHaveClass(/pad/)
+})
+
+test('Padder keeps one-sided spacing on the requested grid edge', async ({
+  page,
+}) => {
+  const result = await page.evaluate(() => {
+    const measure = (hostId: string, childId: string) => {
+      const host = document.getElementById(hostId)!.getBoundingClientRect()
+      const child = document.getElementById(childId)!.getBoundingClientRect()
+      const spacer = document
+        .getElementById(hostId)!
+        .querySelector('[class*="spr_"], .bk-spr')!
+        .getBoundingClientRect()
+      return {
+        childLeft: child.left - host.left,
+        childTop: child.top - host.top,
+        spacerRight: host.right - spacer.right,
+        spacerBottom: host.bottom - spacer.bottom,
+        spacerWidth: spacer.width,
+        spacerHeight: spacer.height,
+      }
+    }
+    return {
+      rightOnly: measure('right-only-padder', 'right-only-content'),
+      bottomOnly: measure('bottom-only-padder', 'bottom-only-content'),
+    }
+  })
+
+  expect(result.rightOnly.childLeft).toBeCloseTo(0, 1)
+  expect(result.rightOnly.spacerRight).toBeCloseTo(0, 1)
+  expect(result.rightOnly.spacerWidth).toBeCloseTo(24, 1)
+  expect(result.bottomOnly.childTop).toBeCloseTo(0, 1)
+  expect(result.bottomOnly.spacerBottom).toBeCloseTo(0, 1)
+  expect(result.bottomOnly.spacerHeight).toBeCloseTo(24, 1)
+})
+
+test('Box preserves caller display styles through the nested Padder fallback', async ({
+  page,
+}) => {
+  const result = await page.locator('#caller-layout-box').evaluate((box) => {
+    const padder = box.firstElementChild as HTMLElement | null
+    return {
+      boxDisplay: getComputedStyle(box).display,
+      padderDisplay: padder ? getComputedStyle(padder).display : null,
+      boxChildren: box.childElementCount,
+      paddingSpacers: padder?.querySelectorAll(
+        ':scope > div > [data-testid="spacer"]'
+      ).length,
+      childConnected: Boolean(box.querySelector('#caller-layout-box-child')),
+    }
+  })
+
+  expect(result).toEqual({
+    boxDisplay: 'flex',
+    padderDisplay: 'grid',
+    boxChildren: 1,
+    paddingSpacers: 2,
+    childConnected: true,
+  })
+})
+
+test('Box preserves caller width and height styles on the nested Padder path', async ({
+  page,
+}) => {
+  const box = page.locator('#box-inline-size-fallback')
+  await expect(box).toHaveCSS('height', '32px')
+  expect(
+    await box.evaluate(
+      (element) =>
+        getComputedStyle(element).width ===
+        getComputedStyle(element.parentElement!).width
+    )
+  ).toBe(true)
+  await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(1)
+})
+
+test('Box visible diagnostics retain the legacy nested Padder paint path', async ({
+  page,
+}) => {
+  const box = page.locator('#box-visible-debug-fallback')
+  await expect(box).toHaveAttribute('data-testid', 'box')
+  await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(1)
+})
+
+test('Box host merge preserves the nested Padder grid geometry', async ({
+  page,
+}) => {
+  const reference = page.locator('#box-merge-reference-host')
+  const candidate = page.locator('#box-merge-candidate-host')
+  const geometry = await page.evaluate(() => {
+    const reference = document.querySelector<HTMLElement>(
+      '#box-merge-reference-host'
+    )!
+    const candidate = document.querySelector<HTMLElement>(
+      '#box-merge-candidate-host'
+    )!
+    const rect = (element: Element) => {
+      const value = element.getBoundingClientRect()
+      return {
+        left: value.left,
+        top: value.top,
+        width: value.width,
+        height: value.height,
+      }
+    }
+    const relativeRect = (element: Element, host: Element) => {
+      const value = rect(element)
+      const origin = rect(host)
+      return {
+        ...value,
+        left: value.left - origin.left,
+        top: value.top - origin.top,
+      }
+    }
+    const referenceContent = reference.querySelector(
+      '#box-merge-reference-child'
+    )!.parentElement!
+    const candidateContent = candidate.querySelector(
+      '#box-merge-candidate-child'
+    )!.parentElement!
+    return {
+      reference: {
+        host: rect(reference),
+        content: relativeRect(referenceContent, reference),
+        child: relativeRect(
+          document.querySelector('#box-merge-reference-child')!,
+          reference
+        ),
+      },
+      candidate: {
+        host: rect(candidate),
+        content: relativeRect(candidateContent, candidate),
+        child: relativeRect(
+          document.querySelector('#box-merge-candidate-child')!,
+          candidate
+        ),
+      },
+    }
+  })
+  expect(geometry.candidate.host.width).toBe(geometry.reference.host.width)
+  expect(geometry.candidate.host.height).toBe(geometry.reference.host.height)
+  expect(geometry.candidate.content).toEqual(geometry.reference.content)
+  expect(geometry.candidate.child).toEqual(geometry.reference.child)
+  expect(
+    await candidate.evaluate(
+      (element) =>
+        element.querySelector('#box-merge-candidate-child')?.parentElement
+          ?.parentElement === element
+    )
+  ).toBe(true)
+  expect(
+    await candidate.evaluate((element) => element.querySelectorAll('*').length)
+  ).toBeLessThan(
+    await reference.evaluate((element) => element.querySelectorAll('*').length)
+  )
+})
+
+test('Box keeps its content host and child mounted as diagnostics toggle', async ({
+  page,
+}) => {
+  const host = page.locator('#box-diagnostics-host')
+  const child = page.locator('#box-diagnostics-child')
+  const childHandle = await child.elementHandle()
+
+  await expect(host).toHaveAttribute('data-testid', 'box')
+  await expect(host.locator('[data-testid="padder-content"]')).toHaveCount(1)
+  await child.click()
+  await expect(child).toHaveText('Box clicks 1')
+  // WebKit removes keyboard focus after mouse activation of a button. Focus it
+  // again here so the following assertion isolates the snapping update.
+  await child.focus()
+  expect(
+    await childHandle?.evaluate((element) => element === document.activeElement)
+  ).toBe(true)
+  await page.locator('#box-diagnostics-toggle').click()
+  await expect(host).not.toHaveAttribute('data-testid')
+  expect(await childHandle?.evaluate((element) => element.isConnected)).toBe(
+    true
+  )
+  await child.click()
+  await expect(child).toHaveText('Box clicks 2')
+})
+
+test('Padder keeps the same child mounted as diagnostics toggle', async ({
+  page,
+}) => {
+  const host = page.locator('#padder-diagnostics-host')
+  const child = page.locator('#padder-diagnostics-child')
+  const childHandle = await child.elementHandle()
+
+  await expect(host).toHaveAttribute('data-testid', 'padder')
+  await child.click()
+  await expect(child).toHaveText('Clicks 1')
+  await page.locator('#padder-diagnostics-toggle').click()
+  await expect(host).not.toHaveAttribute('data-testid')
+  expect(await childHandle?.evaluate((element) => element.isConnected)).toBe(
+    true
+  )
+  await child.click()
+  await expect(child).toHaveText('Clicks 2')
+})
+
+test('Box keeps its stateful child mounted when snapped padding appears', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const original = Element.prototype.getBoundingClientRect
+    let allowMeasurement = false
+    ;(
+      window as typeof window & { __allowBoxSnapMeasurement?: () => void }
+    ).__allowBoxSnapMeasurement = () => {
+      allowMeasurement = true
+    }
+    Element.prototype.getBoundingClientRect = function () {
+      if (
+        !allowMeasurement &&
+        (this as HTMLElement).id === 'box-snap-stateful-host'
+      ) {
+        return new DOMRect(0, 0, 0, 0)
+      }
+      return original.call(this)
+    }
+  })
+  await page.reload()
+
+  const child = page.locator('#box-snap-stateful-child')
+  const childHandle = await child.elementHandle()
+  const host = page.locator('#box-snap-stateful-host')
+  const spacers = page.locator('#box-snap-stateful-host [data-testid="spacer"]')
+  await expect(spacers).toHaveCount(0)
+  const initialRows = await host.evaluate(
+    (element) => getComputedStyle(element).gridTemplateRows
+  )
+  await child.focus()
+  expect(
+    await child.evaluate((element) => element === document.activeElement)
+  ).toBe(true)
+  await child.click()
+  await expect(child).toHaveText('Box clicks 1')
+  // Isolate focus retention during the snapping update from WebKit's mouse
+  // activation policy for buttons.
+  await child.focus()
+  expect(
+    await childHandle?.evaluate((element) => element === document.activeElement)
+  ).toBe(true)
+
+  await page.evaluate(() => {
+    ;(
+      window as typeof window & { __allowBoxSnapMeasurement: () => void }
+    ).__allowBoxSnapMeasurement()
+  })
+  await page
+    .locator('#box-snap-expand-content')
+    .evaluate((element: HTMLButtonElement) =>
+      element.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    )
+  await expect(spacers).toHaveCount(0)
+  const snappedRows = await host.evaluate(
+    (element) => getComputedStyle(element).gridTemplateRows
+  )
+  expect(snappedRows).not.toBe(initialRows)
+  expect(await childHandle?.evaluate((element) => element.isConnected)).toBe(
+    true
+  )
+  expect(
+    await childHandle?.evaluate((element) => element === document.activeElement)
+  ).toBe(true)
+  await child.click()
+  await expect(child).toHaveText('Box clicks 2')
+})
+
+test('Baseline CSS paint keeps fractional rows as the fallback', async ({
+  page,
+}) => {
+  for (const variant of ['line', 'flat', 'fractional']) {
+    const reference = page.locator(`#baseline-reference-host-${variant}`)
+    const compact = page.locator(`#baseline-compact-host-${variant}`)
+    await expect(reference.locator('[data-row-index]').first()).toBeVisible()
+    await expect(compact.locator('[data-row-index]')).toHaveCount(0)
+    await expect(compact).not.toHaveAttribute('data-testid')
+    if (variant === 'fractional') {
+      await expect(compact).not.toHaveClass(/compact/)
+      expect(
+        await compact.evaluate((element) => element.childElementCount)
+      ).toBeGreaterThan(0)
+    } else {
+      await expect(compact).toHaveClass(/compact/)
+      expect(
+        await compact.evaluate((element) => element.childElementCount)
+      ).toBe(0)
+    }
+
+    const { referenceImage, candidateImage } = await captureAlignedPaintPair(
+      page,
+      reference,
+      compact,
+      `#baseline-reference-${variant}`,
+      `#baseline-compact-${variant}`
+    )
+    const parity = await compareScreenshotPixels(
+      page,
+      referenceImage,
+      candidateImage
+    )
+    expect(parity.maxChannelDelta).toBeLessThanOrEqual(1)
+  }
 })
 
 test('Baseline rows follow the browser-resolved viewport height', async ({
@@ -471,6 +1010,13 @@ test('Config colors reach the actual Box and Spacer consumers', async ({
   const padder = page.locator('#config-padder [data-testid="padder"]')
 
   await expect(box).toBeVisible()
+  await expect
+    .poll(() =>
+      box.evaluate(
+        (element) => getComputedStyle(element, '::before').borderTopColor
+      )
+    )
+    .toBe('rgb(112, 112, 112)')
   await expect(spacer).toBeVisible()
   await expect(baseline).toBeVisible()
   await expect(guide).toBeVisible()
@@ -540,13 +1086,12 @@ test('React Box and Padder trim both text edges with ex alphabetic metrics', asy
   page,
 }) => {
   const selector =
-    '#config-box [data-testid="box"], #config-box [data-testid="padder"], #config-box [data-testid="padder-content"]'
+    '#config-box [data-testid="box"], #config-box [data-testid="padder-content"]'
 
-  await expect(page.locator(selector)).toHaveCount(3)
+  await expect(page.locator(selector)).toHaveCount(2)
   await expect
     .poll(() => readTextBoxStyles(page, selector))
     .toEqual([
-      { trim: 'trim-both', edge: 'ex alphabetic' },
       { trim: 'trim-both', edge: 'ex alphabetic' },
       { trim: 'trim-both', edge: 'ex alphabetic' },
     ])
@@ -614,13 +1159,13 @@ test('React Box can snap height correction to the top edge', async ({
           elements
             .filter(
               (element) =>
-                (element.parentElement as HTMLElement).style.gridColumn ===
-                '1 / -1'
+                getComputedStyle(element.parentElement!).gridRowStart ===
+                '1'
             )
             .map((element) => element.getAttribute('data-height'))
         )
     )
-    .toEqual(['6px', '0px'])
+    .toEqual(['6px'])
 })
 
 test.describe('native Remix adapter', () => {
@@ -660,7 +1205,7 @@ test.describe('native Remix adapter', () => {
         state.__baselineRemixRuntime.flush()
       })
       const spacer = page.locator(
-        '#remix-nested-hydration [data-testid="padder-content"] [data-testid="spacer"]'
+        '#remix-nested-hydration [data-testid="spacer"]'
       )
       expect(
         await spacer.evaluate((element) => ({
@@ -732,6 +1277,71 @@ test.describe('native Remix adapter', () => {
       .toBe(16)
   })
 
+  test('native fixed Guide compact paint matches its grid and stays under 360 bytes', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    const reference = page.locator('#remix-guide-paint-reference-host')
+    const compact = page.locator('#remix-guide-paint-compact-host')
+    await expect(reference.locator(':scope > div > div')).toHaveCount(4)
+    await expect(compact.locator(':scope > div > div')).toHaveCount(0)
+
+    const { referenceImage, candidateImage } = await captureAlignedPaintPair(
+      page,
+      reference,
+      compact,
+      '#remix-guide-paint-reference',
+      '#remix-guide-paint-compact'
+    )
+
+    const geometry = await page.evaluate(() => {
+      const reference = document.querySelector<HTMLElement>(
+        '#remix-guide-paint-reference-host'
+      )!
+      const compact = document.querySelector<HTMLElement>(
+        '#remix-guide-paint-compact-host'
+      )!
+      const tracks = Array.from(reference.firstElementChild!.children).map(
+        (track) => {
+          const rect = track.getBoundingClientRect()
+          return { left: rect.left, width: rect.width, height: rect.height }
+        }
+      )
+      const compactRect = compact.firstElementChild!.getBoundingClientRect()
+      compact.removeAttribute('id')
+      return {
+        tracks,
+        compact: {
+          left: compactRect.left,
+          width: compactRect.width,
+          height: compactRect.height,
+        },
+        bytes: new TextEncoder().encode(compact.outerHTML).length,
+      }
+    })
+    expect(geometry.bytes).toBeLessThanOrEqual(360)
+    expect(geometry.tracks).toHaveLength(4)
+    expect(geometry.compact.left).toBeCloseTo(geometry.tracks[0].left, 1)
+    expect(geometry.compact.width).toBeCloseTo(
+      geometry.tracks.reduce((sum, track) => sum + track.width, 0),
+      1
+    )
+    expect(geometry.compact.height).toBeCloseTo(geometry.tracks[0].height, 1)
+
+    const parity = await compareScreenshotPixels(
+      page,
+      referenceImage,
+      candidateImage
+    )
+    expect(parity.maxChannelDelta).toBe(0)
+  })
+
   test('serves the native stylesheet through the app asset path', async ({
     request,
   }) => {
@@ -798,7 +1408,7 @@ test.describe('native Remix adapter', () => {
       }
     })
 
-    expect(sizing.declaredHeight).toBe('100%')
+    expect(sizing.declaredHeight).toBe('')
     expect(sizing.height).toBe(160)
     expect(sizing.rows).toBe(Math.ceil(sizing.height / 8))
 
@@ -834,6 +1444,13 @@ test.describe('native Remix adapter', () => {
       .toBe('#ff0000')
     await expect
       .poll(() =>
+        box.evaluate(
+          (element) => getComputedStyle(element, '::before').borderTopColor
+        )
+      )
+      .toBe('rgb(112, 112, 112)')
+    await expect
+      .poll(() =>
         spacer.evaluate((element) =>
           element.style.getPropertyValue('--bksp-cf')
         )
@@ -862,12 +1479,11 @@ test.describe('native Remix adapter', () => {
       .toBe('rgb(112, 112, 112)')
 
     const textBoxSelector =
-      '#remix-config-box [data-testid="box"], #remix-config-box [data-testid="padder"], #remix-config-box [data-testid="padder-content"]'
-    await expect(page.locator(textBoxSelector)).toHaveCount(3)
+      '#remix-config-box [data-testid="box"], #remix-config-box [data-testid="padder-content"]'
+    await expect(page.locator(textBoxSelector)).toHaveCount(2)
     await expect
       .poll(() => readTextBoxStyles(page, textBoxSelector))
       .toEqual([
-        { trim: 'trim-both', edge: 'ex alphabetic' },
         { trim: 'trim-both', edge: 'ex alphabetic' },
         { trim: 'trim-both', edge: 'ex alphabetic' },
       ])
@@ -906,6 +1522,177 @@ test.describe('native Remix adapter', () => {
         })
       )
       .toBe('rgb(1, 2, 3)')
+  })
+
+  test('native zero-padding Box and Padder keep only needed elements', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    const structure = await page.evaluate(() => {
+      const box = document.querySelector('#remix-zero-padding-box')!
+      const padder = document.querySelector('#remix-zero-padding-padder')!
+      return {
+        boxDescendants: box.querySelectorAll('*').length,
+        boxChildKeepsContentHost:
+          box.querySelector('#remix-zero-padding-box-child')?.parentElement
+            ?.parentElement === box,
+        padderDescendants: padder.querySelectorAll('*').length,
+        padderChildKeepsContentHost:
+          padder.querySelector('#remix-zero-padding-padder-child')
+            ?.parentElement !== padder,
+      }
+    })
+
+    expect(structure).toEqual({
+      boxDescendants: 2,
+      boxChildKeepsContentHost: true,
+      padderDescendants: 2,
+      padderChildKeepsContentHost: true,
+    })
+    await expect(
+      page.locator('#remix-zero-padding-padder')
+    ).not.toHaveAttribute('data-testid')
+    await expect(page.locator('#remix-zero-padding-box')).not.toHaveAttribute(
+      'data-testid'
+    )
+    await expect(page.locator('#remix-zero-padding-padder')).toHaveClass(
+      /bk-pad/
+    )
+  })
+
+  test('native Padder keeps one-sided spacing on the requested grid edge', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    const result = await page.evaluate(() => {
+      const measure = (hostId: string, childId: string) => {
+        const host = document.getElementById(hostId)!.getBoundingClientRect()
+        const child = document.getElementById(childId)!.getBoundingClientRect()
+        const spacer = document
+          .getElementById(hostId)!
+          .querySelector('.bk-spr')!
+          .getBoundingClientRect()
+        return {
+          childLeft: child.left - host.left,
+          childTop: child.top - host.top,
+          spacerRight: host.right - spacer.right,
+          spacerBottom: host.bottom - spacer.bottom,
+          spacerWidth: spacer.width,
+          spacerHeight: spacer.height,
+        }
+      }
+      return {
+        rightOnly: measure(
+          'remix-right-only-padder',
+          'remix-right-only-content'
+        ),
+        bottomOnly: measure(
+          'remix-bottom-only-padder',
+          'remix-bottom-only-content'
+        ),
+      }
+    })
+
+    expect(result.rightOnly.childLeft).toBeCloseTo(0, 1)
+    expect(result.rightOnly.spacerRight).toBeCloseTo(0, 1)
+    expect(result.rightOnly.spacerWidth).toBeCloseTo(24, 1)
+    expect(result.bottomOnly.childTop).toBeCloseTo(0, 1)
+    expect(result.bottomOnly.spacerBottom).toBeCloseTo(0, 1)
+    expect(result.bottomOnly.spacerHeight).toBeCloseTo(24, 1)
+  })
+
+  test('native Box preserves caller display styles through the nested Padder fallback', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    const result = await page
+      .locator('#remix-caller-layout-box')
+      .evaluate((box) => {
+        const padder = box.firstElementChild as HTMLElement | null
+        return {
+          boxDisplay: getComputedStyle(box).display,
+          padderDisplay: padder ? getComputedStyle(padder).display : null,
+          boxChildren: box.childElementCount,
+          paddingSpacers: padder?.querySelectorAll(
+            ':scope > div > [data-testid="spacer"]'
+          ).length,
+          childConnected: Boolean(
+            box.querySelector('#remix-caller-layout-box-child')
+          ),
+        }
+      })
+
+    expect(result).toEqual({
+      boxDisplay: 'flex',
+      padderDisplay: 'grid',
+      boxChildren: 1,
+      paddingSpacers: 2,
+      childConnected: true,
+    })
+  })
+
+  test('native Baseline CSS paint keeps fractional rows as the fallback', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    for (const variant of ['line', 'flat', 'fractional']) {
+      const reference = page.locator(
+        `#remix-baseline-reference-host-${variant}`
+      )
+      const compact = page.locator(`#remix-baseline-compact-host-${variant}`)
+      await expect(reference.locator('[data-row-index]').first()).toBeVisible()
+      await expect(compact.locator('[data-row-index]')).toHaveCount(0)
+      await expect(compact).not.toHaveAttribute('data-testid')
+      if (variant === 'fractional') {
+        await expect(compact).not.toHaveClass(/bk-compact/)
+        expect(
+          await compact.evaluate((element) => element.childElementCount)
+        ).toBeGreaterThan(0)
+      } else {
+        await expect(compact).toHaveClass(/bk-compact/)
+        expect(
+          await compact.evaluate((element) => element.childElementCount)
+        ).toBe(0)
+      }
+
+      const { referenceImage, candidateImage } = await captureAlignedPaintPair(
+        page,
+        reference,
+        compact,
+        `#remix-baseline-reference-${variant}`,
+        `#remix-baseline-compact-${variant}`
+      )
+      const parity = await compareScreenshotPixels(
+        page,
+        referenceImage,
+        candidateImage
+      )
+      expect(parity.maxChannelDelta).toBeLessThanOrEqual(1)
+    }
   })
 
   test('native Baseline resolves the relative sizing matrix in the browser', async ({
@@ -962,10 +1749,8 @@ test.describe('native Remix adapter', () => {
     await expect
       .poll(() =>
         page
-          .locator('#remix-snap-box [data-testid="spacer"]')
-          .evaluateAll((elements) =>
-            elements.map((element) => element.getAttribute('data-height'))
-          )
+          .locator('#remix-snap-box [data-testid="box"]')
+          .evaluate((element) => getComputedStyle(element).gridTemplateRows)
       )
       .toContain('6px')
   })
@@ -983,18 +1768,14 @@ test.describe('native Remix adapter', () => {
     await expect
       .poll(() =>
         page
-          .locator('#remix-snap-box-top [data-testid="spacer"]')
+          .locator(
+            '#remix-snap-box-top .bk-pad-top [data-testid="spacer"]'
+          )
           .evaluateAll((elements) =>
-            elements
-              .filter(
-                (element) =>
-                  (element.parentElement as HTMLElement).style.gridColumn ===
-                  '1 / -1'
-              )
-              .map((element) => element.getAttribute('data-height'))
+            elements.map((element) => element.getAttribute('data-height'))
           )
       )
-      .toEqual(['6px', '0px'])
+      .toEqual(['6px'])
   })
 
   test('native rows respond to a containing-block resize', async ({ page }) => {
