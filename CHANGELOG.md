@@ -33,6 +33,12 @@
 - Box and Padder now opt into `text-box: trim-both ex alphabetic` when the
   browser supports it, while retaining normal line boxes as a fallback.
 
+## 6.0.0
+
+### Major Changes
+
+- a3d22e6: Generated diagnostic DOM attributes are now opt-in through `Config domDiagnostics`. Default component styles come from CSS modules, and zero-padding containers omit unused spacer helpers while retaining a stable content host. Baseline grids use CSS paint while retaining the same rendered pixels. Migrate DOM inspection to the opt-in diagnostics setting.
+
 ## 5.2.0
 
 ### Minor Changes
