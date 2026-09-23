@@ -15,7 +15,7 @@ import {
 } from '@baseline-kit/core'
 import { Config, type ConfigProps } from './Config'
 import { configuredClientEntry } from './shared'
-import { Padder, type PadderProps } from './Padder'
+import { PadderForBox } from './Padder'
 import {
   classNames,
   compactStyle,
@@ -58,10 +58,6 @@ type RuntimeBoxProps = BoxProps & {
 const RuntimeConfig = Config as unknown as NativeComponent<
   ConfigProps & { __baselineConfig?: ConfigSchema }
 >
-const RuntimePadder = Padder as unknown as NativeComponent<
-  PadderProps & { __baselineConfig?: ConfigSchema }
->
-
 function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   let currentBase = DEFAULT_CONFIG.base
   let currentSnapping: SnappingMode = 'clamp'
@@ -115,7 +111,6 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
       className: props.className,
       style: props.style,
       width: props.width,
-      debugging: debug.debugging,
     })
     const descriptor = createBoxDescriptor({
       base: config.base,
@@ -154,7 +149,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
         className={classNames(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
           separatePadder && 'bk-box-separate-padder',
-          debug.isShown && !debug.isNone && 'bk-box-pad-visible',
+          debug.isShown && !separatePadder && 'bk-box-pad-visible',
           props.className
         )}
         data-testid={config.domDiagnostics ? 'box' : undefined}
@@ -165,13 +160,16 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
             '--bkbx-cl': DEFAULT_CONFIG.box.colors.line,
           }),
           separatePadder
-            ? debug.isShown && !debug.isNone
-              ? compactStyle(
-                  { '--bkpd-c': config.padder.color },
-                  { '--bkpd-c': DEFAULT_CONFIG.padder.color }
-                )
-              : undefined
-            : mergedSpacingStyle,
+            ? undefined
+            : mergeStyles(
+                mergedSpacingStyle,
+                debug.isShown
+                  ? compactStyle(
+                      { '--bkpd-c': config.padder.color },
+                      { '--bkpd-c': DEFAULT_CONFIG.padder.color }
+                    )
+                  : undefined
+              ),
           descriptor.gridSpanStyle,
           props.style
         )}
@@ -188,17 +186,18 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
           spacer={{ variant: 'flat' }}
         >
           {separatePadder ? (
-            <RuntimePadder
+            <PadderForBox
               __baselineConfig={paddedConfig}
               block={[padding.top, padding.bottom]}
               inline={[padding.left, padding.right]}
               width="fit-content"
               height={props.height}
               debugging={debug.debugging}
+              preserveContentHost
               ssrMode
             >
               {props.children}
-            </RuntimePadder>
+            </PadderForBox>
           ) : (
             <div
               className="bk-pad-content"

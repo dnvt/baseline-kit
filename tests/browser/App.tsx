@@ -110,6 +110,51 @@ function StatefulBoxDiagnosticsProbe() {
   )
 }
 
+function StatefulBoxDebugModeProbe({
+  id,
+  className,
+}: {
+  id: string
+  className?: string
+}) {
+  const [debugging, setDebugging] = useState<'visible' | 'hidden' | 'none'>(
+    'visible'
+  )
+  const [value, setValue] = useState('before toggle')
+
+  return (
+    <section id={`${id}-transition`}>
+      <Box
+        id={`${id}-host`}
+        className={className}
+        block={8}
+        debugging={debugging}
+        snapping="none"
+      >
+        <input
+          id={`${id}-child`}
+          value={value}
+          onChange={(event) => setValue(event.currentTarget.value)}
+        />
+      </Box>
+      <button
+        id={`${id}-toggle`}
+        onClick={() =>
+          setDebugging((mode) =>
+            mode === 'visible'
+              ? 'hidden'
+              : mode === 'hidden'
+                ? 'none'
+                : 'visible'
+          )
+        }
+      >
+        Toggle Box debug mode
+      </button>
+    </section>
+  )
+}
+
 export function App() {
   const content = (
     <main>
@@ -129,6 +174,11 @@ export function App() {
       <StatefulPadderProbe />
       <StatefulSnappingBoxProbe />
       <StatefulBoxDiagnosticsProbe />
+      <StatefulBoxDebugModeProbe id="box-debug-merged" />
+      <StatefulBoxDebugModeProbe
+        id="box-debug-separated"
+        className="caller-layout"
+      />
 
       <section id="guide-paint-parity">
         <div

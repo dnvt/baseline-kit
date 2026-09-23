@@ -208,6 +208,24 @@ describe('Guide component', () => {
     expect(guideEl.querySelectorAll('[data-column-index]').length).toBe(0)
   })
 
+  it('preserves CSS pixel units for numeric SSR fallback dimensions', () => {
+    render(
+      <Guide
+        debugging="visible"
+        width={120}
+        height={80}
+        maxWidth={240}
+        ssrMode
+        data-testid="numeric-guide"
+      />
+    )
+    const guide = screen.getByTestId('numeric-guide')
+    const style = guide.getAttribute('style') || ''
+    expect(style).toContain('width: 120px')
+    expect(style).toContain('height: 80px')
+    expect(style).toContain('max-width: 240px')
+  })
+
   it('preserves caller attributes in the SSR fallback', () => {
     render(
       <Guide

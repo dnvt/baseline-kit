@@ -43,6 +43,7 @@ export type PadderProps = NativeDOMAttributes & {
 
 type RuntimePadderProps = PadderProps & {
   __baselineConfig?: ConfigSchema
+  preserveContentHost?: boolean
 }
 
 const RuntimeSpacer = Spacer as unknown as NativeComponent<
@@ -113,7 +114,17 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
           )}
           {...getDOMAttributes(props)}
         >
-          {props.children}
+          {props.preserveContentHost ? (
+            <div
+              key="content"
+              className="bk-pad-content"
+              data-testid={config.domDiagnostics ? 'padder-content' : undefined}
+            >
+              {props.children}
+            </div>
+          ) : (
+            props.children
+          )}
         </div>
       )
     }
@@ -185,8 +196,13 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
   }
 }
 
+const RuntimePadder = configuredClientEntry<RuntimePadderProps>(
+  `${import.meta.url}#Padder`,
+  PadderImpl
+) as unknown as NativeComponent<RuntimePadderProps>
+
 export const Padder: NativeComponent<PadderProps> =
-  configuredClientEntry<PadderProps>(
-    `${import.meta.url}#Padder`,
-    PadderImpl
-  ) as unknown as NativeComponent<PadderProps>
+  RuntimePadder as unknown as NativeComponent<PadderProps>
+
+/** @internal Used by Box to preserve its keyed content host across debug modes. */
+export const PadderForBox = RuntimePadder

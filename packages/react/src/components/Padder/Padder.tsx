@@ -21,6 +21,10 @@ export type PadderProps = {
   children?: React.ReactNode
 } & ComponentsProps
 
+type RuntimePadderProps = PadderProps & {
+  preserveContentHost?: boolean
+}
+
 const createRenderSpacerFn = (
   variant: Variant | undefined,
   debugging: DebuggingMode | undefined,
@@ -45,8 +49,8 @@ const createRenderSpacerFn = (
   return SpacerElement
 }
 
-export const Padder = React.memo(
-  React.forwardRef<HTMLDivElement, PadderProps>(function Padder(
+const PadderComponent = React.memo(
+  React.forwardRef<HTMLDivElement, RuntimePadderProps>(function Padder(
     {
       children,
       className,
@@ -56,6 +60,7 @@ export const Padder = React.memo(
       style,
       width,
       ssrMode = false,
+      preserveContentHost = false,
       ...spacingProps
     },
     ref
@@ -150,7 +155,17 @@ export const Padder = React.memo(
           style={containerStyles}
           {...getDOMAttributes(spacingProps)}
         >
-          {children}
+          {preserveContentHost ? (
+            <div
+              key="content"
+              data-testid={config.domDiagnostics ? 'padder-content' : undefined}
+              className={styles.content}
+            >
+              {children}
+            </div>
+          ) : (
+            children
+          )}
         </div>
       )
     }
@@ -179,6 +194,7 @@ export const Padder = React.memo(
           )}
         </>
         <div
+          key="content"
           data-testid={config.domDiagnostics ? 'padder-content' : undefined}
           className={styles.content}
         >
@@ -200,3 +216,12 @@ export const Padder = React.memo(
     )
   })
 )
+
+export const Padder = PadderComponent as unknown as React.MemoExoticComponent<
+  React.ForwardRefExoticComponent<
+    PadderProps & React.RefAttributes<HTMLDivElement>
+  >
+>
+
+/** @internal Used by Box to preserve its keyed content host across debug modes. */
+export const PadderForBox = PadderComponent

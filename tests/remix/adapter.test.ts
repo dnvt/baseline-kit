@@ -125,10 +125,14 @@ describe('Remix adapter', () => {
         debugging: 'visible',
         width: 120,
         height: 80,
+        maxWidth: 240,
         children: 'SSR guide content',
       })
     )
     expect(guideHtml).toContain('class="bk-gde bk-h bk-ssr bk-line"')
     expect(guideHtml).toContain('SSR guide content')
+    expect(guideHtml).toContain('width: 120px')
+    expect(guideHtml).toContain('height: 80px')
+    expect(guideHtml).toContain('max-width: 240px')
   })
 })

@@ -104,9 +104,8 @@ describe('requiresSeparatePadder', () => {
     expect(requiresSeparatePadder({ width: 'fit-content' })).toBe(false)
   })
 
-  it('keeps the nested Padder for visible debug paint', () => {
-    expect(requiresSeparatePadder({ debugging: 'visible' })).toBe(true)
-    expect(requiresSeparatePadder({ debugging: 'hidden' })).toBe(false)
+  it('keeps debug visibility out of the structural Padder decision', () => {
+    expect(requiresSeparatePadder({})).toBe(false)
   })
 
   it('keeps the separate Padder when a caller class can change layout', () => {

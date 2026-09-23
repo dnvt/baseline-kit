@@ -7,6 +7,7 @@ import {
   calculateGuideTemplate,
   createGuideConfig,
   createGuideDescriptor,
+  formatValue,
   type GuideVariant,
   type GuideColumnValue,
   type ConfigSchema,
@@ -125,9 +126,9 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
           style={mergeStyles(
             compactStyle(
               {
-                width: String(props.width ?? '100%'),
-                height: String(props.height ?? '100%'),
-                maxWidth: String(props.maxWidth ?? 'none'),
+                width: formatValue(props.width ?? '100%'),
+                height: formatValue(props.height ?? '100%'),
+                maxWidth: formatValue(props.maxWidth ?? 'none'),
               },
               { width: '100%', height: '100%', maxWidth: 'none' }
             ),

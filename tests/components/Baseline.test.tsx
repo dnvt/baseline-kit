@@ -161,6 +161,21 @@ describe('Baseline', () => {
     expect(baseline.getAttribute('style')).toContain('height: 0px')
   })
 
+  it('preserves CSS pixel units for numeric SSR fallback dimensions', () => {
+    render(
+      <Baseline
+        debugging="visible"
+        width={120}
+        height={80}
+        ssrMode
+        data-testid="numeric-baseline"
+      />
+    )
+    const baseline = screen.getByTestId('numeric-baseline')
+    expect(baseline.getAttribute('style')).toContain('width: 120px')
+    expect(baseline.getAttribute('style')).toContain('height: 80px')
+  })
+
   it('respects custom string height e.g. "50vh"', () => {
     // Core uses static viewport defaults (1080px height) — 50vh = 540px → 540/8 = 67 rows
     render(<Baseline debugging="visible" height="50vh" />)

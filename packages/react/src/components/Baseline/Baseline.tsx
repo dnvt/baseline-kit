@@ -6,6 +6,7 @@ import {
   canCompactBaselinePaint,
   cx,
   createBaselineDescriptor,
+  formatValue,
 } from '@baseline-kit/core'
 import type { BaselineVariant } from '@baseline-kit/core'
 import { ClientOnly } from '../../utils/ssr'
@@ -187,8 +188,8 @@ export const Baseline = React.memo(function Baseline({
       style={mergeStyles(
         compactStyle(
           {
-            width: String(widthProp ?? '100%'),
-            height: String(heightProp ?? '100%'),
+            width: formatValue(widthProp ?? '100%'),
+            height: formatValue(heightProp ?? '100%'),
           },
           { width: '100%', height: '100%' }
         ),

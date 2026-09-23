@@ -1,5 +1,4 @@
 import { formatValue, createGridSpanStyles } from '../utils'
-import type { DebuggingMode } from '../types'
 
 export interface BoxDescriptorParams {
   base: number
@@ -40,13 +39,8 @@ export function requiresSeparatePadder(params: {
   className?: string
   style?: object
   width?: number | string
-  debugging?: DebuggingMode
 }): boolean {
   if (params.className) return true
-  // The merged host changes how the translucent Box and Padder outlines
-  // composite in visible diagnostic mode. Keep the old nested paint path
-  // when callers explicitly request those diagnostics.
-  if (params.debugging === 'visible') return true
   // Box width historically applies to the outer frame while its Padder stays
   // fit-content. An explicit non-default width therefore needs both hosts.
   if (params.width !== undefined && params.width !== 'fit-content') return true

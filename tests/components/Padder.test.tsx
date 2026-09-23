@@ -124,6 +124,8 @@ describe('Padder', () => {
     // Adjust your expectations based on the adjusted padding from useBaseline
     expect(styleAttr).toContain('padding-block: 8px 24px')
     expect(styleAttr).toContain('padding-inline: 8px 16px')
+    expect(padder.children).toHaveLength(0)
+    expect(padder.textContent).toBe('Child')
   })
 })
 

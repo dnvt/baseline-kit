@@ -13,7 +13,7 @@ import { mergeStyles, mergeRefs } from '../../utils/merge'
 import { getDOMAttributes } from '../../utils/dom'
 import { compactStyle } from '../../utils/dom'
 import { Config } from '../Config/Config'
-import { Padder } from '../Padder'
+import { PadderForBox } from '../Padder/Padder'
 import padderStyles from '../Padder/styles.module.css'
 import { ComponentsProps } from '../types'
 import styles from './styles.module.css'
@@ -106,7 +106,6 @@ export const Box = React.memo(
       className,
       style,
       width,
-      debugging,
     })
 
     const boxStyles = React.useMemo(
@@ -118,29 +117,32 @@ export const Box = React.memo(
             '--bkbx-cl': DEFAULT_CONFIG.box.colors.line,
           }),
           separatePadder
-            ? isShown && debugging !== 'none'
-              ? compactStyle(
-                  { '--bkpd-c': padderConfig.color },
-                  { '--bkpd-c': DEFAULT_CONFIG.padder.color }
-                )
-              : undefined
-            : compactStyle(
-                {
-                  ...(padding.top > 0 || padding.bottom > 0
-                    ? {
-                        gridTemplateRows: `${padding.top}px 1fr ${padding.bottom}px`,
-                      }
-                    : {}),
-                  ...(padding.left > 0 || padding.right > 0
-                    ? {
-                        gridTemplateColumns: `${padding.left}px 1fr ${padding.right}px`,
-                      }
-                    : {}),
-                },
-                {
-                  gridTemplateRows: 'auto 1fr auto',
-                  gridTemplateColumns: 'auto 1fr auto',
-                }
+            ? undefined
+            : mergeStyles(
+                compactStyle(
+                  {
+                    ...(padding.top > 0 || padding.bottom > 0
+                      ? {
+                          gridTemplateRows: `${padding.top}px 1fr ${padding.bottom}px`,
+                        }
+                      : {}),
+                    ...(padding.left > 0 || padding.right > 0
+                      ? {
+                          gridTemplateColumns: `${padding.left}px 1fr ${padding.right}px`,
+                        }
+                      : {}),
+                  },
+                  {
+                    gridTemplateRows: 'auto 1fr auto',
+                    gridTemplateColumns: 'auto 1fr auto',
+                  }
+                ),
+                isShown
+                  ? compactStyle(
+                      { '--bkpd-c': padderConfig.color },
+                      { '--bkpd-c': DEFAULT_CONFIG.padder.color }
+                    )
+                  : undefined
               ),
           style
         ),
@@ -149,7 +151,6 @@ export const Box = React.memo(
         separatePadder,
         style,
         padderConfig.color,
-        debugging,
         isShown,
         padding.top,
         padding.right,
@@ -165,7 +166,7 @@ export const Box = React.memo(
         className={cx(
           ...descriptor.classTokens.map((t) => styles[t]),
           separatePadder && styles.separatePadder,
-          isShown && debugging !== 'none' && styles.padderVisible,
+          isShown && !separatePadder && styles.padderVisible,
           className
         )}
         style={mergeStyles(boxStyles, descriptor.gridSpanStyle)}
@@ -173,16 +174,17 @@ export const Box = React.memo(
       >
         <Config base={1} spacer={{ variant: 'flat' }}>
           {separatePadder ? (
-            <Padder
+            <PadderForBox
               block={[padding.top, padding.bottom]}
               inline={[padding.left, padding.right]}
               width="fit-content"
               height={height}
               debugging={debugging}
+              preserveContentHost
               ssrMode
             >
               {children}
-            </Padder>
+            </PadderForBox>
           ) : (
             <div
               data-testid={config.domDiagnostics ? 'padder-content' : undefined}

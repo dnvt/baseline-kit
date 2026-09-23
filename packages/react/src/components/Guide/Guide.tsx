@@ -10,7 +10,7 @@ import {
   createGuideDescriptor,
   createGuideConfig,
 } from '@baseline-kit/core/descriptors/guide'
-import { DEFAULT_CONFIG } from '@baseline-kit/core'
+import { DEFAULT_CONFIG, formatValue } from '@baseline-kit/core'
 import type { GuideVariant, GuideConfig } from '@baseline-kit/core/types'
 import { ClientOnly } from '../../utils/ssr'
 import { mergeStyles } from '../../utils/merge'
@@ -81,9 +81,9 @@ export const Guide = React.memo(function Guide({
       style={mergeStyles(
         compactStyle(
           {
-            width: String(width ?? '100%'),
-            height: String(height ?? '100%'),
-            maxWidth: String(maxWidth ?? 'none'),
+            width: formatValue(width ?? '100%'),
+            height: formatValue(height ?? '100%'),
+            maxWidth: formatValue(maxWidth ?? 'none'),
           },
           { width: '100%', height: '100%', maxWidth: 'none' }
         ),

@@ -613,6 +613,10 @@ test('Box preserves caller display styles through the nested Padder fallback', a
       paddingSpacers: padder?.querySelectorAll(
         ':scope > div > [data-testid="spacer"]'
       ).length,
+      boxPadderOutline: getComputedStyle(box, '::before').borderTopWidth,
+      padderOutline: padder
+        ? getComputedStyle(padder, '::after').borderTopWidth
+        : null,
       childConnected: Boolean(box.querySelector('#caller-layout-box-child')),
     }
   })
@@ -622,6 +626,8 @@ test('Box preserves caller display styles through the nested Padder fallback', a
     padderDisplay: 'grid',
     boxChildren: 1,
     paddingSpacers: 2,
+    boxPadderOutline: '0px',
+    padderOutline: '1px',
     childConnected: true,
   })
 })
@@ -641,12 +647,59 @@ test('Box preserves caller width and height styles on the nested Padder path', a
   await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(1)
 })
 
-test('Box visible diagnostics retain the legacy nested Padder paint path', async ({
+test('Box visible diagnostics paint both outlines on the compact host', async ({
   page,
 }) => {
   const box = page.locator('#box-visible-debug-fallback')
   await expect(box).toHaveAttribute('data-testid', 'box')
-  await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(1)
+  await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(0)
+  expect(
+    await box.evaluate((element) => ({
+      children: element.childElementCount,
+      boxOutline: getComputedStyle(element, '::after').borderTopWidth,
+      padderOutline: getComputedStyle(element, '::before').borderTopWidth,
+    }))
+  ).toEqual({ children: 1, boxOutline: '1px', padderOutline: '1px' })
+})
+
+test('Box keeps child identity, value, and focus while visible diagnostics turn off', async ({
+  page,
+}) => {
+  for (const id of ['box-debug-merged', 'box-debug-separated']) {
+    const host = page.locator(`#${id}-host`)
+    const child = page.locator(`#${id}-child`)
+    const childHandle = await child.elementHandle()
+
+    await expect(host.locator(':scope > [data-testid="padder"]')).toHaveCount(
+      id === 'box-debug-separated' ? 1 : 0
+    )
+    await child.fill(`${id} value`)
+    await child.focus()
+    expect(
+      await childHandle?.evaluate(
+        (element) => element === document.activeElement
+      )
+    ).toBe(true)
+
+    for (const mode of ['hidden', 'none'] as const) {
+      await page.locator(`#${id}-toggle`).evaluate((button) => {
+        ;(button as HTMLButtonElement).click()
+      })
+
+      expect(
+        await childHandle?.evaluate((element) => element.isConnected)
+      ).toBe(true)
+      expect(
+        await childHandle?.evaluate(
+          (element) => element === document.activeElement
+        )
+      ).toBe(true)
+      await expect(child).toHaveValue(`${id} value`)
+      await expect(host.locator(':scope > [data-testid="padder"]')).toHaveCount(
+        id === 'box-debug-separated' ? 1 : 0
+      )
+    }
+  }
 })
 
 test('Box host merge preserves the nested Padder grid geometry', async ({
@@ -1148,24 +1201,18 @@ test('React Guide keeps viewport dimensions and Padder snaps', async ({
     .toBe(16)
 })
 
-test('React Box can snap height correction to the top edge', async ({
+test('React Box applies top-edge snapping on its merged grid host', async ({
   page,
 }) => {
+  const box = page.locator('#box-snap-top [data-testid="box"]')
   await expect
     .poll(() =>
-      page
-        .locator('#box-snap-top [data-testid="spacer"]')
-        .evaluateAll((elements) =>
-          elements
-            .filter(
-              (element) =>
-                getComputedStyle(element.parentElement!).gridRowStart ===
-                '1'
-            )
-            .map((element) => element.getAttribute('data-height'))
-        )
+      box.evaluate(
+        (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+      )
     )
-    .toEqual(['6px'])
+    .toBe('6px')
+  await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(0)
 })
 
 test.describe('native Remix adapter', () => {
@@ -1449,6 +1496,14 @@ test.describe('native Remix adapter', () => {
         )
       )
       .toBe('rgb(112, 112, 112)')
+    await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(0)
+    await expect
+      .poll(() =>
+        box.evaluate(
+          (element) => getComputedStyle(element, '::after').borderTopColor
+        )
+      )
+      .toBe('rgb(255, 0, 0)')
     await expect
       .poll(() =>
         spacer.evaluate((element) =>
@@ -1634,6 +1689,10 @@ test.describe('native Remix adapter', () => {
           paddingSpacers: padder?.querySelectorAll(
             ':scope > div > [data-testid="spacer"]'
           ).length,
+          boxPadderOutline: getComputedStyle(box, '::before').borderTopWidth,
+          padderOutline: padder
+            ? getComputedStyle(padder, '::after').borderTopWidth
+            : null,
           childConnected: Boolean(
             box.querySelector('#remix-caller-layout-box-child')
           ),
@@ -1645,6 +1704,8 @@ test.describe('native Remix adapter', () => {
       padderDisplay: 'grid',
       boxChildren: 1,
       paddingSpacers: 2,
+      boxPadderOutline: '0px',
+      padderOutline: '1px',
       childConnected: true,
     })
   })
@@ -1755,7 +1816,7 @@ test.describe('native Remix adapter', () => {
       .toContain('6px')
   })
 
-  test('native Box can snap height correction to the top edge', async ({
+  test('native Box applies top-edge snapping on its merged grid host', async ({
     page,
   }) => {
     await page.goto('/remix.html')
@@ -1765,17 +1826,15 @@ test.describe('native Remix adapter', () => {
           .__baselineRemixReady
     )
 
+    const box = page.locator('#remix-snap-box-top [data-testid="box"]')
     await expect
       .poll(() =>
-        page
-          .locator(
-            '#remix-snap-box-top .bk-pad-top [data-testid="spacer"]'
-          )
-          .evaluateAll((elements) =>
-            elements.map((element) => element.getAttribute('data-height'))
-          )
+        box.evaluate(
+          (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+        )
       )
-      .toEqual(['6px'])
+      .toBe('6px')
+    await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(0)
   })
 
   test('native rows respond to a containing-block resize', async ({ page }) => {
