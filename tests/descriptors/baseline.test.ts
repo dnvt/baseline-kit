@@ -1,4 +1,7 @@
-import { createBaselineDescriptor } from '@baseline-kit/core'
+import {
+  canCompactBaselinePaint,
+  createBaselineDescriptor,
+} from '@baseline-kit/core'
 
 const baseParams = {
   base: 8,
@@ -150,5 +153,85 @@ describe('createBaselineDescriptor', () => {
 
     expect(containerStyle['--bkbl-w']).toBeUndefined()
     expect(containerStyle['--bkbl-h']).toBeUndefined()
+  })
+})
+
+describe('canCompactBaselinePaint', () => {
+  it('uses the CSS paint for the ordinary baseline by default', () => {
+    expect(
+      canCompactBaselinePaint({
+        base: 8,
+        contentHeight: 160,
+        domDiagnostics: false,
+      })
+    ).toBe(true)
+  })
+
+  it('keeps inspectable rows when diagnostics are enabled', () => {
+    expect(
+      canCompactBaselinePaint({
+        base: 8,
+        contentHeight: 160,
+        domDiagnostics: true,
+      })
+    ).toBe(false)
+  })
+
+  it('keeps row paint when caller classes or backgrounds override the host', () => {
+    expect(
+      canCompactBaselinePaint({
+        base: 8,
+        contentHeight: 160,
+        domDiagnostics: false,
+        className: 'custom-baseline',
+      })
+    ).toBe(false)
+    expect(
+      canCompactBaselinePaint({
+        base: 8,
+        contentHeight: 160,
+        domDiagnostics: false,
+        style: { backgroundImage: 'url(pattern.png)' },
+      })
+    ).toBe(false)
+  })
+
+  it('keeps row paint for unsupported bases, partial heights and variable overrides', () => {
+    expect(
+      canCompactBaselinePaint({
+        base: 1,
+        contentHeight: 160,
+        domDiagnostics: false,
+      })
+    ).toBe(false)
+    expect(
+      canCompactBaselinePaint({
+        base: 4.5,
+        contentHeight: 31.5,
+        domDiagnostics: false,
+      })
+    ).toBe(false)
+    expect(
+      canCompactBaselinePaint({
+        base: 8,
+        contentHeight: 162,
+        domDiagnostics: false,
+      })
+    ).toBe(false)
+    expect(
+      canCompactBaselinePaint({
+        base: 8,
+        contentHeight: 4,
+        domDiagnostics: false,
+      })
+    ).toBe(true)
+    expect(
+      canCompactBaselinePaint({
+        base: 8,
+        contentHeight: 160,
+        domDiagnostics: false,
+        style: { '--bkbl-b': '8px' },
+      })
+    ).toBe(false)
   })
 })

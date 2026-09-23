@@ -15,12 +15,29 @@ export default defineConfig({
       configureServer(server) {
         server.middlewares.use(async (request, response, next) => {
           const pathname = request.url?.split('?')[0]
-          if (pathname === '/__baseline-react.css' && packageRoot) {
+          if (pathname === '/__baseline-react.css') {
+            const css = packageRoot
+              ? await readFile(resolve(packageRoot, 'dist/styles.css'), 'utf8')
+              : (
+                  await Promise.all(
+                    [
+                      '../../packages/react/src/components/Baseline/styles.module.css',
+                      '../../packages/react/src/components/Box/styles.module.css',
+                      '../../packages/react/src/components/Guide/styles.module.css',
+                      '../../packages/react/src/components/Padder/styles.module.css',
+                      '../../packages/react/src/components/Spacer/styles.module.css',
+                    ].map(async (path) => {
+                      const file = resolve(server.config.root, path)
+                      const moduleUrl = `/@fs/${file.startsWith('/') ? file.slice(1) : file}?direct`
+                      const transformed =
+                        await server.transformRequest(moduleUrl)
+                      return transformed?.code ?? ''
+                    })
+                  )
+                ).join('\n')
             response.statusCode = 200
             response.setHeader('Content-Type', 'text/css')
-            response.end(
-              await readFile(resolve(packageRoot, 'dist/styles.css'), 'utf8')
-            )
+            response.end(css)
             return
           }
 
@@ -72,32 +89,9 @@ export default defineConfig({
         })
       },
     },
-    ...(packageRoot
-      ? [
-          {
-            name: 'baseline-browser-package-css',
-            transformIndexHtml(html: string) {
-              return html.replace(
-                '</head>',
-                '    <link rel="stylesheet" href="/__baseline-react.css" />\n  </head>'
-              )
-            },
-          },
-        ]
-      : []),
   ],
   resolve: {
     alias: [
-      {
-        find: '@baseline-kit/remix/server',
-        replacement: packageRoot
-          ? resolve(packageRoot, 'dist/remix-server.mjs')
-          : resolve(import.meta.dirname, '../../packages/remix/src/server.ts'),
-      },
-      ...Object.entries(alias).map(([find, replacement]) => ({
-        find,
-        replacement,
-      })),
       ...(packageRoot
         ? [
             // The packed fixture owns its Remix installation. Vite aliases
@@ -105,6 +99,18 @@ export default defineConfig({
             // the installed distribution files explicitly. Keeping these
             // files on the same Remix instance is required for the server
             // renderer's Frame identity to match client hydration.
+            {
+              find: /^@baseline-kit\/remix\/server$/,
+              replacement: resolve(packageRoot, 'dist/remix-server.mjs'),
+            },
+            {
+              find: /^@baseline-kit\/remix$/,
+              replacement: resolve(packageRoot, 'dist/remix.mjs'),
+            },
+            {
+              find: /^@baseline-kit\/react$/,
+              replacement: resolve(packageRoot, 'dist/index.mjs'),
+            },
             {
               find: /^remix\/ui\/jsx-runtime$/,
               replacement: resolve(
@@ -120,16 +126,20 @@ export default defineConfig({
               find: /^remix\/ui$/,
               replacement: resolve(packageRoot, '..', 'remix', 'dist', 'ui.js'),
             },
-            {
-              find: '@baseline-kit/react',
-              replacement: resolve(packageRoot, 'dist/index.mjs'),
-            },
-            {
-              find: '@baseline-kit/remix',
-              replacement: resolve(packageRoot, 'dist/remix.mjs'),
-            },
           ]
-        : []),
+        : [
+            {
+              find: '@baseline-kit/remix/server',
+              replacement: resolve(
+                import.meta.dirname,
+                '../../packages/remix/src/server.ts'
+              ),
+            },
+          ]),
+      ...Object.entries(alias).map(([find, replacement]) => ({
+        find,
+        replacement,
+      })),
     ],
   },
   css: {

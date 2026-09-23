@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { render } from '../render'
 import '@testing-library/jest-dom'
 import { Baseline } from '@/components/Baseline'
 
@@ -158,6 +159,21 @@ describe('Baseline', () => {
     const baseline = screen.getByTestId('baseline')
     expect(baseline.getAttribute('style')).toContain('width: 0px')
     expect(baseline.getAttribute('style')).toContain('height: 0px')
+  })
+
+  it('preserves CSS pixel units for numeric SSR fallback dimensions', () => {
+    render(
+      <Baseline
+        debugging="visible"
+        width={120}
+        height={80}
+        ssrMode
+        data-testid="numeric-baseline"
+      />
+    )
+    const baseline = screen.getByTestId('numeric-baseline')
+    expect(baseline.getAttribute('style')).toContain('width: 120px')
+    expect(baseline.getAttribute('style')).toContain('height: 80px')
   })
 
   it('respects custom string height e.g. "50vh"', () => {

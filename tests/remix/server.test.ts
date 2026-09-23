@@ -3,6 +3,7 @@ import { clientEntry, Frame, type Handle, type RemixNode } from 'remix/ui'
 import { jsx } from 'remix/ui/jsx-runtime'
 import { Config, Spacer } from '@baseline-kit/remix'
 import { DEFAULT_CONFIG } from '@baseline-kit/core'
+import type { ConfigSchema } from '@baseline-kit/core'
 import {
   ImportMap,
   renderToStream,
@@ -11,6 +12,24 @@ import {
 import { renderToString as upstreamRenderToString } from 'remix/ui/server'
 
 describe('Node Remix SSR compatibility entry', () => {
+  it('defaults old Config snapshots without domDiagnostics to false', async () => {
+    const legacySnapshot = { ...DEFAULT_CONFIG } as Partial<ConfigSchema>
+    delete legacySnapshot.domDiagnostics
+
+    const html = await renderToString(
+      jsx(Spacer, {
+        height: 24,
+        debugging: 'visible',
+        'data-caller': 'preserved',
+        __baselineConfig: legacySnapshot as ConfigSchema,
+      } as never)
+    )
+
+    expect(html).not.toContain('data-testid="spacer"')
+    expect(html).not.toContain('data-height=')
+    expect(html).toContain('data-caller="preserved"')
+  })
+
   it('prefers an independent entry snapshot over a different live ancestor', () => {
     const snapshot = { ...DEFAULT_CONFIG, base: 4 }
     const ancestor = { ...DEFAULT_CONFIG, base: 12 }
@@ -31,6 +50,7 @@ describe('Node Remix SSR compatibility entry', () => {
       jsx(Spacer, { height: 16, debugging: 'visible' })
     const html = await renderToString(
       jsx(Config, {
+        domDiagnostics: true,
         base: 12,
         spacer: { colors: { line: 'red' } },
         children: jsx(Forwarder, {

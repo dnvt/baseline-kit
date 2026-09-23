@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Library-generated DOM diagnostic attributes are opt-in through
+  `<Config domDiagnostics />`. Applications that select components through
+  generated `data-testid`, variant, dimension, row, or column attributes should
+  enable diagnostics in those scopes. Caller-provided attributes remain.
+
 ### Improvements
 
 - Added the React-free Remix 3 entry point and its dedicated CSS entry.
@@ -13,6 +20,10 @@
   are released.
 - Simplified the public documentation around entry points, sizing, themes,
   text-box alignment, SSR, and release checks.
+- Moved default component values into host CSS classes, omitted redundant
+  instance styles and diagnostic attributes, painted Baseline with CSS, and
+  removed empty zero-padding spacer nodes while keeping nested Config and
+  React/Remix rendering behavior.
 - Removed unused CSS and linting dependencies, including `cssnano`.
 
 ### Bug fixes

@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { render } from '../render'
 import '@testing-library/jest-dom'
 import { Config, Padder } from '@components'
 import * as HooksModule from '@hooks'
@@ -6,32 +7,40 @@ import * as HooksModule from '@hooks'
 describe('Padder', () => {
   beforeEach(() => {
     // Mock "useConfig"
-    vi.spyOn(HooksModule, 'useConfig').mockImplementation((component: string) => {
-      if (component === 'padder') {
-        return { base: 8, color: '#AA00AA', debugging: 'hidden' } as never
+    vi.spyOn(HooksModule, 'useConfig').mockImplementation(
+      (component: string) => {
+        if (component === 'padder') {
+          return {
+            base: 8,
+            color: '#AA00AA',
+            debugging: 'hidden',
+            domDiagnostics: true,
+          } as never
+        }
+        if (component === 'spacer') {
+          return {
+            domDiagnostics: true,
+            base: 8,
+            variant: 'line',
+            debugging: 'hidden',
+            colors: {
+              line: 'red',
+              flat: 'blue',
+              indice: 'green',
+            },
+          } as any
+        }
+        return {} as any
       }
-      if (component === 'spacer') {
-        return {
-          base: 8,
-          variant: 'line',
-          debugging: 'hidden',
-          colors: {
-            line: 'red',
-            flat: 'blue',
-            indice: 'green',
-          },
-        } as any
-      }
-      return {} as any
-    })
+    )
 
     // Mock useBaseline to return consistent adjusted padding values
     vi.spyOn(HooksModule, 'useBaseline').mockReturnValue({
       padding: {
-        top: 8,    // Adjusted from original 10
+        top: 8, // Adjusted from original 10
         right: 16, // Adjusted from original 15
         bottom: 24, // Adjusted from original 20
-        left: 8,   // Adjusted from original 5
+        left: 8, // Adjusted from original 5
       },
       isAligned: true,
       height: 0,
@@ -61,7 +70,7 @@ describe('Padder', () => {
     render(
       <Padder width="200px" height="auto" debugging="visible">
         Child
-      </Padder>,
+      </Padder>
     )
     const padder = screen.getByTestId('padder')
     expect(padder.style.getPropertyValue('--bkpd-w')).toBe('200px')
@@ -73,11 +82,27 @@ describe('Padder', () => {
     screen.getByText('Hello World')
   })
 
+  it('omits zero-padding spacers and keeps a stable content host', () => {
+    render(
+      <Padder debugging="visible" ssrMode>
+        <button data-testid="padder-child">Child</button>
+      </Padder>
+    )
+
+    const padder = screen.getByTestId('padder')
+    expect(padder.firstElementChild?.className).toMatch(/content/)
+    expect(padder.children).toHaveLength(1)
+    expect(screen.getByTestId('padder-child').parentElement).toBe(
+      padder.firstElementChild
+    )
+    expect(padder.querySelectorAll('[data-testid="spacer"]')).toHaveLength(0)
+  })
+
   it('renders spacers if visible & not none => block/inline props', () => {
     render(
       <Padder block={[10, 20]} inline={[5, 15]} debugging="visible">
         Child
-      </Padder>,
+      </Padder>
     )
     const padder = screen.getByTestId('padder')
     // We expect 4 <Spacer data-testid="spacer" />
@@ -89,7 +114,7 @@ describe('Padder', () => {
     render(
       <Padder block={[10, 20]} inline={[5, 15]} debugging="none">
         Child
-      </Padder>,
+      </Padder>
     )
     const padder = screen.getByTestId('padder')
     // No <Spacer />
@@ -99,6 +124,8 @@ describe('Padder', () => {
     // Adjust your expectations based on the adjusted padding from useBaseline
     expect(styleAttr).toContain('padding-block: 8px 24px')
     expect(styleAttr).toContain('padding-inline: 8px 16px')
+    expect(padder.children).toHaveLength(0)
+    expect(padder.textContent).toBe('Child')
   })
 })
 
@@ -108,7 +135,7 @@ it('doesnt normilize the paddings with base of 1', () => {
       <Padder block={[10, 20]} inline={[5, 15]} debugging="none">
         Child
       </Padder>
-    </Config>,
+    </Config>
   )
   const padder = screen.getByTestId('padder')
   expect(padder.querySelectorAll('[data-testid="spacer"]').length).toBe(0)
@@ -117,4 +144,3 @@ it('doesnt normilize the paddings with base of 1', () => {
   expect(styleAttr).toContain('padding-block: 10px 20px')
   expect(styleAttr).toContain('padding-inline: 5px 15px')
 })
-

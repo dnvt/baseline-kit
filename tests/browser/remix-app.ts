@@ -63,7 +63,7 @@ export function createRemixApp() {
     })
   )
 
-  return jsx('main', {
+  const app = jsx('main', {
     children: [
       jsx('section', {
         id: 'remix-frame-lifecycle',
@@ -134,10 +134,87 @@ export function createRemixApp() {
         }),
       }),
       jsx('section', {
+        id: 'remix-guide-paint-parity',
+        children: [
+          jsx('div', {
+            id: 'remix-guide-paint-reference',
+            style: { position: 'relative', width: 320, height: 32 },
+            children: jsx(Config, {
+              domDiagnostics: true,
+              children: jsx(Guide, {
+                id: 'remix-guide-paint-reference-host',
+                variant: 'fixed',
+                columns: 4,
+                debugging: 'visible',
+              }),
+            }),
+          }),
+          jsx(Config, {
+            domDiagnostics: false,
+            children: jsx('div', {
+              id: 'remix-guide-paint-compact',
+              style: { position: 'relative', width: 320, height: 32 },
+              children: jsx(Guide, {
+                id: 'remix-guide-paint-compact-host',
+                variant: 'fixed',
+                columns: 4,
+                debugging: 'visible',
+              }),
+            }),
+          }),
+        ],
+      }),
+      jsx('section', {
         id: 'remix-padder-snap',
         children: jsx(Padder, {
           debugging: 'none',
           children: jsx('div', { style: { width: 20, height: 10 } }),
+        }),
+      }),
+      jsx(Config, {
+        domDiagnostics: false,
+        children: jsx('section', {
+          id: 'remix-zero-padding-components',
+          children: [
+            jsx(Box, {
+              id: 'remix-zero-padding-box',
+              debugging: 'hidden',
+              ssrMode: true,
+              children: jsx('span', {
+                id: 'remix-zero-padding-box-child',
+                children: 'Box child',
+              }),
+            }),
+            jsx(Padder, {
+              id: 'remix-zero-padding-padder',
+              debugging: 'visible',
+              ssrMode: true,
+              children: jsx('span', {
+                id: 'remix-zero-padding-padder-child',
+                children: 'Padder child',
+              }),
+            }),
+            jsx(Padder, {
+              id: 'remix-right-only-padder',
+              padding: { right: 24 },
+              debugging: 'hidden',
+              ssrMode: true,
+              children: jsx('div', {
+                id: 'remix-right-only-content',
+                style: { width: 100, height: 20 },
+              }),
+            }),
+            jsx(Padder, {
+              id: 'remix-bottom-only-padder',
+              padding: { bottom: 24 },
+              debugging: 'hidden',
+              ssrMode: true,
+              children: jsx('div', {
+                id: 'remix-bottom-only-content',
+                style: { width: 100, height: 20 },
+              }),
+            }),
+          ],
         }),
       }),
       jsx(Config, {
@@ -172,6 +249,66 @@ export function createRemixApp() {
           width: '100%',
           height: 16,
         }),
+      }),
+      jsx('section', {
+        id: 'remix-box-caller-layout',
+        children: jsx(Box, {
+          id: 'remix-caller-layout-box',
+          style: { display: 'flex' },
+          block: 8,
+          debugging: 'visible',
+          snapping: 'none',
+          children: jsx('span', {
+            id: 'remix-caller-layout-box-child',
+            children: 'Caller layout',
+          }),
+        }),
+      }),
+      jsx('section', {
+        id: 'remix-baseline-paint-parity',
+        children: [
+          { name: 'line', base: 8, variant: 'line', color: undefined },
+          { name: 'flat', base: 8, variant: 'flat', color: '#283c50' },
+          {
+            name: 'fractional',
+            base: 4.5,
+            variant: 'line',
+            color: '#123456',
+          },
+        ].flatMap(({ name, base, variant, color }) => [
+          jsx(Config, {
+            domDiagnostics: true,
+            children: jsx('div', {
+              id: `remix-baseline-reference-${name}`,
+              style: { position: 'relative', width: 320, height: 32 },
+              children: jsx(Baseline, {
+                id: `remix-baseline-reference-host-${name}`,
+                debugging: 'visible',
+                base,
+                variant,
+                color,
+                width: '100%',
+                height: '100%',
+              }),
+            }),
+          }),
+          jsx(Config, {
+            domDiagnostics: false,
+            children: jsx('div', {
+              id: `remix-baseline-compact-${name}`,
+              style: { position: 'relative', width: 320, height: 32 },
+              children: jsx(Baseline, {
+                id: `remix-baseline-compact-host-${name}`,
+                debugging: 'visible',
+                base,
+                variant,
+                color,
+                width: '100%',
+                height: '100%',
+              }),
+            }),
+          }),
+        ]),
       }),
       jsx('section', {
         id: 'remix-baseline-viewport',
@@ -300,6 +437,7 @@ export function createRemixApp() {
           debugging: 'visible',
           colors: { line: '#ff0000', flat: '#00ff00', text: '#0000ff' },
         },
+        padder: { debugging: 'visible', color: '#707070' },
         spacer: {
           debugging: 'visible',
           colors: { line: '#ff0000', flat: '#00ff00', text: '#0000ff' },
@@ -344,4 +482,6 @@ export function createRemixApp() {
       }),
     ],
   })
+
+  return jsx(Config, { domDiagnostics: true, children: app })
 }

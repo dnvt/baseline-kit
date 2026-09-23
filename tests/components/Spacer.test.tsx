@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
+import { render } from '../render'
 import '@testing-library/jest-dom'
 import { CSSProperties } from 'react'
 import { Spacer } from '@components'
@@ -11,6 +12,7 @@ vi.mock('@hooks', async () => {
     useConfig: (component: string) => {
       if (component === 'spacer') {
         return {
+          domDiagnostics: true,
           base: 8,
           variant: 'line',
           debugging: 'hidden',
@@ -62,6 +64,13 @@ describe('Spacer Component', () => {
         '--bksp-w': '16px',
         '--bksp-h': '24px',
       })
+    })
+
+    it('retains explicit dimensions after the existing normalization', () => {
+      render(<Spacer width="100%" height="auto" />)
+      const spacer = screen.getByTestId('spacer')
+      expect(spacer.style.getPropertyValue('--bksp-w')).toBe('0px')
+      expect(spacer.style.getPropertyValue('--bksp-h')).toBe('8px')
     })
   })
 
@@ -115,7 +124,7 @@ describe('Spacer Component', () => {
           height={48}
           debugging="visible"
           indicatorNode={indicatorNode}
-        />,
+        />
       )
 
       expect(screen.getByText('width: 104px')).toBeInTheDocument()
@@ -132,7 +141,7 @@ describe('Spacer Component', () => {
           height={50}
           debugging="hidden"
           indicatorNode={indicatorNode}
-        />,
+        />
       )
 
       expect(screen.queryByText('width: 100px')).not.toBeInTheDocument()
@@ -150,11 +159,13 @@ describe('Spacer Component', () => {
     it('applies custom style properties', () => {
       render(
         <Spacer
-          style={{
-            '--custom-prop': '123px',
-            backgroundColor: 'blue',
-          } as CSSProperties}
-        />,
+          style={
+            {
+              '--custom-prop': '123px',
+              backgroundColor: 'blue',
+            } as CSSProperties
+          }
+        />
       )
       const spacer = screen.getByTestId('spacer')
       expect(spacer.getAttribute('style')).toContain('--custom-prop: 123px')

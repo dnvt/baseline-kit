@@ -6,14 +6,25 @@ import { fileURLToPath } from 'node:url'
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const bun = process.platform === 'win32' ? 'bun.exe' : 'bun'
+const browserProjects = (
+  process.env.BASELINE_BROWSER_PROJECTS ?? 'chromium,firefox,webkit'
+)
+  .split(',')
+  .map((project) => project.trim())
+  .filter(Boolean)
+const projectArgs = browserProjects.map((project) => `--project=${project}`)
 
 for (let attempt = 1; attempt <= 3; attempt += 1) {
   console.log(`\nBrowser regression pass ${attempt}/3`)
-  const result = spawnSync(bun, ['run', 'test:browser', '--', '--retries=0'], {
-    cwd: repoRoot,
-    env: process.env,
-    stdio: 'inherit',
-  })
+  const result = spawnSync(
+    bun,
+    ['run', 'test:browser', '--', ...projectArgs, '--retries=0'],
+    {
+      cwd: repoRoot,
+      env: process.env,
+      stdio: 'inherit',
+    }
+  )
 
   if (result.error) {
     console.error(result.error)

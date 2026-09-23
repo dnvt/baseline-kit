@@ -15,15 +15,19 @@ import { configuredClientEntry } from './shared'
 import { Spacer, type SpacerProps } from './Spacer'
 import {
   classNames,
+  compactStyle,
+  getDOMAttributes,
   createElementObserverBridge,
   getConfig,
   mergeStyles,
+  normalizeConfigSnapshot,
   queueNativeUpdate,
   resolveDebugging,
   type NativeComponent,
+  type NativeDOMAttributes,
 } from './shared'
 
-export type PadderProps = {
+export type PadderProps = NativeDOMAttributes & {
   width?: number | string
   height?: number | string
   debugging?: 'none' | 'hidden' | 'visible'
@@ -39,15 +43,12 @@ export type PadderProps = {
 
 type RuntimePadderProps = PadderProps & {
   __baselineConfig?: ConfigSchema
+  preserveContentHost?: boolean
 }
 
 const RuntimeSpacer = Spacer as unknown as NativeComponent<
   SpacerProps & { __baselineConfig?: ConfigSchema }
 >
-
-const fullRow = { gridColumn: '1 / -1' }
-const middleColumn = { gridRow: '2 / 3' }
-const center = { gridRow: '2 / 3', gridColumn: '2 / 3' }
 
 function PadderImpl(handle: Handle<RuntimePadderProps>) {
   let base = DEFAULT_CONFIG.base
@@ -66,8 +67,9 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
 
   return () => {
     const props = handle.props
-    const config =
+    const config = normalizeConfigSnapshot(
       props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
+    )
     const debug = resolveDebugging(props.debugging, config.padder.debugging)
     base = config.base
     initialPadding = parsePadding({
@@ -99,11 +101,30 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
             ...descriptor.classTokens.map((token) => `bk-${token}`),
             props.className
           )}
-          data-testid="padder"
+          data-testid={config.domDiagnostics ? 'padder' : undefined}
           mix={mix}
-          style={mergeStyles(descriptor.containerStyle, props.style)}
+          style={mergeStyles(
+            compactStyle(descriptor.containerStyle, {
+              '--bkpd-w': 'auto',
+              '--bkpd-h': 'auto',
+              '--bkpd-b': '8px',
+              '--bkpd-c': DEFAULT_CONFIG.padder.color,
+            }),
+            props.style
+          )}
+          {...getDOMAttributes(props)}
         >
-          {props.children}
+          {props.preserveContentHost ? (
+            <div
+              key="content"
+              className="bk-pad-content"
+              data-testid={config.domDiagnostics ? 'padder-content' : undefined}
+            >
+              {props.children}
+            </div>
+          ) : (
+            props.children
+          )}
         </div>
       )
     }
@@ -121,31 +142,30 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     )
 
     const children = [
-      padding.top >= 0 ? (
-        <div key="top" style={fullRow}>
+      padding.top > 0 ? (
+        <div key="top" className="bk-pad-top">
           {renderSpacer('100%', padding.top)}
         </div>
       ) : null,
-      padding.left >= 0 ? (
-        <div key="left" style={middleColumn}>
+      padding.left > 0 ? (
+        <div key="left" className="bk-pad-left">
           {renderSpacer(padding.left, '100%')}
         </div>
       ) : null,
       <div
         key="content"
         className="bk-pad-content"
-        data-testid="padder-content"
-        style={center}
+        data-testid={config.domDiagnostics ? 'padder-content' : undefined}
       >
         {props.children}
       </div>,
-      padding.right >= 0 ? (
-        <div key="right" style={middleColumn}>
+      padding.right > 0 ? (
+        <div key="right" className="bk-pad-right">
           {renderSpacer(padding.right, '100%')}
         </div>
       ) : null,
-      padding.bottom >= 0 ? (
-        <div key="bottom" style={fullRow}>
+      padding.bottom > 0 ? (
+        <div key="bottom" className="bk-pad-bottom">
           {renderSpacer('100%', padding.bottom)}
         </div>
       ) : null,
@@ -157,9 +177,18 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
           ...descriptor.classTokens.map((token) => `bk-${token}`),
           props.className
         )}
-        data-testid="padder"
+        data-testid={config.domDiagnostics ? 'padder' : undefined}
         mix={mix}
-        style={mergeStyles(descriptor.containerStyle, props.style)}
+        style={mergeStyles(
+          compactStyle(descriptor.containerStyle, {
+            '--bkpd-w': 'auto',
+            '--bkpd-h': 'auto',
+            '--bkpd-b': '8px',
+            '--bkpd-c': DEFAULT_CONFIG.padder.color,
+          }),
+          props.style
+        )}
+        {...getDOMAttributes(props)}
       >
         {children}
       </div>
@@ -167,8 +196,13 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
   }
 }
 
+const RuntimePadder = configuredClientEntry<RuntimePadderProps>(
+  `${import.meta.url}#Padder`,
+  PadderImpl
+) as unknown as NativeComponent<RuntimePadderProps>
+
 export const Padder: NativeComponent<PadderProps> =
-  configuredClientEntry<PadderProps>(
-    `${import.meta.url}#Padder`,
-    PadderImpl
-  ) as unknown as NativeComponent<PadderProps>
+  RuntimePadder as unknown as NativeComponent<PadderProps>
+
+/** @internal Used by Box to preserve its keyed content host across debug modes. */
+export const PadderForBox = RuntimePadder

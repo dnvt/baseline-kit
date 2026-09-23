@@ -1,4 +1,4 @@
-import { createBoxDescriptor } from '@baseline-kit/core'
+import { createBoxDescriptor, requiresSeparatePadder } from '@baseline-kit/core'
 
 const baseParams = {
   base: 8,
@@ -72,5 +72,43 @@ describe('createBoxDescriptor', () => {
   it('returns empty gridSpanStyle when no span props', () => {
     const { gridSpanStyle } = createBoxDescriptor(baseParams)
     expect(gridSpanStyle).toEqual({})
+  })
+})
+
+describe('requiresSeparatePadder', () => {
+  it.each(['width', 'height', 'minWidth', 'maxHeight', 'boxSizing'])(
+    'keeps the separate Padder for the caller layout style %s',
+    (property) => {
+      expect(requiresSeparatePadder({ style: { [property]: '100px' } })).toBe(
+        true
+      )
+    }
+  )
+
+  it('keeps the merged host for paint-only style overrides', () => {
+    expect(
+      requiresSeparatePadder({
+        style: { backgroundColor: 'red', opacity: 0.5 },
+      })
+    ).toBe(false)
+  })
+
+  it.each([120, '100%', '20rem'])(
+    'keeps the separate Padder when Box width is explicitly %s',
+    (width) => {
+      expect(requiresSeparatePadder({ width })).toBe(true)
+    }
+  )
+
+  it('keeps the merged host when Box width remains fit-content', () => {
+    expect(requiresSeparatePadder({ width: 'fit-content' })).toBe(false)
+  })
+
+  it('keeps debug visibility out of the structural Padder decision', () => {
+    expect(requiresSeparatePadder({})).toBe(false)
+  })
+
+  it('keeps the separate Padder when a caller class can change layout', () => {
+    expect(requiresSeparatePadder({ className: 'custom-layout' })).toBe(true)
   })
 })

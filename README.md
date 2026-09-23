@@ -131,6 +131,28 @@ Every visual component supports one of these modes:
 Baseline and Guide keep an empty host in both hidden modes. They are debug
 overlays marked `aria-hidden`; keep meaningful application content outside them.
 
+### DOM output and diagnostics
+
+React CSS Modules and the native Remix component styles supply host defaults,
+so ordinary renders can omit repeated default-valued inline styles. Baseline
+paints its rhythm through CSS, and zero-padding Box/Padder instances skip empty
+spacer elements. Library inspection attributes such as `data-testid`,
+`data-height`, variant markers, and row or column indexes are disabled by
+default in both React and Remix.
+
+Enable those diagnostic attributes for a scoped part of the tree when tests or
+debugging tools need them:
+
+```tsx
+<Config domDiagnostics>
+  <App />
+</Config>
+```
+
+Nested `Config` scopes can turn diagnostics on or off. Caller-provided
+`data-*`, `aria-*`, `id`, `title`, and role attributes continue to reach the
+component host, and caller `className` and `style` overrides remain effective.
+
 ## Components
 
 | Component  | Purpose                                                       |
@@ -327,6 +349,10 @@ For the release-equivalent browser gate, use three zero-retry passes:
 ```shell
 bun run test:browser:repeat
 ```
+
+On hosts without a local Firefox installation, set
+`BASELINE_BROWSER_PROJECTS=chromium,webkit` to run the available engines. The
+default remains Chromium, Firefox, and WebKit for CI and release verification.
 
 The release workflow runs that gate across Chromium, Firefox, and WebKit,
 builds the package, verifies the packed Remix fixture three times, and
