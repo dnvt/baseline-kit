@@ -1,5 +1,5 @@
 import { renderToString } from 'baseline-kit/remix/server'
-import { jsx } from 'remix/ui/jsx-runtime'
+import { jsx } from 'remix/component/jsx-runtime'
 import {
   Baseline,
   Box,

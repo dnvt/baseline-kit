@@ -96,9 +96,9 @@ export default defineConfig({
         ? [
             // The packed fixture owns its Remix installation. Vite aliases
             // bypass package exports, so point the public subpath imports at
-            // the installed distribution files explicitly. Keeping these
-            // files on the same Remix instance is required for the server
-            // renderer's Frame identity to match client hydration.
+            // the installed distribution files explicitly. Keeping server
+            // rendering and browser hydration on the same Remix instance is
+            // required for native Frame identity and registration.
             {
               find: /^@baseline-kit\/remix\/server$/,
               replacement: resolve(packageRoot, 'dist/remix-server.mjs'),
@@ -112,19 +112,36 @@ export default defineConfig({
               replacement: resolve(packageRoot, 'dist/index.mjs'),
             },
             {
-              find: /^remix\/ui\/jsx-runtime$/,
+              find: /^remix\/component\/jsx-runtime$/,
               replacement: resolve(
                 packageRoot,
                 '..',
                 'remix',
                 'dist',
-                'ui',
+                'component',
                 'jsx-runtime.js'
               ),
             },
             {
-              find: /^remix\/ui$/,
-              replacement: resolve(packageRoot, '..', 'remix', 'dist', 'ui.js'),
+              find: /^remix\/component\/server$/,
+              replacement: resolve(
+                packageRoot,
+                '..',
+                'remix',
+                'dist',
+                'component',
+                'server.js'
+              ),
+            },
+            {
+              find: /^remix\/component$/,
+              replacement: resolve(
+                packageRoot,
+                '..',
+                'remix',
+                'dist',
+                'component.js'
+              ),
             },
           ]
         : [

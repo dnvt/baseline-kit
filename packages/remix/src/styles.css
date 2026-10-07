@@ -94,6 +94,7 @@
   --bkbx-w: fit-content;
   --bkbx-h: fit-content;
   --bkbx-cl: var(--bk-box-color-line-theme, hsla(300, 60%, 40%, 0.6));
+  --bkbx-cf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
   --bkpd-b: 1px;
   --bkpd-c: var(--bk-padder-color-theme, hsla(270, 60%, 40%, 0.6));
   position: relative;
@@ -102,6 +103,20 @@
   grid-template-rows: auto 1fr auto;
   width: var(--bkbx-w);
   height: var(--bkbx-h);
+  text-box-trim: trim-both;
+  text-box-edge: ex alphabetic;
+}
+
+.bk-box.bk-box-semantic-host {
+  display: block;
+}
+
+.bk-box__grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
+  width: var(--bkbx-w, fit-content);
+  height: var(--bkbx-h, fit-content);
   text-box-trim: trim-both;
   text-box-edge: ex alphabetic;
 }
@@ -124,6 +139,14 @@
   position: absolute;
   inset: 0;
   border: 1px solid var(--bkpd-c);
+  background:
+    linear-gradient(var(--bkpd-c) 0 0) 0 var(--bkpd-is, 0px) / 100% 1px
+      no-repeat,
+    linear-gradient(var(--bkpd-c) 0 0) 0 calc(100% - var(--bkpd-ie, 0px)) / 100%
+      1px no-repeat,
+    linear-gradient(var(--bkbx-cf) 0 0) 0 0 / 100% var(--bkpd-is, 0px) no-repeat,
+    linear-gradient(var(--bkbx-cf) 0 0) 0 100% / 100% var(--bkpd-ie, 0px)
+      no-repeat;
   pointer-events: none;
   z-index: var(--bk-zi);
 }
@@ -179,6 +202,20 @@
 .bk-pad-content {
   grid-row: 2 / 3;
   grid-column: 2 / 3;
+  text-box-trim: trim-both;
+  text-box-edge: ex alphabetic;
+  --bkbx-initial-is: initial;
+  --bkbx-cf: initial;
+  --bkpd-is: initial;
+  --bkpd-ie: initial;
+}
+
+.bk-pad-content > :where(*) {
+  text-box-trim: trim-both;
+  text-box-edge: ex alphabetic;
+}
+
+.bk-pad-content > :where(figure, fieldset) > :where(figcaption, legend) {
   text-box-trim: trim-both;
   text-box-edge: ex alphabetic;
 }

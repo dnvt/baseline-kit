@@ -1,5 +1,5 @@
-import { clientEntry, type Handle, type RemixNode } from 'remix/ui'
-import { jsx } from 'remix/ui/jsx-runtime'
+import { clientEntry, type Handle, type RemixNode } from 'remix/component'
+import { jsx } from 'remix/component/jsx-runtime'
 
 export const Forwarder = clientEntry(
   `${import.meta.url}#Forwarder`,
