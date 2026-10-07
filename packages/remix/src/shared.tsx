@@ -1,4 +1,4 @@
-/** @jsxImportSource remix/ui */
+/** @jsxImportSource remix/component */
 
 import {
   clientEntry,
@@ -7,7 +7,7 @@ import {
   type Props,
   type RemixNode,
   type SerializableProps,
-} from 'remix/ui'
+} from 'remix/component'
 import { DEFAULT_CONFIG } from '@baseline-kit/core'
 import { Config } from './Config'
 import {

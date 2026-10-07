@@ -1,5 +1,5 @@
-import { Frame } from 'remix/ui'
-import { jsx } from 'remix/ui/jsx-runtime'
+import { Frame } from 'remix/component'
+import { jsx } from 'remix/component/jsx-runtime'
 import { Forwarder } from './remix-entries'
 import {
   Baseline,

@@ -16,7 +16,7 @@
     "@baseline-kit/dom": "workspace:*"
   },
   "peerDependencies": {
-    "remix": "3.0.0-rc.3"
+    "remix": "3.0.0"
   },
   "license": "MIT",
   "author": "Francois Denavaut"

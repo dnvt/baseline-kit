@@ -124,7 +124,7 @@ for (const [file, dts] of [
 }
 
 assert(
-  remixMjs.includes('clientEntry') && remixMjs.includes('remix/ui'),
+  remixMjs.includes('clientEntry') && remixMjs.includes('remix/component'),
   'remix.mjs must retain the Remix UI runtime boundary'
 )
 assert(

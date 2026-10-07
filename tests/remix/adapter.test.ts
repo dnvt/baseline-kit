@@ -1,5 +1,5 @@
-import { renderToString } from 'remix/ui/server'
-import { jsx } from 'remix/ui/jsx-runtime'
+import { renderToString } from 'remix/component/server'
+import { jsx } from 'remix/component/jsx-runtime'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   Baseline,

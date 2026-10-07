@@ -1,6 +1,6 @@
-/** @jsxImportSource remix/ui */
+/** @jsxImportSource remix/component */
 
-import { type Handle } from 'remix/ui'
+import { type Handle } from 'remix/component'
 import {
   DEFAULT_CONFIG,
   calculateSnappedSpacing,
@@ -33,7 +33,7 @@ import {
   type NativeComponent,
   type NativeDOMAttributes,
 } from './shared'
-import type { RemixNode } from 'remix/ui'
+import type { RemixNode } from 'remix/component'
 
 export type { SnapEdge, SnappingMode }
 

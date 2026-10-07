@@ -37,7 +37,7 @@
 
 ### Minor Changes
 
-- Restore semantic host selection on the native Remix Box and verify Remix 3.0.0-rc.3 compatibility in the SSR adapter.
+- Restore semantic host selection on the native Remix Box and update its SSR adapter for stable Remix 3.0.0.
 
 ## 6.0.0
 

@@ -19,14 +19,14 @@ UI runtime.
   content to the baseline grid.
 - **`Config`** — scoped defaults for the base unit, colors, variants, and
   debugging visibility.
-- **React-free Remix support** — native `remix/ui` components with SSR,
+- **React-free Remix support** — native `remix/component` components with SSR,
   hydration, measurement, and cleanup support.
 
 ## Requirements
 
 - React 19 for the default and `baseline-kit/guide` entries.
 - The React/core package declares Node.js 18+; native Remix requires
-  `remix@3.0.0-rc.3` and its Node.js 24.3+ runtime. Other Remix versions need
+  `remix@3.0.0` and its Node.js 24.3+ runtime. Other Remix versions need
   a compatibility check. Repository development requires Node.js 24.15+.
 - TypeScript 5.8+, 6, or 7 when using TypeScript.
 - A modern browser with CSS Grid and CSS custom property support.
@@ -226,21 +226,21 @@ Theme variables are grouped by component:
 See the [token template](https://github.com/dnvt/baseline-kit/blob/main/packages/react/src/components/styles/theme/tokens.css)
 for the complete list.
 
-## Remix 3 UI runtime
+## Remix 3 component runtime
 
-For Node SSR, use **`baseline-kit/remix/server`**, not `remix/ui/server`.
-The pinned Remix RC loses provider context while serializing component-valued
+For Node SSR, use **`baseline-kit/remix/server`**, not `remix/component/server`.
+Remix 3.0.0 loses provider context while serializing component-valued
 children. This server entry corrects that traversal in an isolated renderer,
 preserving nested `Config` scopes even when app or library entries hydrate late.
 It does not change files in `node_modules` or install process-wide module hooks.
 
 This is a Node-only compatibility entry, not an edge/browser renderer. It loads
-the installed `@remix-run/ui@0.10.0` server implementation from Remix 3.0.0-rc.3
+the installed `@remix-run/component` server implementation from Remix 3.0.0
 and verifies its exact SHA-256 before applying the correction in memory. Keep the installed Remix
 runtime files available in production; do not use a standalone bundle that
 omits them. Modified or upgraded implementations fail with an explicit error
 until compatibility is revalidated. Import `ImportMap` from this same entry if
-used; `Frame` and client components still come from `remix/ui`.
+used; `Frame` and client components still come from `remix/component`.
 
 ```tsx
 import { renderToStream, ImportMap } from 'baseline-kit/remix/server'
@@ -250,16 +250,16 @@ const stream = renderToStream(app, { resolveClientEntry })
 return new Response(stream, { headers: { 'Content-Type': 'text/html' } })
 ```
 
-The React-free adapter uses `remix/ui` and does not import React or React DOM:
+The React-free adapter uses `remix/component` and does not import React or React DOM:
 
 ```shell
-npm install baseline-kit remix@3.0.0-rc.3
+npm install baseline-kit remix@3.0.0
 ```
 
 ```tsx
 import 'baseline-kit/styles/remix'
 import { Baseline, Box, Config, Guide, Spacer } from 'baseline-kit/remix'
-import { jsx } from 'remix/ui/jsx-runtime'
+import { jsx } from 'remix/component/jsx-runtime'
 
 export function App() {
   return jsx(Config, {
@@ -284,7 +284,7 @@ and [asset-serving fixture](https://github.com/dnvt/baseline-kit/blob/main/tests
 Once the server supplies public URLs, load the actual module and named export:
 
 ```tsx
-import { run } from 'remix/ui'
+import { run } from 'remix/component'
 run({
   loadModule: async (moduleUrl, exportName) => {
     const module = await import(

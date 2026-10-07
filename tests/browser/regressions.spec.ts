@@ -1420,7 +1420,7 @@ test.describe('native Remix adapter', () => {
     await context.close()
   })
 
-  test('hydrates through remix/ui and keeps native sizing and color behavior', async ({
+  test('hydrates through remix/component and keeps native sizing and color behavior', async ({
     page,
   }) => {
     await page.goto('/remix.html')

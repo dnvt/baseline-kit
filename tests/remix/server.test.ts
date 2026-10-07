@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { clientEntry, Frame, type Handle, type RemixNode } from 'remix/ui'
-import { jsx } from 'remix/ui/jsx-runtime'
+import { clientEntry, Frame, type Handle, type RemixNode } from 'remix/component'
+import { jsx } from 'remix/component/jsx-runtime'
 import { Config, Spacer } from '@baseline-kit/remix'
 import { DEFAULT_CONFIG } from '@baseline-kit/core'
 import type { ConfigSchema } from '@baseline-kit/core'
@@ -9,9 +9,13 @@ import {
   renderToStream,
   renderToString,
 } from '@baseline-kit/remix/server'
-import { renderToString as upstreamRenderToString } from 'remix/ui/server'
+import {
+  ImportMap as upstreamImportMap,
+  renderToStream as upstreamRenderToStream,
+  renderToString as upstreamRenderToString,
+} from 'remix/component/server'
 
-describe('Node Remix SSR compatibility entry', () => {
+describe('Remix server entry', () => {
   it('defaults old Config snapshots without domDiagnostics to false', async () => {
     const legacySnapshot = { ...DEFAULT_CONFIG } as Partial<ConfigSchema>
     delete legacySnapshot.domDiagnostics
@@ -105,7 +109,9 @@ describe('Node Remix SSR compatibility entry', () => {
     expect(html).toContain('Frame resolved')
   })
 
-  it('does not replace the original renderer exports', () => {
+  it('keeps Remix component identities while isolating its server adapter', () => {
+    expect(ImportMap).not.toBe(upstreamImportMap)
+    expect(renderToStream).not.toBe(upstreamRenderToStream)
     expect(renderToString).not.toBe(upstreamRenderToString)
   })
 
@@ -121,7 +127,7 @@ describe('Node Remix SSR compatibility entry', () => {
     vi.resetModules()
     try {
       await expect(import('@baseline-kit/remix/server')).rejects.toThrow(
-        'requires the unmodified @remix-run/ui@0.10.0 renderer'
+        'requires the verified Remix 3.0.0 component server'
       )
     } finally {
       vi.doUnmock('node:fs/promises')
