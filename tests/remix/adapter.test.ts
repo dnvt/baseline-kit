@@ -79,6 +79,39 @@ describe('Remix adapter', () => {
     expect(html).toContain('data-testid="guide"')
   })
 
+  it('keeps a semantic host on Box while applying top-edge snapping', async () => {
+    const html = await renderToString(
+      jsx(Config, {
+        domDiagnostics: true,
+        children: jsx(Box, {
+          as: 'h2',
+          className: 'semantic-heading',
+          snapping: 'height',
+          snapEdge: 'top',
+          block: [8, 8],
+          children: 'Semantic heading',
+        }),
+      })
+    )
+    expect(html).toContain('<h2')
+    expect(html).toMatch(/<h2[^>]*class="[^"]*semantic-heading"/)
+    expect(html).toContain('data-bk-snap-state="seed"')
+    expect(html).toContain(
+      'grid-template-rows: var(--bkbx-initial-is, 8px) 1fr 8px'
+    )
+    expect(html).toContain('Semantic heading')
+
+    const label = await renderToString(
+      jsx(Box, {
+        as: 'label',
+        for: 'billing-email',
+        children: 'Billing email',
+      })
+    )
+    expect(label).toContain('<label')
+    expect(label).toContain('for="billing-email"')
+  })
+
   it('omits generated DOM diagnostics by default and preserves caller attributes', async () => {
     const defaultHtml = await renderToString(
       jsx(Spacer, {

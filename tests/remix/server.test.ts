@@ -121,7 +121,7 @@ describe('Node Remix SSR compatibility entry', () => {
     vi.resetModules()
     try {
       await expect(import('@baseline-kit/remix/server')).rejects.toThrow(
-        'requires the unmodified @remix-run/ui@0.9.0 renderer'
+        'requires the unmodified @remix-run/ui@0.10.0 renderer'
       )
     } finally {
       vi.doUnmock('node:fs/promises')

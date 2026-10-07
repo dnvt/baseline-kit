@@ -3,6 +3,7 @@ import { formatValue, createGridSpanStyles } from '../utils'
 export interface BoxDescriptorParams {
   base: number
   lineColor: string
+  flatColor?: string
   width?: number | string
   height?: number | string
   span?: number
@@ -61,7 +62,16 @@ export function requiresSeparatePadder(params: {
 export function createBoxDescriptor(
   params: BoxDescriptorParams
 ): BoxDescriptor {
-  const { lineColor, width, height, span, colSpan, rowSpan, isVisible } = params
+  const {
+    lineColor,
+    flatColor,
+    width,
+    height,
+    span,
+    colSpan,
+    rowSpan,
+    isVisible,
+  } = params
 
   const boxStyle: Record<string, string> = {
     ...(width !== undefined ? { '--bkbx-w': formatValue(width) } : {}),
@@ -70,6 +80,7 @@ export function createBoxDescriptor(
     // its resolved painted value directly so nested/sibling Config scopes do
     // not depend on a root-level custom property.
     '--bkbx-cl': lineColor,
+    ...(flatColor !== undefined ? { '--bkbx-cf': flatColor } : {}),
   }
 
   const gridSpanStyle = createGridSpanStyles(span, colSpan, rowSpan)

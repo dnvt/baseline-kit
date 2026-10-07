@@ -480,6 +480,27 @@ export function createRemixApp() {
           }),
         }),
       }),
+      jsx('section', {
+        id: 'remix-box-semantic-host',
+        children: [
+          jsx(Box, {
+            id: 'remix-semantic-heading',
+            as: 'h2',
+            snapping: 'height',
+            snapEdge: 'top',
+            debugging: 'visible',
+            block: [0, 0],
+            children: 'Semantic host heading',
+          }),
+          jsx(Box, {
+            id: 'remix-semantic-label',
+            as: 'label',
+            for: 'remix-semantic-input',
+            children: 'Semantic host label',
+          }),
+          jsx('input', { id: 'remix-semantic-input' }),
+        ],
+      }),
     ],
   })
 

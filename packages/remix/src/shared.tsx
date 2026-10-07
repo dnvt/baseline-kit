@@ -13,6 +13,7 @@ import { Config } from './Config'
 import {
   createMeasureObserver,
   createVirtualTracker,
+  type MeasureObserverOptions,
   type MeasureRect,
   type VirtualRange,
   type VirtualTrackerHandle,
@@ -240,7 +241,8 @@ export function configuredClientEntry<P extends object>(
  * effect or client-only bridge is needed.
  */
 export function createElementObserverBridge(
-  onMeasure: (rect: MeasureRect) => void
+  onMeasure: (rect: MeasureRect, element: Element) => void,
+  options?: MeasureObserverOptions
 ): ElementObserverBridge {
   let element: Element | null = null
   let measureHandle: ReturnType<typeof createMeasureObserver> | undefined
@@ -265,20 +267,24 @@ export function createElementObserverBridge(
     element = node
 
     if (typeof ResizeObserver !== 'undefined') {
-      measureHandle = createMeasureObserver(node, (rect) => {
-        hasNonZeroMeasurement = rect.width > 0 || rect.height > 0
-        // The initial measurement can run from the ref insert callback before
-        // Remix has committed the component. Deliver it on the next frame so
-        // the consumer can safely request an update.
-        const deliver = () => {
-          if (!signal.aborted) onMeasure(rect)
-        }
-        if (typeof requestAnimationFrame === 'function') {
-          requestAnimationFrame(deliver)
-        } else {
-          queueMicrotask(deliver)
-        }
-      })
+      measureHandle = createMeasureObserver(
+        node,
+        (rect) => {
+          hasNonZeroMeasurement = rect.width > 0 || rect.height > 0
+          // The initial measurement can run from the ref insert callback before
+          // Remix has committed the component. Deliver it on the next frame so
+          // the consumer can safely request an update.
+          const deliver = () => {
+            if (!signal.aborted && element === node) onMeasure(rect, node)
+          }
+          if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(deliver)
+          } else {
+            queueMicrotask(deliver)
+          }
+        },
+        options
+      )
 
       // A native client entry can hydrate descendants after this ref is
       // inserted. Re-measure on the next frame so an initial zero-sized host

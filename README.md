@@ -26,7 +26,7 @@ UI runtime.
 
 - React 19 for the default and `baseline-kit/guide` entries.
 - The React/core package declares Node.js 18+; native Remix requires
-  `remix@3.0.0-rc.2` and its Node.js 24.3+ runtime. Other Remix versions need
+  `remix@3.0.0-rc.3` and its Node.js 24.3+ runtime. Other Remix versions need
   a compatibility check. Repository development requires Node.js 24.15+.
 - TypeScript 5.8+, 6, or 7 when using TypeScript.
 - A modern browser with CSS Grid and CSS custom property support.
@@ -235,8 +235,8 @@ preserving nested `Config` scopes even when app or library entries hydrate late.
 It does not change files in `node_modules` or install process-wide module hooks.
 
 This is a Node-only compatibility entry, not an edge/browser renderer. It loads
-the installed `@remix-run/ui@0.9.0` server implementation and verifies its exact
-SHA-256 before applying the correction in memory. Keep the installed Remix
+the installed `@remix-run/ui@0.10.0` server implementation from Remix 3.0.0-rc.3
+and verifies its exact SHA-256 before applying the correction in memory. Keep the installed Remix
 runtime files available in production; do not use a standalone bundle that
 omits them. Modified or upgraded implementations fail with an explicit error
 until compatibility is revalidated. Import `ImportMap` from this same entry if
@@ -253,7 +253,7 @@ return new Response(stream, { headers: { 'Content-Type': 'text/html' } })
 The React-free adapter uses `remix/ui` and does not import React or React DOM:
 
 ```shell
-npm install baseline-kit remix@3.0.0-rc.2
+npm install baseline-kit remix@3.0.0-rc.3
 ```
 
 ```tsx

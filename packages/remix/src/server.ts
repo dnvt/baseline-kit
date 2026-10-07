@@ -1,5 +1,5 @@
 /**
- * Node-only SSR compatibility entry for remix 3.0.0-rc.2 / @remix-run/ui 0.9.0.
+ * Node-only SSR compatibility entry for remix 3.0.0-rc.3 / @remix-run/ui 0.10.0.
  * Loads a corrected, isolated instance of the upstream MIT-licensed renderer.
  * No installed files, module hooks, or upstream exports are modified.
  */
@@ -20,10 +20,10 @@ const source = await readFile(serverPath, 'utf8')
 // Fail closed on changed upstream internals. A version string alone does not
 // establish compatibility with the private imports this renderer uses.
 const expectedDigest =
-  '59aba1ebb68fac46a957cafd130611e1ed4fdfbec48239fde770876c7e0642bf'
+  '8320e25a08ace4b8d004c2696d0f2f11bc8d056bddc89ee9754768da0841de29'
 if (createHash('sha256').update(source).digest('hex') !== expectedDigest) {
   throw new Error(
-    'baseline-kit/remix/server requires the unmodified @remix-run/ui@0.9.0 renderer from remix@3.0.0-rc.2. Revalidate this compatibility entry before upgrading Remix.'
+    'baseline-kit/remix/server requires the unmodified @remix-run/ui@0.10.0 renderer from remix@3.0.0-rc.3. Revalidate this compatibility entry before upgrading Remix.'
   )
 }
 
