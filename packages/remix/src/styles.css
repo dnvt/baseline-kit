@@ -107,6 +107,20 @@
   text-box-edge: ex alphabetic;
 }
 
+.bk-box.bk-box-semantic-host {
+  display: block;
+}
+
+.bk-box__grid {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
+  width: var(--bkbx-w, fit-content);
+  height: var(--bkbx-h, fit-content);
+  text-box-trim: trim-both;
+  text-box-edge: ex alphabetic;
+}
+
 .bk-box.bk-v::after {
   content: '';
   position: absolute;

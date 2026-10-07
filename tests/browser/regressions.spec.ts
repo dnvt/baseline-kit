@@ -1850,9 +1850,11 @@ test.describe('native Remix adapter', () => {
 
     const heading = page.locator('#remix-semantic-heading')
     expect(await heading.evaluate((element) => element.tagName)).toBe('H2')
+    await expect(heading).toHaveCSS('display', 'flex')
+    const semanticGrid = heading.locator(':scope > .bk-box__grid')
     await expect
       .poll(() =>
-        heading.evaluate((element) =>
+        semanticGrid.evaluate((element) =>
           Number.parseFloat(
             getComputedStyle(element).gridTemplateRows.split(' ')[0]
           )
@@ -1861,7 +1863,7 @@ test.describe('native Remix adapter', () => {
       .toBeGreaterThan(0)
     await expect
       .poll(() =>
-        heading.evaluate((element) =>
+        semanticGrid.evaluate((element) =>
           Number.parseFloat(
             getComputedStyle(element).gridTemplateRows.split(' ')[0]
           )

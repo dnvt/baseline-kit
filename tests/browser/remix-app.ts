@@ -489,6 +489,7 @@ export function createRemixApp() {
             snapping: 'height',
             snapEdge: 'top',
             debugging: 'visible',
+            style: { display: 'flex' },
             block: [0, 0],
             children: 'Semantic host heading',
           }),

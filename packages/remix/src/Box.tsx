@@ -152,6 +152,10 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
           style: props.style,
           width: props.width,
         })
+    const observerMix =
+      typeof window === 'undefined' || props.ssrMode || snapping === 'none'
+        ? undefined
+        : observer.attach
     const descriptor = createBoxDescriptor({
       base: config.base,
       lineColor: config.box.colors.line,
@@ -170,6 +174,20 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
         ? `var(--bkbx-initial-is, ${padding.top}px)`
         : `${padding.top}px`
 
+    const debugPadStyle = debug.isShown
+      ? compactStyle(
+          {
+            '--bkpd-c': config.padder.color,
+            '--bkpd-is': topRow,
+            '--bkpd-ie': `${padding.bottom}px`,
+          },
+          {
+            '--bkpd-c': DEFAULT_CONFIG.padder.color,
+            '--bkpd-is': '0px',
+            '--bkpd-ie': '0px',
+          }
+        )
+      : undefined
     const mergedSpacingStyle = separatePadder
       ? undefined
       : compactStyle(
@@ -190,11 +208,15 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
             gridTemplateColumns: 'auto 1fr auto',
           }
         )
+    const outerSpacingStyle = semanticHost
+      ? debugPadStyle
+      : mergeStyles(mergedSpacingStyle, debugPadStyle)
 
     return (
       <Element
         className={classNames(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
+          semanticHost && 'bk-box-semantic-host',
           separatePadder && 'bk-box-separate-padder',
           debug.isShown && !separatePadder && 'bk-box-pad-visible',
           props.className
@@ -207,25 +229,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
             '--bkbx-cl': DEFAULT_CONFIG.box.colors.line,
             '--bkbx-cf': DEFAULT_CONFIG.box.colors.flat,
           }),
-          separatePadder
-            ? undefined
-            : mergeStyles(
-                mergedSpacingStyle,
-                debug.isShown
-                  ? compactStyle(
-                      {
-                        '--bkpd-c': config.padder.color,
-                        '--bkpd-is': topRow,
-                        '--bkpd-ie': `${padding.bottom}px`,
-                      },
-                      {
-                        '--bkpd-c': DEFAULT_CONFIG.padder.color,
-                        '--bkpd-is': '0px',
-                        '--bkpd-ie': '0px',
-                      }
-                    )
-                  : undefined
-              ),
+          separatePadder ? undefined : outerSpacingStyle,
           descriptor.gridSpanStyle,
           props.style
         )}
@@ -238,18 +242,29 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
               : 'seed'
             : undefined
         }
-        mix={
-          typeof window === 'undefined' || props.ssrMode || snapping === 'none'
-            ? undefined
-            : observer.attach
-        }
+        mix={semanticHost ? undefined : observerMix}
       >
         <RuntimeConfig
           __baselineConfig={config}
           base={1}
           spacer={{ variant: 'flat' }}
         >
-          {separatePadder ? (
+          {semanticHost ? (
+            <ContentElement
+              className="bk-box__grid"
+              mix={observerMix}
+              style={mergedSpacingStyle}
+            >
+              <ContentElement
+                className="bk-pad-content"
+                data-testid={
+                  config.domDiagnostics ? 'padder-content' : undefined
+                }
+              >
+                {props.children}
+              </ContentElement>
+            </ContentElement>
+          ) : separatePadder ? (
             <PadderForBox
               __baselineConfig={paddedConfig}
               block={[padding.top, padding.bottom]}

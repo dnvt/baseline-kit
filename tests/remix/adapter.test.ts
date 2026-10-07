@@ -86,6 +86,7 @@ describe('Remix adapter', () => {
         children: jsx(Box, {
           as: 'h2',
           className: 'semantic-heading',
+          style: { display: 'flex' },
           snapping: 'height',
           snapEdge: 'top',
           block: [8, 8],
@@ -95,7 +96,9 @@ describe('Remix adapter', () => {
     )
     expect(html).toContain('<h2')
     expect(html).toMatch(/<h2[^>]*class="[^"]*semantic-heading"/)
+    expect(html).toMatch(/<h2[^>]*style="[^"]*display: flex/u)
     expect(html).toContain('data-bk-snap-state="seed"')
+    expect(html).toContain('class="bk-box__grid"')
     expect(html).toContain(
       'grid-template-rows: var(--bkbx-initial-is, 8px) 1fr 8px'
     )
