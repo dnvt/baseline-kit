@@ -1,6 +1,6 @@
-/** @jsxImportSource remix/ui */
+/** @jsxImportSource remix/component */
 
-import { type Handle, type RemixNode } from 'remix/ui'
+import { type Handle, type RemixNode } from 'remix/component'
 import {
   DEFAULT_CONFIG,
   canCompactBaselinePaint,

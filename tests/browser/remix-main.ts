@@ -1,5 +1,5 @@
-import { run } from 'remix/ui'
-import { jsx } from 'remix/ui/jsx-runtime'
+import { run } from 'remix/component'
+import { jsx } from 'remix/component/jsx-runtime'
 import { Baseline, Box, Config, Spacer } from '@baseline-kit/remix'
 import { createRemixApp } from './remix-app'
 

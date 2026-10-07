@@ -1,5 +1,5 @@
-import { Frame } from 'remix/ui'
-import { jsx } from 'remix/ui/jsx-runtime'
+import { Frame } from 'remix/component'
+import { jsx } from 'remix/component/jsx-runtime'
 import { Forwarder } from './remix-entries'
 import {
   Baseline,
@@ -479,6 +479,28 @@ export function createRemixApp() {
             children: 'Native top snap consumer',
           }),
         }),
+      }),
+      jsx('section', {
+        id: 'remix-box-semantic-host',
+        children: [
+          jsx(Box, {
+            id: 'remix-semantic-heading',
+            as: 'h2',
+            snapping: 'height',
+            snapEdge: 'top',
+            debugging: 'visible',
+            style: { display: 'flex' },
+            block: [0, 0],
+            children: 'Semantic host heading',
+          }),
+          jsx(Box, {
+            id: 'remix-semantic-label',
+            as: 'label',
+            for: 'remix-semantic-input',
+            children: 'Semantic host label',
+          }),
+          jsx('input', { id: 'remix-semantic-input' }),
+        ],
       }),
     ],
   })

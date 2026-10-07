@@ -1420,7 +1420,7 @@ test.describe('native Remix adapter', () => {
     await context.close()
   })
 
-  test('hydrates through remix/ui and keeps native sizing and color behavior', async ({
+  test('hydrates through remix/component and keeps native sizing and color behavior', async ({
     page,
   }) => {
     await page.goto('/remix.html')
@@ -1834,7 +1834,46 @@ test.describe('native Remix adapter', () => {
         )
       )
       .toBe('6px')
+    await expect(box).toHaveAttribute('data-bk-snap-state', 'measured')
     await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(0)
+  })
+
+  test('native Box preserves semantic hosts and applies top-edge snapping', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    const heading = page.locator('#remix-semantic-heading')
+    expect(await heading.evaluate((element) => element.tagName)).toBe('H2')
+    await expect(heading).toHaveCSS('display', 'flex')
+    const semanticGrid = heading.locator(':scope > .bk-box__grid')
+    await expect
+      .poll(() =>
+        semanticGrid.evaluate((element) =>
+          Number.parseFloat(
+            getComputedStyle(element).gridTemplateRows.split(' ')[0]
+          )
+        )
+      )
+      .toBeGreaterThan(0)
+    await expect
+      .poll(() =>
+        semanticGrid.evaluate((element) =>
+          Number.parseFloat(
+            getComputedStyle(element).gridTemplateRows.split(' ')[0]
+          )
+        )
+      )
+      .toBeLessThan(8)
+
+    const label = page.locator('#remix-semantic-label')
+    expect(await label.evaluate((element) => element.tagName)).toBe('LABEL')
+    await expect(label).toHaveAttribute('for', 'remix-semantic-input')
   })
 
   test('native rows respond to a containing-block resize', async ({ page }) => {

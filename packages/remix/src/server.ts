@@ -1,29 +1,33 @@
 /**
- * Node-only SSR compatibility entry for remix 3.0.0-rc.2 / @remix-run/ui 0.9.0.
- * Loads a corrected, isolated instance of the upstream MIT-licensed renderer.
- * No installed files, module hooks, or upstream exports are modified.
+ * Node-only Remix 3 server compatibility entry.
+ *
+ * Remix 3.0.0 loses the current parent VNode while serializing a component's
+ * return value. That drops nested provider context inside client-entry props.
+ * Keep a small, exact-source patch isolated to this Node entry; the public
+ * component runtime and all client/server component identities stay shared.
  */
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { pathToFileURL } from 'node:url'
-import type * as RemixServer from 'remix/ui/server'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import type * as RemixServer from 'remix/component/server'
 
 const requireFromKit = createRequire(import.meta.url)
 const requireFromRemix = createRequire(
-  requireFromKit.resolve('remix/ui/server')
+  requireFromKit.resolve('remix/package.json')
 )
-const serverPath = requireFromRemix.resolve('@remix-run/ui/server')
-const serverURL = pathToFileURL(serverPath)
-const source = await readFile(serverPath, 'utf8')
+const serverEntry = requireFromRemix.resolve('@remix-run/component/server')
+const serverURL = new URL('./server/stream.js', pathToFileURL(serverEntry))
+const sourcePath = fileURLToPath(serverURL)
+const source = await readFile(sourcePath, 'utf8')
 
-// Fail closed on changed upstream internals. A version string alone does not
-// establish compatibility with the private imports this renderer uses.
+// Fail closed when Remix's private server implementation changes. The
+// workspace pins remix@3.0.0; revalidate this small patch on any upgrade.
 const expectedDigest =
-  '59aba1ebb68fac46a957cafd130611e1ed4fdfbec48239fde770876c7e0642bf'
+  'e68ea36b071142a01a7733862b21f50f4973ec133a6890576e8356ad3f1159d1'
 if (createHash('sha256').update(source).digest('hex') !== expectedDigest) {
   throw new Error(
-    'baseline-kit/remix/server requires the unmodified @remix-run/ui@0.9.0 renderer from remix@3.0.0-rc.2. Revalidate this compatibility entry before upgrading Remix.'
+    'baseline-kit/remix/server requires the verified Remix 3.0.0 component server. Revalidate this compatibility entry before upgrading Remix.'
   )
 }
 
@@ -37,9 +41,14 @@ const after = `            let [renderedNode] = handle.render(props);
             } finally {
                 context.parentVNode = previousParent;
             }`
+if (!source.includes(before)) {
+  throw new Error(
+    'baseline-kit/remix/server could not locate the verified Remix serialization boundary.'
+  )
+}
 
-// Keep all runtime helpers, Frame identity and mixin state in the application's
-// original Remix installation. Only the server renderer instance is corrected.
+// Reuse Remix's own component runtime modules so Frame and client-entry
+// identities remain shared with the application.
 const correctedSource = source
   .replace(before, after)
   .replace(
@@ -47,20 +56,19 @@ const correctedSource = source
     (_match, _quote, specifier: string) =>
       `from ${JSON.stringify(new URL(specifier, serverURL).href)}`
   )
-const moduleURL = `data:text/javascript;base64,${Buffer.from(`${correctedSource}\n//# sourceURL=baseline-kit-remix-server-0.9.0.mjs`).toString('base64')}`
+const moduleURL = `data:text/javascript;base64,${Buffer.from(`${correctedSource}\n//# sourceURL=baseline-kit-remix-server-3.0.0.mjs`).toString('base64')}`
 const renderer = (await import(
   /* @vite-ignore */ moduleURL
-)) as typeof import('remix/ui/server')
+)) as typeof import('remix/component/server')
 
 export const renderToStream: typeof RemixServer.renderToStream =
   renderer.renderToStream
 export const renderToString: typeof RemixServer.renderToString =
   renderer.renderToString
-// ImportMap must come from the same renderer: upstream recognizes it by identity.
 export const ImportMap: typeof RemixServer.ImportMap = renderer.ImportMap
 export type {
-  RenderToStreamOptions,
-  ResolveFrameContext,
   ImportMapData,
   ImportMapProps,
-} from 'remix/ui/server'
+  RenderToStreamOptions,
+  ResolveFrameContext,
+} from 'remix/component/server'
