@@ -4,57 +4,30 @@
 ![npm version](https://img.shields.io/npm/v/baseline-kit)
 ![License](https://img.shields.io/github/license/dnvt/baseline-kit)
 
-Baseline Kit is a development overlay and spacing toolkit for React 19. It
-provides baseline and column grids, spacing primitives, scoped configuration,
-and themeable debug visuals. It also ships a React-free adapter for the Remix 3
-UI runtime.
+Baseline Kit adds baseline and column grids, spacing primitives, and scoped
+debug styles to React 19 apps. A React-free adapter is available for Remix 3.
 
 ![Demo visual](https://raw.githubusercontent.com/dnvt/baseline-kit/main/kit.png)
 
-## What it includes
+## Install
 
-- **`Baseline`** — a horizontal baseline-grid overlay.
-- **`Guide`** — a column-grid overlay with line, pattern, fixed, and auto modes.
-- **`Box`**, **`Padder`**, and **`Spacer`** — spacing primitives that can align
-  content to the baseline grid.
-- **`Config`** — scoped defaults for the base unit, colors, variants, and
-  debugging visibility.
-- **React-free Remix support** — native `remix/component` components with SSR,
-  hydration, measurement, and cleanup support.
-
-## Requirements
-
-- React 19 for the default and `baseline-kit/guide` entries.
-- The React/core package declares Node.js 18+; native Remix requires
-  `remix@3.0.0` and its Node.js 24.3+ runtime. Other Remix versions need
-  a compatibility check. Repository development requires Node.js 24.15+.
-- TypeScript 5.8+, 6, or 7 when using TypeScript.
-- A modern browser with CSS Grid and CSS custom property support.
-
-## Installation
+For React:
 
 ```shell
 npm install baseline-kit react@19 react-dom@19
-# or
-bun add baseline-kit react@19 react-dom@19
 ```
 
-Choose the smallest entry point that matches the application:
+For the React-free Remix 3 adapter:
 
-| Use case                        | JavaScript entry     | CSS entry                                           |
-| ------------------------------- | -------------------- | --------------------------------------------------- |
-| React components                | `baseline-kit`       | `baseline-kit/styles` plus `baseline-kit/theme`     |
-| React guide only                | `baseline-kit/guide` | `baseline-kit/styles/guide`                         |
-| React-free Remix 3 UI           | `baseline-kit/remix` | `baseline-kit/styles/remix`                         |
-| Framework-independent utilities | `baseline-kit/core`  | None                                                |
-| All React styles and theme      | —                    | `baseline-kit/styles/full`                          |
-| Optional reset                  | —                    | `baseline-kit/reset` or `baseline-kit/styles/reset` |
+```shell
+npm install baseline-kit remix@3.0.0
+```
 
-Baseline Kit includes its own TypeScript declarations. React and Remix remain
-optional peer dependencies, so an application only installs the runtime it
-uses.
+Baseline Kit includes TypeScript declarations. React and Remix are optional
+peer dependencies. React use requires Node.js 18+; Remix 3.0.0 requires
+Node.js 24.3+. TypeScript 5.8, 6, or 7 is supported.
 
-## Quick start
+## React quick start
 
 ```tsx
 import 'baseline-kit/styles'
@@ -63,17 +36,12 @@ import { Baseline, Box, Config, Guide } from 'baseline-kit'
 
 export function App() {
   return (
-    <Config
-      base={8}
-      baseline={{ debugging: 'visible' }}
-      guide={{ debugging: 'visible' }}
-      box={{ debugging: 'visible' }}
-    >
-      <main style={{ position: 'relative', height: '100vh' }}>
-        <Baseline height="100%" />
-        <Guide variant="fixed" columns={12} width="100%" />
-        <Box block={[16, 24]} snapping="height">
-          Content aligned to the grid
+    <Config base={8}>
+      <main className="layout">
+        <Baseline height="100%" debugging="visible" />
+        <Guide variant="fixed" columns={12} debugging="visible" />
+        <Box snapping="height" snapEdge="top">
+          <p className="copy">Text aligned to the 8px baseline grid.</p>
         </Box>
       </main>
     </Config>
@@ -81,288 +49,123 @@ export function App() {
 }
 ```
 
-## Core concepts
+```css
+.layout {
+  position: relative;
+  height: 100vh;
+}
 
-### Base unit and sizing
+.copy {
+  margin: 0;
+  text-box-trim: trim-both;
+  text-box-edge: ex alphabetic;
+}
+```
 
-`base` is the baseline interval in CSS pixels; it defaults to `8`. Numeric
-spacing values are CSS pixel values, not multipliers. CSS dimensions such as
-`100vh`, `50%`, `1rem`, and `calc(...)` on Baseline dimensions remain relative
-and are resolved by the browser. Overlays are absolutely positioned: give their
-parent `position: relative` and a definite height for percentage heights.
+### Text on the baseline grid
+
+Use a `Box` around each text block with `snapping="height"` and
+`snapEdge="top"`. Baseline Kit uses `text-box-trim: trim-both` and
+`text-box-edge: ex alphabetic` on `Box` and `Padder`. These trim the text box
+from the x-height to the alphabetic baseline. The top snap adds any rounding
+above the text, keeping its final baseline on the grid when the Box starts on a
+grid line and its block-end padding is a multiple of the base (8px by default).
+
+Text-box properties do not inherit. Baseline Kit applies them to text directly
+inside its wrappers; apply them to nested paragraphs, headings, or other text
+containers too. For multiline text, set `line-height` to a multiple of the base
+if every line baseline must align. Browsers without text-box support keep their
+normal text metrics. See the
+[text-box-edge reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-edge)
+for details and compatibility.
+
+## Spacing and snapping
+
+The baseline interval is `8px` by default. Set it with `Config base={...}`.
+Numeric spacing values are CSS pixels, not multiples of the base. For example:
 
 ```tsx
-<Config base={8}>
-  <Padder block={[16, 24]} inline={{ start: 8, end: 16 }}>
-    Content
-  </Padder>
-</Config>
+<Padder block={[16, 24]} inline={{ start: 8, end: 16 }}>
+  Content
+</Padder>
 ```
 
-Spacing props accept the following shapes:
+Spacing props accept CSS-like values: `padding={16}` sets all sides,
+`padding={[8, 16]}` sets block and inline pairs, `block={[16, 24]}` sets
+block-start/end, and `inline={{ start: 8, end: 16 }}` sets inline-start/end.
+Three- and four-value `padding` arrays follow CSS shorthand.
 
-- `padding={16}` — all four sides.
-- `padding={[8, 16]}` — 8px top/bottom and 16px left/right; three- and
-  four-value arrays follow CSS padding shorthand.
-- `block={[16, 24]}` — block-start and block-end.
-- `inline={{ start: 8, end: 16 }}` — inline-start and inline-end.
+`Box` defaults to `snapping="clamp"`. Use `height` to round its measured height
+up to the next base interval; the correction goes to the bottom by default.
+Set `snapEdge="top"` to place it above the text instead. `snapping="none"`
+keeps explicit spacing. Snapping runs after the first nonzero measurement, not
+continuously on resize. `Padder` uses height snapping with bottom correction;
+set `ssrMode` to keep its explicit padding without measurement.
 
-### Grid snapping
+## Components and styles
 
-`Box` defaults to `snapping="clamp"`. `height` adds spacing to round the measured
-height up to the next base interval; it adds that correction to the bottom by
-default. Use `snapEdge="top"` with `snapping="height"` when the text's trimmed
-alphabetic edge should stay anchored while the top padding absorbs the
-correction. `snapEdge="bottom"` is the explicit equivalent of the default.
-`clamp` reduces the top and bottom spacing modulo the base, and
-`snapping="none"` keeps explicit spacing. Snapping happens once after the first
-nonzero measurement, not continuously on resize. `Padder` uses height snapping
-with bottom correction in both adapters. Set `ssrMode` on Padder to retain
-explicit padding without applying its measured snap.
+| Component | Purpose |
+| --- | --- |
+| `Baseline` | Horizontal baseline-grid overlay. |
+| `Guide` | Responsive or fixed column-grid overlay. |
+| `Box` | Wraps content and can snap its height. |
+| `Padder` | Adds baseline-aware padding. |
+| `Spacer` | Adds a fixed-size spacer. |
+| `Config` | Sets scoped base, colors, variants, and debugging defaults. |
 
-### Debugging modes
+Import only the JavaScript and CSS entries the app uses:
 
-Every visual component supports one of these modes:
+| Use | JavaScript | CSS |
+| --- | --- | --- |
+| React components | `baseline-kit` | `baseline-kit/styles` and `baseline-kit/theme` |
+| React Guide only | `baseline-kit/guide` | `baseline-kit/styles/guide` |
+| Remix 3 components | `baseline-kit/remix` | `baseline-kit/styles/remix` |
+| Core utilities | `baseline-kit/core` | None |
 
-- `visible` — render and show the debug visual.
-- `hidden` — hide debug paint while preserving content and spacing.
-- `none` — disable debug paint and use ordinary padding instead of debug spacers.
+`baseline-kit/styles/full` combines the React styles and theme. The default
+theme follows `prefers-color-scheme`; use `baseline-kit/theme/default` or
+`baseline-kit/theme/dark` to choose one. For custom colors, use `Config` or
+copy the [theme token template](https://github.com/dnvt/baseline-kit/blob/main/packages/react/src/components/styles/theme/tokens.css).
+An optional reset is available from `baseline-kit/reset` or
+`baseline-kit/styles/reset`.
 
-Baseline and Guide keep an empty host in both hidden modes. They are debug
-overlays marked `aria-hidden`; keep meaningful application content outside them.
+Debugging can be `visible`, `hidden`, or `none`: show debug paint, hide paint
+while preserving layout, or disable debug elements. Baseline and Guide are
+`aria-hidden` overlays; keep meaningful content outside them. Diagnostic
+attributes are omitted by default; enable them for a subtree with
+`<Config domDiagnostics>`.
 
-### DOM output and diagnostics
+## Remix 3
 
-React CSS Modules and the native Remix component styles supply host defaults,
-so ordinary renders can omit repeated default-valued inline styles. Baseline
-paints its rhythm through CSS, and zero-padding Box/Padder instances skip empty
-spacer elements. Library inspection attributes such as `data-testid`,
-`data-height`, variant markers, and row or column indexes are disabled by
-default in both React and Remix.
-
-Enable those diagnostic attributes for a scoped part of the tree when tests or
-debugging tools need them:
-
-```tsx
-<Config domDiagnostics>
-  <App />
-</Config>
-```
-
-Nested `Config` scopes can turn diagnostics on or off. Caller-provided
-`data-*`, `aria-*`, `id`, `title`, and role attributes continue to reach the
-component host, and caller `className` and `style` overrides remain effective.
-
-## Components
-
-| Component  | Purpose                                                       |
-| ---------- | ------------------------------------------------------------- |
-| `Config`   | Supplies scoped base, variant, color, and debugging defaults. |
-| `Baseline` | Renders horizontal baseline rows.                             |
-| `Guide`    | Renders a responsive or fixed column guide.                   |
-| `Box`      | Wraps content and optionally snaps its measured height.       |
-| `Padder`   | Adds baseline-aware padding and optional measurement spacers. |
-| `Spacer`   | Adds a fixed-size spacer with an optional debug indicator.    |
-
-`Box` and `Padder` use `text-box-trim: trim-both` and
-`text-box-edge: ex alphabetic` where the browser supports them, keeping text
-edges aligned to the x-height and alphabetic baseline. Unsupported browsers
-retain normal text layout. Trimming does not remove child margins or change a
-nested heading's own line-box rules.
-For nested text, set the same properties on its text container. See the
-[CSS text-box-edge reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-edge)
-for browser compatibility and alternative metrics such as `ex alphabetic`.
-
-## Styles and themes
-
-Import styles explicitly so applications control their CSS footprint:
-
-```tsx
-// React component styles and the default light/dark theme
-import 'baseline-kit/styles'
-import 'baseline-kit/theme'
-
-// Or one combined file
-import 'baseline-kit/styles/full'
-
-// Guide-only styles
-import 'baseline-kit/styles/guide'
-
-// Optional reset
-import 'baseline-kit/reset'
-```
-
-The built-in theme follows `prefers-color-scheme`. For a fixed theme, import
-`baseline-kit/theme/default` or `baseline-kit/theme/dark`. For a custom theme,
-copy the token template from `baseline-kit/theme/tokens` and define the CSS
-variables your application needs.
-
-Use `Config` for scoped overrides:
-
-```tsx
-<Config
-  base={8}
-  baseline={{
-    colors: {
-      line: 'rgba(255, 0, 0, 0.1)',
-      flat: 'rgba(255, 0, 0, 0.05)',
-    },
-  }}
->
-  {children}
-</Config>
-```
-
-Theme variables are grouped by component:
-
-| Component | Variable prefix         |
-| --------- | ----------------------- |
-| Baseline  | `--bk-baseline-color-*` |
-| Guide     | `--bk-guide-color-*`    |
-| Box       | `--bk-box-color-*`      |
-| Spacer    | `--bk-spacer-color-*`   |
-| Padder    | `--bk-padder-color-*`   |
-
-See the [token template](https://github.com/dnvt/baseline-kit/blob/main/packages/react/src/components/styles/theme/tokens.css)
-for the complete list.
-
-## Remix 3 component runtime
-
-For Node SSR, use **`baseline-kit/remix/server`**, not `remix/component/server`.
-Remix 3.0.0 loses provider context while serializing component-valued
-children. This server entry corrects that traversal in an isolated renderer,
-preserving nested `Config` scopes even when app or library entries hydrate late.
-It does not change files in `node_modules` or install process-wide module hooks.
-
-This is a Node-only compatibility entry, not an edge/browser renderer. It loads
-the installed `@remix-run/component` server implementation from Remix 3.0.0
-and verifies its exact SHA-256 before applying the correction in memory. Keep the installed Remix
-runtime files available in production; do not use a standalone bundle that
-omits them. Modified or upgraded implementations fail with an explicit error
-until compatibility is revalidated. Import `ImportMap` from this same entry if
-used; `Frame` and client components still come from `remix/component`.
-
-```tsx
-import { renderToStream, ImportMap } from 'baseline-kit/remix/server'
-
-// If app contains an ImportMap component, use the export above.
-const stream = renderToStream(app, { resolveClientEntry })
-return new Response(stream, { headers: { 'Content-Type': 'text/html' } })
-```
-
-The React-free adapter uses `remix/component` and does not import React or React DOM:
-
-```shell
-npm install baseline-kit remix@3.0.0
-```
+The adapter uses `remix/component` and does not import React or React DOM:
 
 ```tsx
 import 'baseline-kit/styles/remix'
-import { Baseline, Box, Config, Guide, Spacer } from 'baseline-kit/remix'
+import { Box, Config } from 'baseline-kit/remix'
 import { jsx } from 'remix/component/jsx-runtime'
 
 export function App() {
   return jsx(Config, {
     base: 8,
-    baseline: { debugging: 'visible' },
-    children: [
-      jsx(Baseline, { height: '100vh' }),
-      jsx(Guide, { variant: 'fixed', columns: 12 }),
-      jsx(Box, { children: 'Native Remix content' }),
-      jsx(Spacer, { height: 16, variant: 'flat' }),
-    ],
+    children: jsx(Box, { children: 'Native Remix content' }),
   })
 }
 ```
 
-The `resolveClientEntry` callback needs an app-owned mapping from each entry to a **browser-served
-JavaScript asset**. A server filesystem URL or bare npm specifier is not a
-browser asset. The mapping must handle the app's own client entries as well.
-See the runnable [server resolver](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/remix-ssr.ts)
+For Node.js server rendering, use `baseline-kit/remix/server` instead of
+`remix/component/server`. Remix 3.0.0 loses provider context while serializing
+component-valued children; the Baseline Kit entry fixes that traversal in an
+isolated renderer and checks the installed runtime before using it. This is a
+Node-only entry, so keep the installed Remix runtime files in production. Its
+`resolveClientEntry` callback must map entries, including app entries, to
+browser-served JavaScript assets. Import `ImportMap` from this server entry
+when needed; `Frame` and client components still come from `remix/component`.
+
+See the [server resolver example](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/remix-ssr.ts)
 and [asset-serving fixture](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/vite.config.ts).
 
-Once the server supplies public URLs, load the actual module and named export:
+## Contributing and license
 
-```tsx
-import { run } from 'remix/component'
-run({
-  loadModule: async (moduleUrl, exportName) => {
-    const module = await import(
-      /* @vite-ignore */ new URL(moduleUrl, document.baseURI).href
-    )
-    return module[exportName]
-  },
-})
-```
-
-Callbacks such as `indicatorNode` must be created inside the hydrated module;
-functions cannot cross an SSR client-entry boundary. Keep `Config` and its
-consumers within an app-owned hydrated component for interactive config updates.
-This adapter is separate from React-based Remix/React Router applications,
-which use the regular React entry.
-
-In a Vite-based React application with a `links()` function, import the CSS as a
-URL; a bare package specifier in `href` will not resolve:
-
-```tsx
-import stylesheetUrl from 'baseline-kit/styles?url'
-
-export const links = () => [{ rel: 'stylesheet', href: stylesheetUrl }]
-```
-
-See [Vite's explicit URL imports](https://vite.dev/guide/assets.html#explicit-url-imports).
-
-## Server-side rendering
-
-React Baseline/Guide begin with a hidden fallback, then measure and paint after
-hydration. Native Remix uses client-entry SSR and hydration through the resolver
-above. `ssrMode` on Baseline/Guide **keeps the hidden fallback permanently** while
-true: it disables client measurement and rows/columns. Leave it false (the
-default) for visible, interactive overlays:
-
-```tsx
-<Baseline height="100vh" ssrMode debugging="visible" />
-```
-
-## Development
-
-```shell
-git clone https://github.com/dnvt/baseline-kit.git
-cd baseline-kit
-bun install --frozen-lockfile
-
-bun run typecheck
-bun run lint:check
-bun run test:unit
-bun run build
-bun run test:integration:remix
-```
-
-Run the Chromium and WebKit browser regressions locally with:
-
-```shell
-bun run test:browser -- --project=chromium --project=webkit
-```
-
-For the release-equivalent browser gate, use three zero-retry passes:
-
-```shell
-bun run test:browser:repeat
-```
-
-On hosts without a local Firefox installation, set
-`BASELINE_BROWSER_PROJECTS=chromium,webkit` to run the available engines. The
-default remains Chromium, Firefox, and WebKit for CI and release verification.
-
-The release workflow runs that gate across Chromium, Firefox, and WebKit,
-builds the package, verifies the packed Remix fixture three times, and
-publishes through Changesets after all verification gates pass.
-
-## Contributing
-
-See [CONTRIBUTING.md](https://github.com/dnvt/baseline-kit/blob/main/CONTRIBUTING.md) for contribution and pull-request
-guidelines.
-
-## License
-
-MIT © [François Denavaut](https://github.com/dnvt)
+See [CONTRIBUTING.md](https://github.com/dnvt/baseline-kit/blob/main/CONTRIBUTING.md)
+for contribution guidelines. Baseline Kit is MIT licensed. ©
+[François Denavaut](https://github.com/dnvt).
