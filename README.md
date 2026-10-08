@@ -6,10 +6,13 @@
 
 Baseline Kit grew from my [Padded Grid article](https://medium.com/design-bootcamp/the-padded-grid-a-designers-hack-to-achieve-baseline-fit-fc40d022bc84),
 which explores aligning text baselines and component bounds to an 8px grid.
-Baseline Kit turns that idea into a reusable pattern: wrap text in `Box` and
-use height snapping to keep its baseline on the grid. `Baseline` and `Guide`
-visualize the grid; `Padder`, `Spacer`, and `Config` handle spacing and
-defaults. A React-free adapter is available for Remix 3.
+Baseline Kit turns that idea into a reusable pattern: wrap text in `Box` with
+`snapping="height"` and `snapEdge="top"`. Height snapping rounds the Box up to
+the next grid interval; top snapping puts the correction above the text. The
+final baseline stays on the grid when the Box begins on a grid line and its
+bottom padding is a multiple of the base. `Baseline` and `Guide` visualize the
+grid; `Padder`, `Spacer`, and `Config` handle spacing and defaults. A
+React-free adapter is available for Remix 3.
 
 ![Demo visual](https://raw.githubusercontent.com/dnvt/baseline-kit/main/kit.png)
 
