@@ -73,10 +73,11 @@ export function App() {
 
 Use a `Box` around each text block with `snapping="height"` and
 `snapEdge="top"`. Baseline Kit uses `text-box-trim: trim-both` and
-`text-box-edge: ex alphabetic` on `Box` and `Padder`. These trim the text box
-from the x-height to the alphabetic baseline. The top snap adds any rounding
-above the text, keeping its final baseline on the grid when the Box starts on a
-grid line and its block-end padding is a multiple of the base (8px by default).
+`text-box-edge: ex alphabetic` on `Box` and `Padder`. This trims the text
+block from the x-height to the alphabetic baseline, so the end of its measured
+text height is exactly at the baseline. `snapEdge="top"` puts any height
+correction above the text. With a grid-aligned Box start and block-end padding
+that is a multiple of the base (8px by default), the baseline stays on the grid.
 
 Text-box properties do not inherit. Baseline Kit applies them to text directly
 inside its wrappers; apply them to nested paragraphs, headings, or other text
