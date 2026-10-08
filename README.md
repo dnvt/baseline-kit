@@ -4,8 +4,10 @@
 ![npm version](https://img.shields.io/npm/v/baseline-kit)
 ![License](https://img.shields.io/github/license/dnvt/baseline-kit)
 
-Baseline Kit adds baseline and column grids, spacing primitives, and scoped
-debug styles to React 19 apps. A React-free adapter is available for Remix 3.
+Baseline Kit is a baseline-grid toolkit for React 19. Its core pattern is to
+wrap text in `Box` and use height snapping to align its baseline to the grid.
+`Baseline` and `Guide` make the grid visible; `Padder`, `Spacer`, and `Config`
+handle spacing and defaults. A React-free adapter is available for Remix 3.
 
 ![Demo visual](https://raw.githubusercontent.com/dnvt/baseline-kit/main/kit.png)
 
