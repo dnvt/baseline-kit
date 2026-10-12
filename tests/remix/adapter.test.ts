@@ -150,6 +150,7 @@ describe('Remix adapter', () => {
     )
     expect(baselineHtml).toContain('class="bk-bas bk-h bk-ssr bk-line"')
     expect(baselineHtml).not.toContain('data-row-index')
+    expect(baselineHtml).toContain('aria-hidden="true"')
     expect(baselineHtml).toContain('--bkbl-w: 120px')
     expect(baselineHtml).toContain('--bkbl-h: 80px')
 
@@ -165,6 +166,7 @@ describe('Remix adapter', () => {
     )
     expect(guideHtml).toContain('class="bk-gde bk-h bk-ssr bk-line"')
     expect(guideHtml).toContain('SSR guide content')
+    expect(guideHtml).toContain('aria-hidden="true"')
     expect(guideHtml).toContain('--bkgd-w: 120px')
     expect(guideHtml).toContain('--bkgd-h: 80px')
     expect(guideHtml).toContain('--bkgd-mw: 240px')

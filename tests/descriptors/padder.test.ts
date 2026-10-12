@@ -1,7 +1,6 @@
 import { createPadderDescriptor } from '@baseline-kit/core'
 
 const baseParams = {
-  base: 8,
   color: 'blue',
   padding: { top: 0, right: 0, bottom: 0, left: 0 },
   enableSpacers: false,
@@ -9,15 +8,9 @@ const baseParams = {
 }
 
 describe('createPadderDescriptor', () => {
-  it('emits base and color only when they differ from the stylesheet', () => {
+  it('emits the color only when it differs from the stylesheet', () => {
     const { containerStyle } = createPadderDescriptor(baseParams)
-    expect(containerStyle['--bkpd-b']).toBeUndefined()
     expect(containerStyle['--bkpd-c']).toBe('blue')
-    expect(
-      createPadderDescriptor({ ...baseParams, base: 4 }).containerStyle[
-        '--bkpd-b'
-      ]
-    ).toBe('4px')
   })
 
   it('emits width/height only when not fit-content', () => {

@@ -1234,6 +1234,21 @@ test('React caller classes win and only Box trims its children', async ({
   }
 })
 
+test('React Padder spacers and nested Boxes stay on the base grid', async ({
+  page,
+}) => {
+  for (const id of ['#grid-padder', '#nested-inner']) {
+    await expect
+      .poll(() =>
+        page.locator(id).evaluate((element) => {
+          const remainder = element.getBoundingClientRect().height % 8
+          return Math.min(remainder, 8 - remainder) < 1 / 64
+        })
+      )
+      .toBe(true)
+  }
+})
+
 test('React Box keeps a fractional top snap on an 8px base', async ({
   page,
 }) => {
@@ -1967,6 +1982,27 @@ test.describe('native Remix adapter', () => {
     }
   })
 
+  test('native Padder spacers and nested Boxes stay on the base grid', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    for (const id of ['#remix-grid-padder', '#remix-nested-inner']) {
+      await expect
+        .poll(() =>
+          page.locator(id).evaluate((element) => {
+            const remainder = element.getBoundingClientRect().height % 8
+            return Math.min(remainder, 8 - remainder) < 1 / 64
+          })
+        )
+        .toBe(true)
+    }
+  })
+
   test('native Box keeps a fractional top snap on an 8px base', async ({
     page,
   }) => {
@@ -2271,12 +2307,22 @@ test.describe('native Remix adapter', () => {
       .poll(() => page.evaluate(() => location.pathname))
       .toBe('/remix.html')
     await expect(page.locator('#remix-frame-view-a')).toBeVisible()
-    const afterBack = await readNativeLifecycleProbe(page)
-    expect(afterBack.resizeActive).toBe(afterNavigation.resizeActive)
-    expect(afterBack.intersectionActive).toBe(
-      afterNavigation.intersectionActive
-    )
-    expect(afterBack.windowListeners).toBe(afterNavigation.windowListeners)
+    // Remix can briefly render a nested entry into a detached element during
+    // history navigation; its bridge releases itself within a few frames.
+    await expect
+      .poll(async () => {
+        const afterBack = await readNativeLifecycleProbe(page)
+        return [
+          afterBack.resizeActive,
+          afterBack.intersectionActive,
+          afterBack.windowListeners,
+        ]
+      })
+      .toEqual([
+        afterNavigation.resizeActive,
+        afterNavigation.intersectionActive,
+        afterNavigation.windowListeners,
+      ])
 
     await page.evaluate(() => history.forward())
     await expect
@@ -2284,12 +2330,22 @@ test.describe('native Remix adapter', () => {
       .toBe('/remix-lifecycle-b')
     await expect(page.locator('#remix-frame-view-b')).toBeVisible()
     await expect(page.locator('[data-remix-frame-view]')).toHaveCount(1)
-    const afterForward = await readNativeLifecycleProbe(page)
-    expect(afterForward.resizeActive).toBe(afterNavigation.resizeActive)
-    expect(afterForward.intersectionActive).toBe(
-      afterNavigation.intersectionActive
-    )
-    expect(afterForward.windowListeners).toBe(afterNavigation.windowListeners)
+    // Remix can briefly render a nested entry into a detached element during
+    // history navigation; its bridge releases itself within a few frames.
+    await expect
+      .poll(async () => {
+        const afterForward = await readNativeLifecycleProbe(page)
+        return [
+          afterForward.resizeActive,
+          afterForward.intersectionActive,
+          afterForward.windowListeners,
+        ]
+      })
+      .toEqual([
+        afterNavigation.resizeActive,
+        afterNavigation.intersectionActive,
+        afterNavigation.windowListeners,
+      ])
 
     await page.evaluate(() => {
       const runtime = (

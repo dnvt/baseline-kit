@@ -146,6 +146,20 @@ describe('Remix server entry', () => {
     expect(typeof server.renderToString).toBe('function')
   })
 
+  it('fails closed if the boundary moves out of the replacer scope', async () => {
+    const anchor = [
+      '            vnode._handle = handle;',
+      '            let [renderedNode] = handle.render(props);',
+      '            return unwrapNode(renderedNode);',
+    ].join('\n')
+    await expect(
+      importServerWithSource(
+        (source) =>
+          `${source.replace(anchor, anchor.replace('handle;', 'handle ;'))}\nfunction moved(vnode, handle, props) {\n${anchor}\n}\n`
+      )
+    ).rejects.toThrow('could not locate the Remix serialization boundary')
+  })
+
   it('fails closed if the patched boundary is missing', async () => {
     await expect(
       importServerWithSource(() => 'modified source')

@@ -496,10 +496,32 @@ export function createRemixApp() {
           }),
           jsx(Padder, {
             id: 'remix-trim-padder',
-            debugging: 'none',
+            debugging: 'hidden',
             children: jsx('p', {
               style: { margin: 0 },
               children: 'Padder child',
+            }),
+          }),
+        ],
+      }),
+      jsx('section', {
+        id: 'remix-grid-exact',
+        children: [
+          jsx(Padder, {
+            id: 'remix-grid-padder',
+            debugging: 'hidden',
+            block: [8, 8],
+            children: jsx('div', { style: { height: '8.296875px' } }),
+          }),
+          jsx(Box, {
+            id: 'remix-nested-outer',
+            snapping: 'none',
+            children: jsx(Box, {
+              id: 'remix-nested-inner',
+              snapping: 'height',
+              snapEdge: 'top',
+              block: [0, 0],
+              children: jsx('div', { style: { height: '10.5px' } }),
             }),
           }),
         ],

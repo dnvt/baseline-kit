@@ -8,11 +8,12 @@ const baseParams = {
 }
 
 describe('createSpacerDescriptor', () => {
-  it('emits --bksp-b only when the base differs from the stylesheet', () => {
-    expect(createSpacerDescriptor(baseParams).style['--bksp-b']).toBeUndefined()
+  it('rounds sizes to the base', () => {
     expect(
-      createSpacerDescriptor({ ...baseParams, base: 4 }).style['--bksp-b']
-    ).toBe('4px')
+      createSpacerDescriptor({ ...baseParams, base: 4, height: 13 }).style[
+        '--bksp-h'
+      ]
+    ).toBe('12px')
   })
 
   it('normalizes numeric width/height against base', () => {

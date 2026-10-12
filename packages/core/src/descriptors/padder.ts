@@ -6,12 +6,10 @@ import type { Padding } from '../types'
 const PADDER_STYLE_DEFAULTS: Record<string, string> = {
   '--bkpd-w': 'fit-content',
   '--bkpd-h': 'fit-content',
-  '--bkpd-b': '8px',
   '--bkpd-c': DEFAULT_CONFIG.padder.color,
 }
 
 export interface PadderDescriptorParams {
-  base: number
   color: string
   width?: number | string
   height?: number | string
@@ -33,13 +31,11 @@ export interface PadderDescriptor {
 export function createPadderDescriptor(
   params: PadderDescriptorParams
 ): PadderDescriptor {
-  const { base, color, width, height, padding, enableSpacers, isVisible } =
-    params
+  const { color, width, height, padding, enableSpacers, isVisible } = params
 
   const containerStyle: Record<string, string> = {
     ...(width !== undefined ? { '--bkpd-w': formatValue(width) } : {}),
     ...(height !== undefined ? { '--bkpd-h': formatValue(height) } : {}),
-    '--bkpd-b': `${base}px`,
     '--bkpd-c': color,
   }
 

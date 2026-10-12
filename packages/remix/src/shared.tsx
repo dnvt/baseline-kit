@@ -240,11 +240,12 @@ export function createElementObserverBridge(
   let initialRefreshAttempts = 0
 
   const refreshUntilMeasured = (signal: AbortSignal) => {
-    if (
-      signal.aborted ||
-      hasNonZeroMeasurement ||
-      initialRefreshAttempts >= 10
-    ) {
+    if (signal.aborted || hasNonZeroMeasurement) return
+    if (initialRefreshAttempts >= 10) {
+      // Remix can render a nested entry into an element that never joins the
+      // document (for example during history navigation). Release it instead
+      // of observing a detached node forever.
+      if (element && !element.isConnected) bridge.release()
       return
     }
 
@@ -293,6 +294,12 @@ export function createElementObserverBridge(
 
     if (typeof ResizeObserver !== 'undefined') {
       measureHandle = createMeasureObserver(node, (rect) => {
+        // Remix may never abort a nested entry's ref signal, so release the
+        // bridge once its element has left the document.
+        if (!node.isConnected) {
+          bridge.release()
+          return
+        }
         hasNonZeroMeasurement = rect.width > 0 || rect.height > 0
         // The initial measurement can run from the ref insert callback before
         // Remix has committed the component. Deliver it on the next frame so

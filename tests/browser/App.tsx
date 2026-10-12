@@ -330,9 +330,25 @@ export function App() {
         <Box id="trim-box" debugging="none">
           <p style={{ margin: 0 }}>Box child</p>
         </Box>
-        <Padder id="trim-padder" debugging="none">
+        <Padder id="trim-padder" debugging="hidden">
           <p style={{ margin: 0 }}>Padder child</p>
         </Padder>
+      </section>
+
+      <section id="grid-exact">
+        <Padder id="grid-padder" debugging="hidden" block={[8, 8]}>
+          <div style={{ height: '8.296875px' }} />
+        </Padder>
+        <Box id="nested-outer" snapping="none">
+          <Box
+            id="nested-inner"
+            snapping="height"
+            snapEdge="top"
+            block={[0, 0]}
+          >
+            <div style={{ height: '10.5px' }} />
+          </Box>
+        </Box>
       </section>
 
       <section id="box-snap-top-fractional">

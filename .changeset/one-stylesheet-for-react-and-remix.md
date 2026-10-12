@@ -21,18 +21,23 @@ Breaking changes:
 - `Box` now trims the text box of its direct children in React too, as Remix already did, so paragraphs and headings placed directly inside measure shorter. `Padder` trims only its own content wrapper in both entries; the Remix `Padder` no longer trims its children.
 - Remix `Baseline` and `Guide` now fade in and out over 180ms like React, and Remix line guides shift left by a sub-pixel like React.
 - React `Guide` and `Spacer` props no longer include `padding`, `block`, and `inline`, which those components never applied.
+- The React `Box` ref is typed `HTMLElement` instead of `HTMLDivElement`, since `as` can render other elements.
+- Content inside a `Box` now sees the surrounding `Config`. Before, `Box` set `base` to 1 for everything inside it, so a nested `Box` or `Spacer` ignored the grid base.
+- The unused `--bkpd-b` and `--bksp-b` custom properties are no longer set.
 
 Features:
 
 - React `Box` supports `as` and `htmlFor` for semantic hosts, like Remix.
 - React `Box` paints the shaded padding bands in visible debug mode, like Remix.
+- `baseline-kit` and `baseline-kit/remix` export the same type names, including `BoxElement` and `ConfigProps`.
+- The CSS entry points declare types, so `import 'baseline-kit/styles'` type-checks with TypeScript's `noUncheckedSideEffectImports`, which TypeScript 6 and 7 turn on by default.
 - `baseline-kit/core` exports the shared component option types (`BaselineOptions`, `BoxOptions`, `GuideOptions`, `PadderOptions`, `SpacerOptions`, `BoxElement`), the server-fallback helpers `createBaselineFallbackStyle` and `createGuideFallbackStyle`, the style helpers `compactStyle` and `getDOMAttributes`, and `isOnBaseline`, `getBaselineRemainder`, and `SNAP_TOLERANCE`.
 - The `remix` peer range is now `^3.0.0`.
 
 Fixes:
 
-- Snapping treats heights within 1/16px of a grid line as aligned, so browser zoom and display scaling no longer add an extra base row. `Baseline` rounds its measured height, so sub-pixel noise cannot drop its last row or its compact paint.
-- React and Remix measure heights with fractional precision, so trimmed text snaps exactly onto the grid instead of drifting by up to half a pixel per Box. A `Spacer` with a base of 1 keeps fractional sizes, so this also holds for a `Box` with a `className`.
+- Snapping ignores residues smaller than one 1/64px layout unit, left by browser zoom and display scaling, instead of adding an extra base row; whole layout units are still snapped. `Baseline` rounds its measured height, so sub-pixel noise cannot drop its last row or its compact paint.
+- React and Remix measure heights with fractional precision, so trimmed text snaps exactly onto the grid instead of drifting by up to half a pixel per Box. A `Spacer` with a base of 1 keeps fractional sizes, and `Padder` draws its spacers at base 1, so a `Padder` (or a `Box` with a `className`) lands exactly on the grid with debugging `hidden` or `visible` too.
 - A semantic `Box` with a percentage `width` or `height` no longer applies it twice.
 - A semantic `Box` snaps its whole element, including its own border and padding.
 - `baseline-kit/remix/server` checks the code it patches, including the scope it reads, instead of the whole file's hash, so a patch release of `@remix-run/component` no longer stops it from loading.
@@ -41,3 +46,6 @@ Fixes:
 - Remix components release ResizeObservers of client entries nested inside a removed entry, which Remix does not always dispose.
 - Remix client entries no longer serialize the default config into their props.
 - Remix `Padder` measures fractional heights like `Box`.
+- Remix server HTML marks `Baseline`, `Guide`, and `Spacer` indicators `aria-hidden="true"`. Before, the attribute was written without a value until hydration.
+- Measurement and virtualization fall back gracefully when `ResizeObserver` or `IntersectionObserver` is missing, such as in jsdom tests.
+- `baseline-kit/remix/server` checks that the code it patches sits inside the function it reads from.

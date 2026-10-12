@@ -98,10 +98,9 @@ describe('Spacer Component', () => {
 
   describe('Color Handling', () => {
     it('uses custom base unit when provided', () => {
-      render(<Spacer base={4} />)
+      render(<Spacer base={4} height={13} />)
       const spacer = screen.getByTestId('spacer')
-      const styleAttr = spacer.getAttribute('style') || ''
-      expect(styleAttr).toContain('--bksp-b: 4px')
+      expect(spacer.getAttribute('style') || '').toContain('--bksp-h: 12px')
     })
 
     it('uses config base unit when not provided', () => {
@@ -175,10 +174,9 @@ describe('Spacer Component', () => {
 
   describe('Base Unit Handling', () => {
     it('uses custom base unit when provided', () => {
-      render(<Spacer base={4} />)
+      render(<Spacer base={4} height={13} />)
       const spacer = screen.getByTestId('spacer')
-      const styleAttr = spacer.getAttribute('style') || ''
-      expect(styleAttr).toContain('--bksp-b: 4px')
+      expect(spacer.getAttribute('style') || '').toContain('--bksp-h: 12px')
     })
 
     it('uses config base unit when not provided', () => {

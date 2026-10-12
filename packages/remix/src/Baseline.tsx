@@ -95,7 +95,7 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
             props.className
           )}
           data-testid={config.domDiagnostics ? 'baseline' : undefined}
-          aria-hidden={true}
+          aria-hidden="true"
           style={mergeStyles(
             createBaselineFallbackStyle(props.width, props.height),
             props.style
@@ -138,7 +138,7 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
           props.className
         )}
         data-testid={config.domDiagnostics ? 'baseline' : undefined}
-        aria-hidden={true}
+        aria-hidden="true"
         style={mergeStyles(descriptor.containerStyle, props.style)}
         {...getDOMAttributes(props)}
         mix={

@@ -25,7 +25,7 @@ ConfigContext.displayName = 'ConfigContext'
 // Update to use React 19's use hook instead of useContext
 export const useDefaultConfig = () => React.use(ConfigContext)
 
-type ConfigProps = ConfigOverrides & {
+export type ConfigProps = ConfigOverrides & {
   children: React.ReactNode
 }
 

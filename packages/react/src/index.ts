@@ -10,16 +10,24 @@ export { Box } from './components/Box'
 export { Spacer } from './components/Spacer'
 export { Padder } from './components/Padder'
 
-export type { DebuggingMode, ConfigSchema } from './components/Config/Config'
+// Keep this type list identical to the Remix entry's.
 export type {
+  ConfigSchema,
+  DebuggingMode,
   GuideVariant,
+  PaddingValue,
   Spacing,
   SpacingProps,
-  PaddingValue,
   Variant,
 } from '@baseline-kit/core'
+export type { ConfigProps } from './components/Config/Config'
 export type { BaselineProps, BaselineVariant } from './components/Baseline'
-export type { BoxProps, SnapEdge, SnappingMode } from './components/Box'
+export type {
+  BoxElement,
+  BoxProps,
+  SnapEdge,
+  SnappingMode,
+} from './components/Box'
 export type { GuideProps } from './components/Guide'
 export type { IndicatorNode, SpacerProps } from './components/Spacer'
 export type { PadderProps } from './components/Padder'

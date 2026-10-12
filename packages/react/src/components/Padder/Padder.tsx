@@ -22,6 +22,8 @@ export type PadderProps = PadderOptions &
 
 type RuntimePadderProps = PadderProps & {
   preserveContentHost?: boolean
+  /** Spacer variant for Box's internal padder. */
+  spacerVariant?: Variant
 }
 
 const createRenderSpacerFn = (
@@ -36,7 +38,9 @@ const createRenderSpacerFn = (
     widthVal: React.CSSProperties['width'],
     heightVal: React.CSSProperties['height']
   ) => (
+    // Base 1 keeps the snapped padding exact instead of rounding it to the grid.
     <Spacer
+      base={1}
       variant={safeVariant}
       debugging={heightVal === 0 || widthVal === 0 ? 'none' : safeDebugging}
       indicatorNode={indicatorNode}
@@ -60,12 +64,14 @@ const PadderComponent = React.memo(
       width,
       ssrMode = false,
       preserveContentHost = false,
+      spacerVariant,
       ...spacingProps
     },
     ref
   ) {
     const config = useConfig('padder')
-    const { variant } = useConfig('spacer')
+    const spacerConfig = useConfig('spacer')
+    const variant = spacerVariant ?? spacerConfig.variant
     const initialPadding = React.useMemo(
       () => parsePadding(spacingProps),
       [spacingProps]
@@ -104,7 +110,6 @@ const PadderComponent = React.memo(
     const descriptor = React.useMemo(
       () =>
         createPadderDescriptor({
-          base: config.base,
           color: config.color,
           width,
           height,
@@ -112,15 +117,7 @@ const PadderComponent = React.memo(
           enableSpacers,
           isVisible: isShown,
         }),
-      [
-        config.base,
-        config.color,
-        width,
-        height,
-        padding,
-        enableSpacers,
-        isShown,
-      ]
+      [config.color, width, height, padding, enableSpacers, isShown]
     )
 
     const containerStyles = mergeStyles(descriptor.containerStyle, style)

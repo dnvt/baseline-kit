@@ -48,13 +48,18 @@ export function createMeasureObserver(
   // Initial measurement
   measure()
 
-  const observer = new ResizeObserver(throttledMeasure)
-  observer.observe(el)
+  // Environments without ResizeObserver (such as jsdom) keep the initial
+  // measurement and can still refresh on demand.
+  const observer =
+    typeof ResizeObserver === 'undefined'
+      ? undefined
+      : new ResizeObserver(throttledMeasure)
+  observer?.observe(el)
 
   return {
     refresh: throttledMeasure,
     disconnect() {
-      observer.disconnect()
+      observer?.disconnect()
       cancelMeasure()
     },
   }

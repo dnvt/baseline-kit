@@ -108,7 +108,7 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
           )}
           data-testid={config.domDiagnostics ? 'guide' : undefined}
           data-variant={config.domDiagnostics ? variant : undefined}
-          aria-hidden={true}
+          aria-hidden="true"
           style={mergeStyles(
             createGuideFallbackStyle(props.width, props.height, props.maxWidth),
             props.style
@@ -155,7 +155,7 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
         )}
         data-testid={config.domDiagnostics ? 'guide' : undefined}
         data-variant={config.domDiagnostics ? variant : undefined}
-        aria-hidden={true}
+        aria-hidden="true"
         style={mergeStyles(descriptor.containerStyle, props.style)}
         {...getDOMAttributes(props)}
         mix={

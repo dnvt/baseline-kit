@@ -9,17 +9,17 @@ export type SnappingOptions = {
 type SnappingInput = SnappingMode | SnappingOptions
 
 /**
- * Browsers report layout sizes in 1/64 px units, and zoom or display scaling
- * stretches those units and can stack a few of them. Treat anything within
- * four units (1/16 px) of a grid line as on the grid instead of adding almost
- * a full base row. The difference is below one device pixel.
+ * Browsers lay out in whole 1/64 px units, so a remainder of one unit or more
+ * is real geometry and gets snapped. Zoom and display scaling convert those
+ * units and leave smaller residues; treat anything under one unit as on the
+ * grid instead of adding almost a full base row.
  */
-export const SNAP_TOLERANCE = 1 / 16
+export const SNAP_TOLERANCE = 1 / 64
 
 /** Distance past the previous grid line, or 0 when within tolerance of one. */
 export function getBaselineRemainder(height: number, base: number): number {
   const remainder = ((height % base) + base) % base
-  return remainder <= SNAP_TOLERANCE || base - remainder <= SNAP_TOLERANCE
+  return remainder < SNAP_TOLERANCE || base - remainder < SNAP_TOLERANCE
     ? 0
     : remainder
 }

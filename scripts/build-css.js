@@ -28,4 +28,8 @@ writeFileSync(
   `${light.trimEnd()}\n\n@media (prefers-color-scheme: dark) {\n${dark.trimEnd()}\n}\n`
 )
 
+// Type stub for the CSS exports, so `import 'baseline-kit/styles'` type-checks
+// under TypeScript's noUncheckedSideEffectImports (on by default in TS 6+).
+writeFileSync(resolve(dist, 'css.d.ts'), 'export {}\n')
+
 console.log('✅ Copied styles, reset and themes to dist')

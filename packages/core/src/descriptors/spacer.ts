@@ -5,7 +5,6 @@ import { compactStyle, formatValue, normalizeValuePair } from '../utils'
 const SPACER_STYLE_DEFAULTS: Record<string, string> = {
   '--bksp-w': 'var(--bk-wf, 100%)',
   '--bksp-h': 'var(--bk-hf, auto)',
-  '--bksp-b': '8px',
   '--bksp-cl': DEFAULT_CONFIG.spacer.colors.line,
   '--bksp-cf': DEFAULT_CONFIG.spacer.colors.flat,
   '--bksp-ct': DEFAULT_CONFIG.spacer.colors.text,
@@ -52,7 +51,6 @@ export function createSpacerDescriptor(
     {
       ...(height !== undefined ? { '--bksp-h': formatValue(normHeight) } : {}),
       ...(width !== undefined ? { '--bksp-w': formatValue(normWidth) } : {}),
-      '--bksp-b': `${base}px`,
       '--bksp-ct': color ?? colors.text,
       '--bksp-cl': color ?? colors.line,
       '--bksp-cf': color ?? colors.flat,

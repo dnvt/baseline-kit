@@ -61,12 +61,12 @@ function SpacerImpl(handle: Handle<RuntimeSpacerProps>) {
       debugging.isShown && props.indicatorNode
         ? [
             descriptor.normHeight !== 0 ? (
-              <span key="height" className="bk-indicator" aria-hidden={true}>
+              <span key="height" className="bk-indicator" aria-hidden="true">
                 {props.indicatorNode(descriptor.normHeight, 'height')}
               </span>
             ) : null,
             descriptor.normWidth !== 0 ? (
-              <span key="width" className="bk-indicator" aria-hidden={true}>
+              <span key="width" className="bk-indicator" aria-hidden="true">
                 {props.indicatorNode(descriptor.normWidth, 'width')}
               </span>
             ) : null,

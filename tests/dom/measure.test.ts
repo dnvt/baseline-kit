@@ -15,3 +15,24 @@ describe('createMeasureObserver', () => {
     handle.disconnect()
   })
 })
+
+describe('createMeasureObserver without ResizeObserver', () => {
+  it('measures once and disconnects cleanly', () => {
+    const original = globalThis.ResizeObserver
+    // @ts-expect-error simulate an environment without ResizeObserver
+    delete globalThis.ResizeObserver
+    try {
+      const el = document.createElement('div')
+      vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({
+        width: 10,
+        height: 20,
+      } as DOMRect)
+      const onChange = vi.fn()
+      const handle = createMeasureObserver(el, onChange)
+      expect(onChange).toHaveBeenCalledWith({ width: 10, height: 20 })
+      expect(() => handle.disconnect()).not.toThrow()
+    } finally {
+      globalThis.ResizeObserver = original
+    }
+  })
+})

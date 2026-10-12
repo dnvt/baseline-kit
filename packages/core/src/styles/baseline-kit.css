@@ -153,7 +153,6 @@
 .bk-pad {
   --bkpd-w: fit-content;
   --bkpd-h: fit-content;
-  --bkpd-b: 8px;
   --bkpd-c: var(--bk-padder-color-theme, hsla(270, 60%, 40%, 0.6));
   position: relative;
   display: grid;
@@ -226,7 +225,6 @@
 .bk-spr {
   --bksp-w: var(--bk-wf, 100%);
   --bksp-h: var(--bk-hf, auto);
-  --bksp-b: 8px;
   --bksp-cl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
   --bksp-cf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
   --bksp-ct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));

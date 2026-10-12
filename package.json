@@ -123,11 +123,26 @@
       "types": "./dist/remix-server.d.ts",
       "default": "./dist/remix-server.mjs"
     },
-    "./styles": "./dist/styles.css",
-    "./theme": "./dist/theme.css",
-    "./theme/default": "./dist/theme/default.css",
-    "./theme/dark": "./dist/theme/dark.css",
-    "./reset": "./dist/reset.css",
+    "./styles": {
+      "types": "./dist/css.d.ts",
+      "default": "./dist/styles.css"
+    },
+    "./theme": {
+      "types": "./dist/css.d.ts",
+      "default": "./dist/theme.css"
+    },
+    "./theme/default": {
+      "types": "./dist/css.d.ts",
+      "default": "./dist/theme/default.css"
+    },
+    "./theme/dark": {
+      "types": "./dist/css.d.ts",
+      "default": "./dist/theme/dark.css"
+    },
+    "./reset": {
+      "types": "./dist/css.d.ts",
+      "default": "./dist/reset.css"
+    },
     "./package.json": "./package.json"
   },
   "files": [

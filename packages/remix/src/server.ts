@@ -35,15 +35,19 @@ const after = `            vnode._handle = handle;
 // Patch by anchor rather than by file digest: Remix 3 accepts any
 // @remix-run/component 1.x, so the file can change while this boundary stays.
 // The patch reads `context` and `vnode` from the hydration props replacer, so
-// require that scope, its parent link, and exactly one anchor inside it.
-// Fail closed when any of them moves.
+// require that function, its parent link, and exactly one anchor inside it
+// (before the function's closing brace). Fail closed when any of them moves.
 const scope = source.indexOf('function createHydrationPropsReplacer(context,')
+const scopeEnd = source.indexOf('\n}\n', scope)
 const parentLink = source.indexOf('vnode._parent = context.parentVNode;', scope)
 const anchor = source.indexOf(before, parentLink)
 if (
   scope < 0 ||
+  scopeEnd < 0 ||
   parentLink < 0 ||
+  parentLink > scopeEnd ||
   anchor < 0 ||
+  anchor > scopeEnd ||
   source.indexOf(before, anchor + before.length) >= 0 ||
   source.indexOf(before) !== anchor
 ) {

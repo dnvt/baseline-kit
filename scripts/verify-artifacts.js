@@ -94,6 +94,15 @@ assert(
   themeCSS.includes('@media (prefers-color-scheme: dark)'),
   'theme.css must include the dark theme for prefers-color-scheme'
 )
+for (const [subpath, target] of Object.entries(packageJson.exports)) {
+  if (typeof target === 'object' && String(target.default).endsWith('.css')) {
+    assert(
+      target.types === './dist/css.d.ts',
+      `${subpath} must declare the CSS type stub`
+    )
+  }
+}
+
 for (const file of [
   'guide.mjs',
   'guide.css',
@@ -137,6 +146,24 @@ assert(
     !remixDts.includes('__baselineConfig') &&
     !/(from\s+["']@baseline-kit\/|import\(["']@baseline-kit\/)/.test(remixDts),
   'remix.d.ts must expose only public native components without unresolved workspace imports'
+)
+
+const exportedNames = (dts) =>
+  [...dts.matchAll(/export (?:type )?\{([^}]*)\}/g)]
+    .flatMap((match) => match[1].split(','))
+    .map((name) =>
+      name
+        .trim()
+        .split(/\s+as\s+/)
+        .pop()
+    )
+    .filter(Boolean)
+    .sort()
+const reactNames = exportedNames(indexDts).join(',')
+const remixNames = exportedNames(remixDts).join(',')
+assert(
+  reactNames === remixNames,
+  `React and Remix entries must export the same names:\n  react: ${reactNames}\n  remix: ${remixNames}`
 )
 
 console.log('✅ Artifact verification passed')

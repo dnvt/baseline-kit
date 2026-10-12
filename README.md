@@ -80,8 +80,12 @@ export function App() {
 ```
 
 Remix 3 server modules run in plain Node, which cannot import CSS. Serve the
-`baseline-kit/styles` file through your asset server and link it in the
-document head, for example `<link rel="stylesheet" href="/baseline-kit.css">`.
+stylesheet through your asset server instead and link it in the document head.
+`import.meta.resolve('baseline-kit/styles')` gives its file path; with Remix's
+`createAssetServer`, allow the `baseline-kit` package and use
+`assetServer.getHref()` for the link. Link `baseline-kit/theme` the same way if
+you use it. Client entries load `baseline-kit/dist/remix.mjs`, so the asset
+server must also serve that package file.
 
 ## Text on the baseline grid
 
@@ -138,9 +142,10 @@ as in CSS. `block` and `inline` set start/end pairs as arrays or objects.
 | `none` | Keeps the padding you set. |
 
 In `height` mode the correction goes to the bottom by default;
-`snapEdge="top"` puts it above the content. `Box` measures its whole element, including its own border and
-padding, with fractional-pixel precision. Heights within 1/16px of a grid line
-count as aligned, so browser zoom and display scaling do not add a stray row.
+`snapEdge="top"` puts it above the content. `Box` measures its whole element,
+including its own border and padding, with fractional-pixel precision.
+Browsers lay out in 1/64px units, so any remainder of one unit or more is
+snapped; smaller residues left by zoom or display scaling count as aligned.
 Snapping runs once, after the first nonzero measurement, not on every resize.
 `Padder` uses height snapping with a bottom correction. Set `ssrMode` on
 either to keep the explicit padding without measuring.
@@ -197,6 +202,12 @@ It reads the installed Remix runtime from disk, so keep those files in
 production. `Frame` and client components still come from `remix/component`.
 Its `resolveClientEntry` callback must map every entry, including your app's,
 to a JavaScript asset the browser can load.
+
+Remix's `render()` middleware from `remix/middleware/render` imports the
+unpatched renderer itself and can't be pointed at this one. If a `Config` sits
+inside the children of a client entry, render that page with this entry's
+`renderToStream` or `renderToString` directly; otherwise the nested `Config` is
+lost on the server.
 
 See the [server resolver example](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/remix-ssr.ts)
 and the [asset-serving fixture](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/vite.config.ts).
