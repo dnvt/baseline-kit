@@ -38,8 +38,11 @@ export function createSpacerDescriptor(
 ): SpacerDescriptor {
   const { base, colors, width, height, color, variant, isVisible } = params
 
+  // A base of 1 means plain pixels: keep fractional sizes, such as the
+  // snapped padding a Box passes to its spacers, instead of rounding them.
   const [normWidth, normHeight] = normalizeValuePair([width, height], [0, 0], {
     base,
+    round: base > 1,
     suppressWarnings: true,
   })
 

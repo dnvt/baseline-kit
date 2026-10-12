@@ -10,15 +10,16 @@ type SnappingInput = SnappingMode | SnappingOptions
 
 /**
  * Browsers report layout sizes in 1/64 px units, and zoom or display scaling
- * can leave a few of those units of noise. Treat anything within one unit of
- * a grid line as on the grid instead of adding almost a full base row.
+ * stretches those units and can stack a few of them. Treat anything within
+ * four units (1/16 px) of a grid line as on the grid instead of adding almost
+ * a full base row. The difference is below one device pixel.
  */
-export const SNAP_TOLERANCE = 1 / 64
+export const SNAP_TOLERANCE = 1 / 16
 
 /** Distance past the previous grid line, or 0 when within tolerance of one. */
 export function getBaselineRemainder(height: number, base: number): number {
   const remainder = ((height % base) + base) % base
-  return remainder < SNAP_TOLERANCE || base - remainder < SNAP_TOLERANCE
+  return remainder <= SNAP_TOLERANCE || base - remainder <= SNAP_TOLERANCE
     ? 0
     : remainder
 }

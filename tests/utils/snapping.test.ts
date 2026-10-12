@@ -95,8 +95,13 @@ describe('calculateSnappedSpacing', () => {
   describe('measurement noise', () => {
     const initial = { top: 8, right: 0, bottom: 8, left: 0 }
 
-    it('treats heights within 1/64px of a grid line as aligned', () => {
-      for (const height of [40.0000076, 39.99, 40.005]) {
+    it('treats heights within 1/16px of a grid line as aligned', () => {
+      // Sub-unit noise, whole 1/64px layout units, a 90%-zoom unit, and the
+      // 1/16px boundary itself.
+      for (const height of [
+        40.0000076, 39.99, 40.005, 40.015625, 40.03125, 40.0174, 40.0625,
+        39.9375,
+      ]) {
         expect(
           calculateSnappedSpacing(height, base, initial, {
             mode: 'height',
@@ -108,6 +113,16 @@ describe('calculateSnappedSpacing', () => {
         )
         expect(isOnBaseline(height, base)).toBe(true)
       }
+    })
+
+    it('still snaps heights more than 1/16px off the grid', () => {
+      expect(isOnBaseline(40.1, base)).toBe(false)
+      expect(
+        calculateSnappedSpacing(40.1, base, initial, {
+          mode: 'height',
+          snapEdge: 'top',
+        }).top
+      ).toBeCloseTo(15.9, 5)
     })
 
     it('snaps fractional text heights exactly onto the grid', () => {

@@ -480,6 +480,30 @@ export function createRemixApp() {
           }),
         }),
       }),
+      jsx('section', {
+        id: 'remix-caller-css',
+        children: [
+          jsx('style', { children: '.caller-flex { display: flex; }' }),
+          jsx(Box, {
+            id: 'remix-caller-class-box',
+            className: 'caller-flex',
+            children: 'Caller class',
+          }),
+          jsx(Box, {
+            id: 'remix-trim-box',
+            debugging: 'none',
+            children: jsx('p', { style: { margin: 0 }, children: 'Box child' }),
+          }),
+          jsx(Padder, {
+            id: 'remix-trim-padder',
+            debugging: 'none',
+            children: jsx('p', {
+              style: { margin: 0 },
+              children: 'Padder child',
+            }),
+          }),
+        ],
+      }),
       jsx('div', {
         id: 'remix-snap-box-top-fractional',
         children: jsx(Box, {

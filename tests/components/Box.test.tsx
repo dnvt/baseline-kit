@@ -18,15 +18,6 @@ function StatefulField() {
   )
 }
 
-// Mock CSS modules
-vi.mock('./styles.module.css', () => ({
-  default: {
-    box: 'box',
-    visible: 'visible',
-    hidden: 'hidden',
-  },
-}))
-
 vi.mock('@baseline-kit/react/components/Spacer', () => ({
   Spacer: ({
     width,
@@ -150,7 +141,7 @@ describe('<Box /> component', () => {
     const boxEl = screen.getByTestId('box')
     expect(boxEl).toBeInTheDocument()
     // Visible diagnostics stay on the compact merged host by default.
-    expect(boxEl.className).toContain('v')
+    expect(boxEl.classList.contains('bk-v')).toBe(true)
     expect(container.querySelectorAll('*')).toHaveLength(2)
     expect(screen.queryByTestId('padder')).not.toBeInTheDocument()
     expect(screen.getByText('Box content')).toBeInTheDocument()

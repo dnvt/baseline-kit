@@ -92,3 +92,15 @@ describe('createSpacerDescriptor', () => {
     })
   })
 })
+
+describe('createSpacerDescriptor in plain pixels', () => {
+  it('keeps fractional sizes when the base is 1', () => {
+    const { style, normHeight } = createSpacerDescriptor({
+      ...baseParams,
+      base: 1,
+      height: 3.6,
+    })
+    expect(normHeight).toBe(3.6)
+    expect(style['--bksp-h']).toBe('3.6px')
+  })
+})

@@ -251,3 +251,16 @@ describe('canCompactBaselinePaint', () => {
     ).toBe(false)
   })
 })
+
+describe('createBaselineDescriptor measurement noise', () => {
+  it('keeps the last row and compact paint for sub-pixel heights', () => {
+    for (const containerHeight of [399.984375, 400.015625, 400.4]) {
+      const descriptor = createBaselineDescriptor({
+        ...baseParams,
+        containerHeight,
+      })
+      expect(descriptor.rowCount).toBe(50)
+      expect(descriptor.compactPaint).toBe(true)
+    }
+  })
+})

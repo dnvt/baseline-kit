@@ -1215,6 +1215,25 @@ test('React Box applies top-edge snapping on its merged grid host', async ({
   await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(0)
 })
 
+test('React caller classes win and only Box trims its children', async ({
+  page,
+}) => {
+  await expect(page.locator('#caller-class-box')).toHaveCSS('display', 'flex')
+  const trim = await page.evaluate(() => ({
+    supported: CSS.supports('text-box-trim', 'trim-both'),
+    box: getComputedStyle(
+      document.querySelector('#trim-box p')!
+    ).getPropertyValue('text-box-trim'),
+    padder: getComputedStyle(
+      document.querySelector('#trim-padder p')!
+    ).getPropertyValue('text-box-trim'),
+  }))
+  if (trim.supported) {
+    expect(trim.box).toBe('trim-both')
+    expect(trim.padder).toBe('none')
+  }
+})
+
 test('React Box keeps a fractional top snap on an 8px base', async ({
   page,
 }) => {
@@ -1918,6 +1937,34 @@ test.describe('native Remix adapter', () => {
     const label = page.locator('#remix-semantic-label')
     expect(await label.evaluate((element) => element.tagName)).toBe('LABEL')
     await expect(label).toHaveAttribute('for', 'remix-semantic-input')
+  })
+
+  test('native caller classes win and only Box trims its children', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    await expect(page.locator('#remix-caller-class-box')).toHaveCSS(
+      'display',
+      'flex'
+    )
+    const trim = await page.evaluate(() => ({
+      supported: CSS.supports('text-box-trim', 'trim-both'),
+      box: getComputedStyle(
+        document.querySelector('#remix-trim-box p')!
+      ).getPropertyValue('text-box-trim'),
+      padder: getComputedStyle(
+        document.querySelector('#remix-trim-padder p')!
+      ).getPropertyValue('text-box-trim'),
+    }))
+    if (trim.supported) {
+      expect(trim.box).toBe('trim-both')
+      expect(trim.padder).toBe('none')
+    }
   })
 
   test('native Box keeps a fractional top snap on an 8px base', async ({

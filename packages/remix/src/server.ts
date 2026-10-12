@@ -20,9 +20,11 @@ const serverURL = new URL('./server/stream.js', pathToFileURL(serverEntry))
 const sourcePath = fileURLToPath(serverURL)
 const source = await readFile(sourcePath, 'utf8')
 
-const before = `            let [renderedNode] = handle.render(props);
+const before = `            vnode._handle = handle;
+            let [renderedNode] = handle.render(props);
             return unwrapNode(renderedNode);`
-const after = `            let [renderedNode] = handle.render(props);
+const after = `            vnode._handle = handle;
+            let [renderedNode] = handle.render(props);
             let previousParent = context.parentVNode;
             context.parentVNode = vnode;
             try {
@@ -32,8 +34,19 @@ const after = `            let [renderedNode] = handle.render(props);
             }`
 // Patch by anchor rather than by file digest: Remix 3 accepts any
 // @remix-run/component 1.x, so the file can change while this boundary stays.
-// Fail closed when the boundary itself moves.
-if (source.split(before).length !== 2 || !source.includes('parentVNode')) {
+// The patch reads `context` and `vnode` from the hydration props replacer, so
+// require that scope, its parent link, and exactly one anchor inside it.
+// Fail closed when any of them moves.
+const scope = source.indexOf('function createHydrationPropsReplacer(context,')
+const parentLink = source.indexOf('vnode._parent = context.parentVNode;', scope)
+const anchor = source.indexOf(before, parentLink)
+if (
+  scope < 0 ||
+  parentLink < 0 ||
+  anchor < 0 ||
+  source.indexOf(before, anchor + before.length) >= 0 ||
+  source.indexOf(before) !== anchor
+) {
   throw new Error(
     'baseline-kit/remix/server could not locate the Remix serialization boundary it patches. Check this entry against the installed @remix-run/component version.'
   )

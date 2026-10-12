@@ -130,9 +130,11 @@ export function createBaselineDescriptor(
   // relative values as if they were pixel values in a synthetic conversion
   // context. The fallback only supports DOM-less test/SSR environments before
   // the first layout measurement arrives.
+  // Rows only need whole pixels. Round the fractional measurement so
+  // sub-pixel noise cannot drop the last row or the compact gradient.
   const layoutHeight =
     containerHeight > 0
-      ? containerHeight
+      ? Math.round(containerHeight)
       : normalizeValuePair([undefined, height], [containerWidth, 0])[1]
   const contentHeight = layoutHeight - top - bottom
   const rowCount = calculateRowCount({

@@ -66,7 +66,6 @@ render through `remix/component` and never load React:
 
 ```tsx
 /** @jsxImportSource remix/component */
-import 'baseline-kit/styles'
 import { Box, Config } from 'baseline-kit/remix'
 
 export function App() {
@@ -80,12 +79,17 @@ export function App() {
 }
 ```
 
+Remix 3 server modules run in plain Node, which cannot import CSS. Serve the
+`baseline-kit/styles` file through your asset server and link it in the
+document head, for example `<link rel="stylesheet" href="/baseline-kit.css">`.
+
 ## Text on the baseline grid
 
 `Box` is meant to wrap text: a heading, a paragraph, a label, or a single line
 of copy. It applies `text-box-trim: trim-both` and
-`text-box-edge: ex alphabetic` to its content and to each direct child
-(`Padder` does the same). This is what makes the alignment work. Without
+`text-box-edge: ex alphabetic` to its content and to each direct child.
+`Padder` trims only its own content wrapper. This is what makes the alignment
+work. Without
 trimming, a line of text includes the font's ascender and descender space, so
 its height says nothing about where the baseline sits. Trimmed from the
 x-height to the alphabetic baseline, the text ends exactly on its baseline, and
@@ -102,7 +106,9 @@ on the grid.
 </Box>
 ```
 
-Text nested deeper than a direct child needs the same two properties:
+Trimmed text has no space above or below its glyphs, so separate stacked
+paragraphs with margins that are multiples of the base. Text nested deeper
+than a direct child needs the same two properties:
 `text-box-edge` inherits but `text-box-trim` does not. For multiline text, use
 a `line-height` that is a multiple of the base if every line must align.
 Browsers without text-box support keep their normal text metrics. See the
@@ -133,7 +139,7 @@ as in CSS. `block` and `inline` set start/end pairs as arrays or objects.
 
 In `height` mode the correction goes to the bottom by default;
 `snapEdge="top"` puts it above the content. `Box` measures its whole element, including its own border and
-padding, with fractional-pixel precision. Heights within 1/64px of a grid line
+padding, with fractional-pixel precision. Heights within 1/16px of a grid line
 count as aligned, so browser zoom and display scaling do not add a stray row.
 Snapping runs once, after the first nonzero measurement, not on every resize.
 `Padder` uses height snapping with a bottom correction. Set `ssrMode` on

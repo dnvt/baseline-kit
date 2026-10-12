@@ -4,6 +4,9 @@
  * Components emit `bk-*` classes from the core descriptors plus a few custom
  * properties. Colors fall back to the `--bk-*-theme` tokens from
  * `baseline-kit/theme`, then to the built-in defaults below.
+ *
+ * Every rule weighs one class: modifiers sit inside `:where()`, so a caller's
+ * own class loaded after this sheet always wins.
  */
 
 :root {
@@ -16,8 +19,7 @@
 
 /* Visibility for the Baseline and Guide overlays */
 
-.bk-bas.bk-v,
-.bk-gde.bk-v {
+:where(.bk-bas, .bk-gde).bk-v {
   opacity: 1;
   visibility: visible;
   transition:
@@ -25,8 +27,7 @@
     visibility 0ms linear;
 }
 
-.bk-bas.bk-h,
-.bk-gde.bk-h {
+:where(.bk-bas, .bk-gde).bk-h {
   opacity: 0;
   visibility: hidden;
   transition:
@@ -59,15 +60,15 @@
   contain: layout style paint;
 }
 
-.bk-bas.bk-line {
+.bk-bas:where(.bk-line) {
   --bkbl-c: var(--bkbl-cl);
 }
 
-.bk-bas.bk-flat {
+.bk-bas:where(.bk-flat) {
   --bkbl-c: var(--bkbl-cf);
 }
 
-.bk-bas.bk-compact.bk-line {
+.bk-bas:where(.bk-compact.bk-line) {
   background-image: repeating-linear-gradient(
     to bottom,
     var(--bkbl-c) 0 1px,
@@ -75,7 +76,7 @@
   );
 }
 
-.bk-bas.bk-compact.bk-flat {
+.bk-bas:where(.bk-compact.bk-flat) {
   background-color: var(--bkbl-c);
 }
 
@@ -106,8 +107,7 @@
   text-box-edge: ex alphabetic;
 }
 
-.bk-box.bk-box-semantic-host,
-.bk-box.bk-box-separate-padder {
+.bk-box:where(.bk-box-semantic-host, .bk-box-separate-padder) {
   display: block;
 }
 
@@ -121,7 +121,7 @@
   text-box-edge: ex alphabetic;
 }
 
-.bk-box.bk-v::after {
+.bk-box:where(.bk-v)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -131,7 +131,7 @@
 }
 
 /* Visible padding: an outline plus shaded top and bottom bands. */
-.bk-box.bk-box-pad-visible::before {
+.bk-box:where(.bk-box-pad-visible)::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -165,7 +165,7 @@
   text-box-edge: ex alphabetic;
 }
 
-.bk-pad.bk-v::after {
+.bk-pad:where(.bk-v)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -175,9 +175,8 @@
 }
 
 /*
- * Trim the content wrapper and its direct children so nested headings and
- * paragraphs sit on the grid too. Reset the Box debug bands so nested Boxes
- * do not inherit their parent's.
+ * Trim the content wrapper to its text. Reset the Box debug bands so nested
+ * Boxes do not inherit their parent's.
  */
 .bk-pad-content {
   grid-row: 2 / 3;
@@ -189,8 +188,15 @@
   --bkpd-ie: initial;
 }
 
-.bk-pad-content > :where(*),
-.bk-pad-content > :where(figure, fieldset) > :where(figcaption, legend) {
+/*
+ * Box wraps text, so it also trims the headings and paragraphs placed
+ * directly inside it. Padder is a general wrapper and leaves children alone.
+ */
+:where(.bk-box, .bk-box__grid, .bk-box > .bk-pad) > .bk-pad-content > :where(*),
+:where(.bk-box, .bk-box__grid, .bk-box > .bk-pad)
+  > .bk-pad-content
+  > :where(figure, fieldset)
+  > :where(figcaption, legend) {
   text-box-trim: trim-both;
   text-box-edge: ex alphabetic;
 }
@@ -234,7 +240,7 @@
   padding: 0;
 }
 
-.bk-spr.bk-line::after {
+.bk-spr:where(.bk-line)::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -242,7 +248,7 @@
   z-index: var(--bk-zi);
 }
 
-.bk-spr.bk-flat {
+.bk-spr:where(.bk-flat) {
   background-color: var(--bksp-cf);
 }
 
@@ -277,9 +283,8 @@
   padding: var(--bkgd-pb, 0) var(--bkgd-pi, 0);
 }
 
-/* Center 1px line columns on their grid positions. */
-.bk-gde.bk-line,
-.bk-cols.bk-line {
+/* Nudge line guides left so their 1px lines straddle the column edges. */
+.bk-gde:where(.bk-line) {
   left: -0.5px;
 }
 
@@ -297,7 +302,7 @@
   contain: layout style paint;
 }
 
-.bk-cols.bk-line {
+.bk-cols:where(.bk-line) {
   display: block;
   background-image: repeating-linear-gradient(
     to right,
@@ -306,7 +311,7 @@
   );
 }
 
-.bk-cols.bk-cols-compact-fixed {
+.bk-cols:where(.bk-cols-compact-fixed) {
   display: block;
   left: 50%;
   right: auto;
@@ -321,20 +326,20 @@
   height: var(--bk-hf);
 }
 
-.bk-col.bk-line {
+.bk-col:where(.bk-line) {
   width: 1px;
   background-color: var(--bkgd-cl);
 }
 
-.bk-col.bk-pattern {
+.bk-col:where(.bk-pattern) {
   background-color: var(--bkgd-cp);
 }
 
-.bk-col.bk-auto {
+.bk-col:where(.bk-auto) {
   background-color: var(--bkgd-ca);
   overflow: hidden;
 }
 
-.bk-col.bk-fixed {
+.bk-col:where(.bk-fixed) {
   background-color: var(--bkgd-cf);
 }

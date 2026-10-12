@@ -322,6 +322,19 @@ export function App() {
         </Box>
       </section>
 
+      <section id="caller-css">
+        <style>{`.caller-flex { display: flex; }`}</style>
+        <Box id="caller-class-box" className="caller-flex">
+          Caller class
+        </Box>
+        <Box id="trim-box" debugging="none">
+          <p style={{ margin: 0 }}>Box child</p>
+        </Box>
+        <Padder id="trim-padder" debugging="none">
+          <p style={{ margin: 0 }}>Padder child</p>
+        </Padder>
+      </section>
+
       <section id="box-snap-top-fractional">
         <Box
           snapping="height"
