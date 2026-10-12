@@ -11,7 +11,7 @@ Breaking changes:
 - Removed the `module` and `style` fields from `package.json`. Tools that resolved `@import 'baseline-kit'` through `style` should import `baseline-kit/styles`.
 - `baseline-kit/styles` is the only component stylesheet. Removed entries: `baseline-kit/styles/remix` (use `baseline-kit/styles`), `baseline-kit/styles/full` and `baseline-kit/full` (import `baseline-kit/styles` and `baseline-kit/theme`), `baseline-kit/styles/reset` (use `baseline-kit/reset`), `baseline-kit/theme/tokens` (copy the template from the repository), and the raw `baseline-kit/dist/*.css` paths.
 - Removed the `baseline-kit/guide` and `baseline-kit/styles/guide` entries. Import `Guide` from `baseline-kit` and use `baseline-kit/styles`.
-- Remix `Box` takes `htmlFor` instead of `for` with `as="label"`, matching React.
+- Remix `Box` takes `htmlFor` instead of `for` with `as="label"`, matching React. A `Box` that still receives `for` logs a one-time warning, because `jsx()` calls don't get a type error.
 - Remix `Padder` now defaults to `fit-content` width like React. Previously it stretched, and `width="fit-content"` had no effect.
 - Removed undocumented exports: `isSSR` and `safeClientValue` from `baseline-kit`, and `GRID_ALIGNMENTS`, `GridAlignment`, `PADD_VARIANTS`, `PaddedVariant`, and `RELATIVE_UNITS` from `baseline-kit/core`.
 - Removed the undocumented `--bkbx-initial-is` first-paint hook from the Remix `Box`.

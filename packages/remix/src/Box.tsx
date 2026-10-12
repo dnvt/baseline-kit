@@ -45,6 +45,18 @@ type RuntimeBoxProps = BoxProps & {
 const RuntimeConfig = Config as unknown as NativeComponent<
   ConfigProps & { __baselineConfig?: ConfigSchema }
 >
+// 6.x took `for`; 7.0 takes `htmlFor` like React. jsx() callers get no type
+// error, so say once that the label is no longer associated.
+let warnedLegacyFor = false
+
+function warnLegacyFor(props: object) {
+  if (warnedLegacyFor || !('for' in props)) return
+  warnedLegacyFor = true
+  console.warn(
+    'baseline-kit: Box no longer reads `for`; pass `htmlFor` instead. The label is not associated with its control.'
+  )
+}
+
 function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   let currentBase = DEFAULT_CONFIG.base
   let currentSnapping: SnappingMode = 'clamp'
@@ -73,6 +85,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
 
   return () => {
     const props = handle.props
+    warnLegacyFor(props)
     const Element = (props.as ?? 'div') as 'label'
     const ContentElement = props.as && props.as !== 'div' ? 'span' : 'div'
     const semanticHost = props.as !== undefined

@@ -80,12 +80,30 @@ export function App() {
 ```
 
 Remix 3 server modules run in plain Node, which cannot import CSS. Serve the
-stylesheet through your asset server instead and link it in the document head.
-`import.meta.resolve('baseline-kit/styles')` gives its file path; with Remix's
-`createAssetServer`, allow the `baseline-kit` package and use
-`assetServer.getHref()` for the link. Link `baseline-kit/theme` the same way if
-you use it. Client entries load `baseline-kit/dist/remix.mjs`, so the asset
-server must also serve that package file.
+stylesheet through Remix's asset server instead and link it in the document
+head. Allow both `remix` and `baseline-kit`: the Baseline Kit client entries
+import `remix/component`, so the browser loads both packages.
+
+```ts
+// app/assets.ts
+import { fileURLToPath } from 'node:url'
+import { createAssetServer } from 'remix/assets'
+
+export const assetServer = createAssetServer({
+  basePath: '/assets',
+  rootDir: process.cwd(),
+  allowFiles: ['app/**/public/**'],
+  allowPackages: ['remix', 'baseline-kit'],
+})
+
+// import.meta.resolve returns a file:// URL; getHref takes a path.
+export const baselineKitStylesHref = await assetServer.getHref(
+  fileURLToPath(import.meta.resolve('baseline-kit/styles'))
+)
+```
+
+Render `<link rel="stylesheet" href={baselineKitStylesHref} />` in the
+document head, and link `baseline-kit/theme` the same way if you use it.
 
 ## Text on the baseline grid
 
@@ -200,14 +218,18 @@ component-valued children. This entry patches that step in an isolated copy of
 the renderer, and fails at startup if the code it patches is no longer there.
 It reads the installed Remix runtime from disk, so keep those files in
 production. `Frame` and client components still come from `remix/component`.
-Its `resolveClientEntry` callback must map every entry, including your app's,
-to a JavaScript asset the browser can load.
+
+Render pages that hydrate with `renderToStream`, and pass a
+`resolveClientEntry` callback that maps every client entry, including
+Baseline Kit's and your app's, to a JavaScript asset the browser can load (for
+example through the asset server above). `renderToString` takes no options, so
+it cannot resolve client entries: use it only for HTML that won't hydrate.
 
 Remix's `render()` middleware from `remix/middleware/render` imports the
 unpatched renderer itself and can't be pointed at this one. If a `Config` sits
 inside the children of a client entry, render that page with this entry's
-`renderToStream` or `renderToString` directly; otherwise the nested `Config` is
-lost on the server.
+`renderToStream` directly; otherwise the nested `Config` is lost on the
+server.
 
 See the [server resolver example](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/remix-ssr.ts)
 and the [asset-serving fixture](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/vite.config.ts).
@@ -220,7 +242,7 @@ the full list.
 
 | 6.x | 7.x |
 | --- | --- |
-| `baseline-kit/styles/remix` | `baseline-kit/styles` |
+| `import 'baseline-kit/styles/remix'` (Remix) | Link `baseline-kit/styles` in the document head (see [Quick start](#quick-start)) |
 | `baseline-kit/styles/full`, `baseline-kit/full` | `baseline-kit/styles` and `baseline-kit/theme` |
 | `baseline-kit/styles/reset` | `baseline-kit/reset` |
 | `baseline-kit/guide`, `baseline-kit/styles/guide` | `baseline-kit`, `baseline-kit/styles` |

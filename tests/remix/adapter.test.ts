@@ -113,6 +113,22 @@ describe('Remix adapter', () => {
     expect(label).toContain('for="billing-email"')
   })
 
+  it('warns once when a Box still receives the 6.x for prop', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      for (let index = 0; index < 2; index += 1) {
+        const html = await renderToString(
+          jsx(Box, { as: 'label', for: 'legacy-input', children: 'Legacy' })
+        )
+        expect(html).not.toContain('for="legacy-input"')
+      }
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn.mock.calls[0]?.[0]).toContain('pass `htmlFor` instead')
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
   it('omits generated DOM diagnostics by default and preserves caller attributes', async () => {
     const defaultHtml = await renderToString(
       jsx(Spacer, {
