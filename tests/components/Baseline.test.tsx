@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import { render } from '../render'
 import '@testing-library/jest-dom'
-import { Baseline } from '@/components/Baseline'
+import { Baseline } from '@baseline-kit/react/components/Baseline'
 
 // We'll store IntersectionObserver callbacks in a map, keyed by element.
 const observerMap = new Map<Element, IntersectionObserverCallback>()
@@ -157,8 +157,8 @@ describe('Baseline', () => {
   it('preserves zero sizing values in ssrMode fallback', () => {
     render(<Baseline debugging="visible" width={0} height={0} ssrMode />)
     const baseline = screen.getByTestId('baseline')
-    expect(baseline.getAttribute('style')).toContain('width: 0px')
-    expect(baseline.getAttribute('style')).toContain('height: 0px')
+    expect(baseline.getAttribute('style')).toContain('--bkbl-w: 0px')
+    expect(baseline.getAttribute('style')).toContain('--bkbl-h: 0px')
   })
 
   it('preserves CSS pixel units for numeric SSR fallback dimensions', () => {
@@ -172,8 +172,8 @@ describe('Baseline', () => {
       />
     )
     const baseline = screen.getByTestId('numeric-baseline')
-    expect(baseline.getAttribute('style')).toContain('width: 120px')
-    expect(baseline.getAttribute('style')).toContain('height: 80px')
+    expect(baseline.getAttribute('style')).toContain('--bkbl-w: 120px')
+    expect(baseline.getAttribute('style')).toContain('--bkbl-h: 80px')
   })
 
   it('respects custom string height e.g. "50vh"', () => {

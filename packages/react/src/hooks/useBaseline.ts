@@ -1,6 +1,10 @@
 import * as React from 'react'
 import type { SnapEdge, SnappingMode, Padding } from '@baseline-kit/core'
-import { parsePadding, calculateSnappedSpacing } from '@baseline-kit/core'
+import {
+  parsePadding,
+  calculateSnappedSpacing,
+  isOnBaseline,
+} from '@baseline-kit/core'
 import { useMeasure } from './useMeasure'
 
 export interface BaselineOptions {
@@ -47,7 +51,7 @@ export function useBaseline(
 
   return React.useMemo(() => {
     const initialPadding = parsePadding({ padding: spacing })
-    const isAligned = height % base === 0
+    const isAligned = isOnBaseline(height, base)
 
     if (snapping === 'none') {
       return { padding: initialPadding, isAligned, height }

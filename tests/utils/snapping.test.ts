@@ -1,4 +1,4 @@
-import { calculateSnappedSpacing } from '@utils'
+import { calculateSnappedSpacing, isOnBaseline } from '@baseline-kit/core'
 
 describe('calculateSnappedSpacing', () => {
   const base = 8
@@ -89,6 +89,36 @@ describe('calculateSnappedSpacing', () => {
       const initial = { top: 10, right: 20, bottom: 30, left: 40 }
       const result = calculateSnappedSpacing(48, base, initial, 'clamp')
       expect(result).toEqual({ top: 2, right: 20, bottom: 6, left: 40 })
+    })
+  })
+
+  describe('measurement noise', () => {
+    const initial = { top: 8, right: 0, bottom: 8, left: 0 }
+
+    it('treats heights within 1/64px of a grid line as aligned', () => {
+      for (const height of [40.0000076, 39.99, 40.005]) {
+        expect(
+          calculateSnappedSpacing(height, base, initial, {
+            mode: 'height',
+            snapEdge: 'top',
+          })
+        ).toEqual(initial)
+        expect(calculateSnappedSpacing(height, base, initial, 'clamp')).toEqual(
+          { top: 0, right: 0, bottom: 0, left: 0 }
+        )
+        expect(isOnBaseline(height, base)).toBe(true)
+      }
+    })
+
+    it('snaps fractional text heights exactly onto the grid', () => {
+      const result = calculateSnappedSpacing(
+        8.734375,
+        base,
+        { top: 0, right: 0, bottom: 0, left: 0 },
+        { mode: 'height', snapEdge: 'top' }
+      )
+      expect(8.734375 + result.top).toBe(16)
+      expect(isOnBaseline(8.734375, base)).toBe(false)
     })
   })
 })

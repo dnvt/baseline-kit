@@ -56,4 +56,8 @@
   --bk-guide-color-pattern-theme: hsla(var(--bk-color-purple-secondary), 0.25);
   --bk-guide-color-auto-theme: hsla(var(--bk-color-blue-secondary), 0.2);
   --bk-guide-color-fixed-theme: hsla(var(--bk-color-blue-secondary), 0.2);
+
+  --bk-spacer-color-line-theme: hsla(var(--bk-color-purple-primary), 0.7);
+  --bk-spacer-color-flat-theme: hsla(var(--bk-color-purple-secondary), 0.3);
+  --bk-spacer-color-text-theme: hsla(var(--bk-color-purple-primary), 1);
 }

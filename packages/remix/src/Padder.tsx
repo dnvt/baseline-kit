@@ -8,38 +8,29 @@ import {
   parsePadding,
   type ConfigSchema,
   type Padding,
-  type Spacing,
+  type PadderOptions,
+  cx,
+  getDOMAttributes,
+  resolveDebugState,
 } from '@baseline-kit/core'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
-import { Spacer, type SpacerProps } from './Spacer'
+import { Spacer, type IndicatorNode, type SpacerProps } from './Spacer'
 import {
-  classNames,
-  compactStyle,
-  getDOMAttributes,
   createElementObserverBridge,
   getConfig,
   mergeStyles,
   normalizeConfigSnapshot,
   queueNativeUpdate,
-  resolveDebugging,
   type NativeComponent,
-  type NativeDOMAttributes,
+  type NativeHostProps,
 } from './shared'
 
-export type PadderProps = NativeDOMAttributes & {
-  width?: number | string
-  height?: number | string
-  debugging?: 'none' | 'hidden' | 'visible'
-  className?: string
-  style?: Record<string, string | number | null | undefined>
-  block?: Spacing
-  inline?: Spacing
-  padding?: Parameters<typeof parsePadding>[0]['padding']
-  indicatorNode?: (value: number, type: 'width' | 'height') => RemixNode
-  children?: RemixNode
-  ssrMode?: boolean
-}
+export type PadderProps = PadderOptions &
+  NativeHostProps & {
+    children?: RemixNode
+    indicatorNode?: IndicatorNode
+  }
 
 type RuntimePadderProps = PadderProps & {
   __baselineConfig?: ConfigSchema
@@ -70,7 +61,7 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     const config = normalizeConfigSnapshot(
       props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
     )
-    const debug = resolveDebugging(props.debugging, config.padder.debugging)
+    const debug = resolveDebugState(props.debugging, config.padder.debugging)
     base = config.base
     initialPadding = parsePadding({
       padding: props.padding,
@@ -97,21 +88,13 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     if (debug.isNone) {
       return (
         <div
-          className={classNames(
+          className={cx(
             ...descriptor.classTokens.map((token) => `bk-${token}`),
             props.className
           )}
           data-testid={config.domDiagnostics ? 'padder' : undefined}
           mix={mix}
-          style={mergeStyles(
-            compactStyle(descriptor.containerStyle, {
-              '--bkpd-w': 'auto',
-              '--bkpd-h': 'auto',
-              '--bkpd-b': '8px',
-              '--bkpd-c': DEFAULT_CONFIG.padder.color,
-            }),
-            props.style
-          )}
+          style={mergeStyles(descriptor.containerStyle, props.style)}
           {...getDOMAttributes(props)}
         >
           {props.preserveContentHost ? (
@@ -173,21 +156,13 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
 
     return (
       <div
-        className={classNames(
+        className={cx(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
           props.className
         )}
         data-testid={config.domDiagnostics ? 'padder' : undefined}
         mix={mix}
-        style={mergeStyles(
-          compactStyle(descriptor.containerStyle, {
-            '--bkpd-w': 'auto',
-            '--bkpd-h': 'auto',
-            '--bkpd-b': '8px',
-            '--bkpd-c': DEFAULT_CONFIG.padder.color,
-          }),
-          props.style
-        )}
+        style={mergeStyles(descriptor.containerStyle, props.style)}
         {...getDOMAttributes(props)}
       >
         {children}

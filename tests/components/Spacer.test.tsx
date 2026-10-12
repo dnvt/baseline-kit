@@ -2,11 +2,11 @@ import { screen } from '@testing-library/react'
 import { render } from '../render'
 import '@testing-library/jest-dom'
 import { CSSProperties } from 'react'
-import { Spacer } from '@components'
+import { Spacer } from '@baseline-kit/react'
 
 // Partial mock of @hooks so that useConfig for spacer returns expected values.
-vi.mock('@hooks', async () => {
-  const original = await vi.importActual('@hooks')
+vi.mock('@baseline-kit/react/hooks', async () => {
+  const original = await vi.importActual('@baseline-kit/react/hooks')
   return {
     ...original,
     useConfig: (component: string) => {

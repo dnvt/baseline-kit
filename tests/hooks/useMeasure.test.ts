@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react'
-import { useMeasure } from '@/hooks/useMeasure'
+import { useMeasure } from '@baseline-kit/react/hooks/useMeasure'
 
 class ResizeObserverMock {
   callback: ResizeObserverCallback
@@ -15,17 +15,20 @@ class ResizeObserverMock {
     this.trigger()
   }
 
-  unobserve() {
-  }
+  unobserve() {}
 
-  disconnect() {
-  }
+  disconnect() {}
 
   trigger() {
-    this.callback([{
-      target: this.elements[0],
-      contentRect: { width: 100, height: 50 },
-    } as ResizeObserverEntry], this)
+    this.callback(
+      [
+        {
+          target: this.elements[0],
+          contentRect: { width: 100, height: 50 },
+        } as ResizeObserverEntry,
+      ],
+      this
+    )
   }
 }
 
@@ -54,8 +57,7 @@ describe('useMeasure', () => {
       right: 100,
       x: 0,
       y: 0,
-      toJSON: () => {
-      },
+      toJSON: () => {},
     })
     const ref = { current: element }
     const { result } = renderHook(() => useMeasure(ref))

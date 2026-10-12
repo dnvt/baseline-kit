@@ -480,6 +480,19 @@ export function createRemixApp() {
           }),
         }),
       }),
+      jsx('div', {
+        id: 'remix-snap-box-top-fractional',
+        children: jsx(Box, {
+          snapping: 'height',
+          snapEdge: 'top',
+          debugging: 'visible',
+          block: [0, 0],
+          children: jsx('div', {
+            style: { height: '10.5px' },
+            children: 'Native fractional top snap consumer',
+          }),
+        }),
+      }),
       jsx('section', {
         id: 'remix-box-semantic-host',
         children: [
@@ -496,10 +509,23 @@ export function createRemixApp() {
           jsx(Box, {
             id: 'remix-semantic-label',
             as: 'label',
-            for: 'remix-semantic-input',
+            htmlFor: 'remix-semantic-input',
             children: 'Semantic host label',
           }),
           jsx('input', { id: 'remix-semantic-input' }),
+          jsx('div', {
+            style: { width: '400px' },
+            children: jsx(Box, {
+              id: 'remix-semantic-sized',
+              as: 'h3',
+              width: '50%',
+              snapping: 'height',
+              snapEdge: 'top',
+              block: [0, 0],
+              style: { borderBottom: '1px solid', paddingTop: '3px' },
+              children: 'Sized semantic heading',
+            }),
+          }),
         ],
       }),
     ],

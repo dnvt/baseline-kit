@@ -1215,6 +1215,50 @@ test('React Box applies top-edge snapping on its merged grid host', async ({
   await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(0)
 })
 
+test('React Box keeps a fractional top snap on an 8px base', async ({
+  page,
+}) => {
+  const box = page.locator('#box-snap-top-fractional [data-testid="box"]')
+  await expect
+    .poll(() =>
+      box.evaluate(
+        (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+      )
+    )
+    .toBe('5.5px')
+  const height = await box.evaluate(
+    (element) => element.getBoundingClientRect().height
+  )
+  expect(height % 8).toBeCloseTo(0, 5)
+})
+
+test('React semantic Box sizes once and snaps its whole host', async ({
+  page,
+}) => {
+  const host = page.locator('#react-semantic-sized')
+  expect(await host.evaluate((element) => element.tagName)).toBe('H3')
+  await expect
+    .poll(() =>
+      host.evaluate((element) => {
+        const remainder = element.getBoundingClientRect().height % 8
+        return Math.min(remainder, 8 - remainder) < 1 / 64
+      })
+    )
+    .toBe(true)
+  const sizes = await host.evaluate((element) => ({
+    host: element.getBoundingClientRect().width,
+    grid: element
+      .querySelector(':scope > .bk-box__grid')!
+      .getBoundingClientRect().width,
+  }))
+  expect(sizes.host).toBeCloseTo(200, 1)
+  expect(sizes.grid).toBeCloseTo(200, 1)
+
+  const label = page.locator('#react-semantic-label')
+  expect(await label.evaluate((element) => element.tagName)).toBe('LABEL')
+  await expect(label).toHaveAttribute('for', 'react-semantic-input')
+})
+
 test.describe('native Remix adapter', () => {
   test('nested Config survives delayed application entry and generated consumers', async ({
     page,
@@ -1389,10 +1433,10 @@ test.describe('native Remix adapter', () => {
     expect(parity.maxChannelDelta).toBe(0)
   })
 
-  test('serves the native stylesheet through the app asset path', async ({
+  test('serves the shared stylesheet through the app asset path', async ({
     request,
   }) => {
-    const response = await request.get('/__baseline-remix.css')
+    const response = await request.get('/__baseline.css')
     expect(response.status()).toBe(200)
     expect(response.headers()['content-type']).toContain('text/css')
     expect(await response.text()).toContain('.bk-bas')
@@ -1874,6 +1918,58 @@ test.describe('native Remix adapter', () => {
     const label = page.locator('#remix-semantic-label')
     expect(await label.evaluate((element) => element.tagName)).toBe('LABEL')
     await expect(label).toHaveAttribute('for', 'remix-semantic-input')
+  })
+
+  test('native Box keeps a fractional top snap on an 8px base', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const box = page.locator(
+      '#remix-snap-box-top-fractional [data-testid="box"]'
+    )
+    await expect
+      .poll(() =>
+        box.evaluate(
+          (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+        )
+      )
+      .toBe('5.5px')
+    const height = await box.evaluate(
+      (element) => element.getBoundingClientRect().height
+    )
+    expect(height % 8).toBeCloseTo(0, 5)
+  })
+
+  test('native semantic Box sizes once and snaps its whole host', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    const host = page.locator('#remix-semantic-sized')
+    await expect(host).toHaveAttribute('data-bk-snap-state', 'measured')
+    const sizes = await host.evaluate((element) => {
+      const grid = element.querySelector(':scope > .bk-box__grid')!
+      return {
+        host: element.getBoundingClientRect(),
+        grid: grid.getBoundingClientRect(),
+      }
+    })
+    // width="50%" applies to the host only, not again to the inner grid.
+    expect(sizes.host.width).toBeCloseTo(200, 1)
+    expect(sizes.grid.width).toBeCloseTo(200, 1)
+    // The host's own border and padding count toward the snapped height.
+    const remainder = sizes.host.height % 8
+    expect(Math.min(remainder, 8 - remainder)).toBeLessThan(1 / 64)
   })
 
   test('native rows respond to a containing-block resize', async ({ page }) => {

@@ -322,6 +322,43 @@ export function App() {
         </Box>
       </section>
 
+      <section id="box-snap-top-fractional">
+        <Box
+          snapping="height"
+          snapEdge="top"
+          debugging="visible"
+          block={[0, 0]}
+        >
+          <div style={{ width: 20, height: '10.5px' }}>
+            React fractional top snap consumer
+          </div>
+        </Box>
+      </section>
+
+      <section id="box-semantic-host">
+        <div style={{ width: 400 }}>
+          <Box
+            id="react-semantic-sized"
+            as="h3"
+            width="50%"
+            snapping="height"
+            snapEdge="top"
+            block={[0, 0]}
+            style={{ borderBottom: '1px solid', paddingTop: '3px' }}
+          >
+            Sized semantic heading
+          </Box>
+        </div>
+        <Box
+          id="react-semantic-label"
+          as="label"
+          htmlFor="react-semantic-input"
+        >
+          Semantic host label
+        </Box>
+        <input id="react-semantic-input" />
+      </section>
+
       <section
         id="baseline-percent"
         style={{ position: 'relative', width: 320, height: 160 }}

@@ -1,8 +1,8 @@
 import { screen } from '@testing-library/react'
 import { render } from '../render'
 import '@testing-library/jest-dom'
-import { Config, Padder } from '@components'
-import * as HooksModule from '@hooks'
+import { Config, Padder } from '@baseline-kit/react'
+import * as HooksModule from '@baseline-kit/react/hooks'
 
 describe('Padder', () => {
   beforeEach(() => {

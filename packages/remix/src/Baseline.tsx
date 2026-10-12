@@ -3,44 +3,33 @@
 import { type Handle, type RemixNode } from 'remix/component'
 import {
   DEFAULT_CONFIG,
-  canCompactBaselinePaint,
   createBaselineDescriptor,
-  formatValue,
+  createBaselineFallbackStyle,
+  type BaselineOptions,
   type BaselineVariant,
   type ConfigSchema,
-  type SpacingProps,
+  cx,
+  getDOMAttributes,
+  resolveDebugState,
 } from '@baseline-kit/core'
 import {
   getConfig,
-  classNames,
-  compactStyle,
-  getDOMAttributes,
   mergeStyles,
   normalizeConfigSnapshot,
-  resolveDebugging,
   createElementObserverBridge,
   createVirtualBridge,
   queueNativeUpdate,
   type NativeComponent,
-  type NativeDOMAttributes,
+  type NativeHostProps,
 } from './shared'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 
 export type { BaselineVariant }
 
-export type BaselineProps = SpacingProps &
-  NativeDOMAttributes & {
-    variant?: BaselineVariant
-    width?: number | string
-    height?: number | string
-    base?: number
-    color?: string
-    debugging?: 'none' | 'hidden' | 'visible'
-    className?: string
-    style?: Record<string, string | number | null | undefined>
+export type BaselineProps = BaselineOptions &
+  NativeHostProps & {
     children?: RemixNode
-    ssrMode?: boolean
   }
 
 type RuntimeBaselineProps = BaselineProps & {
@@ -71,7 +60,7 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
     )
     const base = props.base ?? config.base
     const variant = props.variant ?? config.baseline.variant
-    const debugging = resolveDebugging(
+    const debugging = resolveDebugState(
       props.debugging,
       config.baseline.debugging
     )
@@ -90,10 +79,6 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
         inline: props.inline,
       },
       isVisible: debugging.isShown,
-    })
-    const compactPaint = canCompactBaselinePaint({
-      base,
-      contentHeight: descriptor.contentHeight,
       domDiagnostics: config.domDiagnostics,
       className: props.className,
       style: props.style,
@@ -102,7 +87,7 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
     if (props.ssrMode) {
       return (
         <div
-          className={classNames(
+          className={cx(
             'bk-bas',
             'bk-h',
             'bk-ssr',
@@ -112,21 +97,7 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
           data-testid={config.domDiagnostics ? 'baseline' : undefined}
           aria-hidden={true}
           style={mergeStyles(
-            compactStyle(descriptor.containerStyle, {
-              '--bkbl-w': '100%',
-              '--bkbl-h': '100%',
-              '--bkbl-cl': DEFAULT_CONFIG.baseline.colors.line,
-              '--bkbl-cf': DEFAULT_CONFIG.baseline.colors.flat,
-              '--bkbl-c':
-                variant === 'line' ? 'var(--bkbl-cl)' : 'var(--bkbl-cf)',
-            }),
-            compactStyle(
-              {
-                width: formatValue(props.width ?? '100%'),
-                height: formatValue(props.height ?? '100%'),
-              },
-              { width: '100%', height: '100%' }
-            ),
+            createBaselineFallbackStyle(props.width, props.height),
             props.style
           )}
           {...getDOMAttributes(props)}
@@ -140,7 +111,7 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
 
     const range = virtual.getRange(descriptor.rowCount)
     const rows =
-      debugging.isShown && !compactPaint
+      debugging.isShown && !descriptor.compactPaint
         ? Array.from(
             { length: Math.max(0, range.end - range.start) },
             (_, index) => {
@@ -162,39 +133,13 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
     // the descriptor while hydrating.
     return (
       <div
-        className={classNames(
+        className={cx(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
-          `bk-${variant}`,
-          compactPaint && 'bk-compact',
           props.className
         )}
         data-testid={config.domDiagnostics ? 'baseline' : undefined}
         aria-hidden={true}
-        style={mergeStyles(
-          compactStyle(
-            {
-              ...descriptor.containerStyle,
-              ...(compactPaint ? { '--bkbl-b': `${base}px` } : {}),
-            },
-            {
-              '--bkbl-w': '100%',
-              '--bkbl-h': '100%',
-              '--bkbl-b': '8px',
-              '--bkbl-cl': DEFAULT_CONFIG.baseline.colors.line,
-              '--bkbl-cf': DEFAULT_CONFIG.baseline.colors.flat,
-              '--bkbl-c':
-                variant === 'line' ? 'var(--bkbl-cl)' : 'var(--bkbl-cf)',
-            }
-          ),
-          compactStyle(
-            {
-              width: formatValue(props.width ?? '100%'),
-              height: formatValue(props.height ?? '100%'),
-            },
-            { width: '100%', height: '100%' }
-          ),
-          props.style
-        )}
+        style={mergeStyles(descriptor.containerStyle, props.style)}
         {...getDOMAttributes(props)}
         mix={
           typeof window === 'undefined' || props.ssrMode

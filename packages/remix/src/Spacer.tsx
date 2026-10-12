@@ -4,21 +4,20 @@ import { type Handle, type RemixNode } from 'remix/component'
 import {
   DEFAULT_CONFIG,
   createSpacerDescriptor,
-  type Variant,
   type ConfigSchema,
+  type SpacerOptions,
+  cx,
+  getDOMAttributes,
+  resolveDebugState,
 } from '@baseline-kit/core'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 import {
-  classNames,
-  compactStyle,
-  getDOMAttributes,
   getConfig,
   mergeStyles,
   normalizeConfigSnapshot,
-  resolveDebugging,
   type NativeComponent,
-  type NativeDOMAttributes,
+  type NativeHostProps,
 } from './shared'
 
 export type IndicatorNode = (
@@ -26,19 +25,11 @@ export type IndicatorNode = (
   type: 'width' | 'height'
 ) => RemixNode
 
-export type SpacerProps = NativeDOMAttributes & {
-  width?: number | string
-  height?: number | string
-  variant?: Variant
-  color?: string
-  base?: number
-  debugging?: 'none' | 'hidden' | 'visible'
-  className?: string
-  style?: Record<string, string | number | null | undefined>
-  children?: RemixNode
-  indicatorNode?: IndicatorNode
-  ssrMode?: boolean
-}
+export type SpacerProps = SpacerOptions &
+  NativeHostProps & {
+    children?: RemixNode
+    indicatorNode?: IndicatorNode
+  }
 
 type RuntimeSpacerProps = SpacerProps & {
   __baselineConfig?: ConfigSchema
@@ -52,7 +43,10 @@ function SpacerImpl(handle: Handle<RuntimeSpacerProps>) {
     )
     const base = props.base ?? config.base
     const variant = props.variant ?? config.spacer.variant
-    const debugging = resolveDebugging(props.debugging, config.spacer.debugging)
+    const debugging = resolveDebugState(
+      props.debugging,
+      config.spacer.debugging
+    )
     const descriptor = createSpacerDescriptor({
       base,
       colors: config.spacer.colors,
@@ -81,7 +75,7 @@ function SpacerImpl(handle: Handle<RuntimeSpacerProps>) {
 
     return (
       <div
-        className={classNames(
+        className={cx(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
           props.className
         )}
@@ -90,17 +84,7 @@ function SpacerImpl(handle: Handle<RuntimeSpacerProps>) {
         data-height={
           config.domDiagnostics ? `${descriptor.normHeight}px` : undefined
         }
-        style={mergeStyles(
-          compactStyle(descriptor.style, {
-            '--bksp-w': 'var(--bk-wf, 100%)',
-            '--bksp-h': 'var(--bk-hf, auto)',
-            '--bksp-b': '8px',
-            '--bksp-cl': DEFAULT_CONFIG.spacer.colors.line,
-            '--bksp-cf': DEFAULT_CONFIG.spacer.colors.flat,
-            '--bksp-ct': DEFAULT_CONFIG.spacer.colors.text,
-          }),
-          props.style
-        )}
+        style={mergeStyles(descriptor.style, props.style)}
         {...getDOMAttributes(props)}
       >
         {measurements}

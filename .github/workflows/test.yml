@@ -53,17 +53,6 @@ jobs:
       - name: Run Packed Remix Integration
         run: bun run test:integration:remix
 
-      - name: Verify Package Contents
-        run: |
-          test -f dist/index.mjs || (echo "Missing index.mjs" && exit 1)
-          test -f dist/index.cjs || (echo "Missing index.cjs" && exit 1)
-          test -f dist/remix.mjs || (echo "Missing remix.mjs" && exit 1)
-          test -f dist/remix.d.ts || (echo "Missing remix.d.ts" && exit 1)
-          test -f dist/remix.css || (echo "Missing remix.css" && exit 1)
-          test -f dist/styles.css || (echo "Missing styles.css" && exit 1)
-          test -f dist/baseline-kit.css || (echo "Missing baseline-kit.css" && exit 1)
-          test -d dist/theme || (echo "Missing theme directory" && exit 1)
-
   react-core:
     name: React/Core Node 22 Check
     runs-on: ubuntu-latest

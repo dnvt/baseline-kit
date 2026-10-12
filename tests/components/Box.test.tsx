@@ -3,8 +3,9 @@ import { render } from '../render'
 import '@testing-library/jest-dom'
 import type { CSSProperties } from 'react'
 import { useState } from 'react'
-import { Box, DebuggingMode, Padding, SnappingMode } from '@components'
-import { useBaseline } from '@hooks'
+import { Box } from '@baseline-kit/react'
+import type { DebuggingMode, Padding, SnappingMode } from '@baseline-kit/core'
+import { useBaseline } from '@baseline-kit/react/hooks'
 
 function StatefulField() {
   const [value, setValue] = useState('before')
@@ -26,7 +27,7 @@ vi.mock('./styles.module.css', () => ({
   },
 }))
 
-vi.mock('@components/Spacer', () => ({
+vi.mock('@baseline-kit/react/components/Spacer', () => ({
   Spacer: ({
     width,
     height,
@@ -47,7 +48,7 @@ vi.mock('@components/Spacer', () => ({
 }))
 
 // Mock hooks used in Box.
-vi.mock('@hooks', () => ({
+vi.mock('@baseline-kit/react/hooks', () => ({
   useConfig: vi.fn((component: string) => {
     if (component === 'box') {
       return {

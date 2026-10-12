@@ -1,9 +1,7 @@
 /**
- * @baseline-kit/remix
- * React-free Baseline Kit adapter for the Remix 3 UI runtime.
+ * baseline-kit/remix: React-free components for the Remix 3 UI runtime.
+ * Styles ship separately as `baseline-kit/styles`, shared with React.
  */
-
-import './styles.css'
 
 export { Config } from './Config'
 export { Baseline } from './Baseline'

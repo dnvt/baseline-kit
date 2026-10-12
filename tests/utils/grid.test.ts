@@ -1,4 +1,4 @@
-import { calculateGuideTemplate } from '@utils'
+import { calculateGuideTemplate } from '@baseline-kit/core'
 
 describe('calculateGuideTemplate viewport context', () => {
   it('forwards context to vw-based gap conversion', () => {

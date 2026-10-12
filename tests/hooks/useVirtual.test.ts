@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react'
-import { useVirtual } from '@hooks'
+import { useVirtual } from '@baseline-kit/react/hooks'
 
 // Create a map to simulate IntersectionObserver callbacks.
 const observerMap = new Map<HTMLElement, IntersectionObserverCallback>()

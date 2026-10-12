@@ -9,10 +9,15 @@ const baseParams = {
 }
 
 describe('createPadderDescriptor', () => {
-  it('emits --bkpd-b and --bkpd-c unconditionally', () => {
+  it('emits base and color only when they differ from the stylesheet', () => {
     const { containerStyle } = createPadderDescriptor(baseParams)
-    expect(containerStyle['--bkpd-b']).toBe('8px')
+    expect(containerStyle['--bkpd-b']).toBeUndefined()
     expect(containerStyle['--bkpd-c']).toBe('blue')
+    expect(
+      createPadderDescriptor({ ...baseParams, base: 4 }).containerStyle[
+        '--bkpd-b'
+      ]
+    ).toBe('4px')
   })
 
   it('emits width/height only when not fit-content', () => {
@@ -67,8 +72,7 @@ describe('createPadderDescriptor', () => {
 
   it('includes "v" class token only when visible AND spacers enabled', () => {
     expect(
-      createPadderDescriptor({ ...baseParams, enableSpacers: true })
-        .classTokens
+      createPadderDescriptor({ ...baseParams, enableSpacers: true }).classTokens
     ).toEqual(['pad', 'v'])
     expect(
       createPadderDescriptor({ ...baseParams, enableSpacers: false })

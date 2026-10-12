@@ -7,34 +7,39 @@
 Baseline Kit grew from my [Padded Grid article](https://medium.com/design-bootcamp/the-padded-grid-a-designers-hack-to-achieve-baseline-fit-fc40d022bc84),
 which explores aligning text baselines and component bounds to an 8px grid.
 Baseline Kit turns that idea into a reusable pattern: wrap text in `Box` with
-`snapping="height"` and `snapEdge="top"`. Height snapping rounds the Box up to
-the next grid interval; top snapping puts the correction above the text. The
-final baseline stays on the grid when the Box begins on a grid line and its
-bottom padding is a multiple of the base. `Baseline` and `Guide` visualize the
-grid; `Padder`, `Spacer`, and `Config` handle spacing and defaults. A
-React-free adapter is available for Remix 3.
+`snapping="height"` and `snapEdge="top"`.
+
+The pattern relies on the CSS
+[`text-box-trim`](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-trim)
+property. `Box` sets `text-box-trim: trim-both` with
+`text-box-edge: ex alphabetic`, which cuts each text element down to the space
+between its x-height and its alphabetic baseline. The text's measured height
+then ends exactly on its baseline. Height snapping rounds the Box up to the
+next grid interval, and top snapping puts that correction above the text, so
+the baseline lands on the grid.
+
+`Baseline` and `Guide` draw the grid; `Padder`, `Spacer`, and `Config` handle
+spacing and defaults.
+
+The same components, props, and stylesheet work in React 19 and in Remix 3
+without React.
 
 ![Demo visual](https://raw.githubusercontent.com/dnvt/baseline-kit/main/kit.png)
 
 ## Install
 
-For React:
-
 ```shell
-npm install baseline-kit react@19 react-dom@19
+npm install baseline-kit react@19 react-dom@19   # React
+npm install baseline-kit remix@3                 # Remix 3, no React
 ```
 
-For the React-free Remix 3 adapter:
+React and Remix are optional peer dependencies; install the one you use.
+TypeScript declarations are included (TypeScript 5.8, 6, or 7). The React entry
+runs on Node.js 18+; Remix 3 requires Node.js 24.3+.
 
-```shell
-npm install baseline-kit remix@3.0.0
-```
+## Quick start
 
-Baseline Kit includes TypeScript declarations. React and Remix are optional
-peer dependencies. React use requires Node.js 18+; Remix 3.0.0 requires
-Node.js 24.3+. TypeScript 5.8, 6, or 7 is supported.
-
-## React quick start
+Import the stylesheet once, then use the components. In React:
 
 ```tsx
 import 'baseline-kit/styles'
@@ -44,11 +49,11 @@ import { Baseline, Box, Config, Guide } from 'baseline-kit'
 export function App() {
   return (
     <Config base={8}>
-      <main className="layout">
+      <main style={{ position: 'relative', minHeight: '100vh' }}>
         <Baseline height="100%" debugging="visible" />
         <Guide variant="fixed" columns={12} debugging="visible" />
-        <Box snapping="height" snapEdge="top">
-          <p className="copy">Text aligned to the 8px baseline grid.</p>
+        <Box as="h1" snapping="height" snapEdge="top">
+          Text on the 8px baseline grid
         </Box>
       </main>
     </Config>
@@ -56,41 +61,57 @@ export function App() {
 }
 ```
 
-```css
-.layout {
-  position: relative;
-  height: 100vh;
-}
+In Remix 3, import the components from `baseline-kit/remix` instead. They
+render through `remix/component` and never load React:
 
-.copy {
-  margin: 0;
-  text-box-trim: trim-both;
-  text-box-edge: ex alphabetic;
+```tsx
+/** @jsxImportSource remix/component */
+import 'baseline-kit/styles'
+import { Box, Config } from 'baseline-kit/remix'
+
+export function App() {
+  return () => (
+    <Config base={8}>
+      <Box as="h1" snapping="height" snapEdge="top">
+        Text on the 8px baseline grid
+      </Box>
+    </Config>
+  )
 }
 ```
 
-### Text on the baseline grid
+## Text on the baseline grid
 
-Use a `Box` around each text block with `snapping="height"` and
-`snapEdge="top"`. Baseline Kit uses `text-box-trim: trim-both` and
-`text-box-edge: ex alphabetic` on `Box` and `Padder`. This trims the text
-block from the x-height to the alphabetic baseline, so the end of its measured
-text height is exactly at the baseline. `snapEdge="top"` puts any height
-correction above the text. With a grid-aligned Box start and block-end padding
-that is a multiple of the base (8px by default), the baseline stays on the grid.
+`Box` is meant to wrap text: a heading, a paragraph, a label, or a single line
+of copy. It applies `text-box-trim: trim-both` and
+`text-box-edge: ex alphabetic` to its content and to each direct child
+(`Padder` does the same). This is what makes the alignment work. Without
+trimming, a line of text includes the font's ascender and descender space, so
+its height says nothing about where the baseline sits. Trimmed from the
+x-height to the alphabetic baseline, the text ends exactly on its baseline, and
+`snapEdge="top"` adds the height correction above it. When the Box starts on a
+grid line and its bottom padding is a multiple of the base, the baseline lands
+on the grid.
 
-Text-box properties do not inherit. Baseline Kit applies them to text directly
-inside its wrappers; apply them to nested paragraphs, headings, or other text
-containers too. For multiline text, set `line-height` to a multiple of the base
-if every line baseline must align. Browsers without text-box support keep their
-normal text metrics. See the
-[text-box-edge reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-edge)
-for details and compatibility.
+```tsx
+<Box snapping="height" snapEdge="top">
+  <p>Body copy sits on the grid.</p>
+</Box>
+<Box as="h2" snapping="height" snapEdge="top">
+  So does this heading.
+</Box>
+```
+
+Text nested deeper than a direct child needs the same two properties:
+`text-box-edge` inherits but `text-box-trim` does not. For multiline text, use
+a `line-height` that is a multiple of the base if every line must align.
+Browsers without text-box support keep their normal text metrics. See the
+[text-box-edge reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-edge).
 
 ## Spacing and snapping
 
-The baseline interval is `8px` by default. Set it with `Config base={...}`.
-Numeric spacing values are CSS pixels, not multiples of the base. For example:
+The base interval is `8px` by default; set it with `Config base={...}`.
+Numeric spacing values are CSS pixels, not multiples of the base:
 
 ```tsx
 <Padder block={[16, 24]} inline={{ start: 8, end: 16 }}>
@@ -98,82 +119,97 @@ Numeric spacing values are CSS pixels, not multiples of the base. For example:
 </Padder>
 ```
 
-Spacing props accept CSS-like values: `padding={16}` sets all sides,
-`padding={[8, 16]}` sets block and inline pairs, `block={[16, 24]}` sets
-block-start/end, and `inline={{ start: 8, end: 16 }}` sets inline-start/end.
-Three- and four-value `padding` arrays follow CSS shorthand.
+Spacing props follow CSS shorthand: `padding={16}` sets all sides,
+`padding={[8, 16]}` sets block and inline, and three- or four-value arrays work
+as in CSS. `block` and `inline` set start/end pairs as arrays or objects.
 
-`Box` defaults to `snapping="clamp"`. Use `height` to round its measured height
-up to the next base interval; the correction goes to the bottom by default.
-Set `snapEdge="top"` to place it above the text instead. `snapping="none"`
-keeps explicit spacing. Snapping runs after the first nonzero measurement, not
-continuously on resize. `Padder` uses height snapping with bottom correction;
-set `ssrMode` to keep its explicit padding without measurement.
+`Box` snapping modes:
 
-## Components and styles
+| `snapping` | Effect |
+| --- | --- |
+| `clamp` (default) | Keeps block padding under one base and corrects the bottom so the height lands on the grid. |
+| `height` | Keeps your padding and rounds the height up to the next base interval. |
+| `none` | Keeps the padding you set. |
+
+In `height` mode the correction goes to the bottom by default;
+`snapEdge="top"` puts it above the content. `Box` measures its whole element, including its own border and
+padding, with fractional-pixel precision. Heights within 1/64px of a grid line
+count as aligned, so browser zoom and display scaling do not add a stray row.
+Snapping runs once, after the first nonzero measurement, not on every resize.
+`Padder` uses height snapping with a bottom correction. Set `ssrMode` on
+either to keep the explicit padding without measuring.
+
+### Semantic elements
+
+`as` renders `Box` as a heading, `p`, `label`, `legend`, `small`, `span`, or
+`strong` instead of a `div`. Your `className`, `style`, `width`, and `height`
+stay on that element and the snapped grid sits inside it. Pass `htmlFor` with
+`as="label"`.
+
+## Components
 
 | Component | Purpose |
 | --- | --- |
 | `Baseline` | Horizontal baseline-grid overlay. |
 | `Guide` | Responsive or fixed column-grid overlay. |
-| `Box` | Wraps content and can snap its height. |
+| `Box` | Wraps text, trims it to its baseline, and snaps its height to the grid. |
 | `Padder` | Adds baseline-aware padding. |
 | `Spacer` | Adds a fixed-size spacer. |
 | `Config` | Sets scoped base, colors, variants, and debugging defaults. |
 
-Import only the JavaScript and CSS entries the app uses:
-
-| Use | JavaScript | CSS |
-| --- | --- | --- |
-| React components | `baseline-kit` | `baseline-kit/styles` and `baseline-kit/theme` |
-| React Guide only | `baseline-kit/guide` | `baseline-kit/styles/guide` |
-| Remix 3 components | `baseline-kit/remix` | `baseline-kit/styles/remix` |
-| Core utilities | `baseline-kit/core` | None |
-
-`baseline-kit/styles/full` combines the React styles and theme. The default
-theme follows `prefers-color-scheme`; use `baseline-kit/theme/default` or
-`baseline-kit/theme/dark` to choose one. For custom colors, use `Config` or
-copy the [theme token template](https://github.com/dnvt/baseline-kit/blob/main/packages/react/src/components/styles/theme/tokens.css).
-An optional reset is available from `baseline-kit/reset` or
-`baseline-kit/styles/reset`.
-
-Debugging can be `visible`, `hidden`, or `none`: show debug paint, hide paint
-while preserving layout, or disable debug elements. Baseline and Guide are
-`aria-hidden` overlays; keep meaningful content outside them. Diagnostic
-attributes are omitted by default; enable them for a subtree with
+`debugging` can be `visible`, `hidden`, or `none`: show the debug paint, hide
+it but keep the layout, or render no debug elements. `Baseline` and `Guide` are
+`aria-hidden` overlays, so keep meaningful content outside them. Diagnostic
+`data-*` attributes are off by default; turn them on for a subtree with
 `<Config domDiagnostics>`.
 
-## Remix 3
+## Entry points
 
-The adapter uses `remix/component` and does not import React or React DOM:
+| Import | Contents |
+| --- | --- |
+| `baseline-kit` | React components. |
+| `baseline-kit/remix` | Remix 3 components, without React. |
+| `baseline-kit/remix/server` | Node.js server renderer for Remix 3 (see below). |
+| `baseline-kit/core` | Framework-free types, config, and spacing math. |
+| `baseline-kit/styles` | Required component styles, shared by React and Remix. |
+| `baseline-kit/theme` | Optional colors that follow `prefers-color-scheme`. |
+| `baseline-kit/theme/default`, `baseline-kit/theme/dark` | A fixed light or dark theme. |
+| `baseline-kit/reset` | Optional minimal CSS reset. |
 
-```tsx
-import 'baseline-kit/styles/remix'
-import { Box, Config } from 'baseline-kit/remix'
-import { jsx } from 'remix/component/jsx-runtime'
+Components use global `bk-*` class names, so you can override them with plain
+CSS. For custom colors, use `Config` or copy the
+[theme token template](https://github.com/dnvt/baseline-kit/blob/main/packages/core/src/styles/theme/tokens.css).
 
-export function App() {
-  return jsx(Config, {
-    base: 8,
-    children: jsx(Box, { children: 'Native Remix content' }),
-  })
-}
-```
+## Remix 3 server rendering
 
-For Node.js server rendering, use `baseline-kit/remix/server` instead of
-`remix/component/server`. Remix 3.0.0 loses provider context while serializing
-component-valued children; the Baseline Kit entry fixes that traversal in an
-isolated renderer and checks the installed runtime before using it. This is a
-Node-only entry, so keep the installed Remix runtime files in production. Its
-`resolveClientEntry` callback must map entries, including app entries, to
-browser-served JavaScript assets. Import `ImportMap` from this server entry
-when needed; `Frame` and client components still come from `remix/component`.
+For Node.js server rendering, import `renderToStream`, `renderToString`, and
+`ImportMap` from `baseline-kit/remix/server` instead of
+`remix/component/server`. Remix 3 loses provider context while serializing
+component-valued children. This entry patches that step in an isolated copy of
+the renderer, and fails at startup if the code it patches is no longer there.
+It reads the installed Remix runtime from disk, so keep those files in
+production. `Frame` and client components still come from `remix/component`.
+Its `resolveClientEntry` callback must map every entry, including your app's,
+to a JavaScript asset the browser can load.
 
 See the [server resolver example](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/remix-ssr.ts)
-and [asset-serving fixture](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/vite.config.ts).
+and the [asset-serving fixture](https://github.com/dnvt/baseline-kit/blob/main/tests/browser/vite.config.ts).
+
+## Upgrading from 6.x
+
+Version 7 ships one stylesheet and fewer entry points. See the
+[changelog](https://github.com/dnvt/baseline-kit/blob/main/CHANGELOG.md) for
+the full list.
+
+| 6.x | 7.x |
+| --- | --- |
+| `baseline-kit/styles/remix` | `baseline-kit/styles` |
+| `baseline-kit/styles/full`, `baseline-kit/full` | `baseline-kit/styles` and `baseline-kit/theme` |
+| `baseline-kit/styles/reset` | `baseline-kit/reset` |
+| `baseline-kit/guide`, `baseline-kit/styles/guide` | `baseline-kit`, `baseline-kit/styles` |
+| `<Box as="label" for="…">` (Remix) | `<Box as="label" htmlFor="…">` |
 
 ## Contributing and license
 
-See [CONTRIBUTING.md](https://github.com/dnvt/baseline-kit/blob/main/CONTRIBUTING.md)
-for contribution guidelines. Baseline Kit is MIT licensed. ©
-[François Denavaut](https://github.com/dnvt).
+See [CONTRIBUTING.md](https://github.com/dnvt/baseline-kit/blob/main/CONTRIBUTING.md).
+Baseline Kit is MIT licensed. © [François Denavaut](https://github.com/dnvt).

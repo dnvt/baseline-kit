@@ -1,40 +1,53 @@
+/**
+ * Baseline Kit component styles, shared by the React and Remix 3 entries.
+ *
+ * Components emit `bk-*` classes from the core descriptors plus a few custom
+ * properties. Colors fall back to the `--bk-*-theme` tokens from
+ * `baseline-kit/theme`, then to the built-in defaults below.
+ */
+
 :root {
   --bk-base: 8px;
   --bk-zi: 1;
   --bk-transition-base: 180ms ease;
   --bk-wf: 100%;
   --bk-hf: 100%;
-  --bkbx-b: var(--bk-base);
-  --bkbx-w: fit-content;
-  --bkbx-h: fit-content;
-  --bkbx-cl: hsla(300, 60%, 40%, 0.6);
-  --bkbx-cf: hsla(260, 100%, 70%, 0.2);
-  --bkbx-ct: hsla(300, 60%, 40%, 0.9);
-  --bkbl-w: 100%;
-  --bkbl-h: 100%;
-  --bkbl-cl: hsla(240, 60%, 40%, 0.15);
-  --bkbl-cf: hsla(230, 100%, 70%, 0.2);
-  --bkgd-w: 100%;
-  --bkgd-h: 100%;
-  --bkgd-mw: none;
-  --bkgd-cl: hsla(240, 60%, 40%, 0.15);
-  --bkgd-cp: hsla(230, 100%, 70%, 0.2);
-  --bkgd-ca: hsla(200, 100%, 70%, 0.15);
-  --bkgd-cf: hsla(200, 100%, 70%, 0.15);
-  --bkpd-w: auto;
-  --bkpd-h: auto;
-  --bkpd-c: hsla(270, 60%, 40%, 0.6);
-  --bksp-w: var(--bk-wf);
-  --bksp-h: var(--bk-hf);
-  --bksp-cl: hsla(270, 60%, 40%, 0.6);
-  --bksp-cf: hsla(230, 100%, 70%, 0.2);
-  --bksp-ct: hsla(270, 60%, 40%, 1);
 }
+
+/* Visibility for the Baseline and Guide overlays */
+
+.bk-bas.bk-v,
+.bk-gde.bk-v {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--bk-transition-base),
+    visibility 0ms linear;
+}
+
+.bk-bas.bk-h,
+.bk-gde.bk-h {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--bk-transition-base),
+    visibility 0ms linear 180ms;
+}
+
+.bk-ssr {
+  box-sizing: border-box;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Baseline */
 
 .bk-bas {
   --bkbl-w: 100%;
   --bkbl-h: 100%;
   --bkbl-b: 8px;
+  --bkbl-rt: 0;
+  --bkbl-rh: 1px;
   --bkbl-cl: var(--bk-baseline-color-line-theme, hsla(240, 60%, 40%, 0.15));
   --bkbl-cf: var(--bk-baseline-color-flat-theme, hsla(230, 100%, 70%, 0.2));
   position: absolute;
@@ -66,21 +79,6 @@
   background-color: var(--bkbl-c);
 }
 
-.bk-v {
-  opacity: 1;
-  visibility: visible;
-}
-.bk-h {
-  opacity: 0;
-  visibility: hidden;
-}
-
-.bk-ssr {
-  box-sizing: border-box;
-  z-index: 1;
-  pointer-events: none;
-}
-
 .bk-row {
   position: absolute;
   left: 0;
@@ -90,12 +88,13 @@
   background-color: var(--bkbl-c);
 }
 
+/* Box */
+
 .bk-box {
   --bkbx-w: fit-content;
   --bkbx-h: fit-content;
   --bkbx-cl: var(--bk-box-color-line-theme, hsla(300, 60%, 40%, 0.6));
   --bkbx-cf: var(--bk-box-color-flat-theme, hsla(260, 100%, 70%, 0.2));
-  --bkpd-b: 1px;
   --bkpd-c: var(--bk-padder-color-theme, hsla(270, 60%, 40%, 0.6));
   position: relative;
   display: grid;
@@ -107,16 +106,17 @@
   text-box-edge: ex alphabetic;
 }
 
-.bk-box.bk-box-semantic-host {
+.bk-box.bk-box-semantic-host,
+.bk-box.bk-box-separate-padder {
   display: block;
 }
 
+/* The host already applies --bkbx-w/--bkbx-h; the grid only fills it. */
 .bk-box__grid {
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-rows: auto 1fr auto;
-  width: var(--bkbx-w, fit-content);
-  height: var(--bkbx-h, fit-content);
+  height: 100%;
   text-box-trim: trim-both;
   text-box-edge: ex alphabetic;
 }
@@ -130,10 +130,7 @@
   z-index: var(--bk-zi);
 }
 
-.bk-box.bk-box-separate-padder {
-  display: block;
-}
-
+/* Visible padding: an outline plus shaded top and bottom bands. */
 .bk-box.bk-box-pad-visible::before {
   content: '';
   position: absolute;
@@ -151,42 +148,11 @@
   z-index: var(--bk-zi);
 }
 
-.bk-spr {
-  --bksp-w: var(--bk-wf, 100%);
-  --bksp-h: var(--bk-hf, auto);
-  --bksp-b: 8px;
-  --bksp-cl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
-  --bksp-cf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
-  --bksp-ct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
-  position: relative;
-  box-sizing: border-box;
-  width: var(--bksp-w);
-  height: var(--bksp-h);
-  flex-shrink: 0;
-  display: block;
-  margin: 0;
-  padding: 0;
-}
-
-.bk-spr.bk-line::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 1px solid var(--bksp-cl);
-  z-index: var(--bk-zi, 1);
-}
-
-.bk-flat {
-  background-color: var(--bksp-cf);
-}
-
-.bk-indicator {
-  color: var(--bksp-ct);
-}
+/* Padder */
 
 .bk-pad {
-  --bkpd-w: auto;
-  --bkpd-h: auto;
+  --bkpd-w: fit-content;
+  --bkpd-h: fit-content;
   --bkpd-b: 8px;
   --bkpd-c: var(--bk-padder-color-theme, hsla(270, 60%, 40%, 0.6));
   position: relative;
@@ -199,22 +165,31 @@
   text-box-edge: ex alphabetic;
 }
 
+.bk-pad.bk-v::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--bkpd-c);
+  pointer-events: none;
+  z-index: var(--bk-zi);
+}
+
+/*
+ * Trim the content wrapper and its direct children so nested headings and
+ * paragraphs sit on the grid too. Reset the Box debug bands so nested Boxes
+ * do not inherit their parent's.
+ */
 .bk-pad-content {
   grid-row: 2 / 3;
   grid-column: 2 / 3;
   text-box-trim: trim-both;
   text-box-edge: ex alphabetic;
-  --bkbx-initial-is: initial;
   --bkbx-cf: initial;
   --bkpd-is: initial;
   --bkpd-ie: initial;
 }
 
-.bk-pad-content > :where(*) {
-  text-box-trim: trim-both;
-  text-box-edge: ex alphabetic;
-}
-
+.bk-pad-content > :where(*),
 .bk-pad-content > :where(figure, fieldset) > :where(figcaption, legend) {
   text-box-trim: trim-both;
   text-box-edge: ex alphabetic;
@@ -240,14 +215,42 @@
   grid-column: 1 / -1;
 }
 
-.bk-pad.bk-v::after {
+/* Spacer */
+
+.bk-spr {
+  --bksp-w: var(--bk-wf, 100%);
+  --bksp-h: var(--bk-hf, auto);
+  --bksp-b: 8px;
+  --bksp-cl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
+  --bksp-cf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
+  --bksp-ct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
+  position: relative;
+  box-sizing: border-box;
+  width: var(--bksp-w);
+  height: var(--bksp-h);
+  flex-shrink: 0;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.bk-spr.bk-line::after {
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid var(--bkpd-c);
-  pointer-events: none;
+  border: 1px solid var(--bksp-cl);
   z-index: var(--bk-zi);
 }
+
+.bk-spr.bk-flat {
+  background-color: var(--bksp-cf);
+}
+
+.bk-indicator {
+  color: var(--bksp-ct);
+}
+
+/* Guide */
 
 .bk-gde {
   --bkgd-w: 100%;
@@ -266,33 +269,34 @@
   position: absolute;
   inset: 0;
   box-sizing: border-box;
-  width: var(--bkgd-w, 100%);
-  height: var(--bkgd-h, 100%);
-  max-width: var(--bkgd-mw, none);
+  width: var(--bkgd-w);
+  height: var(--bkgd-h);
+  max-width: var(--bkgd-mw);
   margin-inline: auto;
   pointer-events: none;
-  padding: 0;
+  padding: var(--bkgd-pb, 0) var(--bkgd-pi, 0);
+}
+
+/* Center 1px line columns on their grid positions. */
+.bk-gde.bk-line,
+.bk-cols.bk-line {
+  left: -0.5px;
 }
 
 .bk-cols {
   position: absolute;
   inset: 0;
   display: grid;
-  column-gap: var(--bkgd-g, 0);
+  column-gap: var(--bkgd-g);
   grid-template-rows: 1fr;
-  grid-template-columns: var(--bkgd-t, none);
-  justify-content: var(--bkgd-j, center);
+  grid-template-columns: var(--bkgd-t);
+  justify-content: var(--bkgd-j);
   width: var(--bk-wf);
   height: var(--bk-hf);
   overflow: hidden;
   contain: layout style paint;
 }
 
-.bk-col {
-  min-width: 0;
-  width: var(--bk-wf);
-  height: var(--bk-hf);
-}
 .bk-cols.bk-line {
   display: block;
   background-image: repeating-linear-gradient(
@@ -301,6 +305,22 @@
     transparent 1px var(--bkgd-line-period, 1px)
   );
 }
+
+.bk-cols.bk-cols-compact-fixed {
+  display: block;
+  left: 50%;
+  right: auto;
+  width: 240px;
+  transform: translateX(-50%);
+  background-color: var(--bkgd-cf);
+}
+
+.bk-col {
+  min-width: 0;
+  width: var(--bk-wf);
+  height: var(--bk-hf);
+}
+
 .bk-col.bk-line {
   width: 1px;
   background-color: var(--bkgd-cl);
@@ -316,14 +336,5 @@
 }
 
 .bk-col.bk-fixed {
-  background-color: var(--bkgd-cf);
-}
-
-.bk-cols-compact-fixed {
-  display: block;
-  left: 50%;
-  right: auto;
-  width: 240px;
-  transform: translateX(-50%);
   background-color: var(--bkgd-cf);
 }

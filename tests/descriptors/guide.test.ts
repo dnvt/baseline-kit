@@ -73,9 +73,10 @@ describe('createGuideDescriptor', () => {
   })
 
   it('defaults to its parent and preserves explicit dimensions', () => {
+    // 100% of the parent is the stylesheet default, so it is not repeated.
     const defaultDescriptor = createGuideDescriptor(baseParams)
-    expect(defaultDescriptor.containerStyle['--bkgd-w']).toBe('100%')
-    expect(defaultDescriptor.containerStyle['--bkgd-h']).toBe('100%')
+    expect(defaultDescriptor.containerStyle['--bkgd-w']).toBeUndefined()
+    expect(defaultDescriptor.containerStyle['--bkgd-h']).toBeUndefined()
 
     const sizedDescriptor = createGuideDescriptor({
       ...baseParams,
@@ -114,7 +115,7 @@ describe('createGuideDescriptor', () => {
     expect(descriptor.containerStyle['--bkgd-cf']).toBe('pink')
   })
 
-  it('classTokens includes line for line variant and visibility marker', () => {
+  it('classTokens carry visibility and variant', () => {
     expect(createGuideDescriptor(baseParams).classTokens).toEqual([
       'gde',
       'v',
@@ -122,7 +123,7 @@ describe('createGuideDescriptor', () => {
     ])
     expect(
       createGuideDescriptor({ ...baseParams, variant: 'fixed' }).classTokens
-    ).toEqual(['gde', 'v'])
+    ).toEqual(['gde', 'v', 'fixed'])
     expect(
       createGuideDescriptor({ ...baseParams, isVisible: false }).classTokens
     ).toEqual(['gde', 'h', 'line'])

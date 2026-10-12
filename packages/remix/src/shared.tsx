@@ -13,27 +13,13 @@ import { Config } from './Config'
 import {
   createMeasureObserver,
   createVirtualTracker,
-  type MeasureObserverOptions,
   type MeasureRect,
   type VirtualRange,
   type VirtualTrackerHandle,
 } from '@baseline-kit/dom'
-import type {
-  ConfigSchema,
-  DebuggingMode,
-  SpacingProps,
-} from '@baseline-kit/core'
+import type { ConfigSchema } from '@baseline-kit/core'
 
 export type NativeStyle = Props<'div'>['style']
-
-export type NativeComponentProps = SpacingProps & {
-  className?: string
-  style?: NativeStyle
-  width?: number | string
-  height?: number | string
-  debugging?: DebuggingMode
-  children?: RemixNode
-}
 
 export type NativeDOMAttributes = {
   id?: string
@@ -47,44 +33,10 @@ export type NativeDOMAttributes = {
   [key: `aria-${string}`]: string | number | boolean | undefined
 }
 
-export function compactStyle(
-  style: Record<string, string>,
-  defaults: Record<string, string>
-): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(style).filter(
-      ([property, value]) => defaults[property] !== value
-    )
-  )
-}
-
-const DOM_ATTRIBUTE_NAMES = new Set([
-  'id',
-  'title',
-  'role',
-  'tabIndex',
-  'lang',
-  'dir',
-  'hidden',
-])
-
-export function getDOMAttributes(
-  props: Record<string, unknown>
-): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(props).filter(
-      ([name]) =>
-        name.startsWith('data-') ||
-        name.startsWith('aria-') ||
-        DOM_ATTRIBUTE_NAMES.has(name)
-    )
-  )
-}
-
-export function classNames(
-  ...tokens: Array<string | false | null | undefined>
-) {
-  return tokens.filter(Boolean).join(' ')
+/** Host props every Remix component accepts on top of its core options. */
+export type NativeHostProps = NativeDOMAttributes & {
+  className?: string
+  style?: Record<string, string | number | null | undefined>
 }
 
 export function mergeStyles(
@@ -118,18 +70,6 @@ export function getConfig(
 export function normalizeConfigSnapshot(config: ConfigSchema): ConfigSchema {
   if (typeof config.domDiagnostics === 'boolean') return config
   return { ...config, domDiagnostics: false }
-}
-
-export function resolveDebugging(
-  prop: DebuggingMode | undefined,
-  configured: DebuggingMode
-) {
-  const effective = prop ?? configured
-  return {
-    isShown: effective === 'visible',
-    isNone: effective === 'none',
-    debugging: effective,
-  }
 }
 
 export interface ElementObserverBridge {
@@ -206,6 +146,40 @@ type RuntimeEntryProps = SerializableProps & {
  * The public wrapper also works when an app component creates the consumer
  * during SSR, where walking Config's authored children cannot reach it.
  */
+/** Structural equality for plain config snapshots. */
+function sameConfigValue(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true
+  if (
+    typeof left !== 'object' ||
+    left === null ||
+    typeof right !== 'object' ||
+    right === null
+  ) {
+    return false
+  }
+
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return (
+      Array.isArray(left) &&
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((value, index) => sameConfigValue(value, right[index]))
+    )
+  }
+
+  const leftRecord = left as Record<string, unknown>
+  const rightRecord = right as Record<string, unknown>
+  const leftKeys = Object.keys(leftRecord)
+  return (
+    leftKeys.length === Object.keys(rightRecord).length &&
+    leftKeys.every(
+      (key) =>
+        Object.prototype.hasOwnProperty.call(rightRecord, key) &&
+        sameConfigValue(leftRecord[key], rightRecord[key])
+    )
+  )
+}
+
 export function configuredClientEntry<P extends object>(
   entryId: string,
   implementation: NativeComponent<P & { __baselineConfig?: ConfigSchema }>
@@ -225,15 +199,32 @@ export function configuredClientEntry<P extends object>(
         // boundary; only fall back to live ancestry when no snapshot exists.
         inheritedConfig ??
         DEFAULT_CONFIG
+      // The default config needs no snapshot: the hydrated entry falls back
+      // to it anyway, so skip serializing it into every entry's props.
       return (
         <Entry
           {...(handle.props as unknown as SerializableProps)}
-          __baselineConfig={config}
+          __baselineConfig={
+            sameConfigValue(config, DEFAULT_CONFIG) ? undefined : config
+          }
         />
       )
     }) as NativeComponent<P>
   return Consumer
 }
+
+interface AttachedBridge {
+  element: () => Element | null
+  release: () => void
+}
+
+/**
+ * Bridges whose ref is currently attached. Remix does not dispose every client
+ * entry hydrated inside another entry's boundary, so a nested entry's ref
+ * signal may never abort. A bridge that detaches therefore also releases the
+ * bridges attached inside its element once those elements are removed.
+ */
+const attachedBridges = new Set<AttachedBridge>()
 
 /**
  * Connects the framework-native `ref` mixin to the shared DOM measurement
@@ -241,8 +232,7 @@ export function configuredClientEntry<P extends object>(
  * effect or client-only bridge is needed.
  */
 export function createElementObserverBridge(
-  onMeasure: (rect: MeasureRect, element: Element) => void,
-  options?: MeasureObserverOptions
+  onMeasure: (rect: MeasureRect, element: Element) => void
 ): ElementObserverBridge {
   let element: Element | null = null
   let measureHandle: ReturnType<typeof createMeasureObserver> | undefined
@@ -263,28 +253,59 @@ export function createElementObserverBridge(
     requestAnimationFrame(() => refreshUntilMeasured(signal))
   }
 
+  const bridge: AttachedBridge = {
+    element: () => element,
+    release: () => {
+      attachedBridges.delete(bridge)
+      measureHandle?.disconnect()
+      measureHandle = undefined
+      hasNonZeroMeasurement = false
+      initialRefreshAttempts = 0
+      element = null
+    },
+  }
+
+  const detach = () => {
+    const host = element
+    bridge.release()
+    if (!host) return
+    // Only release nested bridges whose elements actually left the document:
+    // a live Box can drop its own observer (for example when snapping turns
+    // off) while its children stay mounted and keep measuring.
+    const releaseRemoved = () => {
+      for (const attached of [...attachedBridges]) {
+        const nested = attached.element()
+        if (nested && !nested.isConnected && host.contains(nested)) {
+          attached.release()
+        }
+      }
+    }
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(releaseRemoved)
+    } else {
+      queueMicrotask(releaseRemoved)
+    }
+  }
+
   const attach = ref((node, signal) => {
     element = node
+    attachedBridges.add(bridge)
 
     if (typeof ResizeObserver !== 'undefined') {
-      measureHandle = createMeasureObserver(
-        node,
-        (rect) => {
-          hasNonZeroMeasurement = rect.width > 0 || rect.height > 0
-          // The initial measurement can run from the ref insert callback before
-          // Remix has committed the component. Deliver it on the next frame so
-          // the consumer can safely request an update.
-          const deliver = () => {
-            if (!signal.aborted && element === node) onMeasure(rect, node)
-          }
-          if (typeof requestAnimationFrame === 'function') {
-            requestAnimationFrame(deliver)
-          } else {
-            queueMicrotask(deliver)
-          }
-        },
-        options
-      )
+      measureHandle = createMeasureObserver(node, (rect) => {
+        hasNonZeroMeasurement = rect.width > 0 || rect.height > 0
+        // The initial measurement can run from the ref insert callback before
+        // Remix has committed the component. Deliver it on the next frame so
+        // the consumer can safely request an update.
+        const deliver = () => {
+          if (!signal.aborted && element === node) onMeasure(rect, node)
+        }
+        if (typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(deliver)
+        } else {
+          queueMicrotask(deliver)
+        }
+      })
 
       // A native client entry can hydrate descendants after this ref is
       // inserted. Re-measure on the next frame so an initial zero-sized host
@@ -296,17 +317,7 @@ export function createElementObserverBridge(
       })
     }
 
-    signal.addEventListener(
-      'abort',
-      () => {
-        measureHandle?.disconnect()
-        measureHandle = undefined
-        hasNonZeroMeasurement = false
-        initialRefreshAttempts = 0
-        element = null
-      },
-      { once: true }
-    )
+    signal.addEventListener('abort', detach, { once: true })
   })
 
   return { attach, getElement: () => element }

@@ -97,17 +97,15 @@ describe('Remix adapter', () => {
     expect(html).toContain('<h2')
     expect(html).toMatch(/<h2[^>]*class="[^"]*semantic-heading"/)
     expect(html).toMatch(/<h2[^>]*style="[^"]*display: flex/u)
-    expect(html).toContain('data-bk-snap-state="seed"')
+    expect(html).toContain('data-bk-snap-state="pending"')
     expect(html).toContain('class="bk-box__grid"')
-    expect(html).toContain(
-      'grid-template-rows: var(--bkbx-initial-is, 8px) 1fr 8px'
-    )
+    expect(html).toContain('grid-template-rows: 8px 1fr 8px')
     expect(html).toContain('Semantic heading')
 
     const label = await renderToString(
       jsx(Box, {
         as: 'label',
-        for: 'billing-email',
+        htmlFor: 'billing-email',
         children: 'Billing email',
       })
     )
@@ -152,8 +150,8 @@ describe('Remix adapter', () => {
     )
     expect(baselineHtml).toContain('class="bk-bas bk-h bk-ssr bk-line"')
     expect(baselineHtml).not.toContain('data-row-index')
-    expect(baselineHtml).toContain('width: 120px')
-    expect(baselineHtml).toContain('height: 80px')
+    expect(baselineHtml).toContain('--bkbl-w: 120px')
+    expect(baselineHtml).toContain('--bkbl-h: 80px')
 
     const guideHtml = await renderToString(
       jsx(Guide, {
@@ -167,8 +165,8 @@ describe('Remix adapter', () => {
     )
     expect(guideHtml).toContain('class="bk-gde bk-h bk-ssr bk-line"')
     expect(guideHtml).toContain('SSR guide content')
-    expect(guideHtml).toContain('width: 120px')
-    expect(guideHtml).toContain('height: 80px')
-    expect(guideHtml).toContain('max-width: 240px')
+    expect(guideHtml).toContain('--bkgd-w: 120px')
+    expect(guideHtml).toContain('--bkgd-h: 80px')
+    expect(guideHtml).toContain('--bkgd-mw: 240px')
   })
 })
