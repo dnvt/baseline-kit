@@ -15,6 +15,7 @@ import type {
 } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
+import { Config } from '../Config/Config'
 import { PadderForBox } from '../Padder/Padder'
 import type { HostProps } from '../types'
 
@@ -130,29 +131,32 @@ export const Box = React.memo(
         htmlFor={as === 'label' ? htmlFor : undefined}
         {...getDOMAttributes(spacingProps)}
       >
-        {semanticHost ? (
-          <ContentElement
-            className="bk-box__grid"
-            style={descriptor.spacingStyle}
-          >
-            {content}
-          </ContentElement>
-        ) : separatePadder ? (
-          <PadderForBox
-            block={[padding.top, padding.bottom]}
-            inline={[padding.left, padding.right]}
-            width="fit-content"
-            height={height}
-            debugging={debugging}
-            preserveContentHost
-            spacerVariant="flat"
-            ssrMode
-          >
-            {children}
-          </PadderForBox>
-        ) : (
-          content
-        )}
+        {/* Box spacing is drawn in plain pixels, so content inside a Box
+            snaps to whole pixels rather than to the grid. */}
+        <Config base={1} spacer={{ variant: 'flat' }}>
+          {semanticHost ? (
+            <ContentElement
+              className="bk-box__grid"
+              style={descriptor.spacingStyle}
+            >
+              {content}
+            </ContentElement>
+          ) : separatePadder ? (
+            <PadderForBox
+              block={[padding.top, padding.bottom]}
+              inline={[padding.left, padding.right]}
+              width="fit-content"
+              height={height}
+              debugging={debugging}
+              preserveContentHost
+              ssrMode
+            >
+              {children}
+            </PadderForBox>
+          ) : (
+            content
+          )}
+        </Config>
       </Element>
     )
   })

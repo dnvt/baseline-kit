@@ -35,8 +35,6 @@ export type PadderProps = PadderOptions &
 type RuntimePadderProps = PadderProps & {
   __baselineConfig?: ConfigSchema
   preserveContentHost?: boolean
-  /** Spacer variant for Box's internal padder. */
-  spacerVariant?: SpacerProps['variant']
 }
 
 const RuntimeSpacer = Spacer as unknown as NativeComponent<
@@ -113,7 +111,7 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
       )
     }
 
-    const spacerVariant = props.spacerVariant ?? config.spacer.variant
+    const spacerVariant = config.spacer.variant
     // Base 1 keeps the snapped padding exact instead of rounding it to the grid.
     const renderSpacer = (width: number | string, height: number | string) => (
       <RuntimeSpacer

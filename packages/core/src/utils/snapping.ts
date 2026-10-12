@@ -8,20 +8,34 @@ export type SnappingOptions = {
 
 type SnappingInput = SnappingMode | SnappingOptions
 
-/**
- * Browsers lay out in whole 1/64 px units, so a remainder of one unit or more
- * is real geometry and gets snapped. Zoom and display scaling convert those
- * units and leave smaller residues; treat anything under one unit as on the
- * grid instead of adding almost a full base row.
- */
-export const SNAP_TOLERANCE = 1 / 64
+/** Browsers lay out in whole units of 1/64 CSS px. */
+export const LAYOUT_UNIT = 1 / 64
 
-/** Distance past the previous grid line, or 0 when within tolerance of one. */
+/**
+ * Largest distance from a grid line that still counts as on it, for distances
+ * that are not whole layout units. Those only come from zoom or display
+ * scaling (e.g. 120.028px for 120px at 110% zoom) and would otherwise add
+ * almost a full base row.
+ */
+export const SNAP_TOLERANCE = 1 / 16
+
+const isWholeLayoutUnits = (value: number) => {
+  const units = value / LAYOUT_UNIT
+  return Math.abs(units - Math.round(units)) < 1e-6
+}
+
+/**
+ * Distance past the previous grid line, or 0 when on one. A distance made of
+ * whole layout units is real geometry (a trimmed text height such as
+ * 8.046875px) and is snapped however small it is. Any other distance up to
+ * SNAP_TOLERANCE is scaling noise and counts as on the grid.
+ */
 export function getBaselineRemainder(height: number, base: number): number {
   const remainder = ((height % base) + base) % base
-  return remainder < SNAP_TOLERANCE || base - remainder < SNAP_TOLERANCE
-    ? 0
-    : remainder
+  const distance = Math.min(remainder, base - remainder)
+  if (distance === 0) return 0
+  if (!isWholeLayoutUnits(distance) && distance <= SNAP_TOLERANCE) return 0
+  return remainder
 }
 
 export function isOnBaseline(height: number, base: number): boolean {

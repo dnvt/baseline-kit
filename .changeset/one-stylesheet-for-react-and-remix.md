@@ -16,13 +16,13 @@ Breaking changes:
 - Removed undocumented exports: `isSSR` and `safeClientValue` from `baseline-kit`, and `GRID_ALIGNMENTS`, `GridAlignment`, `PADD_VARIANTS`, `PaddedVariant`, and `RELATIVE_UNITS` from `baseline-kit/core`.
 - Removed the undocumented `--bkbx-initial-is` first-paint hook from the Remix `Box`.
 - Removed `createStyleOverride` and `StyleOverrideParams` from `baseline-kit/core`.
-- The core descriptors now return host styles without the values the stylesheet already sets, and their `classTokens` include the variant (and `compact` for Baseline). `createBaselineDescriptor` takes `domDiagnostics`, `className`, and `style`, and returns `compactPaint`. `createBoxDescriptor` takes `padding` and `paddingColor`, and returns `spacingStyle` and `paddingDebugStyle`.
+- The core descriptors now return host styles without the values the stylesheet already sets, and their `classTokens` include the variant (and `compact` for Baseline). `createBaselineDescriptor` now requires `domDiagnostics` (and takes `className` and `style`) and returns `compactPaint`. `createBoxDescriptor` now requires `padding` and `paddingColor` and returns `spacingStyle` and `paddingDebugStyle`. `createPadderDescriptor` no longer takes `base`.
 - React and Remix component props now come from the same core option types. React `width`, `height`, `columnWidth`, and `maxWidth` are typed `number | string`. React `Guide` no longer accepts `base`, and React `Guide` and `Spacer` forward only global attributes (`id`, `title`, `role`, `aria-*`, `data-*`, and similar) to the DOM, like the other components.
 - `Box` now trims the text box of its direct children in React too, as Remix already did, so paragraphs and headings placed directly inside measure shorter. `Padder` trims only its own content wrapper in both entries; the Remix `Padder` no longer trims its children.
 - Remix `Baseline` and `Guide` now fade in and out over 180ms like React, and Remix line guides shift left by a sub-pixel like React.
 - React `Guide` and `Spacer` props no longer include `padding`, `block`, and `inline`, which those components never applied.
 - The React `Box` ref is typed `HTMLElement` instead of `HTMLDivElement`, since `as` can render other elements.
-- Content inside a `Box` now sees the surrounding `Config`. Before, `Box` set `base` to 1 for everything inside it, so a nested `Box` or `Spacer` ignored the grid base.
+- `Spacer`s keep fractional sizes when the base is 1, which `Box` sets for its content: `<Box><Spacer height={10.4} /></Box>` is now 10.4px instead of 10px. In `hidden` and `visible` debugging, `Padder` draws its spacers at their exact sizes, so indicator values can be fractional and narrow inline spacers that used to round to 0 now render.
 - The unused `--bkpd-b` and `--bksp-b` custom properties are no longer set.
 
 Features:
@@ -36,16 +36,15 @@ Features:
 
 Fixes:
 
-- Snapping ignores residues smaller than one 1/64px layout unit, left by browser zoom and display scaling, instead of adding an extra base row; whole layout units are still snapped. `Baseline` rounds its measured height, so sub-pixel noise cannot drop its last row or its compact paint.
+- Snapping treats a remainder made of whole 1/64px layout units as real geometry and snaps it, and treats any other remainder up to 1/16px, which only zoom and display scaling produce, as on the grid. Browser zoom no longer adds an extra base row, and real text heights still land exactly. `Baseline rounds its measured height, so sub-pixel noise cannot drop its last row or its compact paint.
 - React and Remix measure heights with fractional precision, so trimmed text snaps exactly onto the grid instead of drifting by up to half a pixel per Box. A `Spacer` with a base of 1 keeps fractional sizes, and `Padder` draws its spacers at base 1, so a `Padder` (or a `Box` with a `className`) lands exactly on the grid with debugging `hidden` or `visible` too.
 - A semantic `Box` with a percentage `width` or `height` no longer applies it twice.
 - A semantic `Box` snaps its whole element, including its own border and padding.
-- `baseline-kit/remix/server` checks the code it patches, including the scope it reads, instead of the whole file's hash, so a patch release of `@remix-run/component` no longer stops it from loading.
+- `baseline-kit/remix/server` checks the code it patches, and that it sits inside the function it reads from, instead of the whole file's hash, so a patch release of `@remix-run/component` no longer stops it from loading.
 - `baseline-kit/theme/dark` includes the dark spacer and padder colors. `baseline-kit/theme` is now generated from the light and dark themes.
 - Remix `.bk-flat` no longer paints flat Baseline hosts with the Spacer color.
-- Remix components release ResizeObservers of client entries nested inside a removed entry, which Remix does not always dispose.
+- Remix components release the observers of client entries that leave the document when another entry detaches, since Remix does not always dispose nested entries. Elements that are only moved keep measuring.
 - Remix client entries no longer serialize the default config into their props.
 - Remix `Padder` measures fractional heights like `Box`.
 - Remix server HTML marks `Baseline`, `Guide`, and `Spacer` indicators `aria-hidden="true"`. Before, the attribute was written without a value until hydration.
 - Measurement and virtualization fall back gracefully when `ResizeObserver` or `IntersectionObserver` is missing, such as in jsdom tests.
-- `baseline-kit/remix/server` checks that the code it patches sits inside the function it reads from.

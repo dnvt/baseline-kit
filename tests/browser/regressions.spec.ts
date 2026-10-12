@@ -1227,17 +1227,21 @@ test('React caller classes win and only Box trims its children', async ({
     padder: getComputedStyle(
       document.querySelector('#trim-padder p')!
     ).getPropertyValue('text-box-trim'),
+    padderNone: getComputedStyle(
+      document.querySelector('#trim-padder-none p')!
+    ).getPropertyValue('text-box-trim'),
   }))
   if (trim.supported) {
     expect(trim.box).toBe('trim-both')
     expect(trim.padder).toBe('none')
+    expect(trim.padderNone).toBe('none')
   }
 })
 
-test('React Padder spacers and nested Boxes stay on the base grid', async ({
+test('React Padder spacers keep a snapped Padder on the base grid', async ({
   page,
 }) => {
-  for (const id of ['#grid-padder', '#nested-inner']) {
+  for (const id of ['#grid-padder']) {
     await expect
       .poll(() =>
         page.locator(id).evaluate((element) => {
@@ -1975,14 +1979,18 @@ test.describe('native Remix adapter', () => {
       padder: getComputedStyle(
         document.querySelector('#remix-trim-padder p')!
       ).getPropertyValue('text-box-trim'),
+      padderNone: getComputedStyle(
+        document.querySelector('#remix-trim-padder-none p')!
+      ).getPropertyValue('text-box-trim'),
     }))
     if (trim.supported) {
       expect(trim.box).toBe('trim-both')
       expect(trim.padder).toBe('none')
+      expect(trim.padderNone).toBe('none')
     }
   })
 
-  test('native Padder spacers and nested Boxes stay on the base grid', async ({
+  test('native Padder spacers keep a snapped Padder on the base grid', async ({
     page,
   }) => {
     await page.goto('/remix.html')
@@ -1991,7 +1999,7 @@ test.describe('native Remix adapter', () => {
         (window as unknown as { __baselineRemixReady: Promise<void> })
           .__baselineRemixReady
     )
-    for (const id of ['#remix-grid-padder', '#remix-nested-inner']) {
+    for (const id of ['#remix-grid-padder']) {
       await expect
         .poll(() =>
           page.locator(id).evaluate((element) => {
@@ -2001,6 +2009,36 @@ test.describe('native Remix adapter', () => {
         )
         .toBe(true)
     }
+  })
+
+  test('native components keep measuring after a temporary detach', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const guide = page.locator('#remix-detach-host [data-testid="guide"]')
+    const columns = () =>
+      guide.evaluate((element) =>
+        (element as HTMLElement).style.getPropertyValue('--bkgd-n')
+      )
+    await expect.poll(columns).toBe('4')
+
+    await page.evaluate(async () => {
+      const host = document.querySelector('#remix-detach-host')!
+      const parent = host.parentNode!
+      const next = host.nextSibling
+      host.remove()
+      for (let frame = 0; frame < 4; frame += 1) {
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+      }
+      parent.insertBefore(host, next)
+      ;(host as HTMLElement).style.width = '600px'
+    })
+    await expect.poll(columns).toBe('6')
   })
 
   test('native Box keeps a fractional top snap on an 8px base', async ({

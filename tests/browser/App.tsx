@@ -333,6 +333,9 @@ export function App() {
         <Padder id="trim-padder" debugging="hidden">
           <p style={{ margin: 0 }}>Padder child</p>
         </Padder>
+        <Padder id="trim-padder-none" debugging="none">
+          <p style={{ margin: 0 }}>Padder child</p>
+        </Padder>
       </section>
 
       <section id="grid-exact">

@@ -4,6 +4,7 @@ import { type Handle } from 'remix/component'
 import {
   DEFAULT_CONFIG,
   calculateSnappedSpacing,
+  mergeConfig,
   createBoxDescriptor,
   requiresSeparatePadder,
   parsePadding,
@@ -163,8 +164,13 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
         }
         mix={observerMix}
       >
-        {/* Carry the resolved config into this island for nested entries. */}
-        <RuntimeConfig __baselineConfig={config}>
+        {/* Carry the config into this island. Box spacing is drawn in plain
+            pixels, so content inside a Box snaps to whole pixels. */}
+        <RuntimeConfig
+          __baselineConfig={config}
+          base={1}
+          spacer={{ variant: 'flat' }}
+        >
           {semanticHost ? (
             <ContentElement
               className="bk-box__grid"
@@ -181,14 +187,17 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
             </ContentElement>
           ) : separatePadder ? (
             <PadderForBox
-              __baselineConfig={config}
+              __baselineConfig={mergeConfig({
+                parentConfig: config,
+                base: 1,
+                spacer: { variant: 'flat' },
+              })}
               block={[padding.top, padding.bottom]}
               inline={[padding.left, padding.right]}
               width="fit-content"
               height={props.height}
               debugging={debug.debugging}
               preserveContentHost
-              spacerVariant="flat"
               ssrMode
             >
               {props.children}

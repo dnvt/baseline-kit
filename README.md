@@ -162,8 +162,9 @@ as in CSS. `block` and `inline` set start/end pairs as arrays or objects.
 In `height` mode the correction goes to the bottom by default;
 `snapEdge="top"` puts it above the content. `Box` measures its whole element,
 including its own border and padding, with fractional-pixel precision.
-Browsers lay out in 1/64px units, so any remainder of one unit or more is
-snapped; smaller residues left by zoom or display scaling count as aligned.
+Browsers lay out in whole 1/64px units, so a remainder made of those units is
+snapped however small it is. Zoom and display scaling leave other residues;
+those count as aligned up to 1/16px.
 Snapping runs once, after the first nonzero measurement, not on every resize.
 `Padder` uses height snapping with a bottom correction. Set `ssrMode` on
 either to keep the explicit padding without measuring.

@@ -502,7 +502,24 @@ export function createRemixApp() {
               children: 'Padder child',
             }),
           }),
+          jsx(Padder, {
+            id: 'remix-trim-padder-none',
+            debugging: 'none',
+            children: jsx('p', {
+              style: { margin: 0 },
+              children: 'Padder child',
+            }),
+          }),
         ],
+      }),
+      jsx('div', {
+        id: 'remix-detach-host',
+        style: { position: 'relative', width: '400px', height: '20px' },
+        children: jsx(Guide, {
+          variant: 'auto',
+          columnWidth: 100,
+          debugging: 'visible',
+        }),
       }),
       jsx('section', {
         id: 'remix-grid-exact',

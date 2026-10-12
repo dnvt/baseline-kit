@@ -22,8 +22,6 @@ export type PadderProps = PadderOptions &
 
 type RuntimePadderProps = PadderProps & {
   preserveContentHost?: boolean
-  /** Spacer variant for Box's internal padder. */
-  spacerVariant?: Variant
 }
 
 const createRenderSpacerFn = (
@@ -64,14 +62,12 @@ const PadderComponent = React.memo(
       width,
       ssrMode = false,
       preserveContentHost = false,
-      spacerVariant,
       ...spacingProps
     },
     ref
   ) {
     const config = useConfig('padder')
-    const spacerConfig = useConfig('spacer')
-    const variant = spacerVariant ?? spacerConfig.variant
+    const { variant } = useConfig('spacer')
     const initialPadding = React.useMemo(
       () => parsePadding(spacingProps),
       [spacingProps]

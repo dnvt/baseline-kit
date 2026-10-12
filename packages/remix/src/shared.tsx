@@ -222,7 +222,7 @@ interface AttachedBridge {
  * Bridges whose ref is currently attached. Remix does not dispose every client
  * entry hydrated inside another entry's boundary, so a nested entry's ref
  * signal may never abort. A bridge that detaches therefore also releases the
- * bridges attached inside its element once those elements are removed.
+ * attached bridges whose elements are no longer in the document.
  */
 const attachedBridges = new Set<AttachedBridge>()
 
@@ -240,12 +240,11 @@ export function createElementObserverBridge(
   let initialRefreshAttempts = 0
 
   const refreshUntilMeasured = (signal: AbortSignal) => {
-    if (signal.aborted || hasNonZeroMeasurement) return
-    if (initialRefreshAttempts >= 10) {
-      // Remix can render a nested entry into an element that never joins the
-      // document (for example during history navigation). Release it instead
-      // of observing a detached node forever.
-      if (element && !element.isConnected) bridge.release()
+    if (
+      signal.aborted ||
+      hasNonZeroMeasurement ||
+      initialRefreshAttempts >= 10
+    ) {
       return
     }
 
@@ -270,15 +269,15 @@ export function createElementObserverBridge(
     const host = element
     bridge.release()
     if (!host) return
-    // Only release nested bridges whose elements actually left the document:
-    // a live Box can drop its own observer (for example when snapping turns
-    // off) while its children stay mounted and keep measuring.
+    // Remix may never abort the ref signal of an entry nested inside another
+    // entry (or rendered into an element that never joins the document), so
+    // every detach also releases bridges whose elements are out of the
+    // document. A live element that is only moved stays connected and keeps
+    // its observer.
     const releaseRemoved = () => {
       for (const attached of [...attachedBridges]) {
         const nested = attached.element()
-        if (nested && !nested.isConnected && host.contains(nested)) {
-          attached.release()
-        }
+        if (nested && !nested.isConnected) attached.release()
       }
     }
     if (typeof requestAnimationFrame === 'function') {
@@ -294,12 +293,6 @@ export function createElementObserverBridge(
 
     if (typeof ResizeObserver !== 'undefined') {
       measureHandle = createMeasureObserver(node, (rect) => {
-        // Remix may never abort a nested entry's ref signal, so release the
-        // bridge once its element has left the document.
-        if (!node.isConnected) {
-          bridge.release()
-          return
-        }
         hasNonZeroMeasurement = rect.width > 0 || rect.height > 0
         // The initial measurement can run from the ref insert callback before
         // Remix has committed the component. Deliver it on the next frame so

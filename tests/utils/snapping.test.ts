@@ -95,9 +95,12 @@ describe('calculateSnappedSpacing', () => {
   describe('measurement noise', () => {
     const initial = { top: 8, right: 0, bottom: 8, left: 0 }
 
-    it('treats residues under one 1/64px layout unit as aligned', () => {
-      // Zoom and display-scaling residues smaller than one layout unit.
-      for (const height of [40.0000076, 39.99, 40.005, 40.0057]) {
+    it('treats zoom residues off the 1/64px lattice as aligned', () => {
+      // Sub-unit noise, and residues measured at 110%, 133% and 80% zoom.
+      for (const height of [
+        40.0000076, 39.99, 40.005, 40.0057, 120.028, 72.017, 96.023, 288.017,
+        96.0156,
+      ]) {
         expect(
           calculateSnappedSpacing(height, base, initial, {
             mode: 'height',
@@ -134,6 +137,13 @@ describe('calculateSnappedSpacing', () => {
       )
       expect(8.734375 + result.top).toBe(16)
       expect(isOnBaseline(8.734375, base)).toBe(false)
+    })
+  })
+
+  describe('tolerance boundary', () => {
+    it('snaps off-lattice distances larger than 1/16px', () => {
+      expect(isOnBaseline(40.1, base)).toBe(false)
+      expect(isOnBaseline(40.07, base)).toBe(false)
     })
   })
 })
