@@ -8,15 +8,15 @@ export const DEFAULT_ROOT_FONT_SIZE = 16
 
 /**
  * The rem count of a root-relative base: any positive number followed by
- * `rem` (`'0.5rem'`, `'.5rem'`, `'1e-1rem'`). Undefined for a px or invalid
- * base.
+ * `rem`, in every form TypeScript's `${number}rem` allows (`'0.5rem'`,
+ * `'.5rem'`, `'1e-1rem'`, `'0.5 rem'`). Undefined for a px or invalid base.
  */
 export function parseRemBase(base: unknown): number | undefined {
   if (typeof base !== 'string') return undefined
   const value = base.trim()
   if (!value.endsWith('rem')) return undefined
-  const number = value.slice(0, -3)
-  const rem = number.trim() === number && number !== '' ? Number(number) : NaN
+  // Number() ignores surrounding whitespace and reads '' as 0.
+  const rem = Number(value.slice(0, -3))
   return rem > 0 && Number.isFinite(rem) ? rem : undefined
 }
 

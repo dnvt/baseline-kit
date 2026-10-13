@@ -102,6 +102,8 @@ describe('rem base', () => {
     expect(parseRemBase('1.rem')).toBe(1)
     expect(parseRemBase('+0.5rem')).toBe(0.5)
     expect(parseRemBase('1e-1rem')).toBe(0.1)
+    expect(parseRemBase('0.5 rem')).toBe(0.5)
+    expect(parseRemBase('0.5\trem')).toBe(0.5)
     for (const base of [
       8,
       '8',
@@ -109,7 +111,6 @@ describe('rem base', () => {
       '0rem',
       '-1rem',
       '1em',
-      '0.5 rem',
       'Infinityrem',
       undefined,
     ]) {
