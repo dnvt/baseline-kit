@@ -537,6 +537,29 @@ export function createRemixApp() {
         ],
       }),
       jsx('section', {
+        id: 'remix-late-and-layered',
+        children: [
+          jsx('style', {
+            children: '@layer utilities { .layered-mt { margin-top: 16px; } }',
+          }),
+          jsx(Box, {
+            id: 'remix-late-box',
+            snapping: 'height',
+            block: [0, 0],
+            children: jsx('div', {
+              id: 'remix-late-content',
+              style: { height: '10px' },
+            }),
+          }),
+          jsx(Box, {
+            id: 'remix-layered-p',
+            as: 'p',
+            className: 'layered-mt',
+            children: 'Layered margin',
+          }),
+        ],
+      }),
+      jsx('section', {
         id: 'remix-precision',
         children: [
           jsx('div', {

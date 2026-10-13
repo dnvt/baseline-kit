@@ -12,6 +12,7 @@ import { DEFAULT_CONFIG } from '@baseline-kit/core'
 import { Config } from './Config'
 import {
   createMeasureObserver,
+  getCSSZoom,
   createVirtualTracker,
   type MeasureRect,
   type VirtualRange,
@@ -75,6 +76,8 @@ export function normalizeConfigSnapshot(config: ConfigSchema): ConfigSchema {
 export interface ElementObserverBridge {
   attach: ReturnType<typeof ref>
   getElement: () => Element | null
+  /** Measure the attached element now and deliver it, even if unchanged. */
+  remeasure: () => void
 }
 
 export type RuntimeHandle = Pick<Handle, 'signal' | 'update'>
@@ -333,7 +336,17 @@ export function createElementObserverBridge(
     signal.addEventListener('abort', detach, { once: true })
   })
 
-  return { attach, getElement: () => element }
+  const remeasure = () => {
+    if (!element || !element.isConnected) return
+    const zoom = getCSSZoom(element)
+    const rect = element.getBoundingClientRect()
+    onMeasure(
+      { width: Math.round(rect.width / zoom), height: rect.height / zoom },
+      element
+    )
+  }
+
+  return { attach, getElement: () => element, remeasure }
 }
 
 export interface VirtualBridge {

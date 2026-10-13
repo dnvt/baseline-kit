@@ -201,6 +201,23 @@ describe('useBaseline', () => {
     expect(result.current.padding.bottom).toBe(17)
   })
 
+  it('returns the explicit padding again when snapping turns off', () => {
+    useMeasureSpy.mockReturnValue({ width: 100, height: 46 })
+    const ref = { current: document.createElement('div') }
+    const { result, rerender } = renderHook(
+      ({ snapping }: { snapping: 'height' | 'none' }) =>
+        useBaseline(ref, {
+          base: 8,
+          snapping,
+          spacing: { top: 10, bottom: 10, left: 0, right: 0 },
+        }),
+      { initialProps: { snapping: 'height' } }
+    )
+    expect(result.current.padding.bottom).toBe(12)
+    rerender({ snapping: 'none' })
+    expect(result.current.padding.bottom).toBe(10)
+  })
+
   it('keeps the snap once the settle window has passed', () => {
     vi.useFakeTimers()
     try {

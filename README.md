@@ -162,13 +162,18 @@ as in CSS. `block` and `inline` set start/end pairs as arrays or objects.
 In `height` mode the correction goes to the bottom by default;
 `snapEdge="top"` puts it above the content. `Box` measures its whole element,
 including its own border and padding, with fractional-pixel precision.
-At 1x, 2x, or 3x, every remainder is snapped exactly. When browser zoom,
-display scaling, or CSS `zoom` scale the page by a fraction, remainders under
-1/32px count as on the grid, because scaling leaves residues that small and
-snapping them would add a whole base row. CSS `zoom` on an ancestor is taken
-into account. Snapping runs after the first nonzero measurement and keeps
-adjusting for two seconds while content settles (web fonts, nested client
-entries hydrating); after that it doesn't follow resizes.
+Browsers lay out in whole units (1/64px in Chromium and WebKit, 1/60px in
+Firefox), and any remainder made of those units is snapped exactly. Browser
+zoom, display scaling, and CSS `zoom` leave smaller, fractional residues; up to
+1/32px those count as on the grid, because snapping them would add a whole base
+row. CSS `zoom` on an ancestor is taken into account; a CSS `transform` that
+scales an ancestor is not.
+
+A `Box` or `Padder` snaps after its first nonzero measurement and whenever its
+base, padding, or snapping props change. For two seconds after a snap, and
+again when a web font finishes loading or the tab becomes visible, it also
+re-snaps if its content height changes; outside those windows it doesn't
+follow resizes.
 `Padder` uses height snapping with a bottom correction. A `Box` or `Padder`
 nested inside a `Box` doesn't snap on its own; the outer `Box` snaps the whole. Set `ssrMode` on
 either to keep the explicit padding without measuring.
@@ -180,7 +185,9 @@ either to keep the explicit padding without measuring.
 stay on that element and the snapped grid sits inside it. Pass `htmlFor` with
 `as="label"`. A semantic host drops the element's default block margins so
 that they don't sit outside the snapped height; add your own as multiples of
-the base.
+the base. The reset sits in the `baseline-kit` cascade layer, so any of your
+own CSS can set margins again; with layered utilities, such as Tailwind's,
+load `baseline-kit/styles` before them.
 
 ## Components
 

@@ -2,7 +2,6 @@
  * Element measurement observer.
  */
 
-import { SNAP_TOLERANCE, UNSCALED_SNAP_TOLERANCE } from '@baseline-kit/core'
 import { rafThrottle } from './timing'
 
 export interface MeasureRect {
@@ -24,16 +23,39 @@ export function getCSSZoom(el: Element): number {
 }
 
 /**
- * Snap tolerance for an element: exact at whole-number scales, where browsers
- * report exact layout units, and SNAP_TOLERANCE when browser zoom, display
- * scaling, or CSS zoom scale the page by a fraction.
+ * Whether browser zoom, display scaling, or CSS zoom scale this element by a
+ * fraction, which leaves sub-pixel residues in its measured size.
  */
-export function getSnapTolerance(el: Element | null): number {
-  if (!el || typeof window === 'undefined') return SNAP_TOLERANCE
+export function isScaledLayout(el: Element | null): boolean {
+  if (!el || typeof window === 'undefined') return false
   const scale = (window.devicePixelRatio || 1) * getCSSZoom(el)
-  return Math.abs(scale - Math.round(scale)) < 1e-6
-    ? UNSCALED_SNAP_TOLERANCE
-    : SNAP_TOLERANCE
+  return Math.abs(scale - Math.round(scale)) > 1e-6
+}
+
+type SettleListener = () => void
+const settleListeners = new Set<SettleListener>()
+let settleEventsAttached = false
+
+/**
+ * Calls `listener` whenever layout may change after the first snap without a
+ * size change being observed in time: a web font finishes loading, or a
+ * background tab becomes visible. Returns an unsubscribe function.
+ */
+export function onSnapSettleEvent(listener: SettleListener): () => void {
+  settleListeners.add(listener)
+  if (!settleEventsAttached && typeof document !== 'undefined') {
+    settleEventsAttached = true
+    const notify = () => {
+      for (const current of [...settleListeners]) current()
+    }
+    document.fonts?.addEventListener?.('loadingdone', notify)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') notify()
+    })
+  }
+  return () => {
+    settleListeners.delete(listener)
+  }
 }
 
 /**

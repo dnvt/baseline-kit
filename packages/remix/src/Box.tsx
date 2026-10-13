@@ -3,9 +3,10 @@
 import { type Handle } from 'remix/component'
 import {
   DEFAULT_CONFIG,
-  calculateSnappedSpacing,
-  removeSnapCorrection,
+  nextSnap,
   SNAP_SETTLE_MS,
+  type SnapMeasurement,
+  type SnapState,
   mergeConfig,
   createBoxDescriptor,
   requiresSeparatePadder,
@@ -22,7 +23,7 @@ import {
 } from '@baseline-kit/core'
 import { Config, type ConfigProps } from './Config'
 import { configuredClientEntry } from './shared'
-import { getSnapTolerance } from '@baseline-kit/dom/measure'
+import { isScaledLayout, onSnapSettleEvent } from '@baseline-kit/dom/measure'
 import { PadderForBox } from './Padder'
 import {
   createElementObserverBridge,
@@ -66,45 +67,56 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   let currentSnapping: SnappingMode = 'clamp'
   let currentSnapEdge: SnapEdge = 'bottom'
   let currentInitialPadding: Padding = parsePadding({})
-  let snappedPadding: Padding | null = null
-  // Nested client entries can hydrate after this Box first measures (for
-  // example a Spacer that re-renders at the Box's base). Re-snap from the
-  // natural height while that settles, then keep the snap.
+  // Snap with the shared rules (see nextSnap): on the first measurement,
+  // on input changes, and while settling (two seconds after a snap, or after
+  // a web font loads), whenever the natural height changes.
+  let snap: SnapState | null = null
+  let settleOpenedAt = 0
   let renderedPadding: Padding = currentInitialPadding
-  let snappedNatural = 0
-  let snappedAt = 0
+  let lastMeasure: Omit<SnapMeasurement, 'settling'> | null = null
 
   const requestUpdate = () => {
     queueNativeUpdate(handle)
   }
 
+  const applySnap = (measure: Omit<SnapMeasurement, 'settling'>) => {
+    const next = nextSnap(
+      snap,
+      {
+        base: currentBase,
+        mode: currentSnapping,
+        snapEdge: currentSnapEdge,
+        initial: currentInitialPadding,
+      },
+      {
+        ...measure,
+        settling: performance.now() - settleOpenedAt <= SNAP_SETTLE_MS,
+      }
+    )
+    if (next === snap) return false
+    if (!snap || next?.key !== snap.key) settleOpenedAt = performance.now()
+    snap = next
+    return true
+  }
+
   // Measure the host so its own border and padding count toward the snap.
   const observer = createElementObserverBridge((next, host) => {
-    if (currentSnapping === 'none' || next.height === 0) return
-    const tolerance = getSnapTolerance(host)
-    const natural = removeSnapCorrection(
-      next.height,
-      renderedPadding,
-      currentInitialPadding
-    )
-    if (
-      snappedPadding &&
-      (performance.now() - snappedAt > SNAP_SETTLE_MS ||
-        Math.abs(natural - snappedNatural) < tolerance)
-    ) {
-      return
+    if (next.height === 0) return
+    lastMeasure = {
+      height: next.height,
+      rendered: renderedPadding,
+      scaled: isScaledLayout(host),
     }
-
-    if (!snappedPadding) snappedAt = performance.now()
-    snappedNatural = natural
-    snappedPadding = calculateSnappedSpacing(
-      natural,
-      currentBase,
-      currentInitialPadding,
-      { mode: currentSnapping, snapEdge: currentSnapEdge, tolerance }
-    )
-    requestUpdate()
+    if (applySnap(lastMeasure)) requestUpdate()
   })
+
+  if (typeof window !== 'undefined') {
+    const unsubscribe = onSnapSettleEvent(() => {
+      settleOpenedAt = performance.now()
+      requestAnimationFrame(() => observer.remeasure())
+    })
+    handle.signal.addEventListener('abort', unsubscribe, { once: true })
+  }
 
   return () => {
     const props = handle.props
@@ -127,8 +139,10 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     currentSnapping = snapping
     currentSnapEdge = snapEdge
     currentInitialPadding = initialPadding
+    // New inputs re-snap from the last measurement right away.
+    if (snap && lastMeasure) applySnap(lastMeasure)
     const padding =
-      snapping === 'none' ? initialPadding : (snappedPadding ?? initialPadding)
+      snapping === 'none' ? initialPadding : (snap?.padding ?? initialPadding)
     renderedPadding = padding
     const separatePadder = semanticHost
       ? false
@@ -180,7 +194,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
         htmlFor={props.as === 'label' ? props.htmlFor : undefined}
         data-bk-snap-state={
           config.domDiagnostics && snapping !== 'none' && !props.ssrMode
-            ? snappedPadding
+            ? snap
               ? 'measured'
               : 'pending'
             : undefined

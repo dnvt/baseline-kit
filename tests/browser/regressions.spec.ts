@@ -1293,6 +1293,30 @@ test('React Box snaps exactly under CSS zoom and at one layout unit', async ({
     .toEqual([16, 16])
 })
 
+test('React Box re-snaps late content and yields margins to layers', async ({
+  page,
+}) => {
+  const box = page.locator('#late-box')
+  await expect
+    .poll(() =>
+      box.evaluate((element) => element.getBoundingClientRect().height)
+    )
+    .toBe(16)
+  // Content grows after the first snap (a web font loading, say): the Box
+  // re-snaps from its natural height without a remount.
+  await page.evaluate(() => {
+    ;(document.querySelector('#late-content') as HTMLElement).style.height =
+      '17px'
+  })
+  await expect
+    .poll(() =>
+      box.evaluate((element) => element.getBoundingClientRect().height)
+    )
+    .toBe(24)
+  // A layered utility can still set a semantic host's margin.
+  await expect(page.locator('#layered-p')).toHaveCSS('margin-top', '16px')
+})
+
 test('React Box keeps a fractional top snap on an 8px base', async ({
   page,
 }) => {
@@ -2180,6 +2204,40 @@ test.describe('native Remix adapter', () => {
         })
       )
       .toEqual([16, 16])
+  })
+
+  test('native Box re-snaps late content and yields margins to layers', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const box = page.locator('#remix-late-box')
+    await expect
+      .poll(() =>
+        box.evaluate((element) => element.getBoundingClientRect().height)
+      )
+      .toBe(16)
+    // Content grows after the first snap (a web font loading, say): the Box
+    // re-snaps from its natural height without a remount.
+    await page.evaluate(() => {
+      ;(
+        document.querySelector('#remix-late-content') as HTMLElement
+      ).style.height = '17px'
+    })
+    await expect
+      .poll(() =>
+        box.evaluate((element) => element.getBoundingClientRect().height)
+      )
+      .toBe(24)
+    // A layered utility can still set a semantic host's margin.
+    await expect(page.locator('#remix-layered-p')).toHaveCSS(
+      'margin-top',
+      '16px'
+    )
   })
 
   test('native Box keeps a fractional top snap on an 8px base', async ({

@@ -349,6 +349,16 @@ export function App() {
         </Box>
       </section>
 
+      <section id="late-and-layered">
+        <style>{`@layer utilities { .layered-mt { margin-top: 16px; } }`}</style>
+        <Box id="late-box" snapping="height" block={[0, 0]}>
+          <div id="late-content" style={{ height: '10px' }} />
+        </Box>
+        <Box id="layered-p" as="p" className="layered-mt">
+          Layered margin
+        </Box>
+      </section>
+
       <section id="precision">
         <div style={{ zoom: 1.25 }}>
           <Box id="precision-zoom" snapping="height" block={[0, 0]}>

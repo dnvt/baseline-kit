@@ -4,42 +4,58 @@ import { parsePadding } from './padding'
 export type SnappingOptions = {
   mode: SnappingMode
   snapEdge?: SnapEdge
-  /** Remainders under this many px count as on the grid (see SNAP_TOLERANCE). */
-  tolerance?: number
+  /** The page is scaled by a fraction; see getBaselineRemainder. */
+  scaled?: boolean
 }
 
 type SnappingInput = SnappingMode | SnappingOptions
 
+/** Layout units browsers lay out in: 1/64px (Chromium, WebKit), 1/60px (Firefox). */
+const LAYOUT_UNITS = [1 / 64, 1 / 60]
+
+/** Below this, a difference is floating-point error (e.g. 46 % 9.2). */
+export const SNAP_EPSILON = 1 / 128
+
 /**
- * Remainders under this many CSS px count as on the grid when the page is
- * scaled by a fractional factor (browser zoom, display scaling, or CSS zoom
- * such as 110% or 125%). Scaling leaves residues that small (observed up to
- * about 0.028px), and treating them as real would add almost a full base row.
+ * Largest remainder that can count as on the grid. Zoom, display scaling, and
+ * CSS zoom leave residues up to about 0.028px; snapping them would add almost
+ * a full base row.
  */
 export const SNAP_TOLERANCE = 1 / 32
 
 /**
- * Tolerance at whole-number scales (1x, 2x, 3x), where browsers report exact
- * layout units (1/64px in Chromium and WebKit, 1/60px in Firefox). It only
- * absorbs floating-point error, such as 46 % 9.2, so every real remainder of
- * one layout unit or more is snapped.
- */
-export const UNSCALED_SNAP_TOLERANCE = 1 / 128
-
-/**
- * How long (ms) after its first snap a Remix Box or Padder may re-snap while
- * nested client entries finish hydrating.
+ * How long (ms) after a snap a Box or Padder keeps re-snapping while its
+ * content settles (web fonts, nested Remix client entries hydrating).
  */
 export const SNAP_SETTLE_MS = 2000
 
-/** Distance past the previous grid line, or 0 when within tolerance of one. */
+// Firefox reports sizes at float32 precision, so allow 1% of a unit.
+const isWholeLayoutUnits = (value: number) =>
+  LAYOUT_UNITS.some((unit) => {
+    const units = value / unit
+    return Math.abs(units - Math.round(units)) < 0.01
+  })
+
+/**
+ * Distance past the previous grid line, or 0 when it counts as on one.
+ * Floating-point error always counts as on the grid. Up to SNAP_TOLERANCE:
+ * when the page is known to be scaled by a fraction (`scaled`), every
+ * remainder is a scaling residue; otherwise only remainders that are not
+ * whole layout units are (Safari page zoom, for one, may not change
+ * devicePixelRatio), and whole layout units are real geometry and snapped.
+ */
 export function getBaselineRemainder(
   height: number,
   base: number,
-  tolerance: number = SNAP_TOLERANCE
+  scaled = false
 ): number {
   const remainder = ((height % base) + base) % base
-  return remainder < tolerance || base - remainder < tolerance ? 0 : remainder
+  const distance = Math.min(remainder, base - remainder)
+  if (distance < SNAP_EPSILON) return 0
+  if (distance <= SNAP_TOLERANCE && (scaled || !isWholeLayoutUnits(distance))) {
+    return 0
+  }
+  return remainder
 }
 
 /**
@@ -60,9 +76,9 @@ export function removeSnapCorrection(
 export function isOnBaseline(
   height: number,
   base: number,
-  tolerance: number = SNAP_TOLERANCE
+  scaled = false
 ): boolean {
-  return getBaselineRemainder(height, base, tolerance) === 0
+  return getBaselineRemainder(height, base, scaled) === 0
 }
 
 export function calculateSnappedSpacing(
@@ -78,10 +94,8 @@ export function calculateSnappedSpacing(
     typeof snappingInput === 'string'
       ? 'bottom'
       : (snappingInput.snapEdge ?? 'bottom')
-  const tolerance =
-    typeof snappingInput === 'string'
-      ? SNAP_TOLERANCE
-      : (snappingInput.tolerance ?? SNAP_TOLERANCE)
+  const scaled =
+    typeof snappingInput === 'string' ? false : (snappingInput.scaled ?? false)
 
   // A base of 1px or less is no grid to snap to. Box sets base 1 for its
   // content, so a nested Box or Padder leaves the snapping to the outer Box
@@ -91,7 +105,7 @@ export function calculateSnappedSpacing(
   }
 
   if (snapping === 'height') {
-    const remainder = getBaselineRemainder(height, base, tolerance)
+    const remainder = getBaselineRemainder(height, base, scaled)
     if (remainder !== 0) {
       const adjustment = base - remainder
       if (snapEdge === 'top') {
@@ -104,7 +118,7 @@ export function calculateSnappedSpacing(
 
   if (snapping === 'clamp') {
     pad.top = pad.top % base
-    const remainder = getBaselineRemainder(height, base, tolerance)
+    const remainder = getBaselineRemainder(height, base, scaled)
     if (remainder !== 0) {
       pad.bottom += base - remainder
     }
@@ -112,4 +126,72 @@ export function calculateSnappedSpacing(
   }
 
   return pad
+}
+
+/** The last snap of a Box or Padder. */
+export interface SnapState {
+  /** Inputs the snap was computed for (base, mode, edge, initial padding). */
+  key: string
+  padding: Padding
+  /** Height without the rendered correction when the snap was computed. */
+  natural: number
+  /** Last measured height that was evaluated. */
+  height: number
+}
+
+export interface SnapInput {
+  base: number
+  mode: SnappingMode
+  snapEdge: SnapEdge
+  initial: Padding
+}
+
+export const getSnapKey = ({ base, mode, snapEdge, initial }: SnapInput) =>
+  `${base}|${mode}|${snapEdge}|${initial.top},${initial.right},${initial.bottom},${initial.left}`
+
+/** A measurement of a Box or Padder host. */
+export interface SnapMeasurement {
+  /** Measured height, including the rendered padding. */
+  height: number
+  /** Padding rendered when the height was measured. */
+  rendered: Padding
+  /** Whether the settle window is open (see SNAP_SETTLE_MS). */
+  settling: boolean
+  /** The page is scaled by a fraction (see getBaselineRemainder). */
+  scaled?: boolean
+}
+
+/**
+ * Snap state after a measurement, shared by the React and Remix entries.
+ * It snaps on the first measurement and whenever the inputs change. While
+ * settling, it also re-snaps when the natural height (the measured height
+ * without the rendered correction) changes; snapping from the natural height
+ * is stable, because applying the correction does not change it. A
+ * measurement with an unchanged height (a fixed-height Box, a width-only
+ * change) never re-snaps. Returns `prev` itself when nothing changes.
+ */
+export function nextSnap(
+  prev: SnapState | null,
+  input: SnapInput,
+  { height, rendered, settling, scaled }: SnapMeasurement
+): SnapState | null {
+  if (input.mode === 'none' || height === 0) return prev
+  const key = getSnapKey(input)
+  const natural = removeSnapCorrection(height, rendered, input.initial)
+  if (prev && prev.key === key) {
+    if (height === prev.height || !settling) return prev
+    if (Math.abs(natural - prev.natural) < SNAP_EPSILON) {
+      return { ...prev, height }
+    }
+  }
+  return {
+    key,
+    natural,
+    height,
+    padding: calculateSnappedSpacing(natural, input.base, input.initial, {
+      mode: input.mode,
+      snapEdge: input.snapEdge,
+      scaled,
+    }),
+  }
 }

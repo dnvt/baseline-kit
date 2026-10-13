@@ -3,9 +3,10 @@
 import { type Handle, type RemixNode } from 'remix/component'
 import {
   DEFAULT_CONFIG,
-  calculateSnappedSpacing,
-  removeSnapCorrection,
+  nextSnap,
   SNAP_SETTLE_MS,
+  type SnapMeasurement,
+  type SnapState,
   createPadderDescriptor,
   parsePadding,
   type ConfigSchema,
@@ -17,7 +18,7 @@ import {
 } from '@baseline-kit/core'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
-import { getSnapTolerance } from '@baseline-kit/dom/measure'
+import { isScaledLayout, onSnapSettleEvent } from '@baseline-kit/dom/measure'
 import { Spacer, type IndicatorNode, type SpacerProps } from './Spacer'
 import {
   createElementObserverBridge,
@@ -47,34 +48,44 @@ const RuntimeSpacer = Spacer as unknown as NativeComponent<
 function PadderImpl(handle: Handle<RuntimePadderProps>) {
   let base = DEFAULT_CONFIG.base
   let initialPadding: Padding = parsePadding({})
-  let snappedPadding: Padding | null = null
-  // Re-snap from the natural height while nested entries hydrate (see Box).
+  // Same snapping rules as Box (see nextSnap), always in height mode.
+  let snap: SnapState | null = null
+  let settleOpenedAt = 0
   let renderedPadding: Padding = initialPadding
-  let snappedNatural = 0
-  let snappedAt = 0
+  let lastMeasure: Omit<SnapMeasurement, 'settling'> | null = null
+
+  const applySnap = (measure: Omit<SnapMeasurement, 'settling'>) => {
+    const next = nextSnap(
+      snap,
+      { base, mode: 'height', snapEdge: 'bottom', initial: initialPadding },
+      {
+        ...measure,
+        settling: performance.now() - settleOpenedAt <= SNAP_SETTLE_MS,
+      }
+    )
+    if (next === snap) return false
+    if (!snap || next?.key !== snap.key) settleOpenedAt = performance.now()
+    snap = next
+    return true
+  }
+
   const observer = createElementObserverBridge(({ height }, host) => {
     if (handle.props.ssrMode || height === 0) return
-    const tolerance = getSnapTolerance(host)
-    const natural = removeSnapCorrection(
+    lastMeasure = {
       height,
-      renderedPadding,
-      initialPadding
-    )
-    if (
-      snappedPadding &&
-      (performance.now() - snappedAt > SNAP_SETTLE_MS ||
-        Math.abs(natural - snappedNatural) < tolerance)
-    ) {
-      return
+      rendered: renderedPadding,
+      scaled: isScaledLayout(host),
     }
-    if (!snappedPadding) snappedAt = performance.now()
-    snappedNatural = natural
-    snappedPadding = calculateSnappedSpacing(natural, base, initialPadding, {
-      mode: 'height',
-      tolerance,
-    })
-    queueNativeUpdate(handle)
+    if (applySnap(lastMeasure)) queueNativeUpdate(handle)
   })
+
+  if (typeof window !== 'undefined') {
+    const unsubscribe = onSnapSettleEvent(() => {
+      settleOpenedAt = performance.now()
+      requestAnimationFrame(() => observer.remeasure())
+    })
+    handle.signal.addEventListener('abort', unsubscribe, { once: true })
+  }
 
   return () => {
     const props = handle.props
@@ -88,9 +99,12 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
       block: props.block,
       inline: props.inline,
     })
+    if (!props.ssrMode && snap && lastMeasure) {
+      applySnap(lastMeasure)
+    }
     const padding = props.ssrMode
       ? initialPadding
-      : (snappedPadding ?? initialPadding)
+      : (snap?.padding ?? initialPadding)
     renderedPadding = padding
     const mix =
       typeof window === 'undefined' || props.ssrMode

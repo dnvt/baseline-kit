@@ -111,9 +111,15 @@
   display: block;
 }
 
-/* Heading and paragraph margins would sit outside the snapped height. */
-.bk-box:where(.bk-box-semantic-host) {
-  margin-block: 0;
+/*
+ * Heading and paragraph margins would sit outside the snapped height. The
+ * reset sits in a cascade layer so that any of your own CSS, including
+ * layered utilities declared after it, can set margins again.
+ */
+@layer baseline-kit {
+  .bk-box:where(.bk-box-semantic-host) {
+    margin-block: 0;
+  }
 }
 
 /* The host already applies --bkbx-w/--bkbx-h; the grid only fills it. */

@@ -1,4 +1,8 @@
-import { calculateSnappedSpacing, isOnBaseline } from '@baseline-kit/core'
+import {
+  calculateSnappedSpacing,
+  isOnBaseline,
+  nextSnap,
+} from '@baseline-kit/core'
 
 describe('calculateSnappedSpacing', () => {
   const base = 8
@@ -95,12 +99,12 @@ describe('calculateSnappedSpacing', () => {
   describe('measurement noise', () => {
     const initial = { top: 8, right: 0, bottom: 8, left: 0 }
 
-    it('treats residues under 1/32px as aligned', () => {
-      // Sub-unit noise, residues measured at 110%, 133% and 80% zoom, and
-      // one-unit remainders in Chromium (1/64px) and Firefox (1/60px).
+    it('treats residues off the layout-unit grid as aligned', () => {
+      // Sub-unit noise and residues seen under zoom (e.g. CSS zoom in
+      // WebKit): none are whole 1/64px or 1/60px units.
       for (const height of [
         40.0000076, 39.99, 40.005, 40.0057, 120.028, 72.017, 96.023, 288.017,
-        96.0156, 40.015625, 40.0166667,
+        24.025, 23.975,
       ]) {
         expect(
           calculateSnappedSpacing(height, base, initial, {
@@ -115,9 +119,42 @@ describe('calculateSnappedSpacing', () => {
       }
     })
 
-    it('snaps real heights two or more layout units off the grid', () => {
-      // Times New Roman 18px trims to 8.046875; Firefox lays out in 1/60px.
-      for (const height of [8.046875, 40.03125, 39.96875, 24.0625, 8.05]) {
+    it('treats every residue under 1/32px as aligned on a scaled page', () => {
+      // 96.0156 was measured at 80% display scaling and is almost exactly one
+      // 1/64px unit, so only the scale tells it apart from real geometry.
+      for (const height of [96.0156, 40.015625, 120.028, 39.97]) {
+        expect(isOnBaseline(height, base, true)).toBe(true)
+        expect(
+          calculateSnappedSpacing(height, base, initial, {
+            mode: 'height',
+            scaled: true,
+          })
+        ).toEqual(initial)
+      }
+      expect(isOnBaseline(96.0156, base)).toBe(false)
+    })
+
+    it('accepts Firefox float32 sizes as whole 1/60px units', () => {
+      // Firefox reports 8 + 1/60 as 8.01666259765625.
+      expect(isOnBaseline(8.01666259765625, base)).toBe(false)
+      expect(
+        calculateSnappedSpacing(8.01666259765625, base, initial, 'height')
+          .bottom
+      ).toBeCloseTo(8 + 8 - 8.01666259765625 + 8, 5)
+    })
+
+    it('snaps real heights that are whole layout units off the grid', () => {
+      // One or more 1/64px units (Chromium, WebKit) or 1/60px units (Firefox),
+      // e.g. Times New Roman 18px trims to 8.046875px.
+      for (const height of [
+        8.046875,
+        40.015625,
+        39.984375,
+        40.03125,
+        24.0625,
+        40 + 1 / 60,
+        8.05,
+      ]) {
         expect(isOnBaseline(height, base)).toBe(false)
         const { top } = calculateSnappedSpacing(
           height,
@@ -180,5 +217,68 @@ describe('calculateSnappedSpacing', () => {
         )
       }
     })
+  })
+})
+
+describe('nextSnap', () => {
+  const zero = { top: 0, right: 0, bottom: 0, left: 0 }
+  const input = {
+    base: 8,
+    mode: 'height' as const,
+    snapEdge: 'top' as const,
+    initial: zero,
+  }
+  const first = nextSnap(null, input, {
+    height: 10.5,
+    rendered: zero,
+    settling: true,
+  })!
+
+  it('snaps the first measurement', () => {
+    expect(first.padding.top).toBe(5.5)
+    expect(first.natural).toBe(10.5)
+  })
+
+  it('keeps the snap when the height does not change (fixed-height Box)', () => {
+    const rendered = first.padding
+    expect(
+      nextSnap(first, input, { height: 10.5, rendered, settling: true })
+    ).toBe(first)
+  })
+
+  it('keeps the snap once its own correction shows up in the height', () => {
+    const next = nextSnap(first, input, {
+      height: 16,
+      rendered: first.padding,
+      settling: true,
+    })!
+    expect(next.padding).toEqual(first.padding)
+    expect(next.height).toBe(16)
+  })
+
+  it('re-snaps a natural height change while settling, not after', () => {
+    const grown = { height: 19, rendered: first.padding, settling: true }
+    expect(nextSnap(first, input, grown)!.padding.top).toBe(2.5)
+    expect(nextSnap(first, input, { ...grown, settling: false })).toBe(first)
+  })
+
+  it('re-snaps when the inputs change, even after settling', () => {
+    const moved = nextSnap(
+      first,
+      { ...input, initial: { ...zero, top: 8 } },
+      { height: 16, rendered: first.padding, settling: false }
+    )!
+    // 10.5px content + 8px top = 18.5px, snapped to 24px.
+    expect(moved.padding.top).toBe(13.5)
+  })
+
+  it('does nothing when snapping is none', () => {
+    expect(
+      nextSnap(
+        first,
+        { ...input, mode: 'none' },
+        { height: 30, rendered: zero, settling: true }
+      )
+    ).toBe(first)
   })
 })
