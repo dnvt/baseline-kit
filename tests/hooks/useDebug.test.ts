@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react'
-import { useDebug } from '@hooks'
+import { useDebug } from '@baseline-kit/react/hooks'
 
 describe('useDebug', () => {
   it('returns isShown=true if prop is "visible"', () => {

@@ -1215,6 +1215,258 @@ test('React Box applies top-edge snapping on its merged grid host', async ({
   await expect(box.locator(':scope > [data-testid="padder"]')).toHaveCount(0)
 })
 
+test('React caller classes win and only Box trims its children', async ({
+  page,
+}) => {
+  await expect(page.locator('#caller-class-box')).toHaveCSS('display', 'flex')
+  const trim = await page.evaluate(() => ({
+    supported: CSS.supports('text-box-trim', 'trim-both'),
+    box: getComputedStyle(
+      document.querySelector('#trim-box p')!
+    ).getPropertyValue('text-box-trim'),
+    padder: getComputedStyle(
+      document.querySelector('#trim-padder p')!
+    ).getPropertyValue('text-box-trim'),
+    padderNone: getComputedStyle(
+      document.querySelector('#trim-padder-none p')!
+    ).getPropertyValue('text-box-trim'),
+  }))
+  if (trim.supported) {
+    expect(trim.box).toBe('trim-both')
+    expect(trim.padder).toBe('none')
+    expect(trim.padderNone).toBe('none')
+  }
+})
+
+test('React Padder spacers keep a snapped Padder on the base grid', async ({
+  page,
+}) => {
+  for (const id of ['#grid-padder']) {
+    await expect
+      .poll(() =>
+        page.locator(id).evaluate((element) => {
+          const remainder = element.getBoundingClientRect().height % 8
+          return Math.min(remainder, 8 - remainder) < 1 / 64
+        })
+      )
+      .toBe(true)
+  }
+})
+
+test('React nested and semantic Boxes stay on the grid', async ({ page }) => {
+  // Every top-level Box in the section starts and ends on the grid: a nested
+  // Box adds no late correction, and semantic hosts carry no default margins.
+  await expect
+    .poll(() =>
+      page.locator('#nested-snap').evaluate((section) => {
+        const origin = section.getBoundingClientRect().top
+        const off = (value: number) => {
+          const remainder = (((value - origin) % 8) + 8) % 8
+          return Math.min(remainder, 8 - remainder)
+        }
+        return Array.from(section.children).map((element) => {
+          const rect = element.getBoundingClientRect()
+          return Math.max(off(rect.top), off(rect.bottom)) < 1 / 64
+        })
+      })
+    )
+    .toEqual([true, true, true, true])
+})
+
+test('React Box stays on the grid under CSS zoom and snaps one layout unit', async ({
+  page,
+}) => {
+  // Under CSS zoom the Box snaps in unzoomed px, within the 1/32px residue
+  // a scaled layout can leave (WebKit on Linux leaves 1/64px) and without
+  // an extra row; at 1x a one-layout-unit remainder is snapped exactly.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const zoomed = document.querySelector('#precision-zoom')!
+        const unit = document.querySelector('#precision-unit')!
+        const cssHeight =
+          zoomed.getBoundingClientRect().height /
+          ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
+            1)
+        return [
+          Math.abs(cssHeight - 16) <= 1 / 32,
+          unit.getBoundingClientRect().height,
+        ]
+      })
+    )
+    .toEqual([true, 16])
+})
+
+test('React Box re-snaps late content and keeps caller margins', async ({
+  page,
+}) => {
+  const box = page.locator('#late-box')
+  await expect
+    .poll(() =>
+      box.evaluate((element) => element.getBoundingClientRect().height)
+    )
+    .toBe(16)
+  // Content grows after the first snap (a web font loading, say): the Box
+  // re-snaps from its natural height without a remount.
+  await page.evaluate(() => {
+    ;(document.querySelector('#late-content') as HTMLElement).style.height =
+      '17px'
+  })
+  await expect
+    .poll(() =>
+      box.evaluate((element) => element.getBoundingClientRect().height)
+    )
+    .toBe(24)
+  // Element resets such as normalize.css don't add margins to a semantic
+  // host, but a caller's own class still sets one.
+  await expect(page.locator('#reset-p')).toHaveCSS('margin-top', '0px')
+  await expect(page.locator('#caller-p')).toHaveCSS('margin-top', '16px')
+})
+
+test('React Box re-snaps after a font load once the window closes', async ({
+  page,
+}) => {
+  const box = page.locator('#late-box')
+  const height = () =>
+    box.evaluate((element) => element.getBoundingClientRect().height)
+  await expect.poll(height).toBe(16)
+  // After the settle window, a size change alone keeps the snap.
+  await page.waitForTimeout(3000)
+  await page.evaluate(() => {
+    ;(document.querySelector('#late-content') as HTMLElement).style.height =
+      '17px'
+  })
+  await expect.poll(height).toBe(23)
+  await page.waitForTimeout(300)
+  expect(await height()).toBe(23)
+  // A font load reopens it. WebKit fires only `loading` for a late font, so
+  // that is the event dispatched here.
+  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  await expect.poll(height).toBe(24)
+})
+
+test('React Box re-snaps after snapping turns off and back on', async ({
+  page,
+}) => {
+  const probe = page.locator('#mode-probe')
+  const height = () =>
+    probe.evaluate((element) => element.getBoundingClientRect().height)
+  const set = (next: { mode?: 'clamp' | 'none'; height?: number }) =>
+    page.evaluate(
+      (value) =>
+        (
+          window as unknown as {
+            __setSnapProbe: (next: typeof value) => void
+          }
+        ).__setSnapProbe(value),
+      next
+    )
+  await expect.poll(height).toBe(104)
+  // Re-snap to an aligned height without correction inside a settle
+  // window (opened by a font load), then let the window close.
+  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  await set({ height: 88 })
+  await expect.poll(height).toBe(88)
+  await page.waitForTimeout(3000)
+  await set({ mode: 'none' })
+  await set({ height: 100 })
+  await expect.poll(height).toBe(100)
+  // Back to the same mode, base and padding: it must snap afresh.
+  await set({ mode: 'clamp' })
+  await expect.poll(height).toBe(104)
+})
+
+test('React Box re-snaps when props change right after a snap', async ({
+  page,
+}) => {
+  await expect
+    .poll(() =>
+      page
+        .locator('#props-after-snap')
+        .evaluate((element) => element.getBoundingClientRect().height % 8)
+    )
+    .toBe(0)
+})
+
+test('React Box snaps a padding change made in a mount effect', async ({
+  page,
+}) => {
+  await expect
+    .poll(() =>
+      page
+        .locator('#mount-flip-probe')
+        .evaluate((element) => element.getBoundingClientRect().height)
+    )
+    .toBe(104)
+})
+
+test('React Box keeps snapping after its as prop changes', async ({ page }) => {
+  const probe = page.locator('#as-probe')
+  const height = () =>
+    probe.evaluate((element) => element.getBoundingClientRect().height)
+  const set = (next: { as?: 'p' | 'h2'; height?: number }) =>
+    page.evaluate(
+      (value) =>
+        (
+          window as unknown as {
+            __setAsProbe: (next: typeof value) => void
+          }
+        ).__setAsProbe(value),
+      next
+    )
+  await expect.poll(height).toBe(104)
+  await set({ as: 'h2' })
+  await expect(page.locator('h2#as-probe')).toHaveCount(1)
+  // The new host is measured: a font load re-snaps changed content.
+  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  await set({ height: 88 })
+  await expect.poll(height).toBe(88)
+})
+
+test('React Box keeps a fractional top snap on an 8px base', async ({
+  page,
+}) => {
+  const box = page.locator('#box-snap-top-fractional [data-testid="box"]')
+  await expect
+    .poll(() =>
+      box.evaluate(
+        (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+      )
+    )
+    .toBe('5.5px')
+  const height = await box.evaluate(
+    (element) => element.getBoundingClientRect().height
+  )
+  expect(height % 8).toBeCloseTo(0, 5)
+})
+
+test('React semantic Box sizes once and snaps its whole host', async ({
+  page,
+}) => {
+  const host = page.locator('#react-semantic-sized')
+  expect(await host.evaluate((element) => element.tagName)).toBe('H3')
+  await expect
+    .poll(() =>
+      host.evaluate((element) => {
+        const remainder = element.getBoundingClientRect().height % 8
+        return Math.min(remainder, 8 - remainder) < 1 / 64
+      })
+    )
+    .toBe(true)
+  const sizes = await host.evaluate((element) => ({
+    host: element.getBoundingClientRect().width,
+    grid: element
+      .querySelector(':scope > .bk-box__grid')!
+      .getBoundingClientRect().width,
+  }))
+  expect(sizes.host).toBeCloseTo(200, 1)
+  expect(sizes.grid).toBeCloseTo(200, 1)
+
+  const label = page.locator('#react-semantic-label')
+  expect(await label.evaluate((element) => element.tagName)).toBe('LABEL')
+  await expect(label).toHaveAttribute('for', 'react-semantic-input')
+})
+
 test.describe('native Remix adapter', () => {
   test('nested Config survives delayed application entry and generated consumers', async ({
     page,
@@ -1389,10 +1641,10 @@ test.describe('native Remix adapter', () => {
     expect(parity.maxChannelDelta).toBe(0)
   })
 
-  test('serves the native stylesheet through the app asset path', async ({
+  test('serves the shared stylesheet through the app asset path', async ({
     request,
   }) => {
-    const response = await request.get('/__baseline-remix.css')
+    const response = await request.get('/__baseline.css')
     expect(response.status()).toBe(200)
     expect(response.headers()['content-type']).toContain('text/css')
     expect(await response.text()).toContain('.bk-bas')
@@ -1876,6 +2128,352 @@ test.describe('native Remix adapter', () => {
     await expect(label).toHaveAttribute('for', 'remix-semantic-input')
   })
 
+  test('native caller classes win and only Box trims its children', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    await expect(page.locator('#remix-caller-class-box')).toHaveCSS(
+      'display',
+      'flex'
+    )
+    const trim = await page.evaluate(() => ({
+      supported: CSS.supports('text-box-trim', 'trim-both'),
+      box: getComputedStyle(
+        document.querySelector('#remix-trim-box p')!
+      ).getPropertyValue('text-box-trim'),
+      padder: getComputedStyle(
+        document.querySelector('#remix-trim-padder p')!
+      ).getPropertyValue('text-box-trim'),
+      padderNone: getComputedStyle(
+        document.querySelector('#remix-trim-padder-none p')!
+      ).getPropertyValue('text-box-trim'),
+    }))
+    if (trim.supported) {
+      expect(trim.box).toBe('trim-both')
+      expect(trim.padder).toBe('none')
+      expect(trim.padderNone).toBe('none')
+    }
+  })
+
+  test('native Padder spacers keep a snapped Padder on the base grid', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    for (const id of ['#remix-grid-padder']) {
+      await expect
+        .poll(() =>
+          page.locator(id).evaluate((element) => {
+            const remainder = element.getBoundingClientRect().height % 8
+            return Math.min(remainder, 8 - remainder) < 1 / 64
+          })
+        )
+        .toBe(true)
+    }
+  })
+
+  test('native components keep measuring after a temporary detach', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const guide = page.locator('#remix-detach-host [data-testid="guide"]')
+    const columns = () =>
+      guide.evaluate((element) =>
+        (element as HTMLElement).style.getPropertyValue('--bkgd-n')
+      )
+    await expect.poll(columns).toBe('4')
+
+    await page.evaluate(async () => {
+      const host = document.querySelector('#remix-detach-host')!
+      const parent = host.parentNode!
+      const next = host.nextSibling
+      host.remove()
+      for (let frame = 0; frame < 4; frame += 1) {
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+      }
+      parent.insertBefore(host, next)
+      ;(host as HTMLElement).style.width = '600px'
+    })
+    await expect.poll(columns).toBe('6')
+  })
+
+  test('native nested and semantic Boxes stay on the grid', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    // Every top-level Box in the section starts and ends on the grid: a nested
+    // Box adds no late correction, and semantic hosts carry no default margins.
+    await expect
+      .poll(() =>
+        page.locator('#remix-nested-snap').evaluate((section) => {
+          const origin = section.getBoundingClientRect().top
+          const off = (value: number) => {
+            const remainder = (((value - origin) % 8) + 8) % 8
+            return Math.min(remainder, 8 - remainder)
+          }
+          return Array.from(section.children).map((element) => {
+            const rect = element.getBoundingClientRect()
+            return Math.max(off(rect.top), off(rect.bottom)) < 1 / 64
+          })
+        })
+      )
+      .toEqual([true, true, true, true])
+  })
+
+  test('native components keep measuring when detached during another unmount', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const guide = page.locator('#remix-detach-host [data-testid="guide"]')
+    const columns = () =>
+      guide.evaluate((element) =>
+        (element as HTMLElement).style.getPropertyValue('--bkgd-n')
+      )
+    await expect.poll(columns).toBe('4')
+    // Load a frame view whose measured entries the replacement will unmount.
+    await page.evaluate(() =>
+      (
+        window as unknown as {
+          __baselineRemixLifecycle: { reload: (src: string) => Promise<void> }
+        }
+      ).__baselineRemixLifecycle.reload('/remix-lifecycle-a')
+    )
+    await expect(
+      page.locator('#remix-frame-view-a [data-row-index]').first()
+    ).toBeVisible()
+
+    await page.evaluate(async () => {
+      const host = document.querySelector('#remix-detach-host')!
+      const parent = host.parentNode!
+      const next = host.nextSibling
+      host.remove()
+      // Unmounting the frame's entries runs the detach sweep meanwhile.
+      await (
+        window as unknown as {
+          __baselineRemixLifecycle: { replaceStatic: () => Promise<void> }
+        }
+      ).__baselineRemixLifecycle.replaceStatic()
+      for (let frame = 0; frame < 3; frame += 1) {
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+      }
+      parent.insertBefore(host, next)
+      ;(host as HTMLElement).style.width = '600px'
+    })
+    await expect.poll(columns).toBe('6')
+  })
+
+  test('native Box stays on the grid under CSS zoom and snaps one layout unit', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    // Under CSS zoom the Box snaps in unzoomed px, within the 1/32px residue
+    // a scaled layout can leave (WebKit on Linux leaves 1/64px) and without
+    // an extra row; at 1x a one-layout-unit remainder is snapped exactly.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const zoomed = document.querySelector('#remix-precision-zoom')!
+          const unit = document.querySelector('#remix-precision-unit')!
+          const cssHeight =
+            zoomed.getBoundingClientRect().height /
+            ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
+              1)
+          return [
+            Math.abs(cssHeight - 16) <= 1 / 32,
+            unit.getBoundingClientRect().height,
+          ]
+        })
+      )
+      .toEqual([true, 16])
+  })
+
+  test('native Box re-snaps late content and keeps caller margins', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const box = page.locator('#remix-late-box')
+    await expect
+      .poll(() =>
+        box.evaluate((element) => element.getBoundingClientRect().height)
+      )
+      .toBe(16)
+    // Content grows after the first snap (a web font loading, say): the Box
+    // re-snaps from its natural height without a remount.
+    await page.evaluate(() => {
+      ;(
+        document.querySelector('#remix-late-content') as HTMLElement
+      ).style.height = '17px'
+    })
+    await expect
+      .poll(() =>
+        box.evaluate((element) => element.getBoundingClientRect().height)
+      )
+      .toBe(24)
+    // Element resets such as normalize.css don't add margins to a semantic
+    // host, but a caller's own class still sets one.
+    await expect(page.locator('#remix-reset-p')).toHaveCSS('margin-top', '0px')
+    await expect(page.locator('#remix-caller-p')).toHaveCSS(
+      'margin-top',
+      '16px'
+    )
+  })
+
+  test('native Box re-snaps after a font load once the window closes', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const box = page.locator('#remix-late-box')
+    const height = () =>
+      box.evaluate((element) => element.getBoundingClientRect().height)
+    await expect.poll(height).toBe(16)
+    // After the settle window, a size change alone keeps the snap.
+    await page.waitForTimeout(3000)
+    await page.evaluate(() => {
+      ;(
+        document.querySelector('#remix-late-content') as HTMLElement
+      ).style.height = '17px'
+    })
+    await expect.poll(height).toBe(23)
+    await page.waitForTimeout(300)
+    expect(await height()).toBe(23)
+    // A font load reopens it. WebKit fires only `loading` for a late font, so
+    // that is the event dispatched here.
+    await page.evaluate(() =>
+      document.fonts.dispatchEvent(new Event('loading'))
+    )
+    await expect.poll(height).toBe(24)
+  })
+
+  test('native Box re-snaps after snapping turns off and back on', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const probe = page.locator('#remix-mode-probe')
+    const height = () =>
+      probe.evaluate((element) => element.getBoundingClientRect().height)
+    const set = (next: { mode?: 'clamp' | 'none'; height?: number }) =>
+      page.evaluate(
+        (value) =>
+          (
+            window as unknown as {
+              __setRemixSnapProbe: (next: typeof value) => void
+            }
+          ).__setRemixSnapProbe(value),
+        next
+      )
+    await expect.poll(height).toBe(104)
+    // Re-snap to an aligned height without correction inside a settle
+    // window (opened by a font load), then let the window close.
+    await page.evaluate(() =>
+      document.fonts.dispatchEvent(new Event('loading'))
+    )
+    await set({ height: 88 })
+    await expect.poll(height).toBe(88)
+    await page.waitForTimeout(3000)
+    await set({ mode: 'none' })
+    await set({ height: 100 })
+    await expect.poll(height).toBe(100)
+    // Back to the same mode, base and padding: it must snap afresh.
+    await set({ mode: 'clamp' })
+    await expect.poll(height).toBe(104)
+  })
+
+  test('native Box keeps a fractional top snap on an 8px base', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const box = page.locator(
+      '#remix-snap-box-top-fractional [data-testid="box"]'
+    )
+    await expect
+      .poll(() =>
+        box.evaluate(
+          (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+        )
+      )
+      .toBe('5.5px')
+    const height = await box.evaluate(
+      (element) => element.getBoundingClientRect().height
+    )
+    expect(height % 8).toBeCloseTo(0, 5)
+  })
+
+  test('native semantic Box sizes once and snaps its whole host', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+
+    const host = page.locator('#remix-semantic-sized')
+    await expect(host).toHaveAttribute('data-bk-snap-state', 'measured')
+    const sizes = await host.evaluate((element) => {
+      const grid = element.querySelector(':scope > .bk-box__grid')!
+      return {
+        host: element.getBoundingClientRect(),
+        grid: grid.getBoundingClientRect(),
+      }
+    })
+    // width="50%" applies to the host only, not again to the inner grid.
+    expect(sizes.host.width).toBeCloseTo(200, 1)
+    expect(sizes.grid.width).toBeCloseTo(200, 1)
+    // The host's own border and padding count toward the snapped height.
+    const remainder = sizes.host.height % 8
+    expect(Math.min(remainder, 8 - remainder)).toBeLessThan(1 / 64)
+  })
+
   test('native rows respond to a containing-block resize', async ({ page }) => {
     await page.goto('/remix.html')
     await page.evaluate(
@@ -2078,12 +2676,19 @@ test.describe('native Remix adapter', () => {
       runtime.dispose()
       runtime.flush()
     })
-    await waitForAnimationFrames(page)
-    const afterDispose = await readNativeLifecycleProbe(page)
-    expect(afterDispose.resizeActive).toBe(0)
-    expect(afterDispose.intersectionActive).toBe(0)
-    expect(afterDispose.windowListeners).toBe(0)
-    expect(afterDispose.callbacksAfterDisconnect).toBe(0)
+    // Entries nested in a non-measuring entry are released by the detach
+    // sweep once they have stayed out of the document for half a second.
+    await expect
+      .poll(async () => {
+        const afterDispose = await readNativeLifecycleProbe(page)
+        return [
+          afterDispose.resizeActive,
+          afterDispose.intersectionActive,
+          afterDispose.windowListeners,
+          afterDispose.callbacksAfterDisconnect,
+        ]
+      })
+      .toEqual([0, 0, 0, 0])
   })
 
   test('preserves native frame state across enhanced navigation and history', async ({
@@ -2128,12 +2733,22 @@ test.describe('native Remix adapter', () => {
       .poll(() => page.evaluate(() => location.pathname))
       .toBe('/remix.html')
     await expect(page.locator('#remix-frame-view-a')).toBeVisible()
-    const afterBack = await readNativeLifecycleProbe(page)
-    expect(afterBack.resizeActive).toBe(afterNavigation.resizeActive)
-    expect(afterBack.intersectionActive).toBe(
-      afterNavigation.intersectionActive
-    )
-    expect(afterBack.windowListeners).toBe(afterNavigation.windowListeners)
+    // Remix can briefly render a nested entry into a detached element during
+    // history navigation; its bridge releases itself within a few frames.
+    await expect
+      .poll(async () => {
+        const afterBack = await readNativeLifecycleProbe(page)
+        return [
+          afterBack.resizeActive,
+          afterBack.intersectionActive,
+          afterBack.windowListeners,
+        ]
+      })
+      .toEqual([
+        afterNavigation.resizeActive,
+        afterNavigation.intersectionActive,
+        afterNavigation.windowListeners,
+      ])
 
     await page.evaluate(() => history.forward())
     await expect
@@ -2141,12 +2756,22 @@ test.describe('native Remix adapter', () => {
       .toBe('/remix-lifecycle-b')
     await expect(page.locator('#remix-frame-view-b')).toBeVisible()
     await expect(page.locator('[data-remix-frame-view]')).toHaveCount(1)
-    const afterForward = await readNativeLifecycleProbe(page)
-    expect(afterForward.resizeActive).toBe(afterNavigation.resizeActive)
-    expect(afterForward.intersectionActive).toBe(
-      afterNavigation.intersectionActive
-    )
-    expect(afterForward.windowListeners).toBe(afterNavigation.windowListeners)
+    // Remix can briefly render a nested entry into a detached element during
+    // history navigation; its bridge releases itself within a few frames.
+    await expect
+      .poll(async () => {
+        const afterForward = await readNativeLifecycleProbe(page)
+        return [
+          afterForward.resizeActive,
+          afterForward.intersectionActive,
+          afterForward.windowListeners,
+        ]
+      })
+      .toEqual([
+        afterNavigation.resizeActive,
+        afterNavigation.intersectionActive,
+        afterNavigation.windowListeners,
+      ])
 
     await page.evaluate(() => {
       const runtime = (
@@ -2157,11 +2782,18 @@ test.describe('native Remix adapter', () => {
       runtime.dispose()
       runtime.flush()
     })
-    await waitForAnimationFrames(page)
-    const afterDispose = await readNativeLifecycleProbe(page)
-    expect(afterDispose.resizeActive).toBe(0)
-    expect(afterDispose.intersectionActive).toBe(0)
-    expect(afterDispose.windowListeners).toBe(0)
-    expect(afterDispose.callbacksAfterDisconnect).toBe(0)
+    // Entries nested in a non-measuring entry are released by the detach
+    // sweep once they have stayed out of the document for half a second.
+    await expect
+      .poll(async () => {
+        const afterDispose = await readNativeLifecycleProbe(page)
+        return [
+          afterDispose.resizeActive,
+          afterDispose.intersectionActive,
+          afterDispose.windowListeners,
+          afterDispose.callbacksAfterDisconnect,
+        ]
+      })
+      .toEqual([0, 0, 0, 0])
   })
 })

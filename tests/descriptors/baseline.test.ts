@@ -1,4 +1,5 @@
 import {
+  DEFAULT_CONFIG,
   canCompactBaselinePaint,
   createBaselineDescriptor,
 } from '@baseline-kit/core'
@@ -11,6 +12,7 @@ const baseParams = {
   containerHeight: 160,
   spacing: {},
   isVisible: true,
+  domDiagnostics: false,
 }
 
 describe('createBaselineDescriptor', () => {
@@ -58,17 +60,32 @@ describe('createBaselineDescriptor', () => {
     const { containerStyle } = createBaselineDescriptor(baseParams)
     expect(containerStyle['--bkbl-cl']).toBe('red')
     expect(containerStyle['--bkbl-cf']).toBe('blue')
-    expect(containerStyle['--bkbl-c']).toBe('var(--bkbl-cl)')
   })
 
-  it('classTokens uses v/h for visibility', () => {
+  it('omits values the stylesheet already sets', () => {
+    const { containerStyle } = createBaselineDescriptor({
+      ...baseParams,
+      colors: DEFAULT_CONFIG.baseline.colors,
+      width: '100%',
+      height: '100%',
+    })
+    expect(containerStyle).toEqual({})
+  })
+
+  it('classTokens carry visibility, variant, and compact paint', () => {
     expect(createBaselineDescriptor(baseParams).classTokens).toEqual([
       'bas',
       'v',
+      'line',
+      'compact',
     ])
     expect(
-      createBaselineDescriptor({ ...baseParams, isVisible: false }).classTokens
-    ).toEqual(['bas', 'h'])
+      createBaselineDescriptor({
+        ...baseParams,
+        isVisible: false,
+        domDiagnostics: true,
+      }).classTokens
+    ).toEqual(['bas', 'h', 'line'])
   })
 
   it('emits padding string when spacing is non-zero', () => {
@@ -115,7 +132,6 @@ describe('createBaselineDescriptor', () => {
 
   it.each([
     ['50%', '50%'],
-    ['100%', '100%'],
     ['100vh', '100vh'],
     ['100vw', '100vw'],
     ['100dvh', '100dvh'],
@@ -233,5 +249,18 @@ describe('canCompactBaselinePaint', () => {
         style: { '--bkbl-b': '8px' },
       })
     ).toBe(false)
+  })
+})
+
+describe('createBaselineDescriptor measurement noise', () => {
+  it('keeps the last row and compact paint for sub-pixel heights', () => {
+    for (const containerHeight of [399.984375, 400.015625, 400.4]) {
+      const descriptor = createBaselineDescriptor({
+        ...baseParams,
+        containerHeight,
+      })
+      expect(descriptor.rowCount).toBe(50)
+      expect(descriptor.compactPaint).toBe(true)
+    }
   })
 })

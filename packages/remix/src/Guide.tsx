@@ -7,43 +7,29 @@ import {
   calculateGuideTemplate,
   createGuideConfig,
   createGuideDescriptor,
-  formatValue,
-  type GuideVariant,
-  type GuideColumnValue,
+  createGuideFallbackStyle,
   type ConfigSchema,
+  type GuideOptions,
+  cx,
+  getDOMAttributes,
+  resolveDebugState,
 } from '@baseline-kit/core'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 import {
-  classNames,
-  compactStyle,
-  getDOMAttributes,
   createElementObserverBridge,
   getConfig,
   mergeStyles,
   normalizeConfigSnapshot,
   queueNativeUpdate,
-  resolveDebugging,
   type NativeComponent,
-  type NativeDOMAttributes,
+  type NativeHostProps,
 } from './shared'
 
-export type GuideProps = NativeDOMAttributes & {
-  align?: string
-  variant?: GuideVariant
-  columns?: number | readonly GuideColumnValue[]
-  columnWidth?: number | string
-  maxWidth?: number | string
-  color?: string
-  gap?: number
-  width?: number | string
-  height?: number | string
-  debugging?: 'none' | 'hidden' | 'visible'
-  className?: string
-  style?: Record<string, string | number | null | undefined>
-  children?: RemixNode
-  ssrMode?: boolean
-}
+export type GuideProps = GuideOptions &
+  NativeHostProps & {
+    children?: RemixNode
+  }
 
 type RuntimeGuideProps = GuideProps & {
   __baselineConfig?: ConfigSchema
@@ -67,7 +53,7 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
       props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
     )
     const variant = props.variant ?? config.guide.variant
-    const debug = resolveDebugging(props.debugging, config.guide.debugging)
+    const debug = resolveDebugState(props.debugging, config.guide.debugging)
     const guideConfig = createGuideConfig({
       variant,
       base: config.base,
@@ -113,7 +99,7 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
     if (props.ssrMode) {
       return (
         <div
-          className={classNames(
+          className={cx(
             'bk-gde',
             'bk-h',
             'bk-ssr',
@@ -122,16 +108,9 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
           )}
           data-testid={config.domDiagnostics ? 'guide' : undefined}
           data-variant={config.domDiagnostics ? variant : undefined}
-          aria-hidden={true}
+          aria-hidden="true"
           style={mergeStyles(
-            compactStyle(
-              {
-                width: formatValue(props.width ?? '100%'),
-                height: formatValue(props.height ?? '100%'),
-                maxWidth: formatValue(props.maxWidth ?? 'none'),
-              },
-              { width: '100%', height: '100%', maxWidth: 'none' }
-            ),
+            createGuideFallbackStyle(props.width, props.height, props.maxWidth),
             props.style
           )}
           {...getDOMAttributes(props)}
@@ -146,7 +125,7 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
         ? Array.from({ length: descriptor.columnsCount }, (_, index) => (
             <div
               key={index}
-              className={classNames('bk-col', `bk-${variant}`)}
+              className={cx('bk-col', `bk-${variant}`)}
               data-column-index={config.domDiagnostics ? index : undefined}
               data-variant={config.domDiagnostics ? variant : undefined}
             />
@@ -154,7 +133,7 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
         : null
     const overlay = debug.isShown ? (
       <div
-        className={classNames(
+        className={cx(
           'bk-cols',
           `bk-${variant}`,
           compactFixedGuide && 'bk-cols-compact-fixed'
@@ -170,33 +149,14 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
     // the descriptor while hydrating.
     return (
       <div
-        className={classNames(
+        className={cx(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
-          !descriptor.classTokens.includes(variant) && `bk-${variant}`,
           props.className
         )}
         data-testid={config.domDiagnostics ? 'guide' : undefined}
         data-variant={config.domDiagnostics ? variant : undefined}
-        aria-hidden={true}
-        style={mergeStyles(
-          compactStyle(descriptor.containerStyle, {
-            '--bkgd-w': '100%',
-            '--bkgd-h': '100%',
-            '--bkgd-mw': 'none',
-            '--bkgd-cw': '60px',
-            '--bkgd-n': '12',
-            '--bkgd-b': '0',
-            '--bkgd-cl': DEFAULT_CONFIG.guide.colors.line,
-            '--bkgd-cp': DEFAULT_CONFIG.guide.colors.pattern,
-            '--bkgd-ca': DEFAULT_CONFIG.guide.colors.auto,
-            '--bkgd-cf': DEFAULT_CONFIG.guide.colors.fixed,
-            '--bkgd-g': '0px',
-            '--bkgd-j': 'center',
-            '--bkgd-t': 'none',
-            '--bkgd-line-color': 'var(--bkgd-cl)',
-          }),
-          props.style
-        )}
+        aria-hidden="true"
+        style={mergeStyles(descriptor.containerStyle, props.style)}
         {...getDOMAttributes(props)}
         mix={
           typeof window === 'undefined' || props.ssrMode

@@ -1,4 +1,4 @@
-import { debounce, rafThrottle } from '@utils'
+import { debounce, rafThrottle } from '@baseline-kit/dom'
 
 describe('Timing Utils', () => {
   describe('debounce', () => {
@@ -87,7 +87,9 @@ describe('Timing Utils', () => {
       throttled('first')
       throttled('second')
 
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve())
+      )
 
       expect(fn).toHaveBeenCalledTimes(1)
       expect(fn).toHaveBeenCalledWith('second') // Updated expectation
@@ -98,11 +100,15 @@ describe('Timing Utils', () => {
       const [throttled] = rafThrottle(fn)
 
       throttled(1)
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve())
+      )
       expect(fn).toHaveBeenCalledTimes(1)
 
       throttled(2)
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve())
+      )
       expect(fn).toHaveBeenCalledTimes(2)
       expect(fn).toHaveBeenLastCalledWith(2)
     })

@@ -56,14 +56,11 @@ for (const name of ['core', 'dom', 'react', 'remix']) {
 }
 
 const stylesCSS = readDist('styles.css')
-const guideCSS = readDist('guide.css')
-const fullCSS = readDist('baseline-kit.css')
+const themeCSS = readDist('theme.css')
 const indexMjs = readDist('index.mjs')
 const indexDts = readDist('index.d.ts')
-const guideDts = readDist('guide.d.ts')
 const coreDts = readDist('core.d.ts')
 const remixMjs = readDist('remix.mjs')
-const remixCSS = readDist('remix.css')
 const remixDts = readDist('remix.d.ts')
 const remixServerDts = readDist('remix-server.d.ts')
 assert(
@@ -74,38 +71,49 @@ assert(
   'The Node SSR compatibility entry must preserve upstream callable types'
 )
 
-assert(
-  !stylesCSS.includes('/* Guide Styles */'),
-  'styles.css must not append guide.css; root build already includes Guide CSS'
-)
+for (const selector of [
+  '.bk-bas',
+  '.bk-box',
+  '.bk-pad',
+  '.bk-spr',
+  '.bk-gde',
+]) {
+  assert(stylesCSS.includes(selector), `styles.css must include ${selector}`)
+}
 assert(
   count(stylesCSS, 'repeating-linear-gradient') === 2,
   'styles.css must contain one Guide and one Baseline gradient'
 )
 assert(
-  count(fullCSS, 'repeating-linear-gradient') === 2,
-  'baseline-kit.css must contain one Guide and one Baseline gradient'
+  !/(^|[,{]\s*)\.(box|line|flat|col|ssr|v|h|gde|bas|spr|pad)\b|(^|[,\s])(\*|body|html)\s*\{/m.test(
+    stylesCSS
+  ),
+  'styles.css must only use bk-prefixed selectors'
 )
 assert(
-  count(guideCSS, 'repeating-linear-gradient') === 1,
-  'guide.css must contain only the Guide line gradient'
+  themeCSS.includes('@media (prefers-color-scheme: dark)'),
+  'theme.css must include the dark theme for prefers-color-scheme'
 )
-
-const globalLeakPattern =
-  /(^|[,{]\s*)\.(box|line|flat|col|ssr|v|h|gde|bas|spr|pad)\b|(^|[,\s])(\*|body|html)\s*\{/m
-
-for (const [file, css] of [
-  ['styles.css', stylesCSS],
-  ['guide.css', guideCSS],
-  ['baseline-kit.css', fullCSS],
-]) {
-  assert(!globalLeakPattern.test(css), `${file} contains unscoped global CSS`)
+for (const [subpath, target] of Object.entries(packageJson.exports)) {
+  if (typeof target === 'object' && String(target.default).endsWith('.css')) {
+    assert(
+      target.types === './dist/css.d.ts',
+      `${subpath} must declare the CSS type stub`
+    )
+  }
 }
 
-assert(
-  !/\.(bas|box|pad|spr|row)_/.test(guideCSS),
-  'guide.css must not include non-Guide component module selectors'
-)
+for (const file of [
+  'guide.mjs',
+  'guide.css',
+  'remix.css',
+  'baseline-kit.css',
+]) {
+  assert(
+    !fs.existsSync(path.join(distDir, file)),
+    `${file} is no longer part of the package`
+  )
+}
 
 assert(
   !/from\s+["'](?:remix|remix\/)|require\(["'](?:remix|remix\/)/.test(indexMjs),
@@ -114,7 +122,6 @@ assert(
 
 for (const [file, dts] of [
   ['index.d.ts', indexDts],
-  ['guide.d.ts', guideDts],
   ['core.d.ts', coreDts],
 ]) {
   assert(
@@ -133,16 +140,30 @@ assert(
   'remix.mjs must not import React or react-dom'
 )
 assert(
-  remixCSS.includes('.bk-bas') && remixCSS.includes('.bk-gde'),
-  'remix.css must include native Baseline and Guide selectors'
-)
-assert(
   remixDts.includes(
     'export { Baseline, Box, Config, Guide, Padder, Spacer }'
   ) &&
     !remixDts.includes('__baselineConfig') &&
     !/(from\s+["']@baseline-kit\/|import\(["']@baseline-kit\/)/.test(remixDts),
   'remix.d.ts must expose only public native components without unresolved workspace imports'
+)
+
+const exportedNames = (dts) =>
+  [...dts.matchAll(/export (?:type )?\{([^}]*)\}/g)]
+    .flatMap((match) => match[1].split(','))
+    .map((name) =>
+      name
+        .trim()
+        .split(/\s+as\s+/)
+        .pop()
+    )
+    .filter(Boolean)
+    .sort()
+const reactNames = exportedNames(indexDts).join(',')
+const remixNames = exportedNames(remixDts).join(',')
+assert(
+  reactNames === remixNames,
+  `React and Remix entries must export the same names:\n  react: ${reactNames}\n  remix: ${remixNames}`
 )
 
 console.log('✅ Artifact verification passed')

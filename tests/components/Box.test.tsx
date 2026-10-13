@@ -3,8 +3,9 @@ import { render } from '../render'
 import '@testing-library/jest-dom'
 import type { CSSProperties } from 'react'
 import { useState } from 'react'
-import { Box, DebuggingMode, Padding, SnappingMode } from '@components'
-import { useBaseline } from '@hooks'
+import { Box } from '@baseline-kit/react'
+import type { DebuggingMode, Padding, SnappingMode } from '@baseline-kit/core'
+import { useBaseline } from '@baseline-kit/react/hooks'
 
 function StatefulField() {
   const [value, setValue] = useState('before')
@@ -17,16 +18,7 @@ function StatefulField() {
   )
 }
 
-// Mock CSS modules
-vi.mock('./styles.module.css', () => ({
-  default: {
-    box: 'box',
-    visible: 'visible',
-    hidden: 'hidden',
-  },
-}))
-
-vi.mock('@components/Spacer', () => ({
+vi.mock('@baseline-kit/react/components/Spacer', () => ({
   Spacer: ({
     width,
     height,
@@ -47,7 +39,7 @@ vi.mock('@components/Spacer', () => ({
 }))
 
 // Mock hooks used in Box.
-vi.mock('@hooks', () => ({
+vi.mock('@baseline-kit/react/hooks', () => ({
   useConfig: vi.fn((component: string) => {
     if (component === 'box') {
       return {
@@ -113,11 +105,6 @@ vi.mock('@hooks', () => ({
         finalBottom = 6
         finalLeft = 10
         finalRight = 10
-      } else if (snapping === 'none') {
-        finalTop = 16
-        finalBottom = 24
-        finalLeft = 8
-        finalRight = 8
       } else if (snapping === 'height') {
         if (top === 6) finalTop = 8
         if (bottom === 10) finalBottom = 16
@@ -149,7 +136,7 @@ describe('<Box /> component', () => {
     const boxEl = screen.getByTestId('box')
     expect(boxEl).toBeInTheDocument()
     // Visible diagnostics stay on the compact merged host by default.
-    expect(boxEl.className).toContain('v')
+    expect(boxEl.classList.contains('bk-v')).toBe(true)
     expect(container.querySelectorAll('*')).toHaveLength(2)
     expect(screen.queryByTestId('padder')).not.toBeInTheDocument()
     expect(screen.getByText('Box content')).toBeInTheDocument()
@@ -270,19 +257,19 @@ describe('<Box /> component', () => {
       s.getAttribute('style')?.includes('--bk-spacer-height: 100%')
     )
 
-    // Based on our mock for "none" mode, we expect:
+    // `none` keeps the explicit block and inline spacing.
     expect(verticalSpacers[0]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 16')
+      expect.stringContaining('--bk-spacer-height: 14')
     )
     expect(verticalSpacers[1]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 24')
+      expect.stringContaining('--bk-spacer-height: 22')
     )
     horizontalSpacers.forEach((spacer) => {
       expect(spacer).toHaveAttribute(
         'style',
-        expect.stringContaining('--bk-spacer-width: 8')
+        expect.stringContaining('--bk-spacer-width: 10')
       )
     })
   })

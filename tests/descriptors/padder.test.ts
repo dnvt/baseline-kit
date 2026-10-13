@@ -1,7 +1,6 @@
 import { createPadderDescriptor } from '@baseline-kit/core'
 
 const baseParams = {
-  base: 8,
   color: 'blue',
   padding: { top: 0, right: 0, bottom: 0, left: 0 },
   enableSpacers: false,
@@ -9,9 +8,8 @@ const baseParams = {
 }
 
 describe('createPadderDescriptor', () => {
-  it('emits --bkpd-b and --bkpd-c unconditionally', () => {
+  it('emits the color only when it differs from the stylesheet', () => {
     const { containerStyle } = createPadderDescriptor(baseParams)
-    expect(containerStyle['--bkpd-b']).toBe('8px')
     expect(containerStyle['--bkpd-c']).toBe('blue')
   })
 
@@ -67,8 +65,7 @@ describe('createPadderDescriptor', () => {
 
   it('includes "v" class token only when visible AND spacers enabled', () => {
     expect(
-      createPadderDescriptor({ ...baseParams, enableSpacers: true })
-        .classTokens
+      createPadderDescriptor({ ...baseParams, enableSpacers: true }).classTokens
     ).toEqual(['pad', 'v'])
     expect(
       createPadderDescriptor({ ...baseParams, enableSpacers: false })

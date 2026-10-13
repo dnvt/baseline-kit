@@ -1,4 +1,8 @@
-import { formatValue, createGridSpanStyles } from '../utils'
+import { DEFAULT_CONFIG } from '../config/defaults'
+import type { Padding } from '../types'
+
+export type { BoxElement } from '../types'
+import { compactStyle, formatValue, createGridSpanStyles } from '../utils'
 
 export interface BoxDescriptorParams {
   base: number
@@ -10,10 +14,19 @@ export interface BoxDescriptorParams {
   colSpan?: number
   rowSpan?: number
   isVisible: boolean
+  /** Resolved (initial or snapped) padding, placed as grid tracks. */
+  padding: Padding
+  /** Outline color for visible padding. */
+  paddingColor: string
 }
 
 export interface BoxDescriptor {
+  /** Size and color variables for the host; stylesheet defaults omitted. */
   boxStyle: Record<string, string>
+  /** Grid tracks that place the padding around the content. */
+  spacingStyle: Record<string, string>
+  /** Padding outline color and shaded band sizes, when debug paint is on. */
+  paddingDebugStyle: Record<string, string>
   gridSpanStyle: Record<string, string>
   classTokens: string[]
 }
@@ -71,22 +84,62 @@ export function createBoxDescriptor(
     colSpan,
     rowSpan,
     isVisible,
+    padding,
+    paddingColor,
   } = params
 
-  const boxStyle: Record<string, string> = {
-    ...(width !== undefined ? { '--bkbx-w': formatValue(width) } : {}),
-    ...(height !== undefined ? { '--bkbx-h': formatValue(height) } : {}),
-    // Config is context, not a DOM wrapper. The consuming Box must receive
-    // its resolved painted value directly so nested/sibling Config scopes do
-    // not depend on a root-level custom property.
-    '--bkbx-cl': lineColor,
-    ...(flatColor !== undefined ? { '--bkbx-cf': flatColor } : {}),
+  // Config is context, not a DOM wrapper. The consuming Box receives its
+  // resolved colors directly so nested Config scopes do not depend on a
+  // root-level custom property.
+  const boxStyle = compactStyle(
+    {
+      ...(width !== undefined ? { '--bkbx-w': formatValue(width) } : {}),
+      ...(height !== undefined ? { '--bkbx-h': formatValue(height) } : {}),
+      '--bkbx-cl': lineColor,
+      ...(flatColor !== undefined ? { '--bkbx-cf': flatColor } : {}),
+    },
+    {
+      '--bkbx-w': 'fit-content',
+      '--bkbx-h': 'fit-content',
+      '--bkbx-cl': DEFAULT_CONFIG.box.colors.line,
+      '--bkbx-cf': DEFAULT_CONFIG.box.colors.flat,
+    }
+  )
+
+  const spacingStyle: Record<string, string> = {
+    ...(padding.top > 0 || padding.bottom > 0
+      ? { gridTemplateRows: `${padding.top}px 1fr ${padding.bottom}px` }
+      : {}),
+    ...(padding.left > 0 || padding.right > 0
+      ? { gridTemplateColumns: `${padding.left}px 1fr ${padding.right}px` }
+      : {}),
   }
+
+  const paddingDebugStyle = isVisible
+    ? compactStyle(
+        {
+          '--bkpd-c': paddingColor,
+          '--bkpd-is': `${padding.top}px`,
+          '--bkpd-ie': `${padding.bottom}px`,
+        },
+        {
+          '--bkpd-c': DEFAULT_CONFIG.padder.color,
+          '--bkpd-is': '0px',
+          '--bkpd-ie': '0px',
+        }
+      )
+    : {}
 
   const gridSpanStyle = createGridSpanStyles(span, colSpan, rowSpan)
 
   const classTokens = ['box']
   if (isVisible) classTokens.push('v')
 
-  return { boxStyle, gridSpanStyle, classTokens }
+  return {
+    boxStyle,
+    spacingStyle,
+    paddingDebugStyle,
+    gridSpanStyle,
+    classTokens,
+  }
 }

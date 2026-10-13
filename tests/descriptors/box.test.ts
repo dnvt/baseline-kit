@@ -1,9 +1,15 @@
-import { createBoxDescriptor, requiresSeparatePadder } from '@baseline-kit/core'
+import {
+  DEFAULT_CONFIG,
+  createBoxDescriptor,
+  requiresSeparatePadder,
+} from '@baseline-kit/core'
 
 const baseParams = {
   base: 8,
   lineColor: 'red',
   isVisible: true,
+  padding: { top: 0, right: 0, bottom: 0, left: 0 },
+  paddingColor: 'blue',
 }
 
 describe('createBoxDescriptor', () => {
@@ -110,5 +116,37 @@ describe('requiresSeparatePadder', () => {
 
   it('keeps the separate Padder when a caller class can change layout', () => {
     expect(requiresSeparatePadder({ className: 'custom-layout' })).toBe(true)
+  })
+})
+
+describe('createBoxDescriptor shared spacing', () => {
+  const padding = { top: 6, right: 0, bottom: 8, left: 4 }
+
+  it('places resolved padding as grid tracks', () => {
+    const { spacingStyle } = createBoxDescriptor({ ...baseParams, padding })
+    expect(spacingStyle).toEqual({
+      gridTemplateRows: '6px 1fr 8px',
+      gridTemplateColumns: '4px 1fr 0px',
+    })
+  })
+
+  it('emits padding debug paint only when visible', () => {
+    expect(
+      createBoxDescriptor({ ...baseParams, padding }).paddingDebugStyle
+    ).toEqual({ '--bkpd-c': 'blue', '--bkpd-is': '6px', '--bkpd-ie': '8px' })
+    expect(
+      createBoxDescriptor({ ...baseParams, padding, isVisible: false })
+        .paddingDebugStyle
+    ).toEqual({})
+  })
+
+  it('omits values the stylesheet already provides', () => {
+    const { boxStyle } = createBoxDescriptor({
+      ...baseParams,
+      lineColor: DEFAULT_CONFIG.box.colors.line,
+      flatColor: DEFAULT_CONFIG.box.colors.flat,
+      width: 'fit-content',
+    })
+    expect(boxStyle).toEqual({})
   })
 })

@@ -2,11 +2,11 @@ import { screen } from '@testing-library/react'
 import { render } from '../render'
 import '@testing-library/jest-dom'
 import { CSSProperties } from 'react'
-import { Spacer } from '@components'
+import { Spacer } from '@baseline-kit/react'
 
 // Partial mock of @hooks so that useConfig for spacer returns expected values.
-vi.mock('@hooks', async () => {
-  const original = await vi.importActual('@hooks')
+vi.mock('@baseline-kit/react/hooks', async () => {
+  const original = await vi.importActual('@baseline-kit/react/hooks')
   return {
     ...original,
     useConfig: (component: string) => {
@@ -98,10 +98,9 @@ describe('Spacer Component', () => {
 
   describe('Color Handling', () => {
     it('uses custom base unit when provided', () => {
-      render(<Spacer base={4} />)
+      render(<Spacer base={4} height={13} />)
       const spacer = screen.getByTestId('spacer')
-      const styleAttr = spacer.getAttribute('style') || ''
-      expect(styleAttr).toContain('--bksp-b: 4px')
+      expect(spacer.getAttribute('style') || '').toContain('--bksp-h: 12px')
     })
 
     it('uses config base unit when not provided', () => {
@@ -175,10 +174,9 @@ describe('Spacer Component', () => {
 
   describe('Base Unit Handling', () => {
     it('uses custom base unit when provided', () => {
-      render(<Spacer base={4} />)
+      render(<Spacer base={4} height={13} />)
       const spacer = screen.getByTestId('spacer')
-      const styleAttr = spacer.getAttribute('style') || ''
-      expect(styleAttr).toContain('--bksp-b: 4px')
+      expect(spacer.getAttribute('style') || '').toContain('--bksp-h: 12px')
     })
 
     it('uses config base unit when not provided', () => {

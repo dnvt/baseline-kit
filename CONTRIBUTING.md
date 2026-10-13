@@ -66,14 +66,20 @@ and must not be published independently.
 
 ```text
 packages/
-├── core/src/       # Pure types, config, validation, descriptors, and math
-├── dom/src/        # Browser observers, measurement, timing, and SSR helpers
-├── react/src/      # React 19 components, hooks, and CSS
-└── remix/src/      # React-free Remix 3 UI adapter and CSS
+├── core/src/         # Types, config, descriptors, and spacing math
+│   └── styles/       # The one stylesheet, themes, and reset for both entries
+├── dom/src/          # Measurement, virtualization, timing, and SSR helpers
+├── react/src/        # React 19 components and hooks
+└── remix/src/        # React-free Remix 3 components and the Node SSR entry
 ```
 
+Both component entries render the same `bk-*` classes from the core
+descriptors. Put shared logic and styles in `core` or `dom`; keep only
+runtime-specific rendering in `react` and `remix`.
+
 Tests live in `tests/` and cover the core, DOM, React, Remix, build artifacts,
-and packed-consumer integration paths.
+and packed-consumer integration paths. `bun run format` formats packages and
+tests.
 
 ## Pull requests
 

@@ -97,22 +97,36 @@ describe('Remix adapter', () => {
     expect(html).toContain('<h2')
     expect(html).toMatch(/<h2[^>]*class="[^"]*semantic-heading"/)
     expect(html).toMatch(/<h2[^>]*style="[^"]*display: flex/u)
-    expect(html).toContain('data-bk-snap-state="seed"')
+    expect(html).toContain('data-bk-snap-state="pending"')
     expect(html).toContain('class="bk-box__grid"')
-    expect(html).toContain(
-      'grid-template-rows: var(--bkbx-initial-is, 8px) 1fr 8px'
-    )
+    expect(html).toContain('grid-template-rows: 8px 1fr 8px')
     expect(html).toContain('Semantic heading')
 
     const label = await renderToString(
       jsx(Box, {
         as: 'label',
-        for: 'billing-email',
+        htmlFor: 'billing-email',
         children: 'Billing email',
       })
     )
     expect(label).toContain('<label')
     expect(label).toContain('for="billing-email"')
+  })
+
+  it('warns once when a Box still receives the 6.x for prop', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      for (let index = 0; index < 2; index += 1) {
+        const html = await renderToString(
+          jsx(Box, { as: 'label', for: 'legacy-input', children: 'Legacy' })
+        )
+        expect(html).not.toContain('for="legacy-input"')
+      }
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn.mock.calls[0]?.[0]).toContain('pass `htmlFor` instead')
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   it('omits generated DOM diagnostics by default and preserves caller attributes', async () => {
@@ -152,8 +166,9 @@ describe('Remix adapter', () => {
     )
     expect(baselineHtml).toContain('class="bk-bas bk-h bk-ssr bk-line"')
     expect(baselineHtml).not.toContain('data-row-index')
-    expect(baselineHtml).toContain('width: 120px')
-    expect(baselineHtml).toContain('height: 80px')
+    expect(baselineHtml).toContain('aria-hidden="true"')
+    expect(baselineHtml).toContain('--bkbl-w: 120px')
+    expect(baselineHtml).toContain('--bkbl-h: 80px')
 
     const guideHtml = await renderToString(
       jsx(Guide, {
@@ -167,8 +182,9 @@ describe('Remix adapter', () => {
     )
     expect(guideHtml).toContain('class="bk-gde bk-h bk-ssr bk-line"')
     expect(guideHtml).toContain('SSR guide content')
-    expect(guideHtml).toContain('width: 120px')
-    expect(guideHtml).toContain('height: 80px')
-    expect(guideHtml).toContain('max-width: 240px')
+    expect(guideHtml).toContain('aria-hidden="true"')
+    expect(guideHtml).toContain('--bkgd-w: 120px')
+    expect(guideHtml).toContain('--bkgd-h: 80px')
+    expect(guideHtml).toContain('--bkgd-mw: 240px')
   })
 })

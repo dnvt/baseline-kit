@@ -23,7 +23,6 @@ const makeConfig = (input, file) => ({
     'remix',
     /^remix\//,
     /^@remix-run\//,
-    /\.css$/,
   ],
   plugins: [
     {
@@ -44,7 +43,6 @@ const makeConfig = (input, file) => ({
 
 export default defineConfig([
   makeConfig('packages/react/src/index.ts', 'dist/index.d.ts'),
-  makeConfig('packages/react/src/guide.ts', 'dist/guide.d.ts'),
   makeConfig('packages/core/src/index.ts', 'dist/core.d.ts'),
   makeConfig('packages/remix/src/index.ts', 'dist/remix.d.ts'),
   makeConfig('packages/remix/src/server.ts', 'dist/remix-server.d.ts'),

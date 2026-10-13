@@ -1,5 +1,7 @@
+import { DEFAULT_CONFIG } from '../config/defaults'
 import type { BaselineVariant } from '../types'
 import {
+  compactStyle,
   formatValue,
   normalizeValuePair,
   parsePadding,
@@ -37,6 +39,32 @@ export function canCompactBaselinePaint(params: {
   )
 }
 
+/** Values the stylesheet already sets on `.bk-bas`. */
+const BASELINE_STYLE_DEFAULTS: Record<string, string> = {
+  '--bkbl-w': '100%',
+  '--bkbl-h': '100%',
+  '--bkbl-b': '8px',
+  '--bkbl-cl': DEFAULT_CONFIG.baseline.colors.line,
+  '--bkbl-cf': DEFAULT_CONFIG.baseline.colors.flat,
+}
+
+/**
+ * Size-only style for the hidden server fallback rendered before the
+ * browser can measure the overlay.
+ */
+export function createBaselineFallbackStyle(
+  width?: number | string,
+  height?: number | string
+): Record<string, string> {
+  return compactStyle(
+    {
+      ...(width !== undefined ? { '--bkbl-w': formatValue(width) } : {}),
+      ...(height !== undefined ? { '--bkbl-h': formatValue(height) } : {}),
+    },
+    BASELINE_STYLE_DEFAULTS
+  )
+}
+
 export interface BaselineDescriptorParams {
   base: number
   colors: Record<BaselineVariant, string>
@@ -48,10 +76,16 @@ export interface BaselineDescriptorParams {
   containerHeight: number
   spacing: Record<string, unknown>
   isVisible: boolean
+  domDiagnostics: boolean
+  className?: string
+  style?: object
 }
 
 export interface BaselineDescriptor {
+  /** Host style with stylesheet defaults omitted. */
   containerStyle: Record<string, string>
+  /** Paint rows with one CSS gradient instead of one element per row. */
+  compactPaint: boolean
   rowCount: number
   contentHeight: number
   getRowStyle: (index: number) => Record<string, string>
@@ -78,6 +112,9 @@ export function createBaselineDescriptor(
     containerHeight,
     spacing,
     isVisible,
+    domDiagnostics,
+    className,
+    style,
   } = params
 
   const { top, right, bottom, left } = parsePadding(spacing)
@@ -93,9 +130,11 @@ export function createBaselineDescriptor(
   // relative values as if they were pixel values in a synthetic conversion
   // context. The fallback only supports DOM-less test/SSR environments before
   // the first layout measurement arrives.
+  // Rows only need whole pixels. Round the fractional measurement so
+  // sub-pixel noise cannot drop the last row or the compact gradient.
   const layoutHeight =
     containerHeight > 0
-      ? containerHeight
+      ? Math.round(containerHeight)
       : normalizeValuePair([undefined, height], [containerWidth, 0])[1]
   const contentHeight = layoutHeight - top - bottom
   const rowCount = calculateRowCount({
@@ -105,32 +144,40 @@ export function createBaselineDescriptor(
     base,
   })
 
-  const containerStyle: Record<string, string> = {
-    // Preserve explicit dimensions verbatim. In particular, `100vh`,
-    // `100vw`, `calc(...)`, and zero must not be collapsed to the 100% CSS
-    // fallback.
-    ...(width !== undefined ? { '--bkbl-w': formatValue(width) } : {}),
-    ...(height !== undefined ? { '--bkbl-h': formatValue(height) } : {}),
-    // Config is wrapperless. Emit the resolved paint channels on the
-    // consuming element even when they happen to match the descriptor's
-    // defaults; CSS variables on an ancestor cannot express nested scopes.
-    '--bkbl-cl': color ?? colors.line,
-    '--bkbl-cf': color ?? colors.flat,
-    // Rows inherit the active channel. Keeping this as a reference rather
-    // than a copied literal preserves caller style overrides on the host.
-    '--bkbl-c': variant === 'line' ? 'var(--bkbl-cl)' : 'var(--bkbl-cf)',
-    ...(padding ? { padding } : {}),
-  }
+  const compactPaint = canCompactBaselinePaint({
+    base,
+    contentHeight,
+    domDiagnostics,
+    className,
+    style,
+  })
+
+  // Preserve explicit dimensions verbatim: `100vh`, `calc(...)`, and zero
+  // must not collapse to the 100% default. Config is context, not a DOM
+  // wrapper, so resolved colors travel with the consuming element.
+  const containerStyle = compactStyle(
+    {
+      ...(width !== undefined ? { '--bkbl-w': formatValue(width) } : {}),
+      ...(height !== undefined ? { '--bkbl-h': formatValue(height) } : {}),
+      ...(compactPaint ? { '--bkbl-b': `${base}px` } : {}),
+      '--bkbl-cl': color ?? colors.line,
+      '--bkbl-cf': color ?? colors.flat,
+      ...(padding ? { padding } : {}),
+    },
+    BASELINE_STYLE_DEFAULTS
+  )
 
   const getRowStyle = (index: number): Record<string, string> => ({
     '--bkbl-rt': index === 0 ? '0px' : `${index * base}px`,
     '--bkbl-rh': variant === 'line' ? '1px' : `${base}px`,
   })
 
-  const classTokens = ['bas', isVisible ? 'v' : 'h']
+  const classTokens = ['bas', isVisible ? 'v' : 'h', variant]
+  if (compactPaint) classTokens.push('compact')
 
   return {
     containerStyle,
+    compactPaint,
     rowCount,
     contentHeight,
     getRowStyle,

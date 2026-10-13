@@ -12,7 +12,6 @@
     "./ssr": "./src/ssr.ts",
     "./measure": "./src/measure.ts",
     "./virtual": "./src/virtual.ts",
-    "./observers": "./src/observers.ts",
     "./viewport": "./src/viewport.ts"
   },
   "dependencies": {

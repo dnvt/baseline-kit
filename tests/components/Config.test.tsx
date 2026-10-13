@@ -1,14 +1,12 @@
 import { screen } from '@testing-library/react'
 import { render, renderPlain } from '../render'
 import '@testing-library/jest-dom'
+import { Box, Config, Spacer } from '@baseline-kit/react'
 import {
-  Box,
-  Config,
   DEFAULT_CONFIG,
-  Spacer,
   useDefaultConfig,
   createCSSVariables,
-} from '@components'
+} from '@baseline-kit/react/components/Config'
 
 describe('Config component', () => {
   it('omits library diagnostics by default and supports false-to-true opt-in', () => {

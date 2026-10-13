@@ -6,7 +6,100 @@ import {
   Padder,
   Spacer,
 } from '@baseline-kit/react'
-import { Fragment, useState, type CSSProperties } from 'react'
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
+
+/** Lets tests switch a Box's snapping mode and content height. */
+function SnapModeProbe() {
+  const [mode, setMode] = useState<'clamp' | 'none'>('clamp')
+  const [height, setHeight] = useState(100)
+  useEffect(() => {
+    ;(
+      window as unknown as {
+        __setSnapProbe: (next: {
+          mode?: 'clamp' | 'none'
+          height?: number
+        }) => void
+      }
+    ).__setSnapProbe = (next) => {
+      if (next.mode) setMode(next.mode)
+      if (next.height !== undefined) setHeight(next.height)
+    }
+  }, [])
+  return (
+    <Box id="mode-probe" snapping={mode} block={[0, 0]}>
+      <div style={{ height }} />
+    </Box>
+  )
+}
+
+/** A Box whose `as` changes at runtime, which renders a new host. */
+function AsSwitchProbe() {
+  const [as, setAs] = useState<'p' | 'h2'>('p')
+  const [height, setHeight] = useState(100)
+  useEffect(() => {
+    ;(
+      window as unknown as {
+        __setAsProbe: (next: { as?: 'p' | 'h2'; height?: number }) => void
+      }
+    ).__setAsProbe = (next) => {
+      if (next.as) setAs(next.as)
+      if (next.height !== undefined) setHeight(next.height)
+    }
+  }, [])
+  return (
+    <Box id="as-probe" as={as} snapping="height" block={[0, 0]}>
+      <span style={{ display: 'block', height }} />
+    </Box>
+  )
+}
+
+/** Changes its padding in a mount effect, before a second measurement. */
+function MountFlipProbe() {
+  const [block, setBlock] = useState<[number, number]>([0, 0])
+  useEffect(() => setBlock([0, 4]), [])
+  return (
+    <Box id="mount-flip-probe" snapping="clamp" block={block}>
+      <div style={{ height: 100 }} />
+    </Box>
+  )
+}
+
+/** Switches Box props in the microtask after the first snap commits. */
+function PropsAfterSnapProbe() {
+  const [edge, setEdge] = useState<'bottom' | 'top'>('bottom')
+  const ref = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const observer = new MutationObserver(() => {
+      observer.disconnect()
+      setEdge('top')
+    })
+    observer.observe(ref.current!, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style'],
+    })
+    return () => observer.disconnect()
+  }, [])
+  return (
+    <div ref={ref} style={{ display: 'flow-root' }}>
+      <Box
+        id="props-after-snap"
+        snapping="height"
+        snapEdge={edge}
+        block={[0, 0]}
+      >
+        <div style={{ height: 100 }} />
+      </Box>
+    </div>
+  )
+}
 
 const dimensionCases = [
   { id: 'width-omitted', axis: 'width', value: undefined },
@@ -320,6 +413,117 @@ export function App() {
         >
           <div style={{ width: 20, height: 10 }}>React top snap consumer</div>
         </Box>
+      </section>
+
+      <section id="caller-css">
+        <style>{`.caller-flex { display: flex; }`}</style>
+        <Box id="caller-class-box" className="caller-flex">
+          Caller class
+        </Box>
+        <Box id="trim-box" debugging="none">
+          <p style={{ margin: 0 }}>Box child</p>
+        </Box>
+        <Padder id="trim-padder" debugging="hidden">
+          <p style={{ margin: 0 }}>Padder child</p>
+        </Padder>
+        <Padder id="trim-padder-none" debugging="none">
+          <p style={{ margin: 0 }}>Padder child</p>
+        </Padder>
+      </section>
+
+      <section id="nested-snap" style={{ display: 'flow-root' }}>
+        <Box id="nested-snap-outer">
+          <Box>Sphinx of black quartz, judge my vow</Box>
+        </Box>
+        <Box as="p">Semantic paragraph one</Box>
+        <Box as="p">Semantic paragraph two</Box>
+        <Box>
+          <Spacer height={12} />
+        </Box>
+      </section>
+
+      <section id="snap-probes">
+        <SnapModeProbe />
+        <PropsAfterSnapProbe />
+        <MountFlipProbe />
+        <AsSwitchProbe />
+      </section>
+
+      <section id="late-and-margins">
+        <style>{`p { margin: 1em 0; } .caller-mt { margin-top: 16px; }`}</style>
+        <Box id="late-box" snapping="height" block={[0, 0]}>
+          <div id="late-content" style={{ height: '10px' }} />
+        </Box>
+        <Box id="reset-p" as="p">
+          Element margin
+        </Box>
+        <Box id="caller-p" as="p" className="caller-mt">
+          Caller margin
+        </Box>
+      </section>
+
+      <section id="precision">
+        <div style={{ zoom: 1.25 }}>
+          <Box id="precision-zoom" snapping="height" block={[0, 0]}>
+            <div style={{ height: '10.5px' }} />
+          </Box>
+        </div>
+        <Box id="precision-unit" snapping="height" block={[0, 0]}>
+          <div style={{ height: '8.015625px' }} />
+        </Box>
+      </section>
+
+      <section id="grid-exact">
+        <Padder id="grid-padder" debugging="hidden" block={[8, 8]}>
+          <div style={{ height: '8.296875px' }} />
+        </Padder>
+        <Box id="nested-outer" snapping="none">
+          <Box
+            id="nested-inner"
+            snapping="height"
+            snapEdge="top"
+            block={[0, 0]}
+          >
+            <div style={{ height: '10.5px' }} />
+          </Box>
+        </Box>
+      </section>
+
+      <section id="box-snap-top-fractional">
+        <Box
+          snapping="height"
+          snapEdge="top"
+          debugging="visible"
+          block={[0, 0]}
+        >
+          <div style={{ width: 20, height: '10.5px' }}>
+            React fractional top snap consumer
+          </div>
+        </Box>
+      </section>
+
+      <section id="box-semantic-host">
+        <div style={{ width: 400 }}>
+          <Box
+            id="react-semantic-sized"
+            as="h3"
+            width="50%"
+            snapping="height"
+            snapEdge="top"
+            block={[0, 0]}
+            style={{ borderBottom: '1px solid', paddingTop: '3px' }}
+          >
+            Sized semantic heading
+          </Box>
+        </div>
+        <Box
+          id="react-semantic-label"
+          as="label"
+          htmlFor="react-semantic-input"
+        >
+          Semantic host label
+        </Box>
+        <input id="react-semantic-input" />
       </section>
 
       <section

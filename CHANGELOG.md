@@ -1,15 +1,29 @@
 # baseline-kit
 
-## Unreleased
+## 6.1.0
 
-### Breaking changes
+### Minor Changes
+
+- Restore semantic host selection on the native Remix Box and update its SSR adapter for stable Remix 3.0.0.
+
+## 6.0.0
+
+### Major Changes
+
+- a3d22e6: Generated diagnostic DOM attributes are now opt-in through `Config domDiagnostics`. Default component styles come from CSS modules, and zero-padding containers omit unused spacer helpers while retaining a stable content host. Baseline grids use CSS paint while retaining the same rendered pixels. Migrate DOM inspection to the opt-in diagnostics setting.
+
+### Details
+
+Longer notes for the work released in 5.2.0 and 6.0.0.
+
+#### Breaking changes
 
 - Library-generated DOM diagnostic attributes are opt-in through
   `<Config domDiagnostics />`. Applications that select components through
   generated `data-testid`, variant, dimension, row, or column attributes should
   enable diagnostics in those scopes. Caller-provided attributes remain.
 
-### Improvements
+#### Improvements
 
 - Added the React-free Remix 3 entry point and its dedicated CSS entry.
 - Added a Node-only Remix SSR compatibility entry that preserves nested Config
@@ -26,24 +40,12 @@
   React/Remix rendering behavior.
 - Removed unused CSS and linting dependencies, including `cssnano`.
 
-### Bug fixes
+#### Bug fixes
 
 - Fixed relative browser sizing, scoped Config color propagation, and delayed
   hydration regressions across the React and native Remix adapters.
 - Box and Padder now opt into `text-box: trim-both ex alphabetic` when the
   browser supports it, while retaining normal line boxes as a fallback.
-
-## 6.1.0
-
-### Minor Changes
-
-- Restore semantic host selection on the native Remix Box and update its SSR adapter for stable Remix 3.0.0.
-
-## 6.0.0
-
-### Major Changes
-
-- a3d22e6: Generated diagnostic DOM attributes are now opt-in through `Config domDiagnostics`. Default component styles come from CSS modules, and zero-padding containers omit unused spacer helpers while retaining a stable content host. Baseline grids use CSS paint while retaining the same rendered pixels. Migrate DOM inspection to the opt-in diagnostics setting.
 
 ## 5.2.0
 

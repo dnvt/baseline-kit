@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react'
-import { useConfig } from '@/hooks/useConfig'
-import type { ConfigSchema as Config } from '@/components/Config/Config'
-import * as ConfigModule from '@/components/Config/Config'
+import { useConfig } from '@baseline-kit/react/hooks/useConfig'
+import type { ConfigSchema as Config } from '@baseline-kit/react/components/Config/Config'
+import * as ConfigModule from '@baseline-kit/react/components/Config/Config'
 
 const minimalGuideStub: Config['guide'] = {
   variant: 'line',
@@ -96,7 +96,9 @@ describe('useConfig', () => {
       },
     }
 
-    vi.spyOn(ConfigModule, 'useDefaultConfig').mockReturnValue(mockDefaultConfig)
+    vi.spyOn(ConfigModule, 'useDefaultConfig').mockReturnValue(
+      mockDefaultConfig
+    )
 
     const { result } = renderHook(() => useConfig('guide'))
 
@@ -125,7 +127,9 @@ describe('useConfig', () => {
       baseline: minimalBaselineStub,
     }
 
-    vi.spyOn(ConfigModule, 'useDefaultConfig').mockReturnValue(mockDefaultConfig)
+    vi.spyOn(ConfigModule, 'useDefaultConfig').mockReturnValue(
+      mockDefaultConfig
+    )
     const { result } = renderHook(() => useConfig('box'))
 
     expect(result.current.base).toBe(8)
@@ -170,7 +174,9 @@ describe('useConfig', () => {
       padder: minimalPadderStub,
       baseline: minimalBaselineStub,
     }
-    vi.spyOn(ConfigModule, 'useDefaultConfig').mockReturnValue(mockDefaultConfig)
+    vi.spyOn(ConfigModule, 'useDefaultConfig').mockReturnValue(
+      mockDefaultConfig
+    )
     const { result, rerender } = renderHook(() => useConfig('padder'))
     const firstResult = result.current
 

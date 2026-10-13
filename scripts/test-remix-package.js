@@ -105,11 +105,6 @@ try {
       resolve(reactFixtureDir, 'node_modules/baseline-kit/dist/index.mjs')
     ).href
   )
-  const guideEntry = await import(
-    pathToFileURL(
-      resolve(reactFixtureDir, 'node_modules/baseline-kit/dist/guide.mjs')
-    ).href
-  )
   if (typeof reactEntry.Baseline !== 'object') {
     throw new Error('Packed React entry did not load in the React fixture')
   }
@@ -132,14 +127,14 @@ try {
           variant: 'fixed',
         },
       },
-      react.createElement(guideEntry.Guide, {
+      react.createElement(reactEntry.Guide, {
         debugging: 'visible',
         columns: 4,
       })
     )
   )
   if (!mixedEntryHtml.includes('data-variant="fixed"')) {
-    throw new Error('Packed root and guide entries do not share Config context')
+    throw new Error('Packed React Guide did not read Config context')
   }
 
   const bundledNativeEntry = readFileSync(

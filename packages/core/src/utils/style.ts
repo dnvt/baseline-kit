@@ -1,3 +1,4 @@
+/** Drop style entries that already match the stylesheet defaults. */
 export function compactStyle(
   style: Record<string, string>,
   defaults: Record<string, string>
@@ -19,6 +20,7 @@ const DOM_ATTRIBUTE_NAMES = new Set([
   'hidden',
 ])
 
+/** Keep only the global attributes components forward to their host. */
 export function getDOMAttributes(
   props: Record<string, unknown>
 ): Record<string, unknown> {

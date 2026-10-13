@@ -3,7 +3,6 @@
  */
 
 import { rafThrottle } from './timing'
-import type { Padding } from '@baseline-kit/core'
 
 export interface MeasureRect {
   width: number
@@ -17,75 +16,86 @@ export interface MeasureObserverHandle {
   disconnect(): void
 }
 
-export interface MeasureObserverOptions {
-  /** Keep fractional CSS pixel heights when false. Width remains rounded. */
-  round?: boolean
+/** Effective CSS zoom of an element, 1 where `currentCSSZoom` is unsupported. */
+export function getCSSZoom(el: Element): number {
+  const zoom = (el as Element & { currentCSSZoom?: number }).currentCSSZoom
+  return typeof zoom === 'number' && zoom > 0 ? zoom : 1
 }
 
-/** Read the CSS-seeded rows that already determine this Box's first paint. */
-export function getSeededBaselinePadding(
-  element: Element | null,
-  initial: Padding
-): Padding {
-  const view = element?.ownerDocument.defaultView
-  if (!element || !view) return initial
-
-  const style = view.getComputedStyle(element)
-  if (!style.getPropertyValue('--bkbx-initial-is').trim()) return initial
-
-  const rows = style.gridTemplateRows.split(/\s+/)
-  if (rows.length < 3) return initial
-
-  const top = Number.parseFloat(rows[0])
-  const bottom = Number.parseFloat(rows[rows.length - 1])
-  if (!Number.isFinite(top) || !Number.isFinite(bottom)) return initial
-
-  return { ...initial, top, bottom }
+/**
+ * Whether browser zoom, display scaling, or CSS zoom scale this element by a
+ * fraction, which leaves sub-pixel residues in its measured size.
+ */
+export function isScaledLayout(el: Element | null): boolean {
+  if (!el || typeof window === 'undefined') return false
+  const scale = (window.devicePixelRatio || 1) * getCSSZoom(el)
+  return Math.abs(scale - Math.round(scale)) > 1e-6
 }
 
-/** Remove first-paint seed padding before computing the final measured snap. */
-export function getUnseededBaselineHeight(
-  element: Element | null,
-  height: number,
-  initialTop: number,
-  initialBottom: number
-): number {
-  const view = element?.ownerDocument.defaultView
-  if (!element || !view) return height
+type SettleListener = () => void
+const settleListeners = new Set<SettleListener>()
+let settleEventsAttached = false
+// WebKit drops the listeners on `document.fonts` once its wrapper is garbage
+// collected, so the wrapper is kept here.
+let settleFonts: FontFaceSet | undefined
 
-  const style = view.getComputedStyle(element)
-  if (!style.getPropertyValue('--bkbx-initial-is').trim()) return height
-
-  const rows = style.gridTemplateRows.split(/\s+/)
-  if (rows.length < 3) return height
-
-  const renderedTop = Number.parseFloat(rows[0])
-  const renderedBottom = Number.parseFloat(rows[rows.length - 1])
-  if (!Number.isFinite(renderedTop) || !Number.isFinite(renderedBottom)) {
-    return height
+/**
+ * Calls `listener` whenever layout may change after the first snap without a
+ * size change being observed in time: a web font finishes loading, or a
+ * background tab becomes visible. Returns an unsubscribe function.
+ */
+export function onSnapSettleEvent(listener: SettleListener): () => void {
+  settleListeners.add(listener)
+  if (!settleEventsAttached && typeof document !== 'undefined') {
+    settleEventsAttached = true
+    const notify = () => {
+      for (const current of [...settleListeners]) current()
+    }
+    // WebKit fires `loading` but not `loadingdone`, so wait for the
+    // `ready` promise of each load, including one already running.
+    settleFonts = document.fonts
+    let fontsPending = false
+    const waitForFonts = () => {
+      if (fontsPending || !settleFonts) return
+      const ready = settleFonts.ready
+      fontsPending = true
+      const done = () => {
+        fontsPending = false
+        notify()
+      }
+      void ready.then(done, done)
+    }
+    settleFonts?.addEventListener?.('loading', waitForFonts)
+    if (settleFonts?.status === 'loading') waitForFonts()
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') notify()
+    })
   }
-
-  return height - (renderedTop - initialTop) - (renderedBottom - initialBottom)
+  return () => {
+    settleListeners.delete(listener)
+  }
 }
 
 /**
  * Observes an element's dimensions via ResizeObserver.
- * Calls `onChange` whenever the size changes. Height can preserve fractional
- * CSS pixels when `{ round: false }` is passed.
+ * Calls `onChange` whenever the size changes. Width is rounded; height keeps
+ * fractional CSS pixels so baseline snapping can land exactly on the grid.
  */
 export function createMeasureObserver(
   el: Element,
-  onChange: (rect: MeasureRect) => void,
-  { round = true }: MeasureObserverOptions = {}
+  onChange: (rect: MeasureRect) => void
 ): MeasureObserverHandle {
   let prev: MeasureRect = { width: 0, height: 0 }
 
   const measure = () => {
     try {
+      // getBoundingClientRect includes any CSS zoom on the element or its
+      // ancestors; padding is applied in unzoomed CSS px, so measure in those.
+      const zoom = getCSSZoom(el)
       const rect = el.getBoundingClientRect()
       const next: MeasureRect = {
-        width: Math.round(rect.width),
-        height: round ? Math.round(rect.height) : rect.height,
+        width: Math.round(rect.width / zoom),
+        height: rect.height / zoom,
       }
       if (next.width !== prev.width || next.height !== prev.height) {
         prev = next
@@ -101,13 +111,18 @@ export function createMeasureObserver(
   // Initial measurement
   measure()
 
-  const observer = new ResizeObserver(throttledMeasure)
-  observer.observe(el)
+  // Environments without ResizeObserver (such as jsdom) keep the initial
+  // measurement and can still refresh on demand.
+  const observer =
+    typeof ResizeObserver === 'undefined'
+      ? undefined
+      : new ResizeObserver(throttledMeasure)
+  observer?.observe(el)
 
   return {
     refresh: throttledMeasure,
     disconnect() {
-      observer.disconnect()
+      observer?.disconnect()
       cancelMeasure()
     },
   }

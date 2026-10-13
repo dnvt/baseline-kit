@@ -1,12 +1,11 @@
 /**
  * Node-only Remix 3 server compatibility entry.
  *
- * Remix 3.0.0 loses the current parent VNode while serializing a component's
+ * Remix 3 loses the current parent VNode while serializing a component's
  * return value. That drops nested provider context inside client-entry props.
- * Keep a small, exact-source patch isolated to this Node entry; the public
- * component runtime and all client/server component identities stay shared.
+ * Keep a small source patch isolated to this Node entry; the public component
+ * runtime and all client/server component identities stay shared.
  */
-import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -21,19 +20,11 @@ const serverURL = new URL('./server/stream.js', pathToFileURL(serverEntry))
 const sourcePath = fileURLToPath(serverURL)
 const source = await readFile(sourcePath, 'utf8')
 
-// Fail closed when Remix's private server implementation changes. The
-// workspace pins remix@3.0.0; revalidate this small patch on any upgrade.
-const expectedDigest =
-  'e68ea36b071142a01a7733862b21f50f4973ec133a6890576e8356ad3f1159d1'
-if (createHash('sha256').update(source).digest('hex') !== expectedDigest) {
-  throw new Error(
-    'baseline-kit/remix/server requires the verified Remix 3.0.0 component server. Revalidate this compatibility entry before upgrading Remix.'
-  )
-}
-
-const before = `            let [renderedNode] = handle.render(props);
+const before = `            vnode._handle = handle;
+            let [renderedNode] = handle.render(props);
             return unwrapNode(renderedNode);`
-const after = `            let [renderedNode] = handle.render(props);
+const after = `            vnode._handle = handle;
+            let [renderedNode] = handle.render(props);
             let previousParent = context.parentVNode;
             context.parentVNode = vnode;
             try {
@@ -41,9 +32,27 @@ const after = `            let [renderedNode] = handle.render(props);
             } finally {
                 context.parentVNode = previousParent;
             }`
-if (!source.includes(before)) {
+// Patch by anchor rather than by file digest: Remix 3 accepts any
+// @remix-run/component 1.x, so the file can change while this boundary stays.
+// The patch reads `context` and `vnode` from the hydration props replacer, so
+// require that function, its parent link, and exactly one anchor inside it
+// (before the function's closing brace). Fail closed when any of them moves.
+const scope = source.indexOf('function createHydrationPropsReplacer(context,')
+const scopeEnd = source.indexOf('\n}\n', scope)
+const parentLink = source.indexOf('vnode._parent = context.parentVNode;', scope)
+const anchor = source.indexOf(before, parentLink)
+if (
+  scope < 0 ||
+  scopeEnd < 0 ||
+  parentLink < 0 ||
+  parentLink > scopeEnd ||
+  anchor < 0 ||
+  anchor > scopeEnd ||
+  source.indexOf(before, anchor + before.length) >= 0 ||
+  source.indexOf(before) !== anchor
+) {
   throw new Error(
-    'baseline-kit/remix/server could not locate the verified Remix serialization boundary.'
+    'baseline-kit/remix/server could not locate the Remix serialization boundary it patches. Check this entry against the installed @remix-run/component version.'
   )
 }
 
@@ -56,7 +65,7 @@ const correctedSource = source
     (_match, _quote, specifier: string) =>
       `from ${JSON.stringify(new URL(specifier, serverURL).href)}`
   )
-const moduleURL = `data:text/javascript;base64,${Buffer.from(`${correctedSource}\n//# sourceURL=baseline-kit-remix-server-3.0.0.mjs`).toString('base64')}`
+const moduleURL = `data:text/javascript;base64,${Buffer.from(`${correctedSource}\n//# sourceURL=baseline-kit-remix-server.mjs`).toString('base64')}`
 const renderer = (await import(
   /* @vite-ignore */ moduleURL
 )) as typeof import('remix/component/server')

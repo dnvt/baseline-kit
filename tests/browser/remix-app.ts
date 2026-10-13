@@ -1,6 +1,6 @@
 import { Frame } from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
-import { Forwarder } from './remix-entries'
+import { Forwarder, SnapModeProbe } from './remix-entries'
 import {
   Baseline,
   Box,
@@ -481,6 +481,149 @@ export function createRemixApp() {
         }),
       }),
       jsx('section', {
+        id: 'remix-caller-css',
+        children: [
+          jsx('style', { children: '.caller-flex { display: flex; }' }),
+          jsx(Box, {
+            id: 'remix-caller-class-box',
+            className: 'caller-flex',
+            children: 'Caller class',
+          }),
+          jsx(Box, {
+            id: 'remix-trim-box',
+            debugging: 'none',
+            children: jsx('p', { style: { margin: 0 }, children: 'Box child' }),
+          }),
+          jsx(Padder, {
+            id: 'remix-trim-padder',
+            debugging: 'hidden',
+            children: jsx('p', {
+              style: { margin: 0 },
+              children: 'Padder child',
+            }),
+          }),
+          jsx(Padder, {
+            id: 'remix-trim-padder-none',
+            debugging: 'none',
+            children: jsx('p', {
+              style: { margin: 0 },
+              children: 'Padder child',
+            }),
+          }),
+        ],
+      }),
+      jsx('div', {
+        id: 'remix-detach-host',
+        style: { position: 'relative', width: '400px', height: '20px' },
+        children: jsx(Guide, {
+          variant: 'auto',
+          columnWidth: 100,
+          debugging: 'visible',
+        }),
+      }),
+      jsx('section', {
+        id: 'remix-nested-snap',
+        style: { display: 'flow-root' },
+        children: [
+          jsx(Box, {
+            id: 'remix-nested-snap-outer',
+            children: jsx(Box, {
+              children: 'Sphinx of black quartz, judge my vow',
+            }),
+          }),
+          jsx(Box, { as: 'p', children: 'Semantic paragraph one' }),
+          jsx(Box, { as: 'p', children: 'Semantic paragraph two' }),
+          jsx(Box, { children: jsx(Spacer, { height: 12 }) }),
+        ],
+      }),
+      jsx('section', {
+        id: 'remix-snap-probes',
+        children: jsx(SnapModeProbe, {}),
+      }),
+      jsx('section', {
+        id: 'remix-late-and-margins',
+        children: [
+          jsx('style', {
+            children: 'p { margin: 1em 0; } .caller-mt { margin-top: 16px; }',
+          }),
+          jsx(Box, {
+            id: 'remix-late-box',
+            snapping: 'height',
+            block: [0, 0],
+            children: jsx('div', {
+              id: 'remix-late-content',
+              style: { height: '10px' },
+            }),
+          }),
+          jsx(Box, {
+            id: 'remix-reset-p',
+            as: 'p',
+            children: 'Element margin',
+          }),
+          jsx(Box, {
+            id: 'remix-caller-p',
+            as: 'p',
+            className: 'caller-mt',
+            children: 'Caller margin',
+          }),
+        ],
+      }),
+      jsx('section', {
+        id: 'remix-precision',
+        children: [
+          jsx('div', {
+            style: { zoom: 1.25 },
+            children: jsx(Box, {
+              id: 'remix-precision-zoom',
+              snapping: 'height',
+              block: [0, 0],
+              children: jsx('div', { style: { height: '10.5px' } }),
+            }),
+          }),
+          jsx(Box, {
+            id: 'remix-precision-unit',
+            snapping: 'height',
+            block: [0, 0],
+            children: jsx('div', { style: { height: '8.015625px' } }),
+          }),
+        ],
+      }),
+      jsx('section', {
+        id: 'remix-grid-exact',
+        children: [
+          jsx(Padder, {
+            id: 'remix-grid-padder',
+            debugging: 'hidden',
+            block: [8, 8],
+            children: jsx('div', { style: { height: '8.296875px' } }),
+          }),
+          jsx(Box, {
+            id: 'remix-nested-outer',
+            snapping: 'none',
+            children: jsx(Box, {
+              id: 'remix-nested-inner',
+              snapping: 'height',
+              snapEdge: 'top',
+              block: [0, 0],
+              children: jsx('div', { style: { height: '10.5px' } }),
+            }),
+          }),
+        ],
+      }),
+      jsx('div', {
+        id: 'remix-snap-box-top-fractional',
+        children: jsx(Box, {
+          snapping: 'height',
+          snapEdge: 'top',
+          debugging: 'visible',
+          block: [0, 0],
+          children: jsx('div', {
+            style: { height: '10.5px' },
+            children: 'Native fractional top snap consumer',
+          }),
+        }),
+      }),
+      jsx('section', {
         id: 'remix-box-semantic-host',
         children: [
           jsx(Box, {
@@ -496,10 +639,23 @@ export function createRemixApp() {
           jsx(Box, {
             id: 'remix-semantic-label',
             as: 'label',
-            for: 'remix-semantic-input',
+            htmlFor: 'remix-semantic-input',
             children: 'Semantic host label',
           }),
           jsx('input', { id: 'remix-semantic-input' }),
+          jsx('div', {
+            style: { width: '400px' },
+            children: jsx(Box, {
+              id: 'remix-semantic-sized',
+              as: 'h3',
+              width: '50%',
+              snapping: 'height',
+              snapEdge: 'top',
+              block: [0, 0],
+              style: { borderBottom: '1px solid', paddingTop: '3px' },
+              children: 'Sized semantic heading',
+            }),
+          }),
         ],
       }),
     ],

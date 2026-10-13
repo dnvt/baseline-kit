@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import { clientEntry, Frame, type Handle, type RemixNode } from 'remix/component'
+import {
+  clientEntry,
+  Frame,
+  type Handle,
+  type RemixNode,
+} from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
 import { Config, Spacer } from '@baseline-kit/remix'
 import { DEFAULT_CONFIG } from '@baseline-kit/core'
@@ -115,23 +120,49 @@ describe('Remix server entry', () => {
     expect(renderToString).not.toBe(upstreamRenderToString)
   })
 
-  it('fails closed if the installed server source is changed', async () => {
+  async function importServerWithSource(transform: (source: string) => string) {
     vi.doMock('node:fs/promises', async () => {
       const actual =
         await vi.importActual<typeof import('node:fs/promises')>(
           'node:fs/promises'
         )
-      const readFile = async () => 'modified source'
+      const readFile = async (...args: Parameters<typeof actual.readFile>) =>
+        transform(String(await actual.readFile(...args)))
       return { ...actual, readFile, default: { ...actual, readFile } }
     })
     vi.resetModules()
     try {
-      await expect(import('@baseline-kit/remix/server')).rejects.toThrow(
-        'requires the verified Remix 3.0.0 component server'
-      )
+      return await import('@baseline-kit/remix/server')
     } finally {
       vi.doUnmock('node:fs/promises')
       vi.resetModules()
     }
+  }
+
+  it('still patches when an unrelated part of the server source changes', async () => {
+    const server = await importServerWithSource(
+      (source) => `${source}\n// unrelated patch-release change\n`
+    )
+    expect(typeof server.renderToString).toBe('function')
+  })
+
+  it('fails closed if the boundary moves out of the replacer scope', async () => {
+    const anchor = [
+      '            vnode._handle = handle;',
+      '            let [renderedNode] = handle.render(props);',
+      '            return unwrapNode(renderedNode);',
+    ].join('\n')
+    await expect(
+      importServerWithSource(
+        (source) =>
+          `${source.replace(anchor, anchor.replace('handle;', 'handle ;'))}\nfunction moved(vnode, handle, props) {\n${anchor}\n}\n`
+      )
+    ).rejects.toThrow('could not locate the Remix serialization boundary')
+  })
+
+  it('fails closed if the patched boundary is missing', async () => {
+    await expect(
+      importServerWithSource(() => 'modified source')
+    ).rejects.toThrow('could not locate the Remix serialization boundary')
   })
 })

@@ -48,5 +48,3 @@ function ConfigImpl(handle: Handle<RuntimeConfigProps, ConfigSchema>) {
 export const Config = ConfigImpl as unknown as (
   handle: Handle<ConfigProps, ConfigSchema>
 ) => () => RemixNode
-
-export { mergeConfig }

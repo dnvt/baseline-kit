@@ -1,11 +1,14 @@
-import { cx, mergeStyles } from '@utils'
+import { cx } from '@baseline-kit/core'
+import { mergeStyles } from '@baseline-kit/react/utils/merge'
 import type { CSSProperties } from 'react'
 
 describe('Merge Utilities', () => {
   describe('merge classes', () => {
     it('combines class names and filters out falsy values', () => {
       expect(cx('foo', 'bar')).toBe('foo bar')
-      expect(cx('foo', false, 'bar', undefined, null, 'baz')).toBe('foo bar baz')
+      expect(cx('foo', false, 'bar', undefined, null, 'baz')).toBe(
+        'foo bar baz'
+      )
     })
 
     it('returns an empty string when all values are falsy', () => {
@@ -21,7 +24,10 @@ describe('Merge Utilities', () => {
   describe('merge styles', () => {
     it('merges multiple style objects into one', () => {
       const style1: CSSProperties = { color: 'red', fontSize: '12px' }
-      const style2: CSSProperties = { backgroundColor: 'blue', fontWeight: 'bold' }
+      const style2: CSSProperties = {
+        backgroundColor: 'blue',
+        fontWeight: 'bold',
+      }
       const result = mergeStyles(style1, style2)
       expect(result).toEqual({
         color: 'red',

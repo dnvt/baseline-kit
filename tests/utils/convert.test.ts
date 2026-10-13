@@ -1,5 +1,5 @@
-import { convertValue } from '@utils'
-import type { ConversionContext } from '@utils'
+import { convertValue } from '@baseline-kit/core'
+import type { ConversionContext } from '@baseline-kit/core'
 
 describe('convertValue', () => {
   it('returns the number itself if a number is provided', () => {

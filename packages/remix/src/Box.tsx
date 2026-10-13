@@ -3,76 +3,45 @@
 import { type Handle } from 'remix/component'
 import {
   DEFAULT_CONFIG,
-  calculateSnappedSpacing,
+  nextSnap,
+  SNAP_SETTLE_MS,
+  type SnapMeasurement,
+  type SnapState,
   mergeConfig,
   createBoxDescriptor,
   requiresSeparatePadder,
   parsePadding,
+  type BoxElement,
+  type BoxOptions,
   type SnapEdge,
   type SnappingMode,
   type Padding,
   type ConfigSchema,
+  cx,
+  getDOMAttributes,
+  resolveDebugState,
 } from '@baseline-kit/core'
 import { Config, type ConfigProps } from './Config'
 import { configuredClientEntry } from './shared'
-import {
-  getSeededBaselinePadding,
-  getUnseededBaselineHeight,
-} from '@baseline-kit/dom/measure'
+import { isScaledLayout } from '@baseline-kit/dom/measure'
 import { PadderForBox } from './Padder'
 import {
-  classNames,
-  compactStyle,
-  getDOMAttributes,
   createElementObserverBridge,
   getConfig,
   mergeStyles,
   normalizeConfigSnapshot,
   queueNativeUpdate,
-  resolveDebugging,
   type NativeComponent,
-  type NativeDOMAttributes,
+  type NativeHostProps,
 } from './shared'
 import type { RemixNode } from 'remix/component'
 
-export type { SnapEdge, SnappingMode }
+export type { BoxElement, SnapEdge, SnappingMode }
 
-export type BoxElement =
-  | 'div'
-  | 'h1'
-  | 'h2'
-  | 'h3'
-  | 'h4'
-  | 'h5'
-  | 'h6'
-  | 'label'
-  | 'legend'
-  | 'p'
-  | 'small'
-  | 'span'
-  | 'strong'
-
-export type BoxProps = NativeDOMAttributes & {
-  /** Render the measured Box as a native semantic host instead of a div. */
-  as?: BoxElement
-  /** The label control id when `as="label"`. */
-  for?: string
-  colSpan?: number
-  rowSpan?: number
-  span?: number
-  snapping?: SnappingMode
-  snapEdge?: SnapEdge
-  width?: number | string
-  height?: number | string
-  debugging?: 'none' | 'hidden' | 'visible'
-  className?: string
-  style?: Record<string, string | number | null | undefined>
-  padding?: Parameters<typeof parsePadding>[0]['padding']
-  block?: Parameters<typeof parsePadding>[0]['block']
-  inline?: Parameters<typeof parsePadding>[0]['inline']
-  children?: RemixNode
-  ssrMode?: boolean
-}
+export type BoxProps = BoxOptions &
+  NativeHostProps & {
+    children?: RemixNode
+  }
 
 type RuntimeBoxProps = BoxProps & {
   __baselineConfig?: ConfigSchema
@@ -81,45 +50,74 @@ type RuntimeBoxProps = BoxProps & {
 const RuntimeConfig = Config as unknown as NativeComponent<
   ConfigProps & { __baselineConfig?: ConfigSchema }
 >
+// 6.x took `for`; 7.0 takes `htmlFor` like React. jsx() callers get no type
+// error, so say once that the label is no longer associated.
+let warnedLegacyFor = false
+
+function warnLegacyFor(props: object) {
+  if (warnedLegacyFor || (props as { for?: unknown }).for === undefined) return
+  warnedLegacyFor = true
+  console.warn(
+    'baseline-kit: Box no longer reads `for`; pass `htmlFor` instead. The label is not associated with its control.'
+  )
+}
+
 function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   let currentBase = DEFAULT_CONFIG.base
   let currentSnapping: SnappingMode = 'clamp'
   let currentSnapEdge: SnapEdge = 'bottom'
   let currentInitialPadding: Padding = parsePadding({})
-  let snappedPadding: Padding | null = null
+  // Snap with the shared rules (see nextSnap): on the first measurement,
+  // on input changes, and while settling (two seconds after a snap, or after
+  // a web font loads), whenever the natural height changes.
+  let snap: SnapState | null = null
+  let settleOpenedAt = 0
+  let renderedPadding: Padding = currentInitialPadding
+  let lastMeasure: Omit<SnapMeasurement, 'settling'> | null = null
 
   const requestUpdate = () => {
     queueNativeUpdate(handle)
   }
 
-  const observer = createElementObserverBridge(
-    (next, element) => {
-      if (currentSnapping === 'none' || snappedPadding || next.height === 0) {
-        return
+  const applySnap = (measure: Omit<SnapMeasurement, 'settling'>) => {
+    const next = nextSnap(
+      snap,
+      {
+        base: currentBase,
+        mode: currentSnapping,
+        snapEdge: currentSnapEdge,
+        initial: currentInitialPadding,
+      },
+      {
+        ...measure,
+        settling: performance.now() - settleOpenedAt <= SNAP_SETTLE_MS,
       }
+    )
+    if (next === snap) return false
+    if (!snap || next?.key !== snap.key) settleOpenedAt = performance.now()
+    snap = next
+    return true
+  }
 
-      const snapPadding = getSeededBaselinePadding(
-        element,
-        currentInitialPadding
-      )
-      snappedPadding = calculateSnappedSpacing(
-        getUnseededBaselineHeight(
-          element,
-          next.height,
-          snapPadding.top,
-          snapPadding.bottom
-        ),
-        currentBase,
-        snapPadding,
-        { mode: currentSnapping, snapEdge: currentSnapEdge }
-      )
-      requestUpdate()
+  // Measure the host so its own border and padding count toward the snap.
+  const observer = createElementObserverBridge(
+    (next, host) => {
+      if (next.height === 0) return
+      lastMeasure = {
+        height: next.height,
+        rendered: renderedPadding,
+        scaled: isScaledLayout(host),
+      }
+      if (applySnap(lastMeasure)) requestUpdate()
     },
-    { round: false }
+    () => {
+      settleOpenedAt = performance.now()
+    }
   )
 
   return () => {
     const props = handle.props
+    warnLegacyFor(props)
     const Element = (props.as ?? 'div') as 'label'
     const ContentElement = props.as && props.as !== 'div' ? 'span' : 'div'
     const semanticHost = props.as !== undefined
@@ -128,7 +126,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     )
     const snapping = props.snapping ?? 'clamp'
     const snapEdge = props.snapEdge ?? 'bottom'
-    const debug = resolveDebugging(props.debugging, config.box.debugging)
+    const debug = resolveDebugState(props.debugging, config.box.debugging)
     const initialPadding = parsePadding({
       padding: props.padding,
       block: props.block,
@@ -138,13 +136,17 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     currentSnapping = snapping
     currentSnapEdge = snapEdge
     currentInitialPadding = initialPadding
+    // New inputs re-snap from the last measurement right away.
+    if (snapping === 'none' || props.ssrMode) {
+      // Not measured in these modes: forget the old snap and measurement.
+      snap = null
+      lastMeasure = null
+    } else if (lastMeasure) {
+      applySnap(lastMeasure)
+    }
     const padding =
-      snapping === 'none' ? initialPadding : (snappedPadding ?? initialPadding)
-    const paddedConfig = mergeConfig({
-      parentConfig: config,
-      base: 1,
-      spacer: { variant: 'flat' },
-    })
+      snapping === 'none' ? initialPadding : (snap?.padding ?? initialPadding)
+    renderedPadding = padding
     const separatePadder = semanticHost
       ? false
       : requiresSeparatePadder({
@@ -166,55 +168,18 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
       colSpan: props.colSpan,
       rowSpan: props.rowSpan,
       isVisible: debug.isShown,
+      padding,
+      paddingColor: config.padder.color,
     })
-
-    // Keep a CSS first-paint estimate until measurement verifies the final snap.
-    const topRow =
-      snapping !== 'none' && !props.ssrMode && !snappedPadding
-        ? `var(--bkbx-initial-is, ${padding.top}px)`
-        : `${padding.top}px`
-
-    const debugPadStyle = debug.isShown
-      ? compactStyle(
-          {
-            '--bkpd-c': config.padder.color,
-            '--bkpd-is': topRow,
-            '--bkpd-ie': `${padding.bottom}px`,
-          },
-          {
-            '--bkpd-c': DEFAULT_CONFIG.padder.color,
-            '--bkpd-is': '0px',
-            '--bkpd-ie': '0px',
-          }
-        )
-      : undefined
-    const mergedSpacingStyle = separatePadder
-      ? undefined
-      : compactStyle(
-          {
-            ...(padding.top > 0 || padding.bottom > 0
-              ? {
-                  gridTemplateRows: `${topRow} 1fr ${padding.bottom}px`,
-                }
-              : {}),
-            ...(padding.left > 0 || padding.right > 0
-              ? {
-                  gridTemplateColumns: `${padding.left}px 1fr ${padding.right}px`,
-                }
-              : {}),
-          },
-          {
-            gridTemplateRows: 'auto 1fr auto',
-            gridTemplateColumns: 'auto 1fr auto',
-          }
-        )
-    const outerSpacingStyle = semanticHost
-      ? debugPadStyle
-      : mergeStyles(mergedSpacingStyle, debugPadStyle)
+    const hostSpacingStyle = semanticHost
+      ? descriptor.paddingDebugStyle
+      : separatePadder
+        ? undefined
+        : mergeStyles(descriptor.spacingStyle, descriptor.paddingDebugStyle)
 
     return (
       <Element
-        className={classNames(
+        className={cx(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
           semanticHost && 'bk-box-semantic-host',
           separatePadder && 'bk-box-separate-padder',
@@ -223,27 +188,24 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
         )}
         data-testid={config.domDiagnostics ? 'box' : undefined}
         style={mergeStyles(
-          compactStyle(descriptor.boxStyle, {
-            '--bkbx-w': 'fit-content',
-            '--bkbx-h': 'fit-content',
-            '--bkbx-cl': DEFAULT_CONFIG.box.colors.line,
-            '--bkbx-cf': DEFAULT_CONFIG.box.colors.flat,
-          }),
-          separatePadder ? undefined : outerSpacingStyle,
+          descriptor.boxStyle,
+          hostSpacingStyle,
           descriptor.gridSpanStyle,
           props.style
         )}
         {...getDOMAttributes(props)}
-        htmlFor={props.as === 'label' ? props.for : undefined}
+        htmlFor={props.as === 'label' ? props.htmlFor : undefined}
         data-bk-snap-state={
           config.domDiagnostics && snapping !== 'none' && !props.ssrMode
-            ? snappedPadding
+            ? snap
               ? 'measured'
-              : 'seed'
+              : 'pending'
             : undefined
         }
-        mix={semanticHost ? undefined : observerMix}
+        mix={observerMix}
       >
+        {/* Carry the config into this island. Box spacing is drawn in plain
+            pixels, so content inside a Box snaps to whole pixels. */}
         <RuntimeConfig
           __baselineConfig={config}
           base={1}
@@ -252,8 +214,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
           {semanticHost ? (
             <ContentElement
               className="bk-box__grid"
-              mix={observerMix}
-              style={mergedSpacingStyle}
+              style={descriptor.spacingStyle}
             >
               <ContentElement
                 className="bk-pad-content"
@@ -266,7 +227,11 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
             </ContentElement>
           ) : separatePadder ? (
             <PadderForBox
-              __baselineConfig={paddedConfig}
+              __baselineConfig={mergeConfig({
+                parentConfig: config,
+                base: 1,
+                spacer: { variant: 'flat' },
+              })}
               block={[padding.top, padding.bottom]}
               inline={[padding.left, padding.right]}
               width="fit-content"
