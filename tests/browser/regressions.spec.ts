@@ -1282,12 +1282,26 @@ test('React Box stays on the grid under CSS zoom and snaps one layout unit', asy
   await expect
     .poll(() =>
       page.evaluate(() => {
+        const cssZoom = (element: Element) => {
+          // currentCSSZoom, or the product of each ancestor's zoom where it is
+          // missing (WebKit on Linux), as getCSSZoom does.
+          const own = (element as Element & { currentCSSZoom?: number })
+            .currentCSSZoom
+          if (own) return own
+          let zoom = 1
+          for (
+            let node: Element | null = element;
+            node;
+            node = node.parentElement
+          ) {
+            zoom *= parseFloat(getComputedStyle(node).zoom) || 1
+          }
+          return zoom
+        }
         const zoomed = document.querySelector('#precision-zoom')!
         const unit = document.querySelector('#precision-unit')!
         const cssHeight =
-          zoomed.getBoundingClientRect().height /
-          ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
-            1)
+          zoomed.getBoundingClientRect().height / cssZoom(zoomed)
         return [
           Math.abs(cssHeight - 16) <= 1 / 32,
           unit.getBoundingClientRect().height,
@@ -2292,12 +2306,26 @@ test.describe('native Remix adapter', () => {
     await expect
       .poll(() =>
         page.evaluate(() => {
+          const cssZoom = (element: Element) => {
+            // currentCSSZoom, or the product of each ancestor's zoom where it is
+            // missing (WebKit on Linux), as getCSSZoom does.
+            const own = (element as Element & { currentCSSZoom?: number })
+              .currentCSSZoom
+            if (own) return own
+            let zoom = 1
+            for (
+              let node: Element | null = element;
+              node;
+              node = node.parentElement
+            ) {
+              zoom *= parseFloat(getComputedStyle(node).zoom) || 1
+            }
+            return zoom
+          }
           const zoomed = document.querySelector('#remix-precision-zoom')!
           const unit = document.querySelector('#remix-precision-unit')!
           const cssHeight =
-            zoomed.getBoundingClientRect().height /
-            ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
-              1)
+            zoomed.getBoundingClientRect().height / cssZoom(zoomed)
           return [
             Math.abs(cssHeight - 16) <= 1 / 32,
             unit.getBoundingClientRect().height,
@@ -2802,10 +2830,22 @@ async function liveGridHeights(page: Page, root: string) {
         document.querySelectorAll(
           `${selector} :is([data-live="box"], [data-live="nested"], [data-live="zoom"], [data-live="transition"], [data-live="fixed"])`
         ),
-        (element) =>
-          element.getBoundingClientRect().height /
-          ((element as Element & { currentCSSZoom?: number }).currentCSSZoom ??
-            1)
+        (element) => {
+          let zoom = (element as Element & { currentCSSZoom?: number })
+            .currentCSSZoom
+          if (!zoom) {
+            // WebKit on Linux lacks currentCSSZoom (see getCSSZoom).
+            zoom = 1
+            for (
+              let node: Element | null = element;
+              node;
+              node = node.parentElement
+            ) {
+              zoom *= parseFloat(getComputedStyle(node).zoom) || 1
+            }
+          }
+          return element.getBoundingClientRect().height / zoom
+        }
       ),
     root
   )
@@ -2920,9 +2960,24 @@ async function liveGridStability(page: Page, root: string, tolerance: number) {
         childList: true,
         subtree: true,
       })
+      const cssZoom = (element: Element) => {
+        // currentCSSZoom, or the product of each ancestor's zoom where it is
+        // missing (WebKit on Linux), as getCSSZoom does.
+        const own = (element as Element & { currentCSSZoom?: number })
+          .currentCSSZoom
+        if (own) return own
+        let zoom = 1
+        for (
+          let node: Element | null = element;
+          node;
+          node = node.parentElement
+        ) {
+          zoom *= parseFloat(getComputedStyle(node).zoom) || 1
+        }
+        return zoom
+      }
       const zoomed = (element: Element) =>
-        element.getBoundingClientRect().height /
-        ((element as Element & { currentCSSZoom?: number }).currentCSSZoom ?? 1)
+        element.getBoundingClientRect().height / cssZoom(element)
       const off = (element: Element) => {
         const remainder = ((zoomed(element) % 8) + 8) % 8
         return Math.min(remainder, 8 - remainder)

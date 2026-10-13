@@ -16,10 +16,21 @@ export interface MeasureObserverHandle {
   disconnect(): void
 }
 
-/** Effective CSS zoom of an element, 1 where `currentCSSZoom` is unsupported. */
+/**
+ * Effective CSS zoom of an element. Where `currentCSSZoom` is unsupported
+ * (WebKit on Linux), it multiplies the `zoom` of the element and each
+ * ancestor, which is what `currentCSSZoom` reports elsewhere.
+ */
 export function getCSSZoom(el: Element): number {
   const zoom = (el as Element & { currentCSSZoom?: number }).currentCSSZoom
-  return typeof zoom === 'number' && zoom > 0 ? zoom : 1
+  if (typeof zoom === 'number' && zoom > 0) return zoom
+  if (typeof getComputedStyle !== 'function') return 1
+  let product = 1
+  for (let node: Element | null = el; node; node = node.parentElement) {
+    const own = parseFloat(getComputedStyle(node).zoom)
+    if (own > 0) product *= own
+  }
+  return product
 }
 
 /**

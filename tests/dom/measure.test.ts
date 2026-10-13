@@ -1,5 +1,6 @@
 import {
   createMeasureObserver,
+  getCSSZoom,
   getRenderedBlockPadding,
 } from '@baseline-kit/dom/measure'
 
@@ -132,5 +133,32 @@ describe('getRenderedBlockPadding', () => {
       paddingTop: '10px',
     })
     expect(getRenderedBlockPadding(host)).toEqual({ top: 6, bottom: 0 })
+  })
+})
+
+describe('getCSSZoom', () => {
+  afterEach(() => vi.restoreAllMocks())
+
+  it('multiplies each ancestor zoom where currentCSSZoom is missing', () => {
+    // WebKit on Linux has no currentCSSZoom.
+    const outer = document.createElement('div')
+    const middle = document.createElement('div')
+    const inner = document.createElement('div')
+    outer.append(middle)
+    middle.append(inner)
+    const zooms = new Map<Element, string>([
+      [outer, '1.25'],
+      [middle, '2'],
+    ])
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(
+      (element) => ({ zoom: zooms.get(element) ?? '1' }) as CSSStyleDeclaration
+    )
+    expect(getCSSZoom(inner)).toBe(2.5)
+  })
+
+  it('uses currentCSSZoom where it exists', () => {
+    const element = document.createElement('div')
+    Object.defineProperty(element, 'currentCSSZoom', { value: 1.5 })
+    expect(getCSSZoom(element)).toBe(1.5)
   })
 })
