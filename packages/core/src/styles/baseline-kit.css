@@ -234,6 +234,9 @@
 .bk-spr {
   --bksp-w: var(--bk-wf, 100%);
   --bksp-h: var(--bk-hf, auto);
+  /* A string height, rounded to the base in CSS; reset because custom
+     properties inherit into nested Spacers. */
+  --bksp-hl: initial;
   --bksp-cl: var(--bk-spacer-color-line-theme, hsla(270, 60%, 40%, 0.6));
   --bksp-cf: var(--bk-spacer-color-flat-theme, hsla(230, 100%, 70%, 0.2));
   --bksp-ct: var(--bk-spacer-color-text-theme, hsla(270, 60%, 40%, 1));
@@ -245,6 +248,14 @@
   display: block;
   margin: 0;
   padding: 0;
+}
+
+/* Browsers with round() follow a string height live; others keep its px
+   value. The 1rem operand keeps minifiers from folding the condition. */
+@supports (height: round(nearest, 1rem, 1px)) {
+  .bk-spr {
+    height: var(--bksp-hl, var(--bksp-h));
+  }
 }
 
 .bk-spr:where(.bk-line)::after {

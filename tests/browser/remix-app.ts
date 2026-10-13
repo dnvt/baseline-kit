@@ -1,6 +1,29 @@
 import { Frame } from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
-import { Forwarder, SnapModeProbe } from './remix-entries'
+import {
+  Forwarder,
+  LiveGridProbe,
+  SnapModeProbe,
+  SpacerIndicatorProbe,
+} from './remix-entries'
+import { GUIDE_BOX, GUIDE_CASES } from './guide-strings'
+import {
+  SPACER_CH_PROBE,
+  SPACER_HEIGHTS,
+  SPACER_IN_PARENT,
+  SPACER_PARENT,
+  SPACER_ROW,
+  SPACER_SECTION,
+} from './spacer-strings'
+import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
+import {
+  REM_GRID_BOXES,
+  REM_GRID_CSS,
+  REM_GRID_MARK,
+  REM_GRID_SECTION,
+  REM_GRID_WORDS,
+  remGridText,
+} from './rem-grid'
 import {
   Baseline,
   Box,
@@ -30,7 +53,172 @@ const dimensionCases = [
   { id: 'height-zero', axis: 'height', value: 0 },
 ] as const
 
-export function createRemixApp() {
+/** The `?remgrid` hosts (see rem-grid.ts), server-rendered then hydrated. */
+function remGrid(base: number | `${number}rem`) {
+  return jsx('section', {
+    'data-rem-grid': typeof base === 'number' ? 'px' : 'rem',
+    style: REM_GRID_SECTION,
+    children: [
+      jsx('style', { children: REM_GRID_CSS }),
+      jsx(Config, {
+        base,
+        children: [
+          ...REM_GRID_BOXES.map((box, index) =>
+            jsx(
+              Box,
+              {
+                'data-rem': 'box',
+                block: [0, 0],
+                snapping: box.snapping,
+                ...box.variant,
+                children: [
+                  jsx('span', {
+                    style: remGridText(box.size),
+                    children: REM_GRID_WORDS.flatMap((word) => [
+                      `${word} `,
+                      jsx('span', {
+                        'data-rem-mark': '',
+                        style: REM_GRID_MARK,
+                      }),
+                    ]),
+                  }),
+                  jsx('span', {
+                    style: { display: 'block', height: box.trailer },
+                  }),
+                ],
+              },
+              index
+            )
+          ),
+          // Rounds 20px to the base: 24px at 8px, 20px at 10px.
+          jsx(Spacer, { 'data-rem': 'spacer', height: 20 }),
+        ],
+      }),
+    ],
+  })
+}
+
+/** The `?cost=rem|px` hosts (see cost-grid.ts). */
+function costGrid(kind: 'rem' | 'px') {
+  return jsx('section', {
+    'data-cost-grid': kind,
+    style: REM_GRID_SECTION,
+    children: [
+      jsx('style', { children: COST_CSS }),
+      jsx(Config, {
+        base: kind === 'rem' ? '0.5rem' : 8,
+        children: [
+          ...Array.from({ length: COST_BOX_COUNT }, (_, index) => {
+            const box = costBox(index)
+            return jsx(
+              Box,
+              {
+                'data-cost': 'box',
+                block: [0, 0],
+                snapping: box.snapping,
+                ...box.variant,
+                children: [
+                  jsx('span', {
+                    style: remGridText(box.size),
+                    children: COST_WORDS.flatMap((word) => [
+                      `${word} `,
+                      jsx('span', { style: REM_GRID_MARK }),
+                    ]),
+                  }),
+                  jsx('span', {
+                    style: { display: 'block', height: box.trailer },
+                  }),
+                ],
+              },
+              index
+            )
+          }),
+          jsx(Box, {
+            'data-cost': 'px-content',
+            block: [0, 0],
+            children: jsx('div', { style: { height: '45px' } }),
+          }),
+        ],
+      }),
+    ],
+  })
+}
+
+/** The `?guides` hosts (see guide-strings.ts). */
+function guideStrings() {
+  return jsx('section', {
+    'data-guide-grid': '',
+    children: jsx(Config, {
+      base: 8,
+      children: GUIDE_CASES.map(({ id, props }) =>
+        jsx(
+          'div',
+          {
+            'data-guide-case': id,
+            style: GUIDE_BOX,
+            children: jsx(Guide, {
+              ...props,
+              debugging: 'visible',
+            }),
+          },
+          id
+        )
+      ),
+    }),
+  })
+}
+
+/** The `?spacers` hosts (see spacer-strings.ts). */
+function spacerStrings() {
+  return [
+    jsx('section', {
+      'data-spacer-grid': 'px',
+      style: SPACER_SECTION,
+      children: jsx(Config, {
+        base: 8,
+        children: [
+          ...SPACER_HEIGHTS.map(({ id, height }) =>
+            jsx(Spacer, { 'data-spacer': id, height }, id)
+          ),
+          ...SPACER_IN_PARENT.map(({ id, height }) =>
+            jsx(
+              'div',
+              {
+                style: SPACER_PARENT,
+                children: jsx(Spacer, { 'data-spacer': id, height }),
+              },
+              id
+            )
+          ),
+          jsx('div', {
+            style: SPACER_ROW,
+            children: jsx(Spacer, {
+              'data-spacer': 'w100',
+              width: '100%',
+              height: 8,
+            }),
+          }),
+          jsx(Spacer, { 'data-spacer': 'w30', width: 30, height: 8 }),
+          jsx('span', { 'data-spacer-probe': 'ch2', style: SPACER_CH_PROBE }),
+          jsx(SpacerIndicatorProbe, {}),
+        ],
+      }),
+    }),
+    jsx('section', {
+      'data-spacer-grid': 'rem',
+      style: SPACER_SECTION,
+      children: jsx(Config, {
+        base: '0.5rem',
+        children: jsx(Spacer, { 'data-spacer': 'rem13', height: '1.3rem' }),
+      }),
+    }),
+  ]
+}
+
+export function createRemixApp(search = '') {
+  const params = new URLSearchParams(search)
+  const remGridOn = params.has('remgrid')
+  const cost = params.get('cost')
   const GeneratedConsumer = () => () =>
     jsx(Spacer, { height: 16, debugging: 'visible' })
   const WrappedConsumers = () => () =>
@@ -65,6 +253,10 @@ export function createRemixApp() {
 
   const app = jsx('main', {
     children: [
+      ...(remGridOn ? [remGrid('0.5rem'), remGrid(8)] : []),
+      ...(cost === 'rem' || cost === 'px' ? [costGrid(cost)] : []),
+      ...(params.has('spacers') ? spacerStrings() : []),
+      ...(params.has('guides') ? [guideStrings()] : []),
       jsx('section', {
         id: 'remix-frame-lifecycle',
         children: [
@@ -538,7 +730,7 @@ export function createRemixApp() {
       }),
       jsx('section', {
         id: 'remix-snap-probes',
-        children: jsx(SnapModeProbe, {}),
+        children: [jsx(SnapModeProbe, {}), jsx(LiveGridProbe, {})],
       }),
       jsx('section', {
         id: 'remix-late-and-margins',

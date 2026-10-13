@@ -33,7 +33,9 @@ export function calculateGuideTemplate(
 ): GuideResult {
   const variant = config.variant ?? 'line'
   const base = config.base ?? 8
-  const gap = normalizeValue(config.gap ?? 0, { base, context })
+  // Percentages in the gap and column width are of the Guide's own width.
+  const conversion = { ...context, parentSize: context?.parentSize ?? width }
+  const gap = normalizeValue(config.gap ?? 0, { base, context: conversion })
 
   if (!width) return INVALID_RESULT
 
@@ -109,7 +111,7 @@ export function calculateGuideTemplate(
 
       const colWidthStr =
         typeof colWidth === 'number' ? `${colWidth}px` : colWidth.toString()
-      const pxVal = convertValue(colWidthStr, context) ?? 0
+      const pxVal = convertValue(colWidthStr, conversion) ?? 0
       const columns =
         pxVal > 0 ? Math.max(1, Math.floor((width + gap) / (pxVal + gap))) : 1
 

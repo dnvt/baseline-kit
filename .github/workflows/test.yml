@@ -50,6 +50,9 @@ jobs:
       - name: Build Package
         run: bun run build
 
+      - name: Check API Compatibility
+        run: bun run check:api
+
       - name: Run Packed Remix Integration
         run: bun run test:integration:remix
 

@@ -6,8 +6,9 @@ function renderLifecycleFrame(src: string) {
   return `<section id="remix-frame-server-view" data-remix-frame-view="${version}"><p>Server frame ${version}</p></section>`
 }
 
-export async function renderRemixApp() {
-  const stream = renderToStream(createRemixApp(), {
+export async function renderRemixApp(url = '/remix.html') {
+  const search = new URL(url, 'http://ssr').search
+  const stream = renderToStream(createRemixApp(search), {
     resolveFrame: (src) => renderLifecycleFrame(src),
     resolveClientEntry: async (entryId, component) => ({
       // This is the fixture's app-owned asset resolver. The browser then

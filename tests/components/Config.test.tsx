@@ -1,4 +1,6 @@
-import { screen } from '@testing-library/react'
+import { act, screen } from '@testing-library/react'
+import { hydrateRoot } from 'react-dom/client'
+import { renderToString } from 'react-dom/server'
 import { render, renderPlain } from '../render'
 import '@testing-library/jest-dom'
 import { Box, Config, Spacer } from '@baseline-kit/react'
@@ -271,5 +273,78 @@ describe('Config component', () => {
         '--bkbx-cl: #0000ff'
       )
     })
+  })
+})
+
+describe('Config rem base', () => {
+  class ProbeObserver {
+    static instances: ProbeObserver[] = []
+    constructor(private callback: ResizeObserverCallback) {
+      ProbeObserver.instances.push(this)
+    }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    fire() {
+      this.callback([], this as unknown as ResizeObserver)
+    }
+  }
+  let rootSize = '16px'
+  const BaseProbe = () => <output>{useDefaultConfig().base}</output>
+  const ui = (
+    <Config base="0.5rem">
+      <Config domDiagnostics>
+        <BaseProbe />
+      </Config>
+    </Config>
+  )
+
+  beforeEach(() => {
+    ProbeObserver.instances = []
+    vi.stubGlobal('ResizeObserver', ProbeObserver)
+    vi.spyOn(window, 'getComputedStyle').mockImplementation(
+      (element: Element) =>
+        ({
+          fontSize: element === document.documentElement ? rootSize : '16px',
+        }) as CSSStyleDeclaration
+    )
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+    rootSize = '16px'
+  })
+
+  it('resolves against the live root font size and follows it', () => {
+    rootSize = '20px'
+    const { container } = renderPlain(ui)
+    expect(container.textContent).toBe('10')
+
+    act(() => {
+      rootSize = '17px'
+      ProbeObserver.instances[0].fire()
+    })
+    expect(container.textContent).toBe('8.5')
+  })
+
+  it('renders the 16px resolution on the server and hydrates without a mismatch', async () => {
+    rootSize = '20px'
+    const html = renderToString(ui)
+    expect(html).toBe('<output>8</output>')
+
+    const container = document.createElement('div')
+    container.innerHTML = html
+    document.body.appendChild(container)
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const recoverable = vi.fn()
+    const root = await act(async () =>
+      hydrateRoot(container, ui, { onRecoverableError: recoverable })
+    )
+    expect(container.textContent).toBe('10')
+    expect(recoverable).not.toHaveBeenCalled()
+    expect(errors).not.toHaveBeenCalled()
+    act(() => root.unmount())
+    container.remove()
   })
 })

@@ -1,4 +1,8 @@
-import { createGuideDescriptor, createGuideConfig } from '@baseline-kit/core'
+import {
+  createGuideDescriptor,
+  createGuideConfig,
+  canCompactFixedGuide,
+} from '@baseline-kit/core'
 
 const baseParams = {
   base: 8,
@@ -135,5 +139,17 @@ describe('createGuideDescriptor', () => {
       template: 'none',
     })
     expect(noneTemplate.containerStyle['--bkgd-t']).toBeUndefined()
+  })
+})
+
+describe('canCompactFixedGuide', () => {
+  it('draws columns for a string gap', () => {
+    const params = {
+      variant: 'fixed' as const,
+      columns: 4,
+      domDiagnostics: false,
+    }
+    expect(canCompactFixedGuide({ ...params, gap: 0 })).toBe(true)
+    expect(canCompactFixedGuide({ ...params, gap: '1rem' })).toBe(false)
   })
 })

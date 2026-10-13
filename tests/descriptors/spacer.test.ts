@@ -104,4 +104,48 @@ describe('createSpacerDescriptor in plain pixels', () => {
     expect(normHeight).toBe(3.6)
     expect(style['--bksp-h']).toBe('3.6px')
   })
+
+  describe('string sizes', () => {
+    const styleOf = (params: object) =>
+      createSpacerDescriptor({ ...baseParams, ...params }).style
+
+    it('rounds a CSS length height to the base in CSS and keeps the px fallback', () => {
+      expect(styleOf({ height: '1.3rem' })).toMatchObject({
+        // 7.0's value against a 16px root: 20.8 -> 24.
+        '--bksp-h': '24px',
+        '--bksp-hl': 'round(nearest, 1.3rem, 8px)',
+      })
+      expect(styleOf({ height: 'calc(100% - 23px)' })['--bksp-hl']).toBe(
+        'round(nearest, calc(100% - 23px), 8px)'
+      )
+    })
+
+    it('rounds to a rem base in rem, and passes through at base 1', () => {
+      expect(
+        styleOf({ height: '1.3rem', base: 10, baseRem: 0.5 })['--bksp-hl']
+      ).toBe('round(nearest, 1.3rem, 0.5rem)')
+      expect(styleOf({ height: '3rem', base: 1 })['--bksp-hl']).toBe('3rem')
+    })
+
+    it("keeps 7.0's base fallback for strings CSS could drop", () => {
+      for (const height of ['auto', '24', 'min-content', 'calc(oops)']) {
+        const style = styleOf({ height })
+        expect(style['--bksp-h'], height).toBe('8px')
+        expect(style['--bksp-hl'], height).toBeUndefined()
+      }
+    })
+
+    it('renders a CSS length width as written; numbers still round', () => {
+      expect(styleOf({ width: '100%' })['--bksp-w']).toBe('100%')
+      expect(styleOf({ width: 'calc(50% - 4px)' })['--bksp-w']).toBe(
+        'calc(50% - 4px)'
+      )
+      expect(styleOf({ width: 30 })['--bksp-w']).toBe('32px')
+      expect(styleOf({ width: 'auto' })['--bksp-w']).toBe('8px')
+    })
+
+    it('adds nothing for numeric heights', () => {
+      expect(styleOf({ height: 20 })['--bksp-hl']).toBeUndefined()
+    })
+  })
 })

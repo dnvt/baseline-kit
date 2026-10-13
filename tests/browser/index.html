@@ -10,6 +10,18 @@
         font-size: 16px;
       }
     </style>
+    <script>
+      // ?root=N sets the root font size in px before hydration (rem base
+      // checks); ?root=medium uses the browser's default font size.
+      {
+        const root = new URLSearchParams(location.search).get('root')
+        if (root) {
+          document.documentElement.style.fontSize = /^[\d.]+$/.test(root)
+            ? root + 'px'
+            : root
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"><!--app-html--></div>

@@ -25,16 +25,28 @@ export const ABSOLUTE_UNIT_CONVERSIONS: Record<string, number> = {
   pc: 16,
 }
 
-const RELATIVE_UNIT_RESOLVERS: Record<
-  string,
-  (ctx: Required<ConversionContext>) => number
-> = {
-  em: (ctx) => ctx.parentFontSize,
-  rem: (ctx) => ctx.rootFontSize,
-  vh: (ctx) => ctx.viewportHeight / 100,
+type UnitResolver = (ctx: Required<ConversionContext>) => number
+
+// Viewport units (inline and block as in horizontal writing). Their small,
+// large and dynamic forms (svh, lvh, dvh, ...) resolve to the current
+// viewport.
+const VIEWPORT_UNITS: Record<string, UnitResolver> = {
   vw: (ctx) => ctx.viewportWidth / 100,
+  vh: (ctx) => ctx.viewportHeight / 100,
+  vi: (ctx) => ctx.viewportWidth / 100,
+  vb: (ctx) => ctx.viewportHeight / 100,
   vmin: (ctx) => Math.min(ctx.viewportWidth, ctx.viewportHeight) / 100,
   vmax: (ctx) => Math.max(ctx.viewportWidth, ctx.viewportHeight) / 100,
+}
+
+const RELATIVE_UNIT_RESOLVERS: Record<string, UnitResolver> = {
+  em: (ctx) => ctx.parentFontSize,
+  rem: (ctx) => ctx.rootFontSize,
+  ...Object.fromEntries(
+    Object.entries(VIEWPORT_UNITS).flatMap(([unit, resolve]) =>
+      ['', 's', 'l', 'd'].map((prefix) => [`${prefix}${unit}`, resolve])
+    )
+  ),
   '%': (ctx) => ctx.parentSize / 100,
 }
 
@@ -48,7 +60,9 @@ export function convertValue(
   const parsed = parseUnit(value)
   if (!parsed) return null
 
-  const { value: num, unit } = parsed
+  // CSS units are case-insensitive.
+  const num = parsed.value
+  const unit = parsed.unit.toLowerCase()
 
   if (unit in ABSOLUTE_UNIT_CONVERSIONS) {
     return num * ABSOLUTE_UNIT_CONVERSIONS[unit]

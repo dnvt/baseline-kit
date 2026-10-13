@@ -42,7 +42,7 @@ export const Guide = React.memo(function Guide({
 }: GuideProps) {
   const config = useConfig('guide')
   const variant = variantProp ?? config.variant
-  const gap = typeof gapProp === 'number' ? gapProp : 0
+  const gap = gapProp ?? 0
   const { isShown } = useDebug(debugging, config.debugging)
 
   if (!isShown) {
@@ -124,7 +124,7 @@ const GuideImpl = React.memo(function GuideImpl({
   const containerRef = React.useRef<HTMLDivElement | null>(null)
 
   const resolvedVariant = variant ?? config.variant
-  const resolvedGap = typeof gap === 'number' ? gap : 0
+  const resolvedGap = gap ?? 0
 
   const gridConfig = React.useMemo(
     () =>

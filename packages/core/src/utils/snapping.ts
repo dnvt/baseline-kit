@@ -24,10 +24,37 @@ export const SNAP_EPSILON = 1 / 128
 export const SNAP_TOLERANCE = 1 / 32
 
 /**
- * How long (ms) after a snap a Box or Padder keeps re-snapping while its
- * content settles (web fonts, nested Remix client entries hydrating).
+ * How long (ms) 7.0 kept re-snapping after a snap.
+ * @deprecated Since 7.1, Box and Padder re-snap on every size change.
  */
 export const SNAP_SETTLE_MS = 2000
+
+/**
+ * Snapped block padding is kept to 1/1024px. Chromium and WebKit truncate
+ * lengths to 1/64px, so padding a hair under a unit (from the rounding below)
+ * would render a whole unit short; 1/1024 also holds Firefox's 1/60px units.
+ * Inline padding is never snapped and passes through as given.
+ */
+const PADDING_STEP = 1 / 1024
+
+const toPaddingStep = (value: number) =>
+  Math.round(value / PADDING_STEP) * PADDING_STEP
+
+const toBlockStep = (padding: Padding): Padding => ({
+  ...padding,
+  top: toPaddingStep(padding.top),
+  bottom: toPaddingStep(padding.bottom),
+})
+
+/**
+ * Computed styles round lengths to six significant digits, so padding read
+ * back from the DOM is off by up to about 1e-5 of itself. Where it matches
+ * the snapped padding to that precision, it is the snapped padding.
+ */
+const asSnapped = (read: number, snapped: number) =>
+  Math.abs(read - snapped) <= Math.max(Math.abs(snapped), 1) * 1e-5
+    ? snapped
+    : read
 
 // Firefox reports sizes at float32 precision, so allow 1% of a unit.
 const isWholeLayoutUnits = (value: number) =>
@@ -137,6 +164,17 @@ export interface SnapState {
   natural: number
   /** Last measured height that was evaluated. */
   height: number
+  /** The last measurement evaluated: height and the block padding in it. */
+  measured?: SnapMeasured
+  /** The measurement before it, to spot a host bouncing (see nextSnap). */
+  earlier?: SnapMeasured
+}
+
+/** A measured height and the top and bottom padding it was taken with. */
+export interface SnapMeasured {
+  height: number
+  top: number
+  bottom: number
 }
 
 export interface SnapInput {
@@ -155,8 +193,8 @@ export interface SnapMeasurement {
   height: number
   /** Padding rendered when the height was measured. */
   rendered: Padding
-  /** Whether the settle window is open (see SNAP_SETTLE_MS). */
-  settling: boolean
+  /** Re-snap when the content changes (default). `false` keeps the snap. */
+  settling?: boolean
   /** The page is scaled by a fraction (see getBaselineRemainder). */
   scaled?: boolean
 }
@@ -164,50 +202,92 @@ export interface SnapMeasurement {
 /**
  * Snap state after a measurement, shared by the React and Remix entries.
  * It snaps on the first measurement and whenever the inputs change, and
- * returns null for `none`. While settling, it also re-snaps when the natural
- * height (the measured height without the rendered correction) changes and
- * the Box is off the grid; snapping from the natural height is stable,
- * because applying the correction does not change it. A measurement with an
- * unchanged height (a fixed-height Box, a width-only change) never re-snaps.
- * Returns `prev` itself when nothing changes.
+ * returns null for `none`. It also re-snaps when the natural height (the
+ * measured height without the rendered correction) changes and the Box is off
+ * the grid. For a host whose height follows its content, snapping from the
+ * natural height is stable, because applying the correction does not change
+ * it. A host whose height is held from outside (min-height, a stretched flex
+ * or grid item) bounces between two measurements instead; then the padding
+ * grows toward the next grid line until the height lands on it or stops
+ * moving. A measurement with an unchanged height (a fixed-height Box, a
+ * width-only change) never re-snaps. Returns `prev` itself when nothing
+ * changes.
+ *
+ * `rendered` should be the padding in the DOM when the height was measured
+ * (see getRenderedBlockPadding in the dom package), not the target padding.
  */
 export function nextSnap(
   prev: SnapState | null,
   input: SnapInput,
-  { height, rendered, settling, scaled }: SnapMeasurement
+  { height, rendered: read, settling = true, scaled }: SnapMeasurement
 ): SnapState | null {
   // `none` clears the snap, so switching back snaps afresh.
   if (input.mode === 'none') return null
   if (height === 0) return prev
+  const rendered = prev
+    ? {
+        ...read,
+        top: asSnapped(read.top, prev.padding.top),
+        bottom: asSnapped(read.bottom, prev.padding.bottom),
+      }
+    : read
   const key = getSnapKey(input)
   const natural = removeSnapCorrection(height, rendered, input.initial)
-  if (prev && prev.key === key) {
-    // Float noise (Firefox reports 100.79999 for 100.8) is no change.
-    if (Math.abs(height - prev.height) < SNAP_EPSILON || !settling) return prev
-    // On a page scaled by a fraction, layout rounds to device pixels, so the
-    // natural height moves by a residue after each correction; only a larger
-    // change is new content. A natural height that the current padding
-    // already puts on the grid needs no change.
-    const threshold = scaled ? SNAP_TOLERANCE : SNAP_EPSILON
-    const withCurrent =
-      natural +
-      (prev.padding.top - input.initial.top) +
-      (prev.padding.bottom - input.initial.bottom)
-    if (
-      Math.abs(natural - prev.natural) < threshold ||
-      isOnBaseline(withCurrent, input.base, scaled)
-    ) {
-      return { ...prev, height }
-    }
-  }
-  return {
+  const measured = { height, top: rendered.top, bottom: rendered.bottom }
+  const fresh = (padding: Padding, earlier?: SnapMeasured): SnapState => ({
     key,
     natural,
     height,
-    padding: calculateSnappedSpacing(natural, input.base, input.initial, {
+    padding: toBlockStep(padding),
+    measured,
+    ...(earlier ? { earlier } : {}),
+  })
+  const snapNatural = () =>
+    calculateSnappedSpacing(natural, input.base, input.initial, {
       mode: input.mode,
       snapEdge: input.snapEdge,
       scaled,
-    }),
+    })
+  if (!prev || prev.key !== key) return fresh(snapNatural())
+
+  // Float noise (Firefox reports 100.79999 for 100.8) is no change.
+  if (Math.abs(height - prev.height) < SNAP_EPSILON || !settling) return prev
+  // On a page scaled by a fraction, layout rounds to device pixels, so the
+  // natural height moves by a residue after each correction; only a larger
+  // change is new content. A natural height that the current padding already
+  // puts on the grid needs no change.
+  const threshold = scaled ? SNAP_TOLERANCE : SNAP_EPSILON
+  const withCurrent =
+    natural +
+    (prev.padding.top - input.initial.top) +
+    (prev.padding.bottom - input.initial.bottom)
+  if (
+    Math.abs(natural - prev.natural) < threshold ||
+    isOnBaseline(withCurrent, input.base, scaled)
+  ) {
+    return { ...prev, height, measured, earlier: prev.measured }
   }
+  // A host whose height doesn't follow its padding one to one (min-height, a
+  // stretched flex or grid item) bounces: each correction brings back the
+  // measurement from two snaps ago, height and padding alike. Then add to the
+  // rendered padding instead, which only moves the height toward the next
+  // grid line. (Content that changes back arrives with a different padding,
+  // or already on the grid, where adding changes nothing.)
+  const earlier = prev.earlier
+  if (
+    earlier &&
+    Math.abs(earlier.height - height) < threshold &&
+    Math.abs(earlier.top - rendered.top) < SNAP_EPSILON &&
+    Math.abs(earlier.bottom - rendered.bottom) < SNAP_EPSILON
+  ) {
+    return fresh(
+      calculateSnappedSpacing(height, input.base, rendered, {
+        mode: 'height',
+        snapEdge: input.mode === 'clamp' ? 'bottom' : input.snapEdge,
+        scaled,
+      }),
+      prev.measured
+    )
+  }
+  return fresh(snapNatural(), prev.measured)
 }
