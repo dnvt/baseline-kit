@@ -6,7 +6,6 @@ import {
   calculateSnappedSpacing,
   removeSnapCorrection,
   SNAP_SETTLE_MS,
-  SNAP_TOLERANCE,
   createPadderDescriptor,
   parsePadding,
   type ConfigSchema,
@@ -18,6 +17,7 @@ import {
 } from '@baseline-kit/core'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
+import { getSnapTolerance } from '@baseline-kit/dom/measure'
 import { Spacer, type IndicatorNode, type SpacerProps } from './Spacer'
 import {
   createElementObserverBridge,
@@ -52,8 +52,9 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
   let renderedPadding: Padding = initialPadding
   let snappedNatural = 0
   let snappedAt = 0
-  const observer = createElementObserverBridge(({ height }) => {
+  const observer = createElementObserverBridge(({ height }, host) => {
     if (handle.props.ssrMode || height === 0) return
+    const tolerance = getSnapTolerance(host)
     const natural = removeSnapCorrection(
       height,
       renderedPadding,
@@ -62,18 +63,16 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     if (
       snappedPadding &&
       (performance.now() - snappedAt > SNAP_SETTLE_MS ||
-        Math.abs(natural - snappedNatural) < SNAP_TOLERANCE)
+        Math.abs(natural - snappedNatural) < tolerance)
     ) {
       return
     }
     if (!snappedPadding) snappedAt = performance.now()
     snappedNatural = natural
-    snappedPadding = calculateSnappedSpacing(
-      natural,
-      base,
-      initialPadding,
-      'height'
-    )
+    snappedPadding = calculateSnappedSpacing(natural, base, initialPadding, {
+      mode: 'height',
+      tolerance,
+    })
     queueNativeUpdate(handle)
   })
 

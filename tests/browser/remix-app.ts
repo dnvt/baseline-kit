@@ -537,6 +537,26 @@ export function createRemixApp() {
         ],
       }),
       jsx('section', {
+        id: 'remix-precision',
+        children: [
+          jsx('div', {
+            style: { zoom: 1.25 },
+            children: jsx(Box, {
+              id: 'remix-precision-zoom',
+              snapping: 'height',
+              block: [0, 0],
+              children: jsx('div', { style: { height: '10.5px' } }),
+            }),
+          }),
+          jsx(Box, {
+            id: 'remix-precision-unit',
+            snapping: 'height',
+            block: [0, 0],
+            children: jsx('div', { style: { height: '8.015625px' } }),
+          }),
+        ],
+      }),
+      jsx('section', {
         id: 'remix-grid-exact',
         children: [
           jsx(Padder, {

@@ -4,19 +4,27 @@ import { parsePadding } from './padding'
 export type SnappingOptions = {
   mode: SnappingMode
   snapEdge?: SnapEdge
+  /** Remainders under this many px count as on the grid (see SNAP_TOLERANCE). */
+  tolerance?: number
 }
 
 type SnappingInput = SnappingMode | SnappingOptions
 
 /**
- * Remainders under this many CSS px count as on the grid. Zoom, display
- * scaling, and floating-point bases leave residues that small (observed up to
+ * Remainders under this many CSS px count as on the grid when the page is
+ * scaled by a fractional factor (browser zoom, display scaling, or CSS zoom
+ * such as 110% or 125%). Scaling leaves residues that small (observed up to
  * about 0.028px), and treating them as real would add almost a full base row.
- * Real text heights differ by whole layout units (1/64px in Chromium and
- * WebKit, 1/60px in Firefox); from two units up they are snapped exactly, and
- * a one-unit remainder stays at most 1/32px off the grid.
  */
 export const SNAP_TOLERANCE = 1 / 32
+
+/**
+ * Tolerance at whole-number scales (1x, 2x, 3x), where browsers report exact
+ * layout units (1/64px in Chromium and WebKit, 1/60px in Firefox). It only
+ * absorbs floating-point error, such as 46 % 9.2, so every real remainder of
+ * one layout unit or more is snapped.
+ */
+export const UNSCALED_SNAP_TOLERANCE = 1 / 128
 
 /**
  * How long (ms) after its first snap a Remix Box or Padder may re-snap while
@@ -25,11 +33,13 @@ export const SNAP_TOLERANCE = 1 / 32
 export const SNAP_SETTLE_MS = 2000
 
 /** Distance past the previous grid line, or 0 when within tolerance of one. */
-export function getBaselineRemainder(height: number, base: number): number {
+export function getBaselineRemainder(
+  height: number,
+  base: number,
+  tolerance: number = SNAP_TOLERANCE
+): number {
   const remainder = ((height % base) + base) % base
-  return remainder < SNAP_TOLERANCE || base - remainder < SNAP_TOLERANCE
-    ? 0
-    : remainder
+  return remainder < tolerance || base - remainder < tolerance ? 0 : remainder
 }
 
 /**
@@ -47,8 +57,12 @@ export function removeSnapCorrection(
   )
 }
 
-export function isOnBaseline(height: number, base: number): boolean {
-  return getBaselineRemainder(height, base) === 0
+export function isOnBaseline(
+  height: number,
+  base: number,
+  tolerance: number = SNAP_TOLERANCE
+): boolean {
+  return getBaselineRemainder(height, base, tolerance) === 0
 }
 
 export function calculateSnappedSpacing(
@@ -64,6 +78,10 @@ export function calculateSnappedSpacing(
     typeof snappingInput === 'string'
       ? 'bottom'
       : (snappingInput.snapEdge ?? 'bottom')
+  const tolerance =
+    typeof snappingInput === 'string'
+      ? SNAP_TOLERANCE
+      : (snappingInput.tolerance ?? SNAP_TOLERANCE)
 
   // A base of 1px or less is no grid to snap to. Box sets base 1 for its
   // content, so a nested Box or Padder leaves the snapping to the outer Box
@@ -73,7 +91,7 @@ export function calculateSnappedSpacing(
   }
 
   if (snapping === 'height') {
-    const remainder = getBaselineRemainder(height, base)
+    const remainder = getBaselineRemainder(height, base, tolerance)
     if (remainder !== 0) {
       const adjustment = base - remainder
       if (snapEdge === 'top') {
@@ -86,7 +104,7 @@ export function calculateSnappedSpacing(
 
   if (snapping === 'clamp') {
     pad.top = pad.top % base
-    const remainder = getBaselineRemainder(height, base)
+    const remainder = getBaselineRemainder(height, base, tolerance)
     if (remainder !== 0) {
       pad.bottom += base - remainder
     }

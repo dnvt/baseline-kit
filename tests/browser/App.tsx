@@ -349,6 +349,17 @@ export function App() {
         </Box>
       </section>
 
+      <section id="precision">
+        <div style={{ zoom: 1.25 }}>
+          <Box id="precision-zoom" snapping="height" block={[0, 0]}>
+            <div style={{ height: '10.5px' }} />
+          </Box>
+        </div>
+        <Box id="precision-unit" snapping="height" block={[0, 0]}>
+          <div style={{ height: '8.015625px' }} />
+        </Box>
+      </section>
+
       <section id="grid-exact">
         <Padder id="grid-padder" debugging="hidden" block={[8, 8]}>
           <div style={{ height: '8.296875px' }} />

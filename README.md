@@ -162,11 +162,13 @@ as in CSS. `block` and `inline` set start/end pairs as arrays or objects.
 In `height` mode the correction goes to the bottom by default;
 `snapEdge="top"` puts it above the content. `Box` measures its whole element,
 including its own border and padding, with fractional-pixel precision.
-Remainders under 1/32px count as on the grid: zoom and display scaling leave
-residues that small, and snapping them would add a whole base row.
-Snapping runs after the first nonzero measurement and doesn't follow later
-resizes. In Remix, a `Box` or `Padder` re-snaps for a short while after that
-first snap, while nested client entries finish hydrating.
+At 1x, 2x, or 3x, every remainder is snapped exactly. When browser zoom,
+display scaling, or CSS `zoom` scale the page by a fraction, remainders under
+1/32px count as on the grid, because scaling leaves residues that small and
+snapping them would add a whole base row. CSS `zoom` on an ancestor is taken
+into account. Snapping runs after the first nonzero measurement and keeps
+adjusting for two seconds while content settles (web fonts, nested client
+entries hydrating); after that it doesn't follow resizes.
 `Padder` uses height snapping with a bottom correction. A `Box` or `Padder`
 nested inside a `Box` doesn't snap on its own; the outer `Box` snaps the whole. Set `ssrMode` on
 either to keep the explicit padding without measuring.

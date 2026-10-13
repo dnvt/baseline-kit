@@ -4,7 +4,10 @@ import {
   parsePadding,
   calculateSnappedSpacing,
   isOnBaseline,
+  removeSnapCorrection,
+  SNAP_SETTLE_MS,
 } from '@baseline-kit/core'
+import { getSnapTolerance } from '@baseline-kit/dom/measure'
 import { useMeasure } from './useMeasure'
 
 export interface BaselineOptions {
@@ -25,13 +28,12 @@ export interface BaselineResult {
  *
  * Snapping notes
  * --------------
- * `clamp` mode would oscillate without a latch: each snap tweaks the
- * element's padding which changes its measured height, which would
- * trigger another snap, and so on. We snap exactly once per mount on
- * the *first non-zero* measurement, then keep returning the snapped
- * padding for the rest of the element's life. Resizes after the first
- * snap intentionally do not re-snap (avoids visual jitter and the
- * `clamp` oscillation).
+ * The hook snaps the measured height to the grid, then, for SNAP_SETTLE_MS,
+ * re-snaps whenever the natural height (measured height without the
+ * correction it rendered) changes, for example when a web font or nested
+ * content settles. Snapping from the natural height is stable: applying the
+ * correction does not change the input, so `clamp` cannot oscillate. After
+ * that window the snap stays fixed and later resizes do not re-snap.
  */
 export function useBaseline(
   ref: React.RefObject<HTMLElement | null>,
@@ -47,35 +49,69 @@ export function useBaseline(
   }
 
   const { height } = useMeasure(ref)
-  const snappedPaddingRef = React.useRef<Padding | null>(null)
+  const snapRef = React.useRef<{ padding: Padding; natural: number } | null>(
+    null
+  )
+  // Set SNAP_SETTLE_MS after the first snap; from then on the snap is fixed.
+  const settledRef = React.useRef(false)
+  const settleTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  )
+  // Padding committed to the DOM, which the latest measurement includes.
+  const renderedPaddingRef = React.useRef<Padding | null>(null)
 
-  return React.useMemo(() => {
+  const result = React.useMemo(() => {
     const initialPadding = parsePadding({ padding: spacing })
-    const isAligned = isOnBaseline(height, base)
+    const tolerance = getSnapTolerance(ref.current)
+    const isAligned = isOnBaseline(height, base, tolerance)
 
-    if (snapping === 'none') {
-      return { padding: initialPadding, isAligned, height }
+    // Wait for a real measurement before snapping; the first render has
+    // height 0 before useMeasure settles.
+    if (snapping === 'none' || height === 0) {
+      return {
+        padding: snapRef.current?.padding ?? initialPadding,
+        isAligned,
+        height,
+      }
     }
 
-    // Reuse the cached snap on subsequent renders.
-    if (snappedPaddingRef.current) {
-      return { padding: snappedPaddingRef.current, isAligned, height }
+    const natural = removeSnapCorrection(
+      height,
+      renderedPaddingRef.current ?? initialPadding,
+      initialPadding
+    )
+    const snapped = snapRef.current
+    if (
+      snapped &&
+      (settledRef.current || Math.abs(natural - snapped.natural) < tolerance)
+    ) {
+      return { padding: snapped.padding, isAligned, height }
     }
 
-    // Wait for a real measurement before snapping. Without this guard
-    // the very first render (height = 0, before useMeasure settles)
-    // would compute a no-op snap and prematurely poison the cache,
-    // making real measurements never get snapped.
-    if (height === 0) {
-      return { padding: initialPadding, isAligned, height }
-    }
-
-    const finalPadding = calculateSnappedSpacing(height, base, initialPadding, {
+    const padding = calculateSnappedSpacing(natural, base, initialPadding, {
       mode: snapping,
       snapEdge,
+      tolerance,
     })
-    snappedPaddingRef.current = finalPadding
+    snapRef.current = { padding, natural }
+    return { padding, isAligned, height }
+  }, [ref, base, snapping, snapEdge, spacing, height])
 
-    return { padding: finalPadding, isAligned, height }
-  }, [base, snapping, snapEdge, spacing, height])
+  React.useLayoutEffect(() => {
+    renderedPaddingRef.current = result.padding
+    if (snapRef.current && settleTimerRef.current === null) {
+      settleTimerRef.current = setTimeout(() => {
+        settledRef.current = true
+      }, SNAP_SETTLE_MS)
+    }
+  }, [result.padding])
+
+  React.useEffect(
+    () => () => {
+      if (settleTimerRef.current !== null) clearTimeout(settleTimerRef.current)
+    },
+    []
+  )
+
+  return result
 }

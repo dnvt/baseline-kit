@@ -6,7 +6,6 @@ import {
   calculateSnappedSpacing,
   removeSnapCorrection,
   SNAP_SETTLE_MS,
-  SNAP_TOLERANCE,
   mergeConfig,
   createBoxDescriptor,
   requiresSeparatePadder,
@@ -23,6 +22,7 @@ import {
 } from '@baseline-kit/core'
 import { Config, type ConfigProps } from './Config'
 import { configuredClientEntry } from './shared'
+import { getSnapTolerance } from '@baseline-kit/dom/measure'
 import { PadderForBox } from './Padder'
 import {
   createElementObserverBridge,
@@ -79,8 +79,9 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   }
 
   // Measure the host so its own border and padding count toward the snap.
-  const observer = createElementObserverBridge((next) => {
+  const observer = createElementObserverBridge((next, host) => {
     if (currentSnapping === 'none' || next.height === 0) return
+    const tolerance = getSnapTolerance(host)
     const natural = removeSnapCorrection(
       next.height,
       renderedPadding,
@@ -89,7 +90,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     if (
       snappedPadding &&
       (performance.now() - snappedAt > SNAP_SETTLE_MS ||
-        Math.abs(natural - snappedNatural) < SNAP_TOLERANCE)
+        Math.abs(natural - snappedNatural) < tolerance)
     ) {
       return
     }
@@ -100,7 +101,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
       natural,
       currentBase,
       currentInitialPadding,
-      { mode: currentSnapping, snapEdge: currentSnapEdge }
+      { mode: currentSnapping, snapEdge: currentSnapEdge, tolerance }
     )
     requestUpdate()
   })

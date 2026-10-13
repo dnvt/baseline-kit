@@ -2,6 +2,7 @@
  * Element measurement observer.
  */
 
+import { SNAP_TOLERANCE, UNSCALED_SNAP_TOLERANCE } from '@baseline-kit/core'
 import { rafThrottle } from './timing'
 
 export interface MeasureRect {
@@ -14,6 +15,25 @@ export interface MeasureObserverHandle {
   refresh(): void
   /** Stop observing */
   disconnect(): void
+}
+
+/** Effective CSS zoom of an element, 1 where `currentCSSZoom` is unsupported. */
+export function getCSSZoom(el: Element): number {
+  const zoom = (el as Element & { currentCSSZoom?: number }).currentCSSZoom
+  return typeof zoom === 'number' && zoom > 0 ? zoom : 1
+}
+
+/**
+ * Snap tolerance for an element: exact at whole-number scales, where browsers
+ * report exact layout units, and SNAP_TOLERANCE when browser zoom, display
+ * scaling, or CSS zoom scale the page by a fraction.
+ */
+export function getSnapTolerance(el: Element | null): number {
+  if (!el || typeof window === 'undefined') return SNAP_TOLERANCE
+  const scale = (window.devicePixelRatio || 1) * getCSSZoom(el)
+  return Math.abs(scale - Math.round(scale)) < 1e-6
+    ? UNSCALED_SNAP_TOLERANCE
+    : SNAP_TOLERANCE
 }
 
 /**
@@ -29,10 +49,13 @@ export function createMeasureObserver(
 
   const measure = () => {
     try {
+      // getBoundingClientRect includes any CSS zoom on the element or its
+      // ancestors; padding is applied in unzoomed CSS px, so measure in those.
+      const zoom = getCSSZoom(el)
       const rect = el.getBoundingClientRect()
       const next: MeasureRect = {
-        width: Math.round(rect.width),
-        height: rect.height,
+        width: Math.round(rect.width / zoom),
+        height: rect.height / zoom,
       }
       if (next.width !== prev.width || next.height !== prev.height) {
         prev = next

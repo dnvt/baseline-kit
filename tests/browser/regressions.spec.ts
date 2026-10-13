@@ -1273,6 +1273,26 @@ test('React nested and semantic Boxes stay on the grid', async ({ page }) => {
     .toEqual([true, true, true, true])
 })
 
+test('React Box snaps exactly under CSS zoom and at one layout unit', async ({
+  page,
+}) => {
+  // Under CSS zoom the Box snaps in unzoomed px; at 1x a one-layout-unit
+  // remainder is snapped exactly instead of left as drift.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const zoomed = document.querySelector('#precision-zoom')!
+        const unit = document.querySelector('#precision-unit')!
+        const cssHeight =
+          zoomed.getBoundingClientRect().height /
+          ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
+            1)
+        return [cssHeight, unit.getBoundingClientRect().height]
+      })
+    )
+    .toEqual([16, 16])
+})
+
 test('React Box keeps a fractional top snap on an 8px base', async ({
   page,
 }) => {
@@ -2134,6 +2154,32 @@ test.describe('native Remix adapter', () => {
       ;(host as HTMLElement).style.width = '600px'
     })
     await expect.poll(columns).toBe('6')
+  })
+
+  test('native Box snaps exactly under CSS zoom and at one layout unit', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    // Under CSS zoom the Box snaps in unzoomed px; at 1x a one-layout-unit
+    // remainder is snapped exactly instead of left as drift.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const zoomed = document.querySelector('#remix-precision-zoom')!
+          const unit = document.querySelector('#remix-precision-unit')!
+          const cssHeight =
+            zoomed.getBoundingClientRect().height /
+            ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
+              1)
+          return [cssHeight, unit.getBoundingClientRect().height]
+        })
+      )
+      .toEqual([16, 16])
   })
 
   test('native Box keeps a fractional top snap on an 8px base', async ({
