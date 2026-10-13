@@ -7,6 +7,14 @@ import {
   Spacer,
 } from '@baseline-kit/react'
 import {
+  REM_GRID_BOXES,
+  REM_GRID_CSS,
+  REM_GRID_MARK,
+  REM_GRID_SECTION,
+  REM_GRID_WORDS,
+  remGridText,
+} from './rem-grid'
+import {
   Fragment,
   useEffect,
   useLayoutEffect,
@@ -165,6 +173,41 @@ function LiveGridFixture() {
       <Box data-live="toggle" block={[0, 0]}>
         <div data-live-toggle style={{ height: 10 }} />
       </Box>
+    </section>
+  )
+}
+
+/** The `?remgrid` hosts (see rem-grid.ts), rendered on the server too. */
+function RemGridFixture({ base }: { base: number | `${number}rem` }) {
+  return (
+    <section
+      data-rem-grid={typeof base === 'number' ? 'px' : 'rem'}
+      style={REM_GRID_SECTION}
+    >
+      <style>{REM_GRID_CSS}</style>
+      <Config base={base}>
+        {REM_GRID_BOXES.map((box, index) => (
+          <Box
+            key={index}
+            data-rem="box"
+            block={[0, 0]}
+            snapping={box.snapping}
+            {...box.variant}
+          >
+            <span style={remGridText(box.size)}>
+              {REM_GRID_WORDS.map((word, wordIndex) => (
+                <Fragment key={wordIndex}>
+                  {`${word} `}
+                  <span data-rem-mark style={REM_GRID_MARK} />
+                </Fragment>
+              ))}
+            </span>
+            <span style={{ display: 'block', height: box.trailer }} />
+          </Box>
+        ))}
+        {/* Rounds 20px to the base: 24px at 8px, 20px at 10px. */}
+        <Spacer data-rem="spacer" height={20} />
+      </Config>
     </section>
   )
 }
@@ -402,9 +445,16 @@ function StatefulBoxDebugModeProbe({
   )
 }
 
-export function App() {
+export function App({ search = '' }: { search?: string }) {
+  const remGrid = new URLSearchParams(search).has('remgrid')
   const content = (
     <main>
+      {remGrid && (
+        <>
+          <RemGridFixture base="0.5rem" />
+          <RemGridFixture base={8} />
+        </>
+      )}
       <p id="ssr-content">Server-rendered content remains available.</p>
       <section
         id="guide-viewport"

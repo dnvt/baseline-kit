@@ -239,6 +239,67 @@ describe('nextSnap', () => {
     expect(first.natural).toBe(10.5)
   })
 
+  // Seen in Chromium after root font changes: computed styles print the
+  // rendered padding to six significant digits (6.890625 as 6.89062), and a
+  // snap a hair under 2.921875 rendered 1/64px short and stayed there.
+  it('re-snaps exactly from padding read back at computed-style precision', () => {
+    const bottom = { mode: 'clamp' as const, snapEdge: 'bottom' as const }
+    const content = 61.078125
+    const before = nextSnap(
+      null,
+      { ...input, ...bottom, base: 12 },
+      { height: content, rendered: zero }
+    )!
+    expect(before.padding.bottom).toBe(10.921875)
+    const after = nextSnap(
+      before,
+      { ...input, ...bottom },
+      {
+        height: content + 10.921875,
+        rendered: { ...zero, bottom: 10.9219 },
+      }
+    )!
+    expect(after.padding.bottom).toBe(2.921875)
+  })
+
+  it('takes large padding read back at computed-style precision as snapped', () => {
+    // 1006.921875 prints as 1006.92: too far off for 1/1024 rounding alone.
+    const large = { ...zero, bottom: 1000 }
+    const bottom = { snapEdge: 'bottom' as const, initial: large }
+    const before = nextSnap(
+      null,
+      { ...input, ...bottom, base: 12 },
+      { height: 1061.078125, rendered: large }
+    )!
+    expect(before.padding.bottom).toBe(1006.921875)
+    const after = nextSnap(
+      before,
+      { ...input, ...bottom },
+      { height: 1068, rendered: { ...large, bottom: 1006.92 } }
+    )!
+    expect(after.padding.bottom).toBe(1002.921875)
+  })
+
+  it('passes inline padding through unrounded', () => {
+    const inline = { ...zero, left: 1.1, right: 1.1 }
+    const snap = nextSnap(
+      null,
+      { ...input, initial: inline },
+      { height: 10.5, rendered: inline }
+    )!
+    expect(snap.padding).toEqual({ top: 5.5, right: 1.1, bottom: 0, left: 1.1 })
+  })
+
+  it('keeps snapped padding to 1/1024px', () => {
+    // Mid-transition padding, read imprecisely and far from the snap:
+    // 2.500003 unrounded.
+    const moving = nextSnap(first, input, {
+      height: 14.734567,
+      rendered: { ...zero, top: 1.23457 },
+    })!
+    expect(moving.padding.top).toBe(2.5)
+  })
+
   it('keeps the snap when the height does not change (fixed-height Box)', () => {
     const rendered = first.padding
     expect(

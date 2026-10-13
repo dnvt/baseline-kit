@@ -81,7 +81,7 @@ const runtime = run({
       return createLifecycleFrame(src)
     }
     if (pathname === '/remix.html') {
-      return createRemixApp()
+      return createRemixApp(new URL(src, document.baseURI).search)
     }
     return fetch(src, { signal: options?.signal })
   },

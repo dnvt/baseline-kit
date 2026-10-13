@@ -2,6 +2,14 @@ import { Frame } from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
 import { Forwarder, LiveGridProbe, SnapModeProbe } from './remix-entries'
 import {
+  REM_GRID_BOXES,
+  REM_GRID_CSS,
+  REM_GRID_MARK,
+  REM_GRID_SECTION,
+  REM_GRID_WORDS,
+  remGridText,
+} from './rem-grid'
+import {
   Baseline,
   Box,
   Config,
@@ -30,7 +38,53 @@ const dimensionCases = [
   { id: 'height-zero', axis: 'height', value: 0 },
 ] as const
 
-export function createRemixApp() {
+/** The `?remgrid` hosts (see rem-grid.ts), server-rendered then hydrated. */
+function remGrid(base: number | `${number}rem`) {
+  return jsx('section', {
+    'data-rem-grid': typeof base === 'number' ? 'px' : 'rem',
+    style: REM_GRID_SECTION,
+    children: [
+      jsx('style', { children: REM_GRID_CSS }),
+      jsx(Config, {
+        base,
+        children: [
+          ...REM_GRID_BOXES.map((box, index) =>
+            jsx(
+              Box,
+              {
+                'data-rem': 'box',
+                block: [0, 0],
+                snapping: box.snapping,
+                ...box.variant,
+                children: [
+                  jsx('span', {
+                    style: remGridText(box.size),
+                    children: REM_GRID_WORDS.flatMap((word) => [
+                      `${word} `,
+                      jsx('span', {
+                        'data-rem-mark': '',
+                        style: REM_GRID_MARK,
+                      }),
+                    ]),
+                  }),
+                  jsx('span', {
+                    style: { display: 'block', height: box.trailer },
+                  }),
+                ],
+              },
+              index
+            )
+          ),
+          // Rounds 20px to the base: 24px at 8px, 20px at 10px.
+          jsx(Spacer, { 'data-rem': 'spacer', height: 20 }),
+        ],
+      }),
+    ],
+  })
+}
+
+export function createRemixApp(search = '') {
+  const remGridOn = new URLSearchParams(search).has('remgrid')
   const GeneratedConsumer = () => () =>
     jsx(Spacer, { height: 16, debugging: 'visible' })
   const WrappedConsumers = () => () =>
@@ -65,6 +119,7 @@ export function createRemixApp() {
 
   const app = jsx('main', {
     children: [
+      ...(remGridOn ? [remGrid('0.5rem'), remGrid(8)] : []),
       jsx('section', {
         id: 'remix-frame-lifecycle',
         children: [

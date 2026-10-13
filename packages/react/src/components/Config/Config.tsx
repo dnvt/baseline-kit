@@ -6,6 +6,11 @@ import {
   mergeConfig,
   createCSSVariables,
 } from '@baseline-kit/core/config/merge'
+import {
+  DEFAULT_ROOT_FONT_SIZE,
+  parseRemBase,
+} from '@baseline-kit/core/config/base'
+import { getRootFontSize, subscribeRootFontSize } from '@baseline-kit/dom'
 
 // Re-export types that consumers need
 export type { DebuggingMode } from '@baseline-kit/core/types'
@@ -29,6 +34,21 @@ export type ConfigProps = ConfigOverrides & {
   children: React.ReactNode
 }
 
+const subscribeNothing = () => () => {}
+const serverRootFontSize = () => DEFAULT_ROOT_FONT_SIZE
+
+/**
+ * The live root font size while `enabled`. Server renders and hydration use
+ * 16px, so a rem base hydrates without a mismatch and re-resolves after.
+ */
+function useRootFontSize(enabled: boolean): number {
+  return React.useSyncExternalStore(
+    enabled ? subscribeRootFontSize : subscribeNothing,
+    enabled ? getRootFontSize : serverRootFontSize,
+    serverRootFontSize
+  )
+}
+
 /**
  * Configuration provider for baseline-kit components.
  */
@@ -43,11 +63,15 @@ export function Config({
   padder,
 }: ConfigProps) {
   const parentConfig = useDefaultConfig()
+  // Only a scope that sets a rem base watches the root; nested scopes inherit
+  // its resolved value.
+  const rootFontSize = useRootFontSize(parseRemBase(base) !== undefined)
 
   const value = React.useMemo(() => {
     return mergeConfig({
       parentConfig,
       base,
+      rootFontSize,
       domDiagnostics,
       baseline,
       guide,
@@ -55,7 +79,17 @@ export function Config({
       box,
       padder,
     })
-  }, [parentConfig, base, domDiagnostics, baseline, guide, spacer, box, padder])
+  }, [
+    parentConfig,
+    base,
+    rootFontSize,
+    domDiagnostics,
+    baseline,
+    guide,
+    spacer,
+    box,
+    padder,
+  ])
 
   return <ConfigContext value={value}>{children}</ConfigContext>
 }

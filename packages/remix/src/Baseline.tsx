@@ -2,7 +2,6 @@
 
 import { type Handle, type RemixNode } from 'remix/component'
 import {
-  DEFAULT_CONFIG,
   createBaselineDescriptor,
   createBaselineFallbackStyle,
   type BaselineOptions,
@@ -13,16 +12,14 @@ import {
   resolveDebugState,
 } from '@baseline-kit/core'
 import {
-  getConfig,
+  createConfigReader,
   mergeStyles,
-  normalizeConfigSnapshot,
   createElementObserverBridge,
   createVirtualBridge,
   queueNativeUpdate,
   type NativeComponent,
   type NativeHostProps,
 } from './shared'
-import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 
 export type { BaselineVariant }
@@ -37,6 +34,8 @@ type RuntimeBaselineProps = BaselineProps & {
 }
 
 function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
+  // Its rows or columns depend on the base: hydrate at the server's.
+  const readConfig = createConfigReader(handle, { serverFirst: true })
   let dimensions = { width: 0, height: 0 }
   const requestUpdate = () => {
     queueNativeUpdate(handle)
@@ -55,9 +54,7 @@ function BaselineImpl(handle: Handle<RuntimeBaselineProps>) {
 
   return () => {
     const props = handle.props
-    const config = normalizeConfigSnapshot(
-      props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
-    )
+    const config = readConfig()
     const base = props.base ?? config.base
     const variant = props.variant ?? config.baseline.variant
     const debugging = resolveDebugState(

@@ -8,12 +8,18 @@ import {
   type RemixNode,
   type SerializableProps,
 } from 'remix/component'
-import { DEFAULT_CONFIG } from '@baseline-kit/core'
+import {
+  DEFAULT_CONFIG,
+  DEFAULT_ROOT_FONT_SIZE,
+  resolveConfigBase,
+} from '@baseline-kit/core'
 import { Config } from './Config'
 import {
   createMeasureObserver,
   createVirtualTracker,
   getRenderedBlockPadding,
+  getRootFontSize,
+  subscribeRootFontSize,
   type MeasureRect,
   type VirtualRange,
   type VirtualTrackerHandle,
@@ -71,6 +77,58 @@ export function getConfig(
 export function normalizeConfigSnapshot(config: ConfigSchema): ConfigSchema {
   if (typeof config.domDiagnostics === 'boolean') return config
   return { ...config, domDiagnostics: false }
+}
+
+/**
+ * Reads an entry's config: its serialized snapshot, else the nearest Config,
+ * else the default. A rem base (`baseRem`) resolves against 16px on the
+ * server and against the live root font size on the client; the entry
+ * subscribes after its render and updates whenever the root font size
+ * changes. Hydration patches attribute differences in place, but leaves
+ * server elements the client doesn't render: an entry whose element count
+ * depends on the base (`serverFirst`) also renders its first client pass at
+ * 16px, so it hydrates the server HTML as is, then switches.
+ */
+export function createConfigReader(
+  handle: Handle<{ __baselineConfig?: ConfigSchema }>,
+  { serverFirst = false } = {}
+): () => ConfigSchema {
+  let unsubscribe: (() => void) | null = null
+  let rendered = false
+  let renderedRoot = DEFAULT_ROOT_FONT_SIZE
+
+  const follow = () => {
+    if (getRootFontSize() !== renderedRoot) queueNativeUpdate(handle)
+  }
+
+  return () => {
+    const config = normalizeConfigSnapshot(
+      handle.props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
+    )
+    const first = !rendered
+    rendered = true
+    if (config.baseRem === undefined || typeof window === 'undefined') {
+      unsubscribe?.()
+      unsubscribe = null
+      return config
+    }
+    renderedRoot =
+      first && serverFirst ? DEFAULT_ROOT_FONT_SIZE : getRootFontSize()
+    if (!unsubscribe) {
+      // Remix creates the signal on first read and aborts only one that
+      // exists, so take it now: a removal before the task then aborts it.
+      const signal = handle.signal
+      handle.queueTask(() => {
+        if (unsubscribe || signal.aborted) return
+        unsubscribe = subscribeRootFontSize(follow)
+        signal.addEventListener('abort', () => unsubscribe?.(), {
+          once: true,
+        })
+        follow()
+      })
+    }
+    return resolveConfigBase(config, renderedRoot)
+  }
 }
 
 export interface ElementObserverBridge {

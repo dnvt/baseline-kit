@@ -2,7 +2,6 @@
 
 import { type Handle, type RemixNode } from 'remix/component'
 import {
-  DEFAULT_CONFIG,
   canCompactFixedGuide,
   calculateGuideTemplate,
   createGuideConfig,
@@ -14,13 +13,11 @@ import {
   getDOMAttributes,
   resolveDebugState,
 } from '@baseline-kit/core'
-import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 import {
   createElementObserverBridge,
-  getConfig,
+  createConfigReader,
   mergeStyles,
-  normalizeConfigSnapshot,
   queueNativeUpdate,
   type NativeComponent,
   type NativeHostProps,
@@ -36,6 +33,8 @@ type RuntimeGuideProps = GuideProps & {
 }
 
 function GuideImpl(handle: Handle<RuntimeGuideProps>) {
+  // Its rows or columns depend on the base: hydrate at the server's.
+  const readConfig = createConfigReader(handle, { serverFirst: true })
   let dimensions = { width: 0, height: 0 }
   const requestUpdate = () => {
     queueNativeUpdate(handle)
@@ -49,9 +48,7 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
 
   return () => {
     const props = handle.props
-    const config = normalizeConfigSnapshot(
-      props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
-    )
+    const config = readConfig()
     const variant = props.variant ?? config.guide.variant
     const debug = resolveDebugState(props.debugging, config.guide.debugging)
     const guideConfig = createGuideConfig({

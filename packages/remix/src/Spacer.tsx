@@ -2,7 +2,6 @@
 
 import { type Handle, type RemixNode } from 'remix/component'
 import {
-  DEFAULT_CONFIG,
   createSpacerDescriptor,
   type ConfigSchema,
   type SpacerOptions,
@@ -10,12 +9,10 @@ import {
   getDOMAttributes,
   resolveDebugState,
 } from '@baseline-kit/core'
-import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 import {
-  getConfig,
+  createConfigReader,
   mergeStyles,
-  normalizeConfigSnapshot,
   type NativeComponent,
   type NativeHostProps,
 } from './shared'
@@ -36,11 +33,10 @@ type RuntimeSpacerProps = SpacerProps & {
 }
 
 function SpacerImpl(handle: Handle<RuntimeSpacerProps>) {
+  const readConfig = createConfigReader(handle)
   return () => {
     const props = handle.props
-    const config = normalizeConfigSnapshot(
-      props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
-    )
+    const config = readConfig()
     const base = props.base ?? config.base
     const variant = props.variant ?? config.spacer.variant
     const debugging = resolveDebugState(

@@ -139,6 +139,21 @@ Browsers without text-box support keep their normal text metrics. See the
 ## Spacing and snapping
 
 The base interval is `8px` by default; set it with `Config base={...}`.
+To follow the reader's text size, give it in rem: `Config base="0.5rem"` makes
+the grid half the root font size (8px at the default 16px, 10px at 20px). The
+base follows the root font size, whether a stylesheet or the reader's default
+font size sets it, and when that changes every `Box` and `Padder` re-snaps.
+Set `line-height` in rem too, as a multiple of the base (`1.5rem` for a
+`0.5rem` base), so lines stay a whole number of rows apart; to put baselines
+on the grid lines themselves, trim the text as described in
+[Text on the baseline grid](#text-on-the-baseline-grid). The server has no root
+font size, so it renders a rem base at 16px; the client hydrates that HTML and
+then switches to the live size. `ConfigSchema.base` is always the resolved
+value in px, and `baseRem` holds the rem value. A base that isn't a whole
+number of layout units (0.5rem at a 15.3px root is 7.65px) can only be
+approximated: each `Box` lands within 1/32px of the grid, and the differences
+add up down a stack of Boxes.
+
 Numeric spacing values are CSS pixels, not multiples of the base:
 
 ```tsx

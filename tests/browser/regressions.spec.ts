@@ -3265,8 +3265,204 @@ function liveGridTests(prefix: string, url: string, root: string) {
   })
 }
 
+/**
+ * Where the `?remgrid` text sits on a grid of `base` px from the section top:
+ * `baselines` is the largest spread, within one Box, of its line baselines
+ * (marker tops) around one offset from the grid lines (the offset of a
+ * baseline in its line box depends on the font size, so it is per Box);
+ * `hosts` is the largest distance of a Box bottom from a grid line, which
+ * also puts the next Box's first line box on the grid. Self-contained so the
+ * page can run it.
+ */
+function measureRemGrid({ kind, base }: { kind: 'rem' | 'px'; base: number }) {
+  const section = document.querySelector(`[data-rem-grid="${kind}"]`)!
+  const origin = section.getBoundingClientRect().top
+  const phase = (y: number) => (((y - origin) % base) + base) % base
+  const apart = (a: number, b: number) => {
+    const distance = Math.abs(a - b) % base
+    return Math.min(distance, base - distance)
+  }
+  const hosts = Array.from(section.querySelectorAll('[data-rem="box"]'))
+  let baselines = 0
+  for (const host of hosts) {
+    const tops = Array.from(host.querySelectorAll('[data-rem-mark]'), (mark) =>
+      phase(mark.getBoundingClientRect().top)
+    )
+    baselines = Math.max(baselines, ...tops.map((top) => apart(top, tops[0])))
+  }
+  return {
+    minLines: Math.min(
+      ...hosts.map(
+        (host) =>
+          new Set(
+            Array.from(host.querySelectorAll('[data-rem-mark]'), (mark) =>
+              Math.round(mark.getBoundingClientRect().top)
+            )
+          ).size
+      )
+    ),
+    baselines,
+    hosts: Math.max(
+      ...hosts.map((host) =>
+        apart(phase(host.getBoundingClientRect().bottom), 0)
+      )
+    ),
+    spacer: section
+      .querySelector('[data-rem="spacer"]')!
+      .getAttribute('data-height'),
+  }
+}
+
+async function remGridState(page: Page) {
+  const root = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.documentElement).fontSize)
+  )
+  return {
+    root,
+    rem: await page.evaluate(measureRemGrid, { kind: 'rem', base: root / 2 }),
+    px: await page.evaluate(measureRemGrid, { kind: 'px', base: 8 }),
+  }
+}
+
+async function openRemGrid(page: Page, url: string) {
+  await page.goto(url)
+  if (url.startsWith('/remix.html')) {
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+  }
+  await expect(page.locator('[data-rem-grid] [data-rem="box"]')).toHaveCount(12)
+}
+
+const onRemGrid = (state: Awaited<ReturnType<typeof remGridState>>) =>
+  state.rem.baselines <= 1 / 64 && state.rem.hosts <= 1 / 64
+
+function remGridTests(prefix: string, url: string) {
+  test(`${prefix} rem base follows the reader's default font size`, async ({
+    page,
+    browserName,
+  }) => {
+    // Only Chromium sets a page's default font size from a test. A second,
+    // separately launched Firefox with font prefs failed to composite while
+    // the gate's own Firefox ran, so it is not part of the gate.
+    test.skip(browserName !== 'chromium', 'sets the default font size by CDP')
+    const onGridAt = async (size: number) => {
+      await expect
+        .poll(async () => onRemGrid(await remGridState(page)))
+        .toBe(true)
+      const state = await remGridState(page)
+      expect(state.root).toBe(size)
+      expect(state.rem.spacer).toBe(`${Math.round(40 / size) * (size / 2)}px`)
+    }
+    // Chromium's own font size setting, as the reader would change it;
+    // `?root=medium` makes the root that default size.
+    const cdp = await page.context().newCDPSession(page)
+    await cdp.send('Page.setFontSizes', { fontSizes: { standard: 20 } })
+    await openRemGrid(page, `${url}&root=medium`)
+    await onGridAt(20)
+    await cdp.send('Page.setFontSizes', { fontSizes: { standard: 24 } })
+    await onGridAt(24)
+  })
+
+  test(`${prefix} rem base keeps every line on the grid at 16, 17, 20 and 24px roots`, async ({
+    page,
+  }) => {
+    for (const root of [16, 17, 20, 24]) {
+      await openRemGrid(page, `${url}&root=${root}`)
+      await expect
+        .poll(async () => {
+          const state = await remGridState(page)
+          return onRemGrid(state) && state.px.hosts <= 1 / 64
+        })
+        .toBe(true)
+      const state = await remGridState(page)
+      expect(state.root).toBe(root)
+      // Two or more lines in every Box.
+      expect(state.rem.minLines).toBeGreaterThanOrEqual(2)
+      // The Spacer rounds 20px to the live base.
+      expect(state.rem.spacer).toBe(`${Math.round(40 / root) * (root / 2)}px`)
+      // Control: px Boxes still end on their 8px grid, but 1.5rem lines drift
+      // off it once the root is not 16px.
+      expect(state.px.hosts).toBeLessThanOrEqual(1 / 64)
+      if (root === 16) expect(state.px.baselines).toBeLessThanOrEqual(1 / 64)
+      else expect(state.px.baselines).toBeGreaterThan(1)
+    }
+  })
+
+  test(`${prefix} rem base follows live root font size changes`, async ({
+    page,
+  }) => {
+    await openRemGrid(page, `${url}&root=16`)
+    await expect
+      .poll(async () => onRemGrid(await remGridState(page)))
+      .toBe(true)
+    for (const root of [17, 20, 24, 16]) {
+      const { frame: frames, last } = await page.evaluate(
+        async ({ size, measure }) => {
+          const measureGrid = new Function(`return ${measure}`)() as (args: {
+            kind: string
+            base: number
+          }) => { baselines: number; hosts: number }
+          const marks = Array.from(
+            document.querySelectorAll('[data-rem-grid="rem"] [data-rem-mark]')
+          )
+          const before = marks.map((mark) => mark.getBoundingClientRect().top)
+          let last: unknown = null
+          document.documentElement.style.fontSize = `${size}px`
+          for (let frame = 1; frame <= 60; frame++) {
+            await new Promise((resolve) => requestAnimationFrame(resolve))
+            const moved = marks.some(
+              (mark, index) =>
+                Math.abs(mark.getBoundingClientRect().top - before[index]) > 0.5
+            )
+            last = measureGrid({ kind: 'rem', base: size / 2 })
+            if (moved && last.baselines <= 1 / 64 && last.hosts <= 1 / 64) {
+              return { frame, last }
+            }
+          }
+          return { frame: -1, last }
+        },
+        { size: root, measure: measureRemGrid.toString() }
+      )
+      const step = `-> ${root}px: ${JSON.stringify(last)}`
+      expect(frames, step).toBeGreaterThan(0)
+      expect(frames, step).toBeLessThanOrEqual(10)
+      expect(onRemGrid(await remGridState(page))).toBe(true)
+    }
+  })
+
+  test(`${prefix} rem base hydrates the 16px server HTML, then follows a 20px root`, async ({
+    page,
+  }) => {
+    const response = await page.request.get(`${url}&root=20`)
+    const html = await response.text()
+    // The server knows no root size: the rem Spacer rounds to an 8px base.
+    const spacer = html.match(/<div[^>]*data-rem="spacer"[^>]*>/)?.[0]
+    expect(spacer).toContain('data-height="24px"')
+    const messages: string[] = []
+    page.on('console', (message) => {
+      if (message.type() === 'error' || message.type() === 'warning') {
+        messages.push(message.text())
+      }
+    })
+    await openRemGrid(page, `${url}&root=20`)
+    await expect
+      .poll(async () => onRemGrid(await remGridState(page)))
+      .toBe(true)
+    expect((await remGridState(page)).rem.spacer).toBe('20px')
+    expect(
+      messages.filter((text) => /hydrat|did not match|mismatch/i.test(text))
+    ).toEqual([])
+  })
+}
+
+remGridTests('React', '/?remgrid')
+
 liveGridTests('React', '/?live', '#live-grid')
 
 test.describe('native Remix adapter', () => {
   liveGridTests('native', '/remix.html?live', '#remix-live-grid')
+  remGridTests('native', '/remix.html?remgrid')
 })

@@ -26,9 +26,8 @@ import { isScaledLayout } from '@baseline-kit/dom/measure'
 import { PadderForBox } from './Padder'
 import {
   createElementObserverBridge,
-  getConfig,
+  createConfigReader,
   mergeStyles,
-  normalizeConfigSnapshot,
   queueNativeUpdate,
   snapChanged,
   type NativeComponent,
@@ -63,6 +62,7 @@ function warnLegacyFor(props: object) {
 }
 
 function BoxImpl(handle: Handle<RuntimeBoxProps>) {
+  const readConfig = createConfigReader(handle)
   let currentBase = DEFAULT_CONFIG.base
   let currentSnapping: SnappingMode = 'clamp'
   let currentSnapEdge: SnapEdge = 'bottom'
@@ -115,9 +115,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     const Element = (props.as ?? 'div') as 'label'
     const ContentElement = props.as && props.as !== 'div' ? 'span' : 'div'
     const semanticHost = props.as !== undefined
-    const config = normalizeConfigSnapshot(
-      props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
-    )
+    const config = readConfig()
     const snapping = props.snapping ?? 'clamp'
     const snapEdge = props.snapEdge ?? 'bottom'
     const debug = resolveDebugState(props.debugging, config.box.debugging)

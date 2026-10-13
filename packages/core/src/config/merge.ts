@@ -1,11 +1,13 @@
 import type { ConfigSchema } from './schema'
+import { DEFAULT_ROOT_FONT_SIZE, parseRemBase, type BaseValue } from './base'
 
 type PartialColors<T> = T extends { colors: infer Colors }
   ? Omit<Partial<T>, 'colors'> & { colors?: Partial<Colors> }
   : Partial<T>
 
 export type ConfigOverrides = {
-  base?: number
+  /** The grid base: px as a number, or `'0.5rem'` to follow the root font size. */
+  base?: BaseValue
   domDiagnostics?: boolean
   baseline?: PartialColors<ConfigSchema['baseline']>
   guide?: PartialColors<ConfigSchema['guide']>
@@ -16,12 +18,30 @@ export type ConfigOverrides = {
 
 type MergeConfigParams = ConfigOverrides & {
   parentConfig: ConfigSchema
+  /** The root font size a rem base resolves against. Defaults to 16. */
+  rootFontSize?: number
 }
 
 const COMPONENT_KEYS = ['baseline', 'guide', 'spacer', 'box', 'padder'] as const
 
+const warnedBases = new Set<string>()
+
+function warnInvalidBase(base: unknown) {
+  const text = String(base)
+  if (warnedBases.has(text)) return
+  warnedBases.add(text)
+  console.warn(
+    `baseline-kit: Config base ${JSON.stringify(base)} is neither a number nor a positive rem value such as '0.5rem'; using the inherited base.`
+  )
+}
+
 export const mergeConfig = (params: MergeConfigParams): ConfigSchema => {
-  const { parentConfig, base, domDiagnostics } = params
+  const {
+    parentConfig,
+    base,
+    domDiagnostics,
+    rootFontSize = DEFAULT_ROOT_FONT_SIZE,
+  } = params
   const merged = {} as Record<string, unknown>
 
   for (const key of COMPONENT_KEYS) {
@@ -44,8 +64,20 @@ export const mergeConfig = (params: MergeConfigParams): ConfigSchema => {
     merged[key] = next
   }
 
+  // An own base replaces the inherited one; an unset or invalid one keeps
+  // the parent's, already resolved.
+  const ownRem = parseRemBase(base)
+  const ownBase = typeof base === 'number' || ownRem !== undefined
+  if (base !== undefined && !ownBase) warnInvalidBase(base)
+  const baseRem = ownBase ? ownRem : parentConfig.baseRem
   return {
-    base: base ?? parentConfig.base,
+    base:
+      ownRem !== undefined
+        ? ownRem * rootFontSize
+        : typeof base === 'number'
+          ? base
+          : parentConfig.base,
+    ...(baseRem !== undefined ? { baseRem } : {}),
     domDiagnostics: domDiagnostics ?? parentConfig.domDiagnostics ?? false,
     ...merged,
   } as ConfigSchema

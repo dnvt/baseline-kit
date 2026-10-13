@@ -29,6 +29,33 @@ export const SNAP_TOLERANCE = 1 / 32
  */
 export const SNAP_SETTLE_MS = 2000
 
+/**
+ * Snapped block padding is kept to 1/1024px. Chromium and WebKit truncate
+ * lengths to 1/64px, so padding a hair under a unit (from the rounding below)
+ * would render a whole unit short; 1/1024 also holds Firefox's 1/60px units.
+ * Inline padding is never snapped and passes through as given.
+ */
+const PADDING_STEP = 1 / 1024
+
+const toPaddingStep = (value: number) =>
+  Math.round(value / PADDING_STEP) * PADDING_STEP
+
+const toBlockStep = (padding: Padding): Padding => ({
+  ...padding,
+  top: toPaddingStep(padding.top),
+  bottom: toPaddingStep(padding.bottom),
+})
+
+/**
+ * Computed styles round lengths to six significant digits, so padding read
+ * back from the DOM is off by up to about 1e-5 of itself. Where it matches
+ * the snapped padding to that precision, it is the snapped padding.
+ */
+const asSnapped = (read: number, snapped: number) =>
+  Math.abs(read - snapped) <= Math.max(Math.abs(snapped), 1) * 1e-5
+    ? snapped
+    : read
+
 // Firefox reports sizes at float32 precision, so allow 1% of a unit.
 const isWholeLayoutUnits = (value: number) =>
   LAYOUT_UNITS.some((unit) => {
@@ -192,11 +219,18 @@ export interface SnapMeasurement {
 export function nextSnap(
   prev: SnapState | null,
   input: SnapInput,
-  { height, rendered, settling = true, scaled }: SnapMeasurement
+  { height, rendered: read, settling = true, scaled }: SnapMeasurement
 ): SnapState | null {
   // `none` clears the snap, so switching back snaps afresh.
   if (input.mode === 'none') return null
   if (height === 0) return prev
+  const rendered = prev
+    ? {
+        ...read,
+        top: asSnapped(read.top, prev.padding.top),
+        bottom: asSnapped(read.bottom, prev.padding.bottom),
+      }
+    : read
   const key = getSnapKey(input)
   const natural = removeSnapCorrection(height, rendered, input.initial)
   const measured = { height, top: rendered.top, bottom: rendered.bottom }
@@ -204,7 +238,7 @@ export function nextSnap(
     key,
     natural,
     height,
-    padding,
+    padding: toBlockStep(padding),
     measured,
     ...(earlier ? { earlier } : {}),
   })
