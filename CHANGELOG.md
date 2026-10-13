@@ -1,5 +1,38 @@
 # baseline-kit
 
+## 7.1.0
+
+### Minor Changes
+
+- 04a1b7e: `Box` and `Padder` follow their content: they re-snap whenever their content height changes (a web font loading, a font or size change, text rewrapping at a new width, a new root font size), in React and Remix. In 7.0 they followed content changes only for two seconds after a snap, after a web font loaded, or when the tab became visible, so a later change left them off the grid until their props changed or they remounted.
+
+  - Snapping uses the padding the DOM actually renders, so a CSS transition on a Box's padding no longer sets off repeated snaps.
+  - Snapped block padding is kept to 1/1024px, so padding read back from the DOM (computed styles round it to six significant digits) no longer leaves a Box a layout unit short of the grid in Chromium and WebKit.
+  - A Box whose height is held from outside (`min-height`, a stretched flex or grid item) settles within a few updates instead of alternating between two heights.
+  - A content-driven Box updates at most once per change (a Padder around a Box once more, after it) and none update once sizes stop changing. It ends where a fresh load would, unless its content flickered in step with its corrections, which can leave it one base row taller (still on the grid) until its height next changes. Content that animates its height is followed frame by frame.
+  - A Padder that draws no spacers (`debugging="none"`) carries a `bk-pad-plain` class, so its padding can be read back while it animates.
+  - In browsers without `currentCSSZoom` (WebKit on Linux), CSS `zoom` on an ancestor is now measured by multiplying each ancestor's zoom. Boxes there snapped to the zoomed grid instead of the page's.
+  - `SNAP_SETTLE_MS` is deprecated and no longer used.
+  - `SnapMeasurement.settling` is optional and defaults to `true`; passing `false` still keeps the current snap. `SnapState` gains optional `measured` and `earlier` fields (type `SnapMeasured`).
+
+- 04a1b7e: `Spacer` string sizes follow the page, in React and Remix. A CSS length height (`'3rem'`, `'10vh'`, `'50%'`, `'calc(100% - 23px)'`) still rounds to the base, now in CSS with `round()`, so it follows the root font size, the viewport and its container as they change; under a rem base it rounds to the rem value. A CSS length width renders as written.
+
+  - 7.0 resolved size strings against a fixed 16px root and a 1920x1080 viewport. Now they resolve as CSS does: `%` heights (were 0px), `calc()` (was the base), `vh`/`vw` (were fixed), and `em`, which now means the Spacer's own font size (was a fixed 16px). `width="100%"` fills its container (was 0px).
+  - Strings that aren't CSS lengths (`'auto'`, `'24'`, keywords, units newer than `round()` such as `lh` or `cqw`, malformed math such as `'calc(100%-23px)'`) keep 7.0's fallback to the base. Browsers without CSS `round()` (before Chrome 125, Firefox 118 and Safari 15.4) keep the px value for string heights: 7.0's value, except for the unit spellings conversion now reads (below).
+  - An indicator for a string size shows the rendered size, measured after mount.
+  - `SpacerDescriptor.style` carries a string height's live value in `--bksp-hl` (`--bksp-h` and `data-height` keep the px value) and a string width as written in `--bksp-w`. The core exports `isCSSLength`, and `SpacerDescriptorParams` gains an optional `baseRem`.
+  - `Guide` accepts a string `gap` (`'1rem'`, `'2%'`). It resolves when the Guide renders (on mount, when its size changes, and for a rem `gap` or `columnWidth`, when the root font size changes) against the root font size, the viewport and the Guide's own width, then rounds to the base, so an `auto` Guide's column elements keep matching its CSS columns. It reads px, rem, `%`, viewport units and absolute units; `em` resolves against 16px and anything else, `calc()` included, falls back to the base. In 7.0 React drew no gap for a string, and Remix resolved a rem gap against a fixed 16px root and a `%` gap against 0px.
+  - `%` gaps (every variant) and an `auto` Guide's `%` column width resolve against the Guide's width (7.0: 0px, so an `auto` Guide drew one column element).
+  - Unit conversion (`convertValue`) reads units case-insensitively and every viewport unit form (`vi`, `vb`, `svh`, `dvmin`, ...). Values that used to be unreadable now convert: `convertValue('1PX')` is 1 (was null), a Spacer's px fallback for `'10dvh'` or `'2REM'` is the converted size instead of the base, and the same spellings now convert in an `auto` Guide's `columnWidth` and in a Baseline's size before its first measurement.
+  - `GuideOptions.gap` widens to `number | string`; the core exports `isRootRelative`.
+
+- 04a1b7e: `Config` accepts a base in rem, such as `base="0.5rem"`, so the grid follows the root font size, in React and Remix. When the root font size changes (a stylesheet, the reader's default font size), the base re-resolves and every `Box` and `Padder` re-snaps; text with a `line-height` in rem that is a multiple of the base keeps its lines a whole number of rows apart. The server renders a rem base at 16px; React hydrates that HTML without a mismatch and Remix patches the differences in place, then both switch to the live size. One hidden `1rem` element under `<html>` watches the root font size, there only while something follows it (a rem base, or a `Guide` with a rem `gap` or `columnWidth`).
+
+  - `ConfigSchema.base` stays the resolved number in px; `ConfigSchema` gains an optional `baseRem` with the rem value.
+  - `mergeConfig` accepts `rootFontSize` (default 16) to resolve a rem base, and warns once about a base that is neither a number nor a positive rem value. The core exports `BaseValue`, `DEFAULT_ROOT_FONT_SIZE`, `parseRemBase` and `resolveConfigBase`.
+  - Component `base` props (`Baseline`, `Spacer`) still take numbers.
+  - A root font size change can update a Box twice, once for the new base and once for the reflowed text; on a 100-Box page in Chromium it reaches the grid within one frame of a px base.
+
 ## 7.0.0
 
 ### Major Changes
