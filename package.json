@@ -2,6 +2,7 @@
   "scripts": {
     "build": "vite build && vite build --config vite.remix.config.ts && rollup -c rollup.declarations.config.mjs && node scripts/build-css.js && node scripts/verify-artifacts.js",
     "changeset": "changeset",
+    "check:api": "node scripts/check-api-compat.js",
     "dev": "vite --config tests/browser/vite.config.ts",
     "format": "prettier --write \"packages/**/*.{ts,tsx,css}\" \"tests/**/*.{ts,tsx}\"",
     "lint": "eslint packages --fix",
@@ -15,7 +16,7 @@
     "test:browser:repeat": "node scripts/repeat-browser-gate.js",
     "test:integration:remix": "node scripts/test-remix-package.js",
     "typecheck": "tsc --noEmit",
-    "verify:integration": "bun run typecheck && bun run lint:check && bun run test:unit && bun run build && bun run test:integration:remix && bun run test:browser:repeat",
+    "verify:integration": "bun run typecheck && bun run lint:check && bun run test:unit && bun run build && bun run check:api && bun run test:integration:remix && bun run test:browser:repeat",
     "version": "changeset version"
   },
   "packageManager": "bun@1.3.12",

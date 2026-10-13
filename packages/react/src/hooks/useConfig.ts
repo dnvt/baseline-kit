@@ -5,6 +5,8 @@ import { useDefaultConfig } from '../components/Config/Config'
 /** Type helper that merges base configuration with component-specific settings. */
 export type ComponentConfig<K extends keyof ConfigSchema> = ConfigSchema[K] & {
   base: number
+  /** The base in rem when it follows the root font size. */
+  baseRem?: number
   domDiagnostics: boolean
 }
 
@@ -19,6 +21,9 @@ export function useConfig<K extends keyof ConfigSchema>(
     return Object.assign(
       {
         base: defaultConfig.base,
+        ...(defaultConfig.baseRem !== undefined
+          ? { baseRem: defaultConfig.baseRem }
+          : {}),
         domDiagnostics: defaultConfig.domDiagnostics,
       },
       defaultConfig[component]

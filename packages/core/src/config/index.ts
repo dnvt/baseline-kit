@@ -1,4 +1,6 @@
 export type { ConfigSchema } from './schema'
 export { DEFAULT_CONFIG } from './defaults'
 export { mergeConfig, createCSSVariables } from './merge'
+export { DEFAULT_ROOT_FONT_SIZE, parseRemBase, resolveConfigBase } from './base'
+export type { BaseValue } from './base'
 export type { ConfigOverrides } from './merge'

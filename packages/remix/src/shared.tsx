@@ -8,18 +8,23 @@ import {
   type RemixNode,
   type SerializableProps,
 } from 'remix/component'
-import { DEFAULT_CONFIG } from '@baseline-kit/core'
+import {
+  DEFAULT_CONFIG,
+  DEFAULT_ROOT_FONT_SIZE,
+  resolveConfigBase,
+} from '@baseline-kit/core'
 import { Config } from './Config'
 import {
   createMeasureObserver,
-  getCSSZoom,
-  onSnapSettleEvent,
   createVirtualTracker,
+  getRenderedBlockPadding,
+  getRootFontSize,
+  subscribeRootFontSize,
   type MeasureRect,
   type VirtualRange,
   type VirtualTrackerHandle,
 } from '@baseline-kit/dom'
-import type { ConfigSchema } from '@baseline-kit/core'
+import type { ConfigSchema, SnapState } from '@baseline-kit/core'
 
 export type NativeStyle = Props<'div'>['style']
 
@@ -74,11 +79,73 @@ export function normalizeConfigSnapshot(config: ConfigSchema): ConfigSchema {
   return { ...config, domDiagnostics: false }
 }
 
+/**
+ * Reads an entry's config: its serialized snapshot, else the nearest Config,
+ * else the default. A rem base (`baseRem`) resolves against 16px on the
+ * server and against the live root font size on the client; the entry
+ * subscribes after its render and updates whenever the root font size
+ * changes. Hydration patches attribute differences in place, but leaves
+ * server elements the client doesn't render: an entry whose element count
+ * depends on the base (`serverFirst`) also renders its first client pass at
+ * 16px, so it hydrates the server HTML as is, then switches.
+ */
+export function createConfigReader(
+  handle: Handle<{ __baselineConfig?: ConfigSchema }>,
+  {
+    serverFirst = false,
+    followRoot,
+  }: {
+    serverFirst?: boolean
+    /** Also follow the root font size when this returns true (a rem prop). */
+    followRoot?: () => boolean
+  } = {}
+): () => ConfigSchema {
+  let unsubscribe: (() => void) | null = null
+  // Whether the last render needed the root font size.
+  let following = false
+  let rendered = false
+  let renderedRoot = DEFAULT_ROOT_FONT_SIZE
+
+  const follow = () => {
+    if (getRootFontSize() !== renderedRoot) queueNativeUpdate(handle)
+  }
+
+  return () => {
+    const config = normalizeConfigSnapshot(
+      handle.props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
+    )
+    const first = !rendered
+    rendered = true
+    const follows = config.baseRem !== undefined || Boolean(followRoot?.())
+    following = follows && typeof window !== 'undefined'
+    if (!following) {
+      unsubscribe?.()
+      unsubscribe = null
+      return config
+    }
+    renderedRoot =
+      first && serverFirst ? DEFAULT_ROOT_FONT_SIZE : getRootFontSize()
+    if (!unsubscribe) {
+      // Remix creates the signal on first read and aborts only one that
+      // exists, so take it now: a removal before the task then aborts it.
+      const signal = handle.signal
+      handle.queueTask(() => {
+        // A render after this task was queued may no longer need the root.
+        if (unsubscribe || signal.aborted || !following) return
+        unsubscribe = subscribeRootFontSize(follow)
+        signal.addEventListener('abort', () => unsubscribe?.(), {
+          once: true,
+        })
+        follow()
+      })
+    }
+    return resolveConfigBase(config, renderedRoot)
+  }
+}
+
 export interface ElementObserverBridge {
   attach: ReturnType<typeof ref>
   getElement: () => Element | null
-  /** Measure the attached element now and deliver it, even if unchanged. */
-  remeasure: () => void
 }
 
 export type RuntimeHandle = Pick<Handle, 'signal' | 'update'>
@@ -131,6 +198,26 @@ function scheduleNativeUpdateFlush() {
     // counter reset queued by the preceding update.
     setTimeout(() => setTimeout(flushNativeUpdates, 0), 0)
   }
+}
+
+/**
+ * Whether a new snap renders differently from the old one. A snap that only
+ * records a new measured height needs no update.
+ */
+export function snapChanged(
+  prev: SnapState | null,
+  next: SnapState | null
+): boolean {
+  if (prev === next) return false
+  if (!prev || !next || prev.key !== next.key) return true
+  const a = prev.padding
+  const b = next.padding
+  return (
+    a.top !== b.top ||
+    a.right !== b.right ||
+    a.bottom !== b.bottom ||
+    a.left !== b.left
+  )
 }
 
 export function queueNativeUpdate(handle: RuntimeHandle) {
@@ -236,16 +323,16 @@ const attachedBridges = new Set<AttachedBridge>()
  * effect or client-only bridge is needed.
  */
 export function createElementObserverBridge(
-  onMeasure: (rect: MeasureRect, element: Element) => void,
-  /**
-   * Called while attached when layout may have settled without an observed
-   * size change (see onSnapSettleEvent); the element is then re-measured.
-   */
-  onSettle?: () => void
+  onMeasure: (
+    rect: MeasureRect,
+    element: Element,
+    /** With `readPadding`: block padding rendered when `rect` was measured. */
+    rendered: { top: number; bottom: number } | null
+  ) => void,
+  { readPadding = false }: { readPadding?: boolean } = {}
 ): ElementObserverBridge {
   let element: Element | null = null
   let measureHandle: ReturnType<typeof createMeasureObserver> | undefined
-  let unsubscribeSettle: (() => void) | undefined
   let hasNonZeroMeasurement = false
   let initialRefreshAttempts = 0
 
@@ -267,8 +354,6 @@ export function createElementObserverBridge(
     element: () => element,
     release: () => {
       attachedBridges.delete(bridge)
-      unsubscribeSettle?.()
-      unsubscribeSettle = undefined
       measureHandle?.disconnect()
       measureHandle = undefined
       hasNonZeroMeasurement = false
@@ -315,21 +400,20 @@ export function createElementObserverBridge(
   const attach = ref((node, signal) => {
     element = node
     attachedBridges.add(bridge)
-    if (onSettle && !unsubscribeSettle) {
-      unsubscribeSettle = onSnapSettleEvent(() => {
-        onSettle()
-        requestAnimationFrame(remeasure)
-      })
-    }
 
     if (typeof ResizeObserver !== 'undefined') {
       measureHandle = createMeasureObserver(node, (rect) => {
         hasNonZeroMeasurement = rect.width > 0 || rect.height > 0
+        // Read the padding with the size, not a frame later: mid-transition
+        // it has moved on by the time the measurement is delivered.
+        const rendered = readPadding ? getRenderedBlockPadding(node) : null
         // The initial measurement can run from the ref insert callback before
         // Remix has committed the component. Deliver it on the next frame so
         // the consumer can safely request an update.
         const deliver = () => {
-          if (!signal.aborted && element === node) onMeasure(rect, node)
+          if (!signal.aborted && element === node) {
+            onMeasure(rect, node, rendered)
+          }
         }
         if (typeof requestAnimationFrame === 'function') {
           requestAnimationFrame(deliver)
@@ -351,17 +435,7 @@ export function createElementObserverBridge(
     signal.addEventListener('abort', detach, { once: true })
   })
 
-  const remeasure = () => {
-    if (!element || !element.isConnected) return
-    const zoom = getCSSZoom(element)
-    const rect = element.getBoundingClientRect()
-    onMeasure(
-      { width: Math.round(rect.width / zoom), height: rect.height / zoom },
-      element
-    )
-  }
-
-  return { attach, getElement: () => element, remeasure }
+  return { attach, getElement: () => element }
 }
 
 export interface VirtualBridge {

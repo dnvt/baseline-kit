@@ -187,4 +187,16 @@ describe('Remix adapter', () => {
     expect(guideHtml).toContain('--bkgd-h: 80px')
     expect(guideHtml).toContain('--bkgd-mw: 240px')
   })
+
+  it('resolves a rem base against 16px on the server', async () => {
+    const html = await renderToString(
+      jsx(Config, {
+        base: '0.5rem',
+        domDiagnostics: true,
+        children: jsx(Spacer, { height: 20 }),
+      })
+    )
+    // 20px rounds to the 8px base (0.5 x 16), not a 10px one.
+    expect(html).toContain('data-height="24px"')
+  })
 })

@@ -4,10 +4,12 @@ import {
   parsePadding,
   isOnBaseline,
   nextSnap,
-  SNAP_SETTLE_MS,
   type SnapState,
 } from '@baseline-kit/core'
-import { isScaledLayout, onSnapSettleEvent } from '@baseline-kit/dom/measure'
+import {
+  getRenderedBlockPadding,
+  isScaledLayout,
+} from '@baseline-kit/dom/measure'
 import { useMeasure } from './useMeasure'
 
 export interface BaselineOptions {
@@ -27,10 +29,10 @@ export interface BaselineResult {
  * Hook for managing baseline grid alignment in components.
  *
  * Snapping follows the shared rules in `nextSnap`: it snaps on the first
- * measurement and when the inputs change, and while settling (two seconds
- * after a snap, or after a web font loads or the tab becomes visible) it
- * re-snaps whenever the natural height changes. Snapping from the natural
- * height is stable, so `clamp` cannot oscillate.
+ * measurement, when the inputs change, and whenever the natural height
+ * changes (a font, size, wrap, or root font size change). Snapping from the
+ * natural height is stable, and a host whose height is held from outside
+ * settles within a few updates instead of oscillating.
  */
 export function useBaseline(
   ref: React.RefObject<HTMLElement | null>,
@@ -57,14 +59,15 @@ export function useBaseline(
     rendered: Padding | null
   }>({ height: 0, rendered: null })
   const { height } = useMeasure(ref, (rect) => {
+    // Pair the height with the padding in the DOM at this moment (mid-
+    // transition values included), else with the last committed padding.
+    const committed = renderedPaddingRef.current
+    const live = ref.current ? getRenderedBlockPadding(ref.current) : null
     measuredRef.current = {
       height: rect.height,
-      rendered: renderedPaddingRef.current,
+      rendered: committed && live ? { ...committed, ...live } : committed,
     }
   })
-  const settlingRef = React.useRef(true)
-  const [settleTick, reopenSettle] = React.useReducer((tick) => tick + 1, 0)
-
   const result = React.useMemo(() => {
     const initialPadding = parsePadding({ padding: spacing })
     const scaled = isScaledLayout(ref.current)
@@ -72,7 +75,7 @@ export function useBaseline(
     if (snapping === 'none') {
       // Clear the snap, so switching back snaps afresh.
       snapRef.current = null
-      return { padding: initialPadding, isAligned, height, snapKey: null }
+      return { padding: initialPadding, isAligned, height }
     }
 
     const snap = nextSnap(
@@ -86,45 +89,16 @@ export function useBaseline(
           (measuredRef.current.height === height
             ? measuredRef.current.rendered
             : renderedPaddingRef.current) ?? initialPadding,
-        settling: settlingRef.current,
         scaled,
       }
     )
     snapRef.current = snap
-    return {
-      padding: snap?.padding ?? initialPadding,
-      isAligned,
-      height,
-      snapKey: snap?.key ?? null,
-    }
-    // settleTick re-evaluates the current height after a settle event, which
-    // reopens the window through settlingRef.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref, base, snapping, snapEdge, spacing, height, settleTick])
+    return { padding: snap?.padding ?? initialPadding, isAligned, height }
+  }, [ref, base, snapping, snapEdge, spacing, height])
 
   React.useLayoutEffect(() => {
     renderedPaddingRef.current = result.padding
   })
-
-  // Each new snap (first measurement or new inputs) and each settle event
-  // opens a SNAP_SETTLE_MS window.
-  React.useLayoutEffect(() => {
-    if (result.snapKey === null) return
-    settlingRef.current = true
-    const timer = setTimeout(() => {
-      settlingRef.current = false
-    }, SNAP_SETTLE_MS)
-    return () => clearTimeout(timer)
-  }, [result.snapKey, settleTick])
-
-  React.useEffect(
-    () =>
-      onSnapSettleEvent(() => {
-        settlingRef.current = true
-        reopenSettle()
-      }),
-    []
-  )
 
   return {
     padding: result.padding,

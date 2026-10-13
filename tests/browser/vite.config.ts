@@ -46,8 +46,8 @@ export default defineConfig({
               isRemix ? '/remix-ssr.ts' : '/ssr.tsx'
             )
             const rendered = isRemix
-              ? await renderModule.renderRemixApp()
-              : renderModule.renderApp()
+              ? await renderModule.renderRemixApp(request.url)
+              : renderModule.renderApp(request.url)
             const html = await server.transformIndexHtml(
               request.url,
               template.replace('<!--app-html-->', rendered)

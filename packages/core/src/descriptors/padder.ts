@@ -51,6 +51,9 @@ export function createPadderDescriptor(
 
   const classTokens = ['pad']
   if (isVisible && enableSpacers) classTokens.push('v')
+  // Marks padding drawn as CSS padding, so it can be read back while it
+  // animates (see getRenderedBlockPadding in the dom package).
+  if (!enableSpacers) classTokens.push('pad-plain')
 
   return {
     containerStyle: compactStyle(containerStyle, PADDER_STYLE_DEFAULTS),

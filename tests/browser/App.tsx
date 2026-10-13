@@ -6,6 +6,24 @@ import {
   Padder,
   Spacer,
 } from '@baseline-kit/react'
+import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
+import { GUIDE_BOX, GUIDE_CASES } from './guide-strings'
+import {
+  SPACER_CH_PROBE,
+  SPACER_HEIGHTS,
+  SPACER_IN_PARENT,
+  SPACER_PARENT,
+  SPACER_ROW,
+  SPACER_SECTION,
+} from './spacer-strings'
+import {
+  REM_GRID_BOXES,
+  REM_GRID_CSS,
+  REM_GRID_MARK,
+  REM_GRID_SECTION,
+  REM_GRID_WORDS,
+  remGridText,
+} from './rem-grid'
 import {
   Fragment,
   useEffect,
@@ -14,6 +32,292 @@ import {
   useState,
   type CSSProperties,
 } from 'react'
+
+const LIVE_TEXTS = [
+  'Sphinx of black quartz, judge my vow.',
+  'The five boxing wizards jump quickly over the lazy dog at dawn.',
+  'Pack my box with five dozen liquor jugs, then stack them on the grid line by line.',
+  'How vexingly quick daft zebras jump.',
+  'A wizard’s job is to vex chumps quickly in fog while the baseline keeps every line in step with the page.',
+]
+
+const liveText = (
+  font: { size: number; family: string },
+  index: number
+): CSSProperties => ({
+  display: 'block',
+  fontFamily: font.family,
+  fontSize: `${font.size + (index % 5) * 0.125}rem`,
+  lineHeight: 1.3,
+})
+
+/** Each DOM variant of a Box: own grid, inner Padder, Padder without spacers, semantic. */
+const LIVE_VARIANTS = [
+  {},
+  { className: 'live-c' },
+  { className: 'live-c', debugging: 'none' as const },
+  { as: 'h3' as const },
+]
+
+/**
+ * Live-grid hosts, rendered on the client with `?live`, tagged by
+ * `data-live`: content-driven Boxes and Padders in every DOM variant (`box`), a host around another (`nested`),
+ * Boxes under CSS zoom (`zoom`), a fixed-height Box (`fixed`), Boxes with a
+ * height floor (`floor`), Boxes with a padding transition (`transition`), and
+ * a Box whose content toggles next to a twin (`toggle`, `toggle-twin`). Text
+ * sizes are in rem, so a root font size change, a font prop change, or a
+ * width change re-flows them. `?liveWidth=` sets the starting width.
+ */
+function LiveGridFixture() {
+  const [on, setOn] = useState(false)
+  const [width, setWidth] = useState(360)
+  const [font, setFont] = useState({ size: 1, family: 'serif' })
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (!params.has('live')) return
+    setWidth(Number(params.get('liveWidth') ?? 360))
+    setOn(true)
+    ;(
+      window as unknown as {
+        __setLiveFont: (next: { size?: number; family?: string }) => void
+      }
+    ).__setLiveFont = (next) => setFont((current) => ({ ...current, ...next }))
+  }, [])
+  if (!on) return null
+  const text = (index: number, content = LIVE_TEXTS[index % 5]) => (
+    <span style={liveText(font, index)}>{content}</span>
+  )
+  return (
+    <section id="live-grid" style={{ width }}>
+      <style>{`.live-transition .bk-box, .live-transition .bk-box * { transition: all 120ms linear; }`}</style>
+      {Array.from({ length: 50 }, (_, index) => (
+        <Box
+          key={index}
+          data-live="box"
+          snapping={Math.floor(index / 4) % 2 ? 'height' : 'clamp'}
+          block={[0, 0]}
+          {...LIVE_VARIANTS[index % 4]}
+        >
+          {text(index)}
+        </Box>
+      ))}
+      <Padder data-live="box" block={[0, 0]}>
+        {text(3)}
+      </Padder>
+      <Padder data-live="box" debugging="none" block={[0, 0]}>
+        {text(4)}
+      </Padder>
+      {/* A snapping host around another: it re-snaps after the inner one. */}
+      <Padder data-live="nested" debugging="none" block={[0, 0]}>
+        <Box data-live="box" block={[0, 0]}>
+          {text(2)}
+        </Box>
+      </Padder>
+      <div style={{ zoom: 1.25 }}>
+        {LIVE_VARIANTS.map((variant, index) => (
+          <Box key={index} data-live="zoom" block={[0, 0]} {...variant}>
+            {text(index)}
+          </Box>
+        ))}
+      </div>
+      <Box data-live="fixed" height={100} snapping="height" block={[0, 0]}>
+        {text(4)}
+      </Box>
+      {/* Hosts whose height has a floor: min-height, and a flex fill. */}
+      {['99px', '101px', '6.3rem'].map((minHeight, index) => (
+        <Box
+          key={minHeight}
+          data-live="floor"
+          style={{ minHeight }}
+          snapping={index % 2 ? 'height' : 'clamp'}
+          block={[0, 0]}
+        >
+          {text(index)}
+        </Box>
+      ))}
+      {/* 96px of content under a 99px floor: padding moves it 99 -> 101. */}
+      <Box
+        data-live="floor"
+        data-live-exact
+        style={{ minHeight: 99 }}
+        block={[0, 0]}
+      >
+        <div style={{ height: 96 }} />
+      </Box>
+      <div style={{ display: 'flex', flexDirection: 'column', height: 203 }}>
+        <Box data-live="box" block={[0, 0]}>
+          {text(1, LIVE_TEXTS[0])}
+        </Box>
+        <Box data-live="floor" style={{ flex: 1 }} block={[0, 0]}>
+          {text(2, LIVE_TEXTS[3])}
+        </Box>
+      </div>
+      {/* Boxes whose padding a CSS transition animates. */}
+      <div className="live-transition">
+        {LIVE_VARIANTS.map((variant, index) => (
+          <Box
+            key={index}
+            data-live="transition"
+            snapping={index % 2 ? 'height' : 'clamp'}
+            block={[0, 0]}
+            {...variant}
+          >
+            {text(index, LIVE_TEXTS[index + 1])}
+          </Box>
+        ))}
+      </div>
+      {/* Padding drawn as CSS padding, animating to zero. */}
+      <div className="live-transition">
+        <Box
+          data-live="transition-zero"
+          className="live-c"
+          debugging="none"
+          block={[0, 0]}
+        >
+          <div data-live-zero style={{ height: 13, transition: 'none' }} />
+        </Box>
+      </div>
+      <Box data-live="toggle-twin" block={[0, 0]}>
+        <div style={{ height: 10 }} />
+      </Box>
+      <Box data-live="toggle" block={[0, 0]}>
+        <div data-live-toggle style={{ height: 10 }} />
+      </Box>
+    </section>
+  )
+}
+
+/** The `?remgrid` hosts (see rem-grid.ts), rendered on the server too. */
+function RemGridFixture({ base }: { base: number | `${number}rem` }) {
+  return (
+    <section
+      data-rem-grid={typeof base === 'number' ? 'px' : 'rem'}
+      style={REM_GRID_SECTION}
+    >
+      <style>{REM_GRID_CSS}</style>
+      <Config base={base}>
+        {REM_GRID_BOXES.map((box, index) => (
+          <Box
+            key={index}
+            data-rem="box"
+            block={[0, 0]}
+            snapping={box.snapping}
+            {...box.variant}
+          >
+            <span style={remGridText(box.size)}>
+              {REM_GRID_WORDS.map((word, wordIndex) => (
+                <Fragment key={wordIndex}>
+                  {`${word} `}
+                  <span data-rem-mark style={REM_GRID_MARK} />
+                </Fragment>
+              ))}
+            </span>
+            <span style={{ display: 'block', height: box.trailer }} />
+          </Box>
+        ))}
+        {/* Rounds 20px to the base: 24px at 8px, 20px at 10px. */}
+        <Spacer data-rem="spacer" height={20} />
+      </Config>
+    </section>
+  )
+}
+
+/** The `?cost=rem|px` hosts (see cost-grid.ts). */
+function CostFixture({ kind }: { kind: 'rem' | 'px' }) {
+  return (
+    <section data-cost-grid={kind} style={REM_GRID_SECTION}>
+      <style>{COST_CSS}</style>
+      <Config base={kind === 'rem' ? '0.5rem' : 8}>
+        {Array.from({ length: COST_BOX_COUNT }, (_, index) => {
+          const box = costBox(index)
+          return (
+            <Box
+              key={index}
+              data-cost="box"
+              block={[0, 0]}
+              snapping={box.snapping}
+              {...box.variant}
+            >
+              <span style={remGridText(box.size)}>
+                {COST_WORDS.map((word, wordIndex) => (
+                  <Fragment key={wordIndex}>
+                    {`${word} `}
+                    <span style={REM_GRID_MARK} />
+                  </Fragment>
+                ))}
+              </span>
+              <span style={{ display: 'block', height: box.trailer }} />
+            </Box>
+          )
+        })}
+        <Box data-cost="px-content" block={[0, 0]}>
+          <div style={{ height: 45 }} />
+        </Box>
+      </Config>
+    </section>
+  )
+}
+
+/** The `?guides` hosts (see guide-strings.ts). */
+function GuideStringsFixture() {
+  return (
+    <section data-guide-grid>
+      <Config base={8}>
+        {GUIDE_CASES.map(({ id, props }) => (
+          <div key={id} data-guide-case={id} style={GUIDE_BOX as CSSProperties}>
+            <Guide {...props} debugging="visible" />
+          </div>
+        ))}
+      </Config>
+    </section>
+  )
+}
+
+/** The `?spacers` hosts (see spacer-strings.ts). */
+function SpacerStringsFixture() {
+  return (
+    <>
+      <section data-spacer-grid="px" style={SPACER_SECTION}>
+        <Config base={8}>
+          {SPACER_HEIGHTS.map(({ id, height }) => (
+            <Spacer key={id} data-spacer={id} height={height} />
+          ))}
+          {SPACER_IN_PARENT.map(({ id, height }) => (
+            <div key={id} style={SPACER_PARENT}>
+              <Spacer data-spacer={id} height={height} />
+            </div>
+          ))}
+          <div style={SPACER_ROW}>
+            <Spacer data-spacer="w100" width="100%" height={8} />
+          </div>
+          <Spacer data-spacer="w30" width={30} height={8} />
+          <span data-spacer-probe="ch2" style={SPACER_CH_PROBE} />
+          <Spacer
+            data-spacer="indicator"
+            height="2rem"
+            debugging="visible"
+            indicatorNode={(value) => String(value)}
+          />
+          {/* 0px tall in a 100px parent (7.0's fallback: the 8px base). */}
+          <div style={SPACER_PARENT}>
+            <Spacer
+              data-spacer="indicator-zero"
+              width="100%"
+              height="calc(100% - 100px)"
+              debugging="visible"
+              indicatorNode={(value) => String(value)}
+            />
+          </div>
+        </Config>
+      </section>
+      <section data-spacer-grid="rem" style={SPACER_SECTION}>
+        <Config base="0.5rem">
+          <Spacer data-spacer="rem13" height="1.3rem" />
+        </Config>
+      </section>
+    </>
+  )
+}
 
 /** Lets tests switch a Box's snapping mode and content height. */
 function SnapModeProbe() {
@@ -248,9 +552,21 @@ function StatefulBoxDebugModeProbe({
   )
 }
 
-export function App() {
+export function App({ search = '' }: { search?: string }) {
+  const params = new URLSearchParams(search)
+  const remGrid = params.has('remgrid')
+  const cost = params.get('cost')
   const content = (
     <main>
+      {(cost === 'rem' || cost === 'px') && <CostFixture kind={cost} />}
+      {params.has('spacers') && <SpacerStringsFixture />}
+      {params.has('guides') && <GuideStringsFixture />}
+      {remGrid && (
+        <>
+          <RemGridFixture base="0.5rem" />
+          <RemGridFixture base={8} />
+        </>
+      )}
       <p id="ssr-content">Server-rendered content remains available.</p>
       <section
         id="guide-viewport"
@@ -441,6 +757,8 @@ export function App() {
           <Spacer height={12} />
         </Box>
       </section>
+
+      <LiveGridFixture />
 
       <section id="snap-probes">
         <SnapModeProbe />

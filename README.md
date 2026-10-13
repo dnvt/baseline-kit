@@ -131,14 +131,38 @@ on the grid.
 Trimmed text has no space above or below its glyphs, so separate stacked
 paragraphs with margins that are multiples of the base. Text nested deeper
 than a direct child needs the same two properties:
-`text-box-edge` inherits but `text-box-trim` does not. For multiline text, use
-a `line-height` that is a multiple of the base if every line must align.
+`text-box-edge` inherits but `text-box-trim` does not. For multiline text, set
+`line-height` to a multiple of the base, in the base's unit: `24px` on an 8px
+base, `1.5rem` on a `0.5rem` base. Lines then stay a whole number of rows
+apart, and a rem line-height keeps pace with a rem base when the text size
+changes; any other line-height lets interior lines drift between grid lines.
 Browsers without text-box support keep their normal text metrics. See the
 [text-box-edge reference](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/text-box-edge).
 
 ## Spacing and snapping
 
 The base interval is `8px` by default; set it with `Config base={...}`.
+To follow the reader's text size, give it in rem: `Config base="0.5rem"` makes
+the grid half the root font size (8px at the default 16px, 10px at 20px). The
+base follows the root font size, whether a stylesheet or the reader's default
+font size sets it, and when that changes every `Box` and `Padder` re-snaps.
+Give `line-height` in rem too (see
+[Text on the baseline grid](#text-on-the-baseline-grid)). The server has no root
+font size, so it renders a rem base at 16px; the client hydrates that HTML and
+then switches to the live size. `ConfigSchema.base` is always the resolved
+value in px, and `baseRem` holds the rem value. A base that isn't a whole
+number of layout units (0.5rem at a 15.3px root is 7.65px) can only be
+approximated: each `Box` lands within 1/32px of the grid, and the differences
+add up down a stack of Boxes.
+
+Sizes you fix in px don't grow with the reader's text. A `Box` with a fixed
+`height` keeps it when the text gets larger, so the text overflows; let text
+Boxes size from their content, or give the height in rem.
+
+The stylesheet also sets `--bk-base: 8px` on `:root` for your own CSS. It
+stays 8px whatever the `Config` base, and Baseline Kit doesn't read it, so
+changing it doesn't move the grid; set the base with `Config`.
+
 Numeric spacing values are CSS pixels, not multiples of the base:
 
 ```tsx
@@ -169,14 +193,43 @@ zoom, display scaling, and CSS `zoom` leave smaller, fractional residues; up to
 row. CSS `zoom` on an ancestor is taken into account; a CSS `transform` that
 scales an ancestor is not.
 
-A `Box` or `Padder` snaps after its first nonzero measurement and whenever its
-base, padding, or snapping props change. For two seconds after a snap, and
-again when a web font finishes loading or the tab becomes visible, it also
-re-snaps if its content height changes; outside those windows it doesn't
-follow resizes.
+A `Box` or `Padder` snaps after its first nonzero measurement, whenever its
+base, padding, or snapping props change, and whenever its content height
+changes: a web font loading, a font or size change, text rewrapping at a new
+width, or a new root font size. It snaps from its content's height and the
+padding it actually renders, so for a Box whose height follows its content,
+its own correction, or a CSS transition on that padding, doesn't set off
+another snap. When a height set from outside wins (a fixed `height`, a taller
+`min-height`, a stretched flex or grid item), padding can only bring the Box
+onto the grid by growing it past that height, which takes a few updates;
+otherwise the Box keeps the outside height. Padding grown this way stays until
+the Box's height next changes.
 `Padder` uses height snapping with a bottom correction. A `Box` or `Padder`
 nested inside a `Box` doesn't snap on its own; the outer `Box` snaps the whole. Set `ssrMode` on
 either to keep the explicit padding without measuring.
+
+### Sizes as CSS lengths
+
+`Spacer` and `Guide` take sizes as numbers, in px, or as CSS length strings.
+A `Spacer` height such as `'3rem'`, `'10vh'`, `'50%'` or `'calc(100% - 24px)'`
+rounds to the base in CSS (with `round()`), so it follows the root font size,
+the viewport, and its container as they change; under a rem base it rounds to
+the rem value. A string width renders as written. Live strings use px, rem,
+em, ex, ch, `%`, the viewport units, and the absolute units, alone or inside
+`calc()`, `min()`, `max()`, `clamp()` and `var()`. Anything else (`'auto'`,
+`'24'`, keywords, newer units such as `lh` or `cqw`, or malformed math such as
+`'calc(100%-23px)'`) falls back to the base. Browsers without CSS `round()`
+(before Chrome 125, Firefox 118 and Safari 15.4) keep the px height the kit
+computes without a page: units against a 16px root and a 1920x1080 viewport,
+`%` as 0px, and `calc()` or `var()` as the base.
+
+A `Guide` `gap` such as `'1rem'` or `'2%'` resolves when the Guide renders
+(on mount, when its size changes, and for a rem `gap` or `columnWidth`, when
+the root font size changes) against the root font size, the viewport, and the
+Guide's own width, then rounds to the base. It reads px, rem, `%`, the
+viewport units (`vw`, `vh`, `vi`, `vb`, `vmin`, `vmax`, and their `s`, `l` and
+`d` forms), `in`, `cm`, `mm`, `pt` and `pc`, in any letter case; `em` resolves
+against 16px, and anything else, including `calc()`, falls back to the base.
 
 ### Semantic elements
 
@@ -211,7 +264,7 @@ unlayered element rules such as normalize.css; put those in a layer before
 | `Guide` | Responsive or fixed column-grid overlay. |
 | `Box` | Wraps text, trims it to its baseline, and snaps its height to the grid. |
 | `Padder` | Adds baseline-aware padding. |
-| `Spacer` | Adds a fixed-size spacer. |
+| `Spacer` | Adds space; numbers and string heights round to the base. |
 | `Config` | Sets scoped base, colors, variants, and debugging defaults. |
 
 `debugging` can be `visible`, `hidden`, or `none`: show the debug paint, hide

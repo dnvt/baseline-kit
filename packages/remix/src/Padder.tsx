@@ -4,10 +4,10 @@ import { type Handle, type RemixNode } from 'remix/component'
 import {
   DEFAULT_CONFIG,
   nextSnap,
-  SNAP_SETTLE_MS,
   type SnapMeasurement,
   type SnapState,
   createPadderDescriptor,
+  mergeConfig,
   parsePadding,
   type ConfigSchema,
   type Padding,
@@ -16,16 +16,15 @@ import {
   getDOMAttributes,
   resolveDebugState,
 } from '@baseline-kit/core'
-import { Config } from './Config'
 import { configuredClientEntry } from './shared'
 import { isScaledLayout } from '@baseline-kit/dom/measure'
 import { Spacer, type IndicatorNode, type SpacerProps } from './Spacer'
 import {
   createElementObserverBridge,
-  getConfig,
+  createConfigReader,
   mergeStyles,
-  normalizeConfigSnapshot,
   queueNativeUpdate,
+  snapChanged,
   type NativeComponent,
   type NativeHostProps,
 } from './shared'
@@ -46,49 +45,43 @@ const RuntimeSpacer = Spacer as unknown as NativeComponent<
 >
 
 function PadderImpl(handle: Handle<RuntimePadderProps>) {
+  const readConfig = createConfigReader(handle)
   let base = DEFAULT_CONFIG.base
   let initialPadding: Padding = parsePadding({})
   // Same snapping rules as Box (see nextSnap), always in height mode.
   let snap: SnapState | null = null
-  let settleOpenedAt = 0
   let renderedPadding: Padding = initialPadding
-  let lastMeasure: Omit<SnapMeasurement, 'settling'> | null = null
+  let lastMeasure: SnapMeasurement | null = null
 
-  const applySnap = (measure: Omit<SnapMeasurement, 'settling'>) => {
+  const applySnap = (measure: SnapMeasurement) => {
     const next = nextSnap(
       snap,
       { base, mode: 'height', snapEdge: 'bottom', initial: initialPadding },
-      {
-        ...measure,
-        settling: performance.now() - settleOpenedAt <= SNAP_SETTLE_MS,
-      }
+      measure
     )
-    if (next === snap) return false
-    if (!snap || next?.key !== snap.key) settleOpenedAt = performance.now()
+    const changed = snapChanged(snap, next)
     snap = next
-    return true
+    return changed
   }
 
   const observer = createElementObserverBridge(
-    ({ height }, host) => {
+    ({ height }, host, rendered) => {
       if (handle.props.ssrMode || height === 0) return
       lastMeasure = {
         height,
-        rendered: renderedPadding,
+        // The padding in the DOM at measurement time (mid-transition values
+        // included), else the last committed padding.
+        rendered: { ...renderedPadding, ...rendered },
         scaled: isScaledLayout(host),
       }
       if (applySnap(lastMeasure)) queueNativeUpdate(handle)
     },
-    () => {
-      settleOpenedAt = performance.now()
-    }
+    { readPadding: true }
   )
 
   return () => {
     const props = handle.props
-    const config = normalizeConfigSnapshot(
-      props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
-    )
+    const config = readConfig()
     const debug = resolveDebugState(props.debugging, config.padder.debugging)
     base = config.base
     initialPadding = parsePadding({
@@ -147,10 +140,15 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     }
 
     const spacerVariant = config.spacer.variant
+    // Spacers draw at base 1, so they needn't follow a rem base.
+    const spacerConfig =
+      config.baseRem === undefined
+        ? config
+        : mergeConfig({ parentConfig: config, base: config.base })
     // Base 1 keeps the snapped padding exact instead of rounding it to the grid.
     const renderSpacer = (width: number | string, height: number | string) => (
       <RuntimeSpacer
-        __baselineConfig={config}
+        __baselineConfig={spacerConfig}
         base={1}
         width={width === '100%' ? undefined : width}
         height={height === '100%' ? undefined : height}

@@ -1282,12 +1282,26 @@ test('React Box stays on the grid under CSS zoom and snaps one layout unit', asy
   await expect
     .poll(() =>
       page.evaluate(() => {
+        const cssZoom = (element: Element) => {
+          // currentCSSZoom, or the product of each ancestor's zoom where it is
+          // missing (WebKit on Linux), as getCSSZoom does.
+          const own = (element as Element & { currentCSSZoom?: number })
+            .currentCSSZoom
+          if (own) return own
+          let zoom = 1
+          for (
+            let node: Element | null = element;
+            node;
+            node = node.parentElement
+          ) {
+            zoom *= parseFloat(getComputedStyle(node).zoom) || 1
+          }
+          return zoom
+        }
         const zoomed = document.querySelector('#precision-zoom')!
         const unit = document.querySelector('#precision-unit')!
         const cssHeight =
-          zoomed.getBoundingClientRect().height /
-          ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
-            1)
+          zoomed.getBoundingClientRect().height / cssZoom(zoomed)
         return [
           Math.abs(cssHeight - 16) <= 1 / 32,
           unit.getBoundingClientRect().height,
@@ -1323,25 +1337,20 @@ test('React Box re-snaps late content and keeps caller margins', async ({
   await expect(page.locator('#caller-p')).toHaveCSS('margin-top', '16px')
 })
 
-test('React Box re-snaps after a font load once the window closes', async ({
+test('React Box re-snaps a content change long after its snap', async ({
   page,
 }) => {
   const box = page.locator('#late-box')
   const height = () =>
     box.evaluate((element) => element.getBoundingClientRect().height)
   await expect.poll(height).toBe(16)
-  // After the settle window, a size change alone keeps the snap.
+  // Seconds after the snap (a late web font, say), a size change alone
+  // re-snaps it.
   await page.waitForTimeout(3000)
   await page.evaluate(() => {
     ;(document.querySelector('#late-content') as HTMLElement).style.height =
       '17px'
   })
-  await expect.poll(height).toBe(23)
-  await page.waitForTimeout(300)
-  expect(await height()).toBe(23)
-  // A font load reopens it. WebKit fires only `loading` for a late font, so
-  // that is the event dispatched here.
-  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
   await expect.poll(height).toBe(24)
 })
 
@@ -1362,12 +1371,9 @@ test('React Box re-snaps after snapping turns off and back on', async ({
       next
     )
   await expect.poll(height).toBe(104)
-  // Re-snap to an aligned height without correction inside a settle
-  // window (opened by a font load), then let the window close.
-  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  // Re-snap to an aligned height without correction.
   await set({ height: 88 })
   await expect.poll(height).toBe(88)
-  await page.waitForTimeout(3000)
   await set({ mode: 'none' })
   await set({ height: 100 })
   await expect.poll(height).toBe(100)
@@ -1417,8 +1423,7 @@ test('React Box keeps snapping after its as prop changes', async ({ page }) => {
   await expect.poll(height).toBe(104)
   await set({ as: 'h2' })
   await expect(page.locator('h2#as-probe')).toHaveCount(1)
-  // The new host is measured: a font load re-snaps changed content.
-  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  // The new host is measured, so changed content re-snaps.
   await set({ height: 88 })
   await expect.poll(height).toBe(88)
 })
@@ -2301,12 +2306,26 @@ test.describe('native Remix adapter', () => {
     await expect
       .poll(() =>
         page.evaluate(() => {
+          const cssZoom = (element: Element) => {
+            // currentCSSZoom, or the product of each ancestor's zoom where it is
+            // missing (WebKit on Linux), as getCSSZoom does.
+            const own = (element as Element & { currentCSSZoom?: number })
+              .currentCSSZoom
+            if (own) return own
+            let zoom = 1
+            for (
+              let node: Element | null = element;
+              node;
+              node = node.parentElement
+            ) {
+              zoom *= parseFloat(getComputedStyle(node).zoom) || 1
+            }
+            return zoom
+          }
           const zoomed = document.querySelector('#remix-precision-zoom')!
           const unit = document.querySelector('#remix-precision-unit')!
           const cssHeight =
-            zoomed.getBoundingClientRect().height /
-            ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
-              1)
+            zoomed.getBoundingClientRect().height / cssZoom(zoomed)
           return [
             Math.abs(cssHeight - 16) <= 1 / 32,
             unit.getBoundingClientRect().height,
@@ -2352,7 +2371,7 @@ test.describe('native Remix adapter', () => {
     )
   })
 
-  test('native Box re-snaps after a font load once the window closes', async ({
+  test('native Box re-snaps a content change long after its snap', async ({
     page,
   }) => {
     await page.goto('/remix.html')
@@ -2365,21 +2384,14 @@ test.describe('native Remix adapter', () => {
     const height = () =>
       box.evaluate((element) => element.getBoundingClientRect().height)
     await expect.poll(height).toBe(16)
-    // After the settle window, a size change alone keeps the snap.
+    // Seconds after the snap (a late web font, say), a size change alone
+    // re-snaps it.
     await page.waitForTimeout(3000)
     await page.evaluate(() => {
       ;(
         document.querySelector('#remix-late-content') as HTMLElement
       ).style.height = '17px'
     })
-    await expect.poll(height).toBe(23)
-    await page.waitForTimeout(300)
-    expect(await height()).toBe(23)
-    // A font load reopens it. WebKit fires only `loading` for a late font, so
-    // that is the event dispatched here.
-    await page.evaluate(() =>
-      document.fonts.dispatchEvent(new Event('loading'))
-    )
     await expect.poll(height).toBe(24)
   })
 
@@ -2406,14 +2418,9 @@ test.describe('native Remix adapter', () => {
         next
       )
     await expect.poll(height).toBe(104)
-    // Re-snap to an aligned height without correction inside a settle
-    // window (opened by a font load), then let the window close.
-    await page.evaluate(() =>
-      document.fonts.dispatchEvent(new Event('loading'))
-    )
+    // Re-snap to an aligned height without correction.
     await set({ height: 88 })
     await expect.poll(height).toBe(88)
-    await page.waitForTimeout(3000)
     await set({ mode: 'none' })
     await set({ height: 100 })
     await expect.poll(height).toBe(100)
@@ -2796,4 +2803,1123 @@ test.describe('native Remix adapter', () => {
       })
       .toEqual([0, 0, 0, 0])
   })
+})
+
+// Live grid (7.1): Boxes follow every size change. Hosts are tagged by
+// `data-live` (see LiveGridFixture). Distance of each content-driven host's
+// height from the 8px grid, in CSS px.
+async function liveGridOffsets(page: Page, root: string) {
+  return page.evaluate((selector) => {
+    const off = (element: Element) => {
+      const height = element.getBoundingClientRect().height
+      const remainder = ((height % 8) + 8) % 8
+      return Math.min(remainder, 8 - remainder)
+    }
+    return Array.from(
+      document.querySelectorAll(`${selector} [data-live="box"]`),
+      off
+    )
+  }, root)
+}
+
+/** Heights of the content-driven and fixed hosts, in document order. */
+async function liveGridHeights(page: Page, root: string) {
+  return page.evaluate(
+    (selector) =>
+      Array.from(
+        document.querySelectorAll(
+          `${selector} :is([data-live="box"], [data-live="nested"], [data-live="zoom"], [data-live="transition"], [data-live="fixed"])`
+        ),
+        (element) => {
+          let zoom = (element as Element & { currentCSSZoom?: number })
+            .currentCSSZoom
+          if (!zoom) {
+            // WebKit on Linux lacks currentCSSZoom (see getCSSZoom).
+            zoom = 1
+            for (
+              let node: Element | null = element;
+              node;
+              node = node.parentElement
+            ) {
+              zoom *= parseFloat(getComputedStyle(node).zoom) || 1
+            }
+          }
+          return element.getBoundingClientRect().height / zoom
+        }
+      ),
+    root
+  )
+}
+
+async function openLiveGrid(page: Page, url: string, root: string) {
+  await page.goto(url)
+  if (url.startsWith('/remix.html')) {
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+  }
+  await expect(page.locator(`${root} [data-live="box"]`)).toHaveCount(54)
+  await expect
+    .poll(async () => Math.max(...(await liveGridOffsets(page, root))))
+    .toBeLessThanOrEqual(1 / 64)
+}
+
+/**
+ * Waits past 7.0's two-second settle window, applies `change`, then counts
+ * frames until every content-driven host is on the grid.
+ */
+async function framesToGrid(
+  page: Page,
+  root: string,
+  change: string,
+  tolerance = 1 / 64
+) {
+  await page.waitForTimeout(2500)
+  return page.evaluate(
+    async ({ selector, change, tolerance }) => {
+      const hosts = Array.from(
+        document.querySelectorAll<HTMLElement>(`${selector} [data-live="box"]`)
+      )
+      const off = (element: Element) => {
+        const height = element.getBoundingClientRect().height
+        const remainder = ((height % 8) + 8) % 8
+        return Math.min(remainder, 8 - remainder)
+      }
+      const before = hosts.map((host) => host.getBoundingClientRect().height)
+      new Function(change)()
+      for (let frame = 1; frame <= 60; frame++) {
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+        const changed = hosts.some(
+          (host, index) =>
+            Math.abs(host.getBoundingClientRect().height - before[index]) > 0.5
+        )
+        if (changed && hosts.every((host) => off(host) <= tolerance)) {
+          return frame
+        }
+      }
+      return -1
+    },
+    { selector: root, change, tolerance }
+  )
+}
+
+/**
+ * Resizes the live grid through 20 widths. Per step and per group, counts the
+ * frames in which each host's padding changed (a style change or a spacer
+ * added or removed anywhere inside it), and how far from the grid the
+ * content-driven hosts end. Then watches 30 idle frames for any change.
+ */
+async function liveGridStability(page: Page, root: string, tolerance: number) {
+  return page.evaluate(
+    async ({ selector, tolerance }) => {
+      const frame = () =>
+        new Promise((resolve) => requestAnimationFrame(resolve))
+      const container = document.querySelector<HTMLElement>(selector)!
+      const group = (name: string) =>
+        Array.from(
+          container.querySelectorAll<HTMLElement>(`[data-live="${name}"]`)
+        )
+      const groups = {
+        box: group('box'),
+        nested: group('nested'),
+        zoom: group('zoom'),
+        transition: group('transition'),
+        floor: group('floor'),
+        fixed: group('fixed'),
+      }
+      // Nested hosts (a Box inside a Padder) count for themselves only.
+      const hosts = Object.values(groups).flat()
+      const owner = (node: Node) => {
+        let element: Element | null =
+          node instanceof Element ? node : node.parentElement
+        while (element && !hosts.includes(element as HTMLElement)) {
+          element = element.parentElement
+        }
+        return element as HTMLElement | null
+      }
+      let frameNumber = 0
+      const updates = new Map(hosts.map((host) => [host, new Set<number>()]))
+      const observer = new MutationObserver((records) => {
+        for (const record of records) {
+          if (
+            record.type === 'attributes' &&
+            record.oldValue === (record.target as Element).getAttribute('style')
+          ) {
+            continue
+          }
+          const host = owner(record.target)
+          if (host) updates.get(host)!.add(frameNumber)
+        }
+      })
+      observer.observe(container, {
+        attributes: true,
+        attributeFilter: ['style'],
+        attributeOldValue: true,
+        childList: true,
+        subtree: true,
+      })
+      const cssZoom = (element: Element) => {
+        // currentCSSZoom, or the product of each ancestor's zoom where it is
+        // missing (WebKit on Linux), as getCSSZoom does.
+        const own = (element as Element & { currentCSSZoom?: number })
+          .currentCSSZoom
+        if (own) return own
+        let zoom = 1
+        for (
+          let node: Element | null = element;
+          node;
+          node = node.parentElement
+        ) {
+          zoom *= parseFloat(getComputedStyle(node).zoom) || 1
+        }
+        return zoom
+      }
+      const zoomed = (element: Element) =>
+        element.getBoundingClientRect().height / cssZoom(element)
+      const off = (element: Element) => {
+        const remainder = ((zoomed(element) % 8) + 8) % 8
+        return Math.min(remainder, 8 - remainder)
+      }
+      const onGrid = () =>
+        [...groups.box, ...groups.nested, ...groups.transition].every(
+          (host) => off(host) <= tolerance
+        ) && groups.zoom.every((host) => off(host) <= 1 / 32)
+      const total = () =>
+        [...updates.values()].reduce((sum, set) => sum + set.size, 0)
+      const most = (members: HTMLElement[]) =>
+        Math.max(0, ...members.map((host) => updates.get(host)!.size))
+      const settle = async () => {
+        let quiet = 0
+        for (let count = 1; count <= 90; count++) {
+          const before = total()
+          frameNumber++
+          await frame()
+          quiet = total() === before ? quiet + 1 : 0
+          if (quiet >= 5 && onGrid()) return count
+        }
+        return -1
+      }
+      const exact = () =>
+        container.querySelector('[data-live-exact]')!.getBoundingClientRect()
+          .height
+      const initial = await settle()
+      const exactInitial = exact()
+      const widths = [
+        300, 420, 333, 387, 360, 311, 405, 360, 352, 368, 300, 420, 333, 387,
+        360, 311, 405, 360, 352, 368,
+      ]
+      const steps = []
+      for (const width of widths) {
+        updates.forEach((set) => set.clear())
+        container.style.width = `${width}px`
+        const frames = await settle()
+        steps.push({
+          width,
+          frames,
+          box: most(groups.box),
+          nested: most(groups.nested),
+          zoom: most(groups.zoom),
+          transition: most(groups.transition),
+          floor: most(groups.floor),
+          fixed: most(groups.fixed),
+          // Which hosts updated more than once, for the failure message.
+          over: hosts
+            .filter((host) => updates.get(host)!.size > 1)
+            .map(
+              (host) =>
+                `${host.dataset.live}#${hosts.indexOf(host)} ${host.className} [${[...updates.get(host)!].join(',')}]`
+            ),
+          worst: Math.max(
+            ...[...groups.box, ...groups.nested, ...groups.transition].map(off)
+          ),
+        })
+      }
+      updates.forEach((set) => set.clear())
+      const heights = () => hosts.map(zoomed).join()
+      const idleStart = heights()
+      let idleHeightChanges = 0
+      for (let count = 0; count < 30; count++) {
+        frameNumber++
+        await frame()
+        if (heights() !== idleStart) idleHeightChanges++
+      }
+      const idleUpdates = total()
+      observer.disconnect()
+      return {
+        initial,
+        steps,
+        idleUpdates,
+        idleHeightChanges,
+        exact: [exactInitial, exact()],
+      }
+    },
+    { selector: root, tolerance }
+  )
+}
+
+function expectStable(
+  result: Awaited<ReturnType<typeof liveGridStability>>,
+  tolerance: number
+) {
+  expect(result.initial, 'initial layout settles').toBeGreaterThan(0)
+  for (const step of result.steps) {
+    const at = `width ${step.width}`
+    expect(step.frames, `${at} settles`).toBeGreaterThan(0)
+    expect(
+      step.box,
+      `${at} Box updates ${step.over.join('; ')}`
+    ).toBeLessThanOrEqual(1)
+    // A host around another snapping host re-snaps after it.
+    expect(step.nested, `${at} nested updates`).toBeLessThanOrEqual(2)
+    expect(step.zoom, `${at} zoomed Box updates`).toBeLessThanOrEqual(1)
+    expect(step.transition, `${at} transition updates`).toBeLessThanOrEqual(1)
+    expect(step.floor, `${at} floor updates`).toBeLessThanOrEqual(3)
+    expect(step.fixed, `${at} fixed-height updates`).toBe(0)
+    expect(step.worst, `${at} grid`).toBeLessThanOrEqual(tolerance)
+  }
+  expect(result.idleUpdates, 'updates once sizes stop changing').toBe(0)
+  expect(result.idleHeightChanges, 'height changes once idle').toBe(0)
+  // 96px of content under a 99px floor lands on the next grid line.
+  expect(result.exact, '96px under a 99px floor').toEqual([104, 104])
+}
+
+/** The resized layout matches a fresh load at the final width (368px). */
+async function expectHistoryFree(
+  page: Page,
+  url: string,
+  root: string,
+  tolerance: number
+) {
+  const resized = await liveGridHeights(page, root)
+  const fresh = await page.context().newPage()
+  try {
+    await openLiveGrid(fresh, `${url}&liveWidth=368`, root)
+    await expect
+      .poll(async () => {
+        const loaded = await liveGridHeights(fresh, root)
+        return loaded.every(
+          (height, index) => Math.abs(height - resized[index]) <= tolerance
+        )
+      })
+      .toBe(true)
+  } finally {
+    await fresh.close()
+  }
+}
+
+function liveGridTests(prefix: string, url: string, root: string) {
+  test(`${prefix} live grid re-snaps after a root font size change`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const frames = await framesToGrid(
+      page,
+      root,
+      "document.documentElement.style.fontSize = '20px'"
+    )
+    expect(frames).toBeGreaterThan(0)
+    expect(frames).toBeLessThanOrEqual(10)
+  })
+
+  test(`${prefix} live grid re-snaps a font prop change without a key`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const frames = await framesToGrid(
+      page,
+      root,
+      "window.__setLiveFont({ size: 1.2, family: 'monospace' })"
+    )
+    expect(frames).toBeGreaterThan(0)
+    expect(frames).toBeLessThanOrEqual(10)
+  })
+
+  test(`${prefix} live grid re-snaps when a resize rewraps text`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const frames = await framesToGrid(
+      page,
+      root,
+      `document.querySelector('${root}').style.width = '300px'`
+    )
+    expect(frames).toBeGreaterThan(0)
+    expect(frames).toBeLessThanOrEqual(10)
+  })
+
+  test(`${prefix} live grid updates each Box at most once per resize`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    expectStable(await liveGridStability(page, root, 1 / 64), 1 / 64)
+    await expectHistoryFree(page, url, root, 1 / 64)
+  })
+
+  test(`${prefix} live grid ends where it started when content toggles every few frames`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const heights = await page.evaluate(async (selector) => {
+      const frame = () =>
+        new Promise((resolve) => requestAnimationFrame(resolve))
+      const content = document.querySelector<HTMLElement>(
+        `${selector} [data-live-toggle]`
+      )!
+      for (let toggle = 0; toggle < 10; toggle++) {
+        for (const height of ['9px', '10px']) {
+          content.style.height = height
+          for (let count = 0; count < 4; count++) await frame()
+        }
+      }
+      for (let count = 0; count < 10; count++) await frame()
+      const height = (name: string) =>
+        document
+          .querySelector(`${selector} [data-live="${name}"]`)!
+          .getBoundingClientRect().height
+      return [height('toggle'), height('toggle-twin')]
+    }, root)
+    expect(heights).toEqual([16, 16])
+  })
+
+  test(`${prefix} live grid settles a padding transition to zero`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const host = page.locator(`${root} [data-live="transition-zero"]`)
+    await expect
+      .poll(() =>
+        host.evaluate((element) => element.getBoundingClientRect().height)
+      )
+      .toBe(16)
+    const result = await page.evaluate(async (selector) => {
+      const frame = () =>
+        new Promise((resolve) => requestAnimationFrame(resolve))
+      const host = document.querySelector(
+        `${selector} [data-live="transition-zero"]`
+      )!
+      const content = host.querySelector<HTMLElement>('[data-live-zero]')!
+      let updates = 0
+      // Count padding changes only, not the content change below.
+      const observer = new MutationObserver((records) => {
+        updates += records.filter(
+          (record) =>
+            record.target !== content &&
+            (record.type === 'childList' ||
+              record.oldValue !==
+                (record.target as Element).getAttribute('style'))
+        ).length
+      })
+      observer.observe(host, {
+        attributes: true,
+        attributeFilter: ['style'],
+        attributeOldValue: true,
+        childList: true,
+        subtree: true,
+      })
+      // 16px of content needs no padding: the 3px eases out over 120ms.
+      content.style.height = '16px'
+      for (let count = 0; count < 40; count++) await frame()
+      observer.disconnect()
+      return { height: host.getBoundingClientRect().height, updates }
+    }, root)
+    // One padding update (3px -> none); the transition adds no more.
+    expect(result).toEqual({ height: 16, updates: 1 })
+  })
+
+  test(`${prefix} live grid stays still at a 1.25 display scale`, async ({
+    browserName,
+    playwright,
+  }, testInfo) => {
+    test.skip(browserName !== 'chromium', 'forced device scale is Chromium')
+    const browser = await playwright.chromium.launch({
+      args: ['--force-device-scale-factor=1.25'],
+    })
+    try {
+      // The project's emulated deviceScaleFactor would otherwise be merged
+      // in; the real 1.25 scale comes from the launch flag.
+      const context = await browser.newContext({
+        viewport: null,
+        deviceScaleFactor: undefined,
+        isMobile: undefined,
+        hasTouch: undefined,
+        baseURL: testInfo.project.use.baseURL,
+      })
+      const page = await context.newPage()
+      await page.goto(url)
+      expect(await page.evaluate(() => devicePixelRatio)).toBe(1.25)
+      if (url.startsWith('/remix.html')) {
+        await page.evaluate(
+          () =>
+            (window as unknown as { __baselineRemixReady: Promise<void> })
+              .__baselineRemixReady
+        )
+      }
+      await expect(page.locator(`${root} [data-live="box"]`)).toHaveCount(54)
+      expectStable(await liveGridStability(page, root, 1 / 32), 1 / 32)
+      await expectHistoryFree(page, url, root, 1 / 32)
+    } finally {
+      await browser.close()
+    }
+  })
+}
+
+/**
+ * Where the `?remgrid` text sits on a grid of `base` px from the section top:
+ * `baselines` is the largest spread, within one Box, of its line baselines
+ * (marker tops) around one offset from the grid lines (the offset of a
+ * baseline in its line box depends on the font size, so it is per Box);
+ * `hosts` is the largest distance of a Box bottom from a grid line, which
+ * also puts the next Box's first line box on the grid. Self-contained so the
+ * page can run it.
+ */
+function measureRemGrid({ kind, base }: { kind: 'rem' | 'px'; base: number }) {
+  const section = document.querySelector(`[data-rem-grid="${kind}"]`)!
+  const origin = section.getBoundingClientRect().top
+  const phase = (y: number) => (((y - origin) % base) + base) % base
+  const apart = (a: number, b: number) => {
+    const distance = Math.abs(a - b) % base
+    return Math.min(distance, base - distance)
+  }
+  const hosts = Array.from(section.querySelectorAll('[data-rem="box"]'))
+  let baselines = 0
+  for (const host of hosts) {
+    const tops = Array.from(host.querySelectorAll('[data-rem-mark]'), (mark) =>
+      phase(mark.getBoundingClientRect().top)
+    )
+    baselines = Math.max(baselines, ...tops.map((top) => apart(top, tops[0])))
+  }
+  return {
+    minLines: Math.min(
+      ...hosts.map(
+        (host) =>
+          new Set(
+            Array.from(host.querySelectorAll('[data-rem-mark]'), (mark) =>
+              Math.round(mark.getBoundingClientRect().top)
+            )
+          ).size
+      )
+    ),
+    baselines,
+    hosts: Math.max(
+      ...hosts.map((host) =>
+        apart(phase(host.getBoundingClientRect().bottom), 0)
+      )
+    ),
+    spacer: section
+      .querySelector('[data-rem="spacer"]')!
+      .getAttribute('data-height'),
+  }
+}
+
+async function remGridState(page: Page) {
+  const root = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.documentElement).fontSize)
+  )
+  return {
+    root,
+    rem: await page.evaluate(measureRemGrid, { kind: 'rem', base: root / 2 }),
+    px: await page.evaluate(measureRemGrid, { kind: 'px', base: 8 }),
+  }
+}
+
+async function openRemGrid(page: Page, url: string) {
+  await page.goto(url)
+  if (url.startsWith('/remix.html')) {
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+  }
+  await expect(page.locator('[data-rem-grid] [data-rem="box"]')).toHaveCount(12)
+}
+
+const onRemGrid = (state: Awaited<ReturnType<typeof remGridState>>) =>
+  state.rem.baselines <= 1 / 64 && state.rem.hosts <= 1 / 64
+
+function remGridTests(prefix: string, url: string) {
+  test(`${prefix} rem base follows the reader's default font size`, async ({
+    page,
+    browserName,
+  }) => {
+    // Only Chromium sets a page's default font size from a test. A second,
+    // separately launched Firefox with font prefs failed to composite while
+    // the gate's own Firefox ran, so it is not part of the gate.
+    test.skip(browserName !== 'chromium', 'sets the default font size by CDP')
+    const onGridAt = async (size: number) => {
+      await expect
+        .poll(async () => onRemGrid(await remGridState(page)))
+        .toBe(true)
+      const state = await remGridState(page)
+      expect(state.root).toBe(size)
+      expect(state.rem.spacer).toBe(`${Math.round(40 / size) * (size / 2)}px`)
+    }
+    // Chromium's own font size setting, as the reader would change it;
+    // `?root=medium` makes the root that default size.
+    const cdp = await page.context().newCDPSession(page)
+    await cdp.send('Page.setFontSizes', { fontSizes: { standard: 20 } })
+    await openRemGrid(page, `${url}&root=medium`)
+    await onGridAt(20)
+    await cdp.send('Page.setFontSizes', { fontSizes: { standard: 24 } })
+    await onGridAt(24)
+  })
+
+  test(`${prefix} rem base keeps every line on the grid at 16, 17, 20 and 24px roots`, async ({
+    page,
+  }) => {
+    for (const root of [16, 17, 20, 24]) {
+      await openRemGrid(page, `${url}&root=${root}`)
+      await expect
+        .poll(async () => {
+          const state = await remGridState(page)
+          return onRemGrid(state) && state.px.hosts <= 1 / 64
+        })
+        .toBe(true)
+      const state = await remGridState(page)
+      expect(state.root).toBe(root)
+      // Two or more lines in every Box.
+      expect(state.rem.minLines).toBeGreaterThanOrEqual(2)
+      // The Spacer rounds 20px to the live base.
+      expect(state.rem.spacer).toBe(`${Math.round(40 / root) * (root / 2)}px`)
+      // Control: px Boxes still end on their 8px grid, but 1.5rem lines drift
+      // off it once the root is not 16px.
+      expect(state.px.hosts).toBeLessThanOrEqual(1 / 64)
+      if (root === 16) expect(state.px.baselines).toBeLessThanOrEqual(1 / 64)
+      else expect(state.px.baselines).toBeGreaterThan(1)
+    }
+  })
+
+  test(`${prefix} rem base follows live root font size changes`, async ({
+    page,
+  }) => {
+    await openRemGrid(page, `${url}&root=16`)
+    await expect
+      .poll(async () => onRemGrid(await remGridState(page)))
+      .toBe(true)
+    for (const root of [17, 20, 24, 16]) {
+      const { frame: frames, last } = await page.evaluate(
+        async ({ size, measure }) => {
+          const measureGrid = new Function(`return ${measure}`)() as (args: {
+            kind: string
+            base: number
+          }) => { baselines: number; hosts: number }
+          const marks = Array.from(
+            document.querySelectorAll('[data-rem-grid="rem"] [data-rem-mark]')
+          )
+          const before = marks.map((mark) => mark.getBoundingClientRect().top)
+          let last: unknown = null
+          document.documentElement.style.fontSize = `${size}px`
+          for (let frame = 1; frame <= 60; frame++) {
+            await new Promise((resolve) => requestAnimationFrame(resolve))
+            const moved = marks.some(
+              (mark, index) =>
+                Math.abs(mark.getBoundingClientRect().top - before[index]) > 0.5
+            )
+            last = measureGrid({ kind: 'rem', base: size / 2 })
+            if (moved && last.baselines <= 1 / 64 && last.hosts <= 1 / 64) {
+              return { frame, last }
+            }
+          }
+          return { frame: -1, last }
+        },
+        { size: root, measure: measureRemGrid.toString() }
+      )
+      const step = `-> ${root}px: ${JSON.stringify(last)}`
+      expect(frames, step).toBeGreaterThan(0)
+      expect(frames, step).toBeLessThanOrEqual(10)
+      expect(onRemGrid(await remGridState(page))).toBe(true)
+    }
+  })
+
+  test(`${prefix} rem base that isn't whole layout units lands each Box within 1/32px`, async ({
+    page,
+  }) => {
+    // 0.5rem at a 15.3px root is 7.65px (README: approximated within 1/32px;
+    // the differences add up down a stack, so this checks each Box).
+    await openRemGrid(page, `${url}&root=15.3`)
+    const offsets = () =>
+      page.evaluate(() => {
+        const base =
+          parseFloat(getComputedStyle(document.documentElement).fontSize) / 2
+        return Array.from(
+          document.querySelectorAll('[data-rem-grid="rem"] [data-rem="box"]'),
+          (host) => {
+            const height = host.getBoundingClientRect().height
+            const remainder = ((height % base) + base) % base
+            return Math.min(remainder, base - remainder)
+          }
+        )
+      })
+    await expect
+      .poll(async () => Math.max(...(await offsets())))
+      .toBeLessThanOrEqual(1 / 32)
+  })
+
+  test(`${prefix} rem base hydrates the 16px server HTML, then follows a 20px root`, async ({
+    page,
+  }) => {
+    const response = await page.request.get(`${url}&root=20`)
+    const html = await response.text()
+    // The server knows no root size: the rem Spacer rounds to an 8px base.
+    const spacer = html.match(/<div[^>]*data-rem="spacer"[^>]*>/)?.[0]
+    expect(spacer).toContain('data-height="24px"')
+    const messages: string[] = []
+    page.on('console', (message) => {
+      if (message.type() === 'error' || message.type() === 'warning') {
+        messages.push(message.text())
+      }
+    })
+    await openRemGrid(page, `${url}&root=20`)
+    await expect
+      .poll(async () => onRemGrid(await remGridState(page)))
+      .toBe(true)
+    expect((await remGridState(page)).rem.spacer).toBe('20px')
+    expect(
+      messages.filter((text) => /hydrat|did not match|mismatch/i.test(text))
+    ).toEqual([])
+  })
+}
+
+/**
+ * A9: what a root font size change (16 -> 20px) costs on the `?cost` page.
+ * Counts, per Box, the frames in which its DOM changed (as liveGridStability
+ * does) and the frames until every Box is on its grid (the 0.5rem base, or
+ * 8px for the px control). The px-content Box only follows the base.
+ */
+async function rootChangeCost(page: Page, kind: 'rem' | 'px') {
+  return page.evaluate(async (kind) => {
+    const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
+    const section = document.querySelector(`[data-cost-grid="${kind}"]`)!
+    const hosts = Array.from(
+      section.querySelectorAll<HTMLElement>('[data-cost]')
+    )
+    const pxContent = section.querySelector<HTMLElement>(
+      '[data-cost="px-content"]'
+    )!
+    const owner = (node: Node) => {
+      let element: Element | null =
+        node instanceof Element ? node : node.parentElement
+      while (element && !hosts.includes(element as HTMLElement)) {
+        element = element.parentElement
+      }
+      return element as HTMLElement | null
+    }
+    let frameNumber = 0
+    const updates = new Map(hosts.map((host) => [host, new Set<number>()]))
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        if (
+          record.type === 'attributes' &&
+          record.oldValue === (record.target as Element).getAttribute('style')
+        ) {
+          continue
+        }
+        const host = owner(record.target)
+        if (host) updates.get(host)!.add(frameNumber)
+      }
+    })
+    observer.observe(section, {
+      attributes: true,
+      attributeFilter: ['style'],
+      attributeOldValue: true,
+      childList: true,
+      subtree: true,
+    })
+    const base = () =>
+      kind === 'rem'
+        ? parseFloat(getComputedStyle(document.documentElement).fontSize) / 2
+        : 8
+    const off = (host: Element) => {
+      const step = base()
+      const remainder =
+        ((host.getBoundingClientRect().height % step) + step) % step
+      return Math.min(remainder, step - remainder)
+    }
+    const onGrid = (host: Element) => off(host) <= 1 / 64
+    const total = () =>
+      [...updates.values()].reduce((sum, set) => sum + set.size, 0)
+    // Settle the first snaps.
+    for (let quiet = 0, count = 0; quiet < 5 && count < 120; count++) {
+      const before = total()
+      await frame()
+      quiet = total() === before && hosts.every(onGrid) ? quiet + 1 : 0
+    }
+    updates.forEach((set) => set.clear())
+    const heights = hosts.map((host) => host.getBoundingClientRect().height)
+    document.documentElement.style.fontSize = '20px'
+    let toGrid = -1
+    let pxContentToGrid = -1
+    let lastChange = 0
+    for (let count = 1; count <= 60; count++) {
+      frameNumber = count
+      const before = total()
+      await frame()
+      if (total() !== before) lastChange = count
+      const moved = hosts.some(
+        (host, index) =>
+          Math.abs(host.getBoundingClientRect().height - heights[index]) > 0.5
+      )
+      if (toGrid < 0 && moved && hosts.every(onGrid)) toGrid = count
+      if (pxContentToGrid < 0 && onGrid(pxContent)) pxContentToGrid = count
+    }
+    observer.disconnect()
+    const boxes = hosts.filter((host) => host !== pxContent)
+    const counts = boxes.map((host) => updates.get(host)!.size)
+    const histogram: Record<number, number> = {}
+    for (const count of counts) histogram[count] = (histogram[count] ?? 0) + 1
+    return {
+      kind,
+      boxes: boxes.length,
+      toGrid,
+      lastChange,
+      updatesPerBox: {
+        max: Math.max(...counts),
+        mean: +(counts.reduce((a, b) => a + b, 0) / counts.length).toFixed(2),
+        histogram,
+      },
+      pxContent: {
+        toGrid: pxContentToGrid,
+        updates: updates.get(pxContent)!.size,
+        height: pxContent.getBoundingClientRect().height,
+      },
+      allOnGrid: hosts.every(onGrid),
+    }
+  }, kind)
+}
+
+function costTests(prefix: string, url: string) {
+  test(`${prefix} records what a root font size change costs on 100 Boxes`, async ({
+    page,
+    browserName,
+  }, testInfo) => {
+    test.skip(browserName !== 'chromium', 'a recorded measurement, Chromium')
+    const results = []
+    for (const kind of ['rem', 'px'] as const) {
+      await page.goto(`${url}${url.includes('?') ? '&' : '?'}cost=${kind}`)
+      if (url.startsWith('/remix.html')) {
+        await page.evaluate(
+          () =>
+            (window as unknown as { __baselineRemixReady: Promise<void> })
+              .__baselineRemixReady
+        )
+      }
+      await expect(page.locator('[data-cost-grid] [data-cost]')).toHaveCount(
+        101
+      )
+      const result = await rootChangeCost(page, kind)
+      results.push(result)
+      expect(result.allOnGrid, JSON.stringify(result)).toBe(true)
+      expect(result.toGrid, JSON.stringify(result)).toBeGreaterThan(0)
+    }
+    const [rem] = results
+    // The px-content Box reaches the new 10px grid: 45 -> 50px.
+    expect(rem.pxContent.toGrid, JSON.stringify(rem)).toBeGreaterThan(0)
+    expect(rem.pxContent.toGrid, JSON.stringify(rem)).toBeLessThanOrEqual(10)
+    expect(rem.pxContent.height).toBe(50)
+    // The changeset's claim: no more frames than the px control (+1 slack).
+    const [, px] = results
+    expect(rem.toGrid, JSON.stringify(results)).toBeLessThanOrEqual(
+      px.toGrid + 1
+    )
+    await testInfo.attach('root-change-cost.json', {
+      body: JSON.stringify(results, null, 2),
+      contentType: 'application/json',
+    })
+    console.log(`A9 ${prefix}: ${JSON.stringify(results)}`)
+  })
+}
+
+async function openSpacers(page: Page, url: string) {
+  await page.goto(url)
+  if (url.startsWith('/remix.html')) {
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+  }
+  await expect(page.locator('[data-spacer]')).toHaveCount(14)
+}
+
+/** Rendered height (or width) of each `data-spacer` host, by id and grid. */
+async function spacerSizes(page: Page, grid: 'px' | 'rem' = 'px') {
+  return page.evaluate(
+    (grid) =>
+      Object.fromEntries(
+        Array.from(
+          document.querySelectorAll<HTMLElement>(
+            `[data-spacer-grid="${grid}"] [data-spacer]`
+          ),
+          (spacer) => {
+            const rect = spacer.getBoundingClientRect()
+            return [
+              spacer.dataset.spacer!,
+              spacer.dataset.spacer!.startsWith('w') ? rect.width : rect.height,
+            ]
+          }
+        )
+      ),
+    grid
+  )
+}
+
+/** Each declaration of an inline style, whitespace-normalized. */
+const declarations = (style: string) =>
+  Object.fromEntries(
+    style
+      .split(';')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const colon = part.indexOf(':')
+        return [
+          part.slice(0, colon).trim(),
+          part
+            .slice(colon + 1)
+            .replace(/\s+/g, ' ')
+            .trim(),
+        ]
+      })
+  )
+
+function spacerStringTests(prefix: string, url: string) {
+  const roundTo = (value: number, step: number) =>
+    Math.round(value / step) * step
+
+  test(`${prefix} spacer rem height rounds to the base at every root, live`, async ({
+    page,
+  }) => {
+    // A7a: 1.3rem rounded to 8px (7.0: 24px at every root).
+    for (const [root, expected] of [
+      [16, 24],
+      [17, 24],
+      [20, 24],
+      [24, 32],
+    ]) {
+      await openSpacers(page, `${url}&root=${root}`)
+      await expect
+        .poll(async () => (await spacerSizes(page)).rem13)
+        .toBe(expected)
+    }
+    await openSpacers(page, `${url}&root=16`)
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '24px'
+    })
+    await expect.poll(async () => (await spacerSizes(page)).rem13).toBe(32)
+  })
+
+  test(`${prefix} spacer strings resolve as CSS does, rounded; others keep the base`, async ({
+    page,
+  }) => {
+    // A7b.
+    await openSpacers(page, url)
+    const sizes = await spacerSizes(page)
+    const { viewport, ch } = await page.evaluate(() => ({
+      viewport: innerHeight,
+      ch: document
+        .querySelector('[data-spacer-probe="ch2"]')!
+        .getBoundingClientRect().width,
+    }))
+    expect(sizes.pct50).toBe(48)
+    expect(sizes.calc).toBe(80)
+    expect(sizes.vh10).toBe(roundTo(viewport / 10, 8))
+    expect(sizes.ch2).toBe(roundTo(ch, 8))
+    for (const id of ['auto', 'unitless', 'keyword', 'oops']) {
+      expect(sizes[id], id).toBe(8)
+    }
+  })
+
+  test(`${prefix} spacer string height rounds to a rem base`, async ({
+    page,
+  }) => {
+    // A7c: 1.3rem at a 20px root on a 10px base (7.0: 20px).
+    await openSpacers(page, `${url}&root=20`)
+    await expect
+      .poll(async () => (await spacerSizes(page, 'rem')).rem13)
+      .toBe(30)
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '16px'
+    })
+    await expect
+      .poll(async () => (await spacerSizes(page, 'rem')).rem13)
+      .toBe(24)
+  })
+
+  test(`${prefix} spacer string sizes hydrate the server HTML as is`, async ({
+    page,
+  }) => {
+    // A7e, px base at a 20px root.
+    const html = await (await page.request.get(`${url}&root=20`)).text()
+    const serverStyle = (id: string) =>
+      new RegExp(
+        `<div[^>]*data-spacer="${id}"[^>]*style="([^"]*)"|<div[^>]*style="([^"]*)"[^>]*data-spacer="${id}"`
+      )
+        .exec(html)
+        ?.slice(1)
+        .find(Boolean)
+    const messages: string[] = []
+    page.on('console', (message) => {
+      if (message.type() === 'error' || message.type() === 'warning') {
+        messages.push(message.text())
+      }
+    })
+    await openSpacers(page, `${url}&root=20`)
+    for (const id of ['rem13', 'vh10', 'pct50', 'w100']) {
+      const server = serverStyle(id)
+      expect(server, id).toBeTruthy()
+      const client = await page
+        .locator(`[data-spacer-grid="px"] [data-spacer="${id}"]`)
+        .getAttribute('style')
+      expect(declarations(client ?? ''), id).toEqual(
+        declarations(server!.replace(/&quot;/g, '"'))
+      )
+    }
+    expect(
+      messages.filter((text) => /hydrat|did not match|mismatch/i.test(text))
+    ).toEqual([])
+  })
+
+  test(`${prefix} spacer string heights fall back to 7.0's px without round()`, async ({
+    page,
+  }) => {
+    // A7f: 10vh is 72px live at a 720px viewport, 112px in 7.0.
+    await openSpacers(page, url)
+    const live = (await spacerSizes(page)).vh10
+    const removed = await page.evaluate(() => {
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules: CSSRuleList
+        try {
+          rules = sheet.cssRules
+        } catch {
+          continue
+        }
+        for (let index = rules.length - 1; index >= 0; index--) {
+          const rule = rules[index]
+          if (
+            rule instanceof CSSSupportsRule &&
+            rule.conditionText.includes('round(')
+          ) {
+            sheet.deleteRule(index)
+            return true
+          }
+        }
+      }
+      return false
+    })
+    expect(removed).toBe(true)
+    expect(live).not.toBe(112)
+    expect((await spacerSizes(page)).vh10).toBe(112)
+  })
+
+  test(`${prefix} spacer widths render as written; numbers still round`, async ({
+    page,
+  }) => {
+    // A7g: 7.0 rendered width="100%" as 0px.
+    await openSpacers(page, url)
+    const sizes = await spacerSizes(page)
+    expect(sizes.w100).toBe(300)
+    expect(sizes.w30).toBe(32)
+  })
+
+  test(`${prefix} spacer indicator shows the rendered size of a string height`, async ({
+    page,
+  }) => {
+    // 2rem at a 20px root renders 40px (7.0's value: 32).
+    await openSpacers(page, `${url}&root=20`)
+    await expect(
+      page.locator('[data-spacer="indicator"] .bk-indicator')
+    ).toHaveText('40')
+  })
+
+  test(`${prefix} spacer indicator shows a measured 0px height, not the fallback`, async ({
+    page,
+  }) => {
+    // calc(100% - 100px) in a 100px parent is 0px: only the 320px width
+    // shows (7.0's fallback height would show 8).
+    await openSpacers(page, url)
+    await expect(
+      page.locator('[data-spacer="indicator-zero"] .bk-indicator')
+    ).toHaveText(['320'])
+  })
+}
+
+/** Rendered gap, line period and column counts of the `?guides` Guides. */
+async function guideState(page: Page) {
+  return page.evaluate(() => {
+    const cols = (id: string) =>
+      document.querySelector<HTMLElement>(`[data-guide-case="${id}"] .bk-cols`)!
+    const auto = cols('auto')
+    const autoRem = cols('autorem')
+    return {
+      fixedGap: parseFloat(getComputedStyle(cols('fixed')).columnGap),
+      linePeriod: parseFloat(
+        getComputedStyle(
+          document.querySelector('[data-guide-case="line"] .bk-gde')!
+        ).getPropertyValue('--bkgd-line-period')
+      ),
+      autoGap: parseFloat(getComputedStyle(auto).columnGap),
+      autoColumns: auto.querySelectorAll('.bk-col').length,
+      autoTracks: getComputedStyle(auto)
+        .gridTemplateColumns.split(' ')
+        .filter(Boolean).length,
+      autoRemColumns: autoRem.querySelectorAll('.bk-col').length,
+      autoRemTracks: getComputedStyle(autoRem)
+        .gridTemplateColumns.split(' ')
+        .filter(Boolean).length,
+    }
+  })
+}
+
+function guideStringTests(prefix: string, url: string) {
+  test(`${prefix} guide string gap follows the root font size`, async ({
+    page,
+  }) => {
+    // A7d. 7.0: React drew no gap; Remix froze it at a 16px root.
+    await page.goto(url)
+    if (url.startsWith('/remix.html')) {
+      await page.evaluate(
+        () =>
+          (window as unknown as { __baselineRemixReady: Promise<void> })
+            .__baselineRemixReady
+      )
+    }
+    // auto: floor((300 + gap) / (40 + gap)) columns; autorem (2.5rem
+    // columns, 16px gap): floor(316 / (2.5 x root + 16)).
+    const expected = (gap: number, columns: number, remColumns: number) => ({
+      fixedGap: gap,
+      linePeriod: gap,
+      autoGap: gap,
+      autoColumns: columns,
+      autoTracks: columns,
+      autoRemColumns: remColumns,
+      autoRemTracks: remColumns,
+    })
+    await expect.poll(() => guideState(page)).toEqual(expected(16, 5, 5))
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '32px'
+    })
+    await expect.poll(() => guideState(page)).toEqual(expected(32, 4, 3))
+    // 20px rounds to the 8px base: 24.
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '20px'
+    })
+    await expect.poll(() => guideState(page)).toEqual(expected(24, 5, 4))
+  })
+}
+
+remGridTests('React', '/?remgrid')
+costTests('React', '/')
+spacerStringTests('React', '/?spacers')
+guideStringTests('React', '/?guides')
+
+liveGridTests('React', '/?live', '#live-grid')
+
+test.describe('native Remix adapter', () => {
+  liveGridTests('native', '/remix.html?live', '#remix-live-grid')
+  remGridTests('native', '/remix.html?remgrid')
+  costTests('native', '/remix.html')
+  spacerStringTests('native', '/remix.html?spacers')
+  guideStringTests('native', '/remix.html?guides')
 })

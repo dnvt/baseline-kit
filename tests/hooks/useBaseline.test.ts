@@ -248,7 +248,7 @@ describe('useBaseline', () => {
     }
   })
 
-  it('keeps the snap once the settle window has passed', () => {
+  it('re-snaps a content change at any time', () => {
     vi.useFakeTimers()
     try {
       useMeasureSpy.mockReturnValue({ width: 100, height: 46 })
@@ -262,10 +262,12 @@ describe('useBaseline', () => {
       )
       expect(result.current.padding.bottom).toBe(12)
 
-      vi.advanceTimersByTime(2000)
+      // Long after the snap, the content grows by 5px: the natural height
+      // becomes 51, so the correction becomes 5px.
+      vi.advanceTimersByTime(60_000)
       useMeasureSpy.mockReturnValue({ width: 100, height: 53 })
       rerender()
-      expect(result.current.padding.bottom).toBe(12)
+      expect(result.current.padding.bottom).toBe(15)
     } finally {
       vi.useRealTimers()
     }
