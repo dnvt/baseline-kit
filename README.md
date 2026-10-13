@@ -169,11 +169,16 @@ zoom, display scaling, and CSS `zoom` leave smaller, fractional residues; up to
 row. CSS `zoom` on an ancestor is taken into account; a CSS `transform` that
 scales an ancestor is not.
 
-A `Box` or `Padder` snaps after its first nonzero measurement and whenever its
-base, padding, or snapping props change. For two seconds after a snap, and
-again when a web font finishes loading or the tab becomes visible, it also
-re-snaps if its content height changes; outside those windows it doesn't
-follow resizes.
+A `Box` or `Padder` snaps after its first nonzero measurement, whenever its
+base, padding, or snapping props change, and whenever its content height
+changes: a web font loading, a font or size change, text rewrapping at a new
+width, or a new root font size. It snaps from its content's height and the
+padding it actually renders, so for a Box whose height follows its content,
+its own correction, or a CSS transition on that padding, doesn't set off
+another snap. When a height set from outside wins (a fixed `height`, a taller
+`min-height`, a stretched flex or grid item), padding can only bring the Box
+onto the grid by growing it past that height, which takes a few updates;
+otherwise the Box keeps the outside height.
 `Padder` uses height snapping with a bottom correction. A `Box` or `Padder`
 nested inside a `Box` doesn't snap on its own; the outer `Box` snaps the whole. Set `ssrMode` on
 either to keep the explicit padding without measuring.

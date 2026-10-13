@@ -1,0 +1,11 @@
+---
+'baseline-kit': minor
+---
+
+`Box` and `Padder` follow their content: they re-snap whenever their content height changes (a web font loading, a font or size change, text rewrapping at a new width, a new root font size), in React and Remix. In 7.0 they followed content changes only for two seconds after a snap, after a web font loaded, or when the tab became visible, so a later change left them off the grid until their props changed or they remounted.
+
+- Snapping uses the padding the DOM actually renders, so a CSS transition on a Box's padding no longer sets off repeated snaps.
+- A Box whose height is held from outside (`min-height`, a stretched flex or grid item) settles within a few updates instead of alternating between two heights.
+- A content-driven Box updates at most once per change (a Padder around a Box once more, after it), ends where a fresh load would, and none update once sizes stop changing.
+- `SNAP_SETTLE_MS` is deprecated and no longer used.
+- `SnapMeasurement.settling` is optional and defaults to `true`; passing `false` still keeps the current snap. `SnapState` gains optional `measured` and `earlier` fields (type `SnapMeasured`).

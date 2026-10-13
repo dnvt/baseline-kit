@@ -1323,25 +1323,20 @@ test('React Box re-snaps late content and keeps caller margins', async ({
   await expect(page.locator('#caller-p')).toHaveCSS('margin-top', '16px')
 })
 
-test('React Box re-snaps after a font load once the window closes', async ({
+test('React Box re-snaps a content change long after its snap', async ({
   page,
 }) => {
   const box = page.locator('#late-box')
   const height = () =>
     box.evaluate((element) => element.getBoundingClientRect().height)
   await expect.poll(height).toBe(16)
-  // After the settle window, a size change alone keeps the snap.
+  // Seconds after the snap (a late web font, say), a size change alone
+  // re-snaps it.
   await page.waitForTimeout(3000)
   await page.evaluate(() => {
     ;(document.querySelector('#late-content') as HTMLElement).style.height =
       '17px'
   })
-  await expect.poll(height).toBe(23)
-  await page.waitForTimeout(300)
-  expect(await height()).toBe(23)
-  // A font load reopens it. WebKit fires only `loading` for a late font, so
-  // that is the event dispatched here.
-  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
   await expect.poll(height).toBe(24)
 })
 
@@ -1362,12 +1357,9 @@ test('React Box re-snaps after snapping turns off and back on', async ({
       next
     )
   await expect.poll(height).toBe(104)
-  // Re-snap to an aligned height without correction inside a settle
-  // window (opened by a font load), then let the window close.
-  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  // Re-snap to an aligned height without correction.
   await set({ height: 88 })
   await expect.poll(height).toBe(88)
-  await page.waitForTimeout(3000)
   await set({ mode: 'none' })
   await set({ height: 100 })
   await expect.poll(height).toBe(100)
@@ -1417,8 +1409,7 @@ test('React Box keeps snapping after its as prop changes', async ({ page }) => {
   await expect.poll(height).toBe(104)
   await set({ as: 'h2' })
   await expect(page.locator('h2#as-probe')).toHaveCount(1)
-  // The new host is measured: a font load re-snaps changed content.
-  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  // The new host is measured, so changed content re-snaps.
   await set({ height: 88 })
   await expect.poll(height).toBe(88)
 })
@@ -2352,7 +2343,7 @@ test.describe('native Remix adapter', () => {
     )
   })
 
-  test('native Box re-snaps after a font load once the window closes', async ({
+  test('native Box re-snaps a content change long after its snap', async ({
     page,
   }) => {
     await page.goto('/remix.html')
@@ -2365,21 +2356,14 @@ test.describe('native Remix adapter', () => {
     const height = () =>
       box.evaluate((element) => element.getBoundingClientRect().height)
     await expect.poll(height).toBe(16)
-    // After the settle window, a size change alone keeps the snap.
+    // Seconds after the snap (a late web font, say), a size change alone
+    // re-snaps it.
     await page.waitForTimeout(3000)
     await page.evaluate(() => {
       ;(
         document.querySelector('#remix-late-content') as HTMLElement
       ).style.height = '17px'
     })
-    await expect.poll(height).toBe(23)
-    await page.waitForTimeout(300)
-    expect(await height()).toBe(23)
-    // A font load reopens it. WebKit fires only `loading` for a late font, so
-    // that is the event dispatched here.
-    await page.evaluate(() =>
-      document.fonts.dispatchEvent(new Event('loading'))
-    )
     await expect.poll(height).toBe(24)
   })
 
@@ -2406,14 +2390,9 @@ test.describe('native Remix adapter', () => {
         next
       )
     await expect.poll(height).toBe(104)
-    // Re-snap to an aligned height without correction inside a settle
-    // window (opened by a font load), then let the window close.
-    await page.evaluate(() =>
-      document.fonts.dispatchEvent(new Event('loading'))
-    )
+    // Re-snap to an aligned height without correction.
     await set({ height: 88 })
     await expect.poll(height).toBe(88)
-    await page.waitForTimeout(3000)
     await set({ mode: 'none' })
     await set({ height: 100 })
     await expect.poll(height).toBe(100)
@@ -2796,4 +2775,386 @@ test.describe('native Remix adapter', () => {
       })
       .toEqual([0, 0, 0, 0])
   })
+})
+
+// Live grid (7.1): Boxes follow every size change. Hosts are tagged by
+// `data-live` (see LiveGridFixture). Distance of each content-driven host's
+// height from the 8px grid, in CSS px.
+async function liveGridOffsets(page: Page, root: string) {
+  return page.evaluate((selector) => {
+    const off = (element: Element) => {
+      const height = element.getBoundingClientRect().height
+      const remainder = ((height % 8) + 8) % 8
+      return Math.min(remainder, 8 - remainder)
+    }
+    return Array.from(
+      document.querySelectorAll(`${selector} [data-live="box"]`),
+      off
+    )
+  }, root)
+}
+
+/** Heights of the content-driven and fixed hosts, in document order. */
+async function liveGridHeights(page: Page, root: string) {
+  return page.evaluate(
+    (selector) =>
+      Array.from(
+        document.querySelectorAll(
+          `${selector} :is([data-live="box"], [data-live="nested"], [data-live="zoom"], [data-live="transition"], [data-live="fixed"])`
+        ),
+        (element) =>
+          element.getBoundingClientRect().height /
+          ((element as Element & { currentCSSZoom?: number }).currentCSSZoom ??
+            1)
+      ),
+    root
+  )
+}
+
+async function openLiveGrid(page: Page, url: string, root: string) {
+  await page.goto(url)
+  if (url.startsWith('/remix.html')) {
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+  }
+  await expect(page.locator(`${root} [data-live="box"]`)).toHaveCount(54)
+  await expect
+    .poll(async () => Math.max(...(await liveGridOffsets(page, root))))
+    .toBeLessThanOrEqual(1 / 64)
+}
+
+/**
+ * Waits past 7.0's two-second settle window, applies `change`, then counts
+ * frames until every content-driven host is on the grid.
+ */
+async function framesToGrid(
+  page: Page,
+  root: string,
+  change: string,
+  tolerance = 1 / 64
+) {
+  await page.waitForTimeout(2500)
+  return page.evaluate(
+    async ({ selector, change, tolerance }) => {
+      const hosts = Array.from(
+        document.querySelectorAll<HTMLElement>(`${selector} [data-live="box"]`)
+      )
+      const off = (element: Element) => {
+        const height = element.getBoundingClientRect().height
+        const remainder = ((height % 8) + 8) % 8
+        return Math.min(remainder, 8 - remainder)
+      }
+      const before = hosts.map((host) => host.getBoundingClientRect().height)
+      new Function(change)()
+      for (let frame = 1; frame <= 60; frame++) {
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+        const changed = hosts.some(
+          (host, index) =>
+            Math.abs(host.getBoundingClientRect().height - before[index]) > 0.5
+        )
+        if (changed && hosts.every((host) => off(host) <= tolerance)) {
+          return frame
+        }
+      }
+      return -1
+    },
+    { selector: root, change, tolerance }
+  )
+}
+
+/**
+ * Resizes the live grid through 20 widths. Per step and per group, counts the
+ * frames in which each host's padding changed (a style change or a spacer
+ * added or removed anywhere inside it), and how far from the grid the
+ * content-driven hosts end. Then watches 30 idle frames for any change.
+ */
+async function liveGridStability(page: Page, root: string, tolerance: number) {
+  return page.evaluate(
+    async ({ selector, tolerance }) => {
+      const frame = () =>
+        new Promise((resolve) => requestAnimationFrame(resolve))
+      const container = document.querySelector<HTMLElement>(selector)!
+      const group = (name: string) =>
+        Array.from(
+          container.querySelectorAll<HTMLElement>(`[data-live="${name}"]`)
+        )
+      const groups = {
+        box: group('box'),
+        nested: group('nested'),
+        zoom: group('zoom'),
+        transition: group('transition'),
+        floor: group('floor'),
+        fixed: group('fixed'),
+      }
+      // Nested hosts (a Box inside a Padder) count for themselves only.
+      const hosts = Object.values(groups).flat()
+      const owner = (node: Node) => {
+        let element: Element | null =
+          node instanceof Element ? node : node.parentElement
+        while (element && !hosts.includes(element as HTMLElement)) {
+          element = element.parentElement
+        }
+        return element as HTMLElement | null
+      }
+      let frameNumber = 0
+      const updates = new Map(hosts.map((host) => [host, new Set<number>()]))
+      const observer = new MutationObserver((records) => {
+        for (const record of records) {
+          if (
+            record.type === 'attributes' &&
+            record.oldValue === (record.target as Element).getAttribute('style')
+          ) {
+            continue
+          }
+          const host = owner(record.target)
+          if (host) updates.get(host)!.add(frameNumber)
+        }
+      })
+      observer.observe(container, {
+        attributes: true,
+        attributeFilter: ['style'],
+        attributeOldValue: true,
+        childList: true,
+        subtree: true,
+      })
+      const zoomed = (element: Element) =>
+        element.getBoundingClientRect().height /
+        ((element as Element & { currentCSSZoom?: number }).currentCSSZoom ?? 1)
+      const off = (element: Element) => {
+        const remainder = ((zoomed(element) % 8) + 8) % 8
+        return Math.min(remainder, 8 - remainder)
+      }
+      const onGrid = () =>
+        [...groups.box, ...groups.nested, ...groups.transition].every(
+          (host) => off(host) <= tolerance
+        ) && groups.zoom.every((host) => off(host) <= 1 / 32)
+      const total = () =>
+        [...updates.values()].reduce((sum, set) => sum + set.size, 0)
+      const most = (members: HTMLElement[]) =>
+        Math.max(0, ...members.map((host) => updates.get(host)!.size))
+      const settle = async () => {
+        let quiet = 0
+        for (let count = 1; count <= 90; count++) {
+          const before = total()
+          frameNumber++
+          await frame()
+          quiet = total() === before ? quiet + 1 : 0
+          if (quiet >= 5 && onGrid()) return count
+        }
+        return -1
+      }
+      const initial = await settle()
+      const widths = [
+        300, 420, 333, 387, 360, 311, 405, 360, 352, 368, 300, 420, 333, 387,
+        360, 311, 405, 360, 352, 368,
+      ]
+      const steps = []
+      for (const width of widths) {
+        updates.forEach((set) => set.clear())
+        container.style.width = `${width}px`
+        const frames = await settle()
+        steps.push({
+          width,
+          frames,
+          box: most(groups.box),
+          nested: most(groups.nested),
+          zoom: most(groups.zoom),
+          transition: most(groups.transition),
+          floor: most(groups.floor),
+          fixed: most(groups.fixed),
+          // Which hosts updated more than once, for the failure message.
+          over: hosts
+            .filter((host) => updates.get(host)!.size > 1)
+            .map(
+              (host) =>
+                `${host.dataset.live}#${hosts.indexOf(host)} ${host.className} [${[...updates.get(host)!].join(',')}]`
+            ),
+          worst: Math.max(
+            ...[...groups.box, ...groups.nested, ...groups.transition].map(off)
+          ),
+        })
+      }
+      updates.forEach((set) => set.clear())
+      const heights = () => hosts.map(zoomed).join()
+      const idleStart = heights()
+      let idleHeightChanges = 0
+      for (let count = 0; count < 30; count++) {
+        frameNumber++
+        await frame()
+        if (heights() !== idleStart) idleHeightChanges++
+      }
+      const idleUpdates = total()
+      observer.disconnect()
+      return { initial, steps, idleUpdates, idleHeightChanges }
+    },
+    { selector: root, tolerance }
+  )
+}
+
+function expectStable(
+  result: Awaited<ReturnType<typeof liveGridStability>>,
+  tolerance: number
+) {
+  expect(result.initial, 'initial layout settles').toBeGreaterThan(0)
+  for (const step of result.steps) {
+    const at = `width ${step.width}`
+    expect(step.frames, `${at} settles`).toBeGreaterThan(0)
+    expect(
+      step.box,
+      `${at} Box updates ${step.over.join('; ')}`
+    ).toBeLessThanOrEqual(1)
+    // A host around another snapping host re-snaps after it.
+    expect(step.nested, `${at} nested updates`).toBeLessThanOrEqual(2)
+    expect(step.zoom, `${at} zoomed Box updates`).toBeLessThanOrEqual(1)
+    expect(step.transition, `${at} transition updates`).toBeLessThanOrEqual(1)
+    expect(step.floor, `${at} floor updates`).toBeLessThanOrEqual(3)
+    expect(step.fixed, `${at} fixed-height updates`).toBe(0)
+    expect(step.worst, `${at} grid`).toBeLessThanOrEqual(tolerance)
+  }
+  expect(result.idleUpdates, 'updates once sizes stop changing').toBe(0)
+  expect(result.idleHeightChanges, 'height changes once idle').toBe(0)
+}
+
+/** The resized layout matches a fresh load at the final width (368px). */
+async function expectHistoryFree(
+  page: Page,
+  url: string,
+  root: string,
+  tolerance: number
+) {
+  const resized = await liveGridHeights(page, root)
+  const fresh = await page.context().newPage()
+  try {
+    await openLiveGrid(fresh, `${url}&liveWidth=368`, root)
+    await expect
+      .poll(async () => {
+        const loaded = await liveGridHeights(fresh, root)
+        return loaded.every(
+          (height, index) => Math.abs(height - resized[index]) <= tolerance
+        )
+      })
+      .toBe(true)
+  } finally {
+    await fresh.close()
+  }
+}
+
+function liveGridTests(prefix: string, url: string, root: string) {
+  test(`${prefix} live grid re-snaps after a root font size change`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const frames = await framesToGrid(
+      page,
+      root,
+      "document.documentElement.style.fontSize = '20px'"
+    )
+    expect(frames).toBeGreaterThan(0)
+    expect(frames).toBeLessThanOrEqual(10)
+  })
+
+  test(`${prefix} live grid re-snaps a font prop change without a key`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const frames = await framesToGrid(
+      page,
+      root,
+      "window.__setLiveFont({ size: 1.2, family: 'monospace' })"
+    )
+    expect(frames).toBeGreaterThan(0)
+    expect(frames).toBeLessThanOrEqual(10)
+  })
+
+  test(`${prefix} live grid re-snaps when a resize rewraps text`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const frames = await framesToGrid(
+      page,
+      root,
+      `document.querySelector('${root}').style.width = '300px'`
+    )
+    expect(frames).toBeGreaterThan(0)
+    expect(frames).toBeLessThanOrEqual(10)
+  })
+
+  test(`${prefix} live grid updates each Box at most once per resize`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    expectStable(await liveGridStability(page, root, 1 / 64), 1 / 64)
+    await expectHistoryFree(page, url, root, 1 / 64)
+  })
+
+  test(`${prefix} live grid ends where it started when content toggles`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const heights = await page.evaluate(async (selector) => {
+      const frame = () =>
+        new Promise((resolve) => requestAnimationFrame(resolve))
+      const content = document.querySelector<HTMLElement>(
+        `${selector} [data-live-toggle]`
+      )!
+      for (let toggle = 0; toggle < 10; toggle++) {
+        for (const height of ['9px', '10px']) {
+          content.style.height = height
+          for (let count = 0; count < 4; count++) await frame()
+        }
+      }
+      for (let count = 0; count < 10; count++) await frame()
+      const height = (name: string) =>
+        document
+          .querySelector(`${selector} [data-live="${name}"]`)!
+          .getBoundingClientRect().height
+      return [height('toggle'), height('toggle-twin')]
+    }, root)
+    expect(heights).toEqual([16, 16])
+  })
+
+  test(`${prefix} live grid stays still at a 1.25 display scale`, async ({
+    browserName,
+    playwright,
+  }, testInfo) => {
+    test.skip(browserName !== 'chromium', 'forced device scale is Chromium')
+    const browser = await playwright.chromium.launch({
+      args: ['--force-device-scale-factor=1.25'],
+    })
+    try {
+      // The project's emulated deviceScaleFactor would otherwise be merged
+      // in; the real 1.25 scale comes from the launch flag.
+      const context = await browser.newContext({
+        viewport: null,
+        deviceScaleFactor: undefined,
+        isMobile: undefined,
+        hasTouch: undefined,
+        baseURL: testInfo.project.use.baseURL,
+      })
+      const page = await context.newPage()
+      await page.goto(url)
+      expect(await page.evaluate(() => devicePixelRatio)).toBe(1.25)
+      if (url.startsWith('/remix.html')) {
+        await page.evaluate(
+          () =>
+            (window as unknown as { __baselineRemixReady: Promise<void> })
+              .__baselineRemixReady
+        )
+      }
+      await expect(page.locator(`${root} [data-live="box"]`)).toHaveCount(54)
+      expectStable(await liveGridStability(page, root, 1 / 32), 1 / 32)
+      await expectHistoryFree(page, url, root, 1 / 32)
+    } finally {
+      await browser.close()
+    }
+  })
+}
+
+liveGridTests('React', '/?live', '#live-grid')
+
+test.describe('native Remix adapter', () => {
+  liveGridTests('native', '/remix.html?live', '#remix-live-grid')
 })

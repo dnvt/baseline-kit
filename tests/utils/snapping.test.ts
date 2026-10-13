@@ -310,6 +310,119 @@ describe('nextSnap', () => {
     ).toBeNull()
   })
 
+  it('re-snaps a content change by default', () => {
+    // No settling flag: 7.1 follows every size change.
+    const next = nextSnap(first, input, {
+      height: 12.5 + first.padding.top,
+      rendered: first.padding,
+    })!
+    expect(next.padding.top).toBe(3.5)
+  })
+
+  // A host with a height floor or fill renders max(floor, content + padding),
+  // so its natural height moves with its own padding.
+  function settleFloor(
+    content: number,
+    floor: number,
+    mode: 'height' | 'clamp'
+  ) {
+    const floorInput = { ...input, mode, snapEdge: 'bottom' as const }
+    let rendered = zero
+    let snap: ReturnType<typeof nextSnap> = null
+    let last = -1
+    for (let measurement = 0; measurement < 20; measurement++) {
+      const height = Math.max(floor, content + rendered.top + rendered.bottom)
+      // A ResizeObserver reports only size changes.
+      if (height === last) return { measurement, height }
+      last = height
+      snap = nextSnap(snap, floorInput, { height, rendered })
+      rendered = snap?.padding ?? zero
+    }
+    return { measurement: Infinity, height: last }
+  }
+
+  it('settles on the grid when padding only partly moves the height', () => {
+    // 99 -> 101 -> 99 used to repeat forever.
+    for (const mode of ['height', 'clamp'] as const) {
+      expect(settleFloor(96, 99, mode)).toEqual({ measurement: 5, height: 104 })
+    }
+  })
+
+  it('ends where a fresh snap does after content toggles back and forth', () => {
+    for (const mode of ['height', 'clamp'] as const) {
+      const toggleInput = { ...input, mode, snapEdge: 'bottom' as const }
+      for (const [a, b] of [
+        [10, 9],
+        [41.6, 62.4],
+        [21, 18],
+      ]) {
+        let rendered = zero
+        let snap: ReturnType<typeof nextSnap> = null
+        const measure = (content: number) => {
+          // Two measurements per change: the content, then the correction.
+          for (let pass = 0; pass < 2; pass++) {
+            snap = nextSnap(snap, toggleInput, {
+              height: content + rendered.top + rendered.bottom,
+              rendered,
+            })
+            rendered = snap!.padding
+          }
+        }
+        for (let toggle = 0; toggle < 10; toggle++) {
+          measure(a)
+          measure(b)
+        }
+        measure(a)
+        const fresh = nextSnap(null, toggleInput, { height: a, rendered: zero })
+        expect(rendered).toEqual(fresh!.padding)
+      }
+    }
+  })
+
+  it('ends where a fresh snap does when corrections land a measurement late', () => {
+    // Remix delivers a measurement a frame late, so content can change back
+    // in the same measurement where the previous correction lands.
+    for (const mode of ['height', 'clamp'] as const) {
+      const lagInput = { ...input, mode, snapEdge: 'bottom' as const }
+      for (const [a, b] of [
+        [10, 9],
+        [21, 18],
+      ]) {
+        let committed = zero
+        let pending = zero
+        let snap: ReturnType<typeof nextSnap> = null
+        const measure = (content: number) => {
+          snap = nextSnap(snap, lagInput, {
+            height: content + committed.top + committed.bottom,
+            rendered: committed,
+          })
+          committed = pending
+          pending = snap!.padding
+        }
+        for (let toggle = 0; toggle < 10; toggle++) {
+          measure(a)
+          measure(b)
+        }
+        for (let settle = 0; settle < 6; settle++) measure(a)
+        const fresh = nextSnap(null, lagInput, { height: a, rendered: zero })
+        expect(committed).toEqual(fresh!.padding)
+      }
+    }
+  })
+
+  it('never bounces on a host with a height floor', () => {
+    for (const mode of ['height', 'clamp'] as const) {
+      for (let floor = 80; floor <= 120; floor += 0.5) {
+        for (let content = 60; content <= 130; content += 0.75) {
+          const { measurement, height } = settleFloor(content, floor, mode)
+          expect(measurement).toBeLessThan(20)
+          // Either on the grid, or held by a floor that padding can't move.
+          if (height !== floor) expect(height % 8).toBe(0)
+        }
+      }
+    }
+  })
+
   it('settles instead of flapping when layout rounds at a fractional scale', () => {
     // At 1.25x Chromium lays out in 1/80px and floors the padding tracks
     // (48.0375 + 7.9625 measured 55.9875), so each correction shifts the

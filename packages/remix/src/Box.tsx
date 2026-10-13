@@ -4,7 +4,6 @@ import { type Handle } from 'remix/component'
 import {
   DEFAULT_CONFIG,
   nextSnap,
-  SNAP_SETTLE_MS,
   type SnapMeasurement,
   type SnapState,
   mergeConfig,
@@ -31,6 +30,7 @@ import {
   mergeStyles,
   normalizeConfigSnapshot,
   queueNativeUpdate,
+  snapChanged,
   type NativeComponent,
   type NativeHostProps,
 } from './shared'
@@ -67,19 +67,17 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   let currentSnapping: SnappingMode = 'clamp'
   let currentSnapEdge: SnapEdge = 'bottom'
   let currentInitialPadding: Padding = parsePadding({})
-  // Snap with the shared rules (see nextSnap): on the first measurement,
-  // on input changes, and while settling (two seconds after a snap, or after
-  // a web font loads), whenever the natural height changes.
+  // Snap with the shared rules (see nextSnap): on the first measurement, on
+  // input changes, and whenever the natural height changes.
   let snap: SnapState | null = null
-  let settleOpenedAt = 0
   let renderedPadding: Padding = currentInitialPadding
-  let lastMeasure: Omit<SnapMeasurement, 'settling'> | null = null
+  let lastMeasure: SnapMeasurement | null = null
 
   const requestUpdate = () => {
     queueNativeUpdate(handle)
   }
 
-  const applySnap = (measure: Omit<SnapMeasurement, 'settling'>) => {
+  const applySnap = (measure: SnapMeasurement) => {
     const next = nextSnap(
       snap,
       {
@@ -88,32 +86,25 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
         snapEdge: currentSnapEdge,
         initial: currentInitialPadding,
       },
-      {
-        ...measure,
-        settling: performance.now() - settleOpenedAt <= SNAP_SETTLE_MS,
-      }
+      measure
     )
-    if (next === snap) return false
-    if (!snap || next?.key !== snap.key) settleOpenedAt = performance.now()
+    const changed = snapChanged(snap, next)
     snap = next
-    return true
+    return changed
   }
 
   // Measure the host so its own border and padding count toward the snap.
-  const observer = createElementObserverBridge(
-    (next, host) => {
-      if (next.height === 0) return
-      lastMeasure = {
-        height: next.height,
-        rendered: renderedPadding,
-        scaled: isScaledLayout(host),
-      }
-      if (applySnap(lastMeasure)) requestUpdate()
-    },
-    () => {
-      settleOpenedAt = performance.now()
+  const observer = createElementObserverBridge((next, host, rendered) => {
+    if (next.height === 0) return
+    lastMeasure = {
+      height: next.height,
+      // The padding in the DOM at measurement time (mid-transition values
+      // included), else the last committed padding.
+      rendered: { ...renderedPadding, ...rendered },
+      scaled: isScaledLayout(host),
     }
-  )
+    if (applySnap(lastMeasure)) requestUpdate()
+  })
 
   return () => {
     const props = handle.props

@@ -15,6 +15,144 @@ import {
   type CSSProperties,
 } from 'react'
 
+const LIVE_TEXTS = [
+  'Sphinx of black quartz, judge my vow.',
+  'The five boxing wizards jump quickly over the lazy dog at dawn.',
+  'Pack my box with five dozen liquor jugs, then stack them on the grid line by line.',
+  'How vexingly quick daft zebras jump.',
+  'A wizard’s job is to vex chumps quickly in fog while the baseline keeps every line in step with the page.',
+]
+
+const liveText = (
+  font: { size: number; family: string },
+  index: number
+): CSSProperties => ({
+  display: 'block',
+  fontFamily: font.family,
+  fontSize: `${font.size + (index % 5) * 0.125}rem`,
+  lineHeight: 1.3,
+})
+
+/** Each DOM variant of a Box: own grid, inner Padder, Padder without spacers, semantic. */
+const LIVE_VARIANTS = [
+  {},
+  { className: 'live-c' },
+  { className: 'live-c', debugging: 'none' as const },
+  { as: 'h3' as const },
+]
+
+/**
+ * Live-grid hosts, rendered on the client with `?live`, tagged by
+ * `data-live`: content-driven Boxes and Padders in every DOM variant (`box`), a host around another (`nested`),
+ * Boxes under CSS zoom (`zoom`), a fixed-height Box (`fixed`), Boxes with a
+ * height floor (`floor`), Boxes with a padding transition (`transition`), and
+ * a Box whose content toggles next to a twin (`toggle`, `toggle-twin`). Text
+ * sizes are in rem, so a root font size change, a font prop change, or a
+ * width change re-flows them. `?liveWidth=` sets the starting width.
+ */
+function LiveGridFixture() {
+  const [on, setOn] = useState(false)
+  const [width, setWidth] = useState(360)
+  const [font, setFont] = useState({ size: 1, family: 'serif' })
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (!params.has('live')) return
+    setWidth(Number(params.get('liveWidth') ?? 360))
+    setOn(true)
+    ;(
+      window as unknown as {
+        __setLiveFont: (next: { size?: number; family?: string }) => void
+      }
+    ).__setLiveFont = (next) => setFont((current) => ({ ...current, ...next }))
+  }, [])
+  if (!on) return null
+  const text = (index: number, content = LIVE_TEXTS[index % 5]) => (
+    <span style={liveText(font, index)}>{content}</span>
+  )
+  return (
+    <section id="live-grid" style={{ width }}>
+      <style>{`.live-transition .bk-box, .live-transition .bk-box * { transition: all 120ms linear; }`}</style>
+      {Array.from({ length: 50 }, (_, index) => (
+        <Box
+          key={index}
+          data-live="box"
+          snapping={Math.floor(index / 4) % 2 ? 'height' : 'clamp'}
+          block={[0, 0]}
+          {...LIVE_VARIANTS[index % 4]}
+        >
+          {text(index)}
+        </Box>
+      ))}
+      <Padder data-live="box" block={[0, 0]}>
+        {text(3)}
+      </Padder>
+      <Padder data-live="box" debugging="none" block={[0, 0]}>
+        {text(4)}
+      </Padder>
+      {/* A snapping host around another: it re-snaps after the inner one. */}
+      <Padder data-live="nested" debugging="none" block={[0, 0]}>
+        <Box data-live="box" block={[0, 0]}>
+          {text(2)}
+        </Box>
+      </Padder>
+      <div style={{ zoom: 1.25 }}>
+        {LIVE_VARIANTS.map((variant, index) => (
+          <Box key={index} data-live="zoom" block={[0, 0]} {...variant}>
+            {text(index)}
+          </Box>
+        ))}
+      </div>
+      <Box data-live="fixed" height={100} snapping="height" block={[0, 0]}>
+        {text(4)}
+      </Box>
+      {/* Hosts whose height has a floor: min-height, and a flex fill. */}
+      {['99px', '101px', '6.3rem'].map((minHeight, index) => (
+        <Box
+          key={minHeight}
+          data-live="floor"
+          style={{ minHeight }}
+          snapping={index % 2 ? 'height' : 'clamp'}
+          block={[0, 0]}
+        >
+          {text(index)}
+        </Box>
+      ))}
+      {/* 96px of content under a 99px floor: padding moves it 99 -> 101. */}
+      <Box data-live="floor" style={{ minHeight: 99 }} block={[0, 0]}>
+        <div style={{ height: 96 }} />
+      </Box>
+      <div style={{ display: 'flex', flexDirection: 'column', height: 203 }}>
+        <Box data-live="box" block={[0, 0]}>
+          {text(1, LIVE_TEXTS[0])}
+        </Box>
+        <Box data-live="floor" style={{ flex: 1 }} block={[0, 0]}>
+          {text(2, LIVE_TEXTS[3])}
+        </Box>
+      </div>
+      {/* Boxes whose padding a CSS transition animates. */}
+      <div className="live-transition">
+        {LIVE_VARIANTS.map((variant, index) => (
+          <Box
+            key={index}
+            data-live="transition"
+            snapping={index % 2 ? 'height' : 'clamp'}
+            block={[0, 0]}
+            {...variant}
+          >
+            {text(index, LIVE_TEXTS[index + 1])}
+          </Box>
+        ))}
+      </div>
+      <Box data-live="toggle-twin" block={[0, 0]}>
+        <div style={{ height: 10 }} />
+      </Box>
+      <Box data-live="toggle" block={[0, 0]}>
+        <div data-live-toggle style={{ height: 10 }} />
+      </Box>
+    </section>
+  )
+}
+
 /** Lets tests switch a Box's snapping mode and content height. */
 function SnapModeProbe() {
   const [mode, setMode] = useState<'clamp' | 'none'>('clamp')
@@ -441,6 +579,8 @@ export function App() {
           <Spacer height={12} />
         </Box>
       </section>
+
+      <LiveGridFixture />
 
       <section id="snap-probes">
         <SnapModeProbe />

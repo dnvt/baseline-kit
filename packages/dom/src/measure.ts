@@ -32,48 +32,42 @@ export function isScaledLayout(el: Element | null): boolean {
   return Math.abs(scale - Math.round(scale)) > 1e-6
 }
 
-type SettleListener = () => void
-const settleListeners = new Set<SettleListener>()
-let settleEventsAttached = false
-// WebKit drops the listeners on `document.fonts` once its wrapper is garbage
-// collected, so the wrapper is kept here.
-let settleFonts: FontFaceSet | undefined
-
 /**
- * Calls `listener` whenever layout may change after the first snap without a
- * size change being observed in time: a web font finishes loading, or a
- * background tab becomes visible. Returns an unsubscribe function.
+ * The top and bottom snap padding a Box or Padder host renders right now:
+ * mid-transition values, not the target. Null where it can't be read.
+ *
+ * The padding sits on the host itself (a Padder, or a Box drawn on its own
+ * grid), on a Box's inner Padder (`.bk-pad`), or on a semantic Box's inner
+ * grid (`.bk-box__grid`). It is either the first and last grid track around
+ * `.bk-pad-content`, or a Padder's inline `padding-block` when it draws no
+ * spacers. A caller's own padding on the host is not counted.
  */
-export function onSnapSettleEvent(listener: SettleListener): () => void {
-  settleListeners.add(listener)
-  if (!settleEventsAttached && typeof document !== 'undefined') {
-    settleEventsAttached = true
-    const notify = () => {
-      for (const current of [...settleListeners]) current()
-    }
-    // WebKit fires `loading` but not `loadingdone`, so wait for the
-    // `ready` promise of each load, including one already running.
-    settleFonts = document.fonts
-    let fontsPending = false
-    const waitForFonts = () => {
-      if (fontsPending || !settleFonts) return
-      const ready = settleFonts.ready
-      fontsPending = true
-      const done = () => {
-        fontsPending = false
-        notify()
-      }
-      void ready.then(done, done)
-    }
-    settleFonts?.addEventListener?.('loading', waitForFonts)
-    if (settleFonts?.status === 'loading') waitForFonts()
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') notify()
-    })
+export function getRenderedBlockPadding(
+  host: Element
+): { top: number; bottom: number } | null {
+  if (typeof getComputedStyle !== 'function') return null
+  const target = host.classList.contains('bk-pad')
+    ? host
+    : (host.querySelector(':scope > .bk-pad, :scope > .bk-box__grid') ?? host)
+  const style = getComputedStyle(target)
+  let top = 0
+  let bottom = 0
+  if (target.querySelector(':scope > .bk-pad-content')) {
+    const rows = style.gridTemplateRows.split(' ')
+    if (rows.length !== 3) return null
+    top += parseFloat(rows[0])
+    bottom += parseFloat(rows[2])
   }
-  return () => {
-    settleListeners.delete(listener)
+  if (
+    target.classList.contains('bk-pad') &&
+    (target as HTMLElement).style.paddingBlock
+  ) {
+    top += parseFloat(style.paddingTop)
+    bottom += parseFloat(style.paddingBottom)
   }
+  return Number.isFinite(top) && Number.isFinite(bottom)
+    ? { top, bottom }
+    : null
 }
 
 /**

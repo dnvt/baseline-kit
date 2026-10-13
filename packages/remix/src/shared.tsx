@@ -12,14 +12,13 @@ import { DEFAULT_CONFIG } from '@baseline-kit/core'
 import { Config } from './Config'
 import {
   createMeasureObserver,
-  getCSSZoom,
-  onSnapSettleEvent,
   createVirtualTracker,
+  getRenderedBlockPadding,
   type MeasureRect,
   type VirtualRange,
   type VirtualTrackerHandle,
 } from '@baseline-kit/dom'
-import type { ConfigSchema } from '@baseline-kit/core'
+import type { ConfigSchema, SnapState } from '@baseline-kit/core'
 
 export type NativeStyle = Props<'div'>['style']
 
@@ -77,8 +76,6 @@ export function normalizeConfigSnapshot(config: ConfigSchema): ConfigSchema {
 export interface ElementObserverBridge {
   attach: ReturnType<typeof ref>
   getElement: () => Element | null
-  /** Measure the attached element now and deliver it, even if unchanged. */
-  remeasure: () => void
 }
 
 export type RuntimeHandle = Pick<Handle, 'signal' | 'update'>
@@ -131,6 +128,26 @@ function scheduleNativeUpdateFlush() {
     // counter reset queued by the preceding update.
     setTimeout(() => setTimeout(flushNativeUpdates, 0), 0)
   }
+}
+
+/**
+ * Whether a new snap renders differently from the old one. A snap that only
+ * records a new measured height needs no update.
+ */
+export function snapChanged(
+  prev: SnapState | null,
+  next: SnapState | null
+): boolean {
+  if (prev === next) return false
+  if (!prev || !next || prev.key !== next.key) return true
+  const a = prev.padding
+  const b = next.padding
+  return (
+    a.top !== b.top ||
+    a.right !== b.right ||
+    a.bottom !== b.bottom ||
+    a.left !== b.left
+  )
 }
 
 export function queueNativeUpdate(handle: RuntimeHandle) {
@@ -236,16 +253,15 @@ const attachedBridges = new Set<AttachedBridge>()
  * effect or client-only bridge is needed.
  */
 export function createElementObserverBridge(
-  onMeasure: (rect: MeasureRect, element: Element) => void,
-  /**
-   * Called while attached when layout may have settled without an observed
-   * size change (see onSnapSettleEvent); the element is then re-measured.
-   */
-  onSettle?: () => void
+  onMeasure: (
+    rect: MeasureRect,
+    element: Element,
+    /** Block padding rendered when `rect` was measured, if a Box grid. */
+    rendered: { top: number; bottom: number } | null
+  ) => void
 ): ElementObserverBridge {
   let element: Element | null = null
   let measureHandle: ReturnType<typeof createMeasureObserver> | undefined
-  let unsubscribeSettle: (() => void) | undefined
   let hasNonZeroMeasurement = false
   let initialRefreshAttempts = 0
 
@@ -267,8 +283,6 @@ export function createElementObserverBridge(
     element: () => element,
     release: () => {
       attachedBridges.delete(bridge)
-      unsubscribeSettle?.()
-      unsubscribeSettle = undefined
       measureHandle?.disconnect()
       measureHandle = undefined
       hasNonZeroMeasurement = false
@@ -315,21 +329,20 @@ export function createElementObserverBridge(
   const attach = ref((node, signal) => {
     element = node
     attachedBridges.add(bridge)
-    if (onSettle && !unsubscribeSettle) {
-      unsubscribeSettle = onSnapSettleEvent(() => {
-        onSettle()
-        requestAnimationFrame(remeasure)
-      })
-    }
 
     if (typeof ResizeObserver !== 'undefined') {
       measureHandle = createMeasureObserver(node, (rect) => {
         hasNonZeroMeasurement = rect.width > 0 || rect.height > 0
+        // Read the padding with the size, not a frame later: mid-transition
+        // it has moved on by the time the measurement is delivered.
+        const rendered = getRenderedBlockPadding(node)
         // The initial measurement can run from the ref insert callback before
         // Remix has committed the component. Deliver it on the next frame so
         // the consumer can safely request an update.
         const deliver = () => {
-          if (!signal.aborted && element === node) onMeasure(rect, node)
+          if (!signal.aborted && element === node) {
+            onMeasure(rect, node, rendered)
+          }
         }
         if (typeof requestAnimationFrame === 'function') {
           requestAnimationFrame(deliver)
@@ -351,17 +364,7 @@ export function createElementObserverBridge(
     signal.addEventListener('abort', detach, { once: true })
   })
 
-  const remeasure = () => {
-    if (!element || !element.isConnected) return
-    const zoom = getCSSZoom(element)
-    const rect = element.getBoundingClientRect()
-    onMeasure(
-      { width: Math.round(rect.width / zoom), height: rect.height / zoom },
-      element
-    )
-  }
-
-  return { attach, getElement: () => element, remeasure }
+  return { attach, getElement: () => element }
 }
 
 export interface VirtualBridge {

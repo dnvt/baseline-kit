@@ -4,7 +4,6 @@ import { type Handle, type RemixNode } from 'remix/component'
 import {
   DEFAULT_CONFIG,
   nextSnap,
-  SNAP_SETTLE_MS,
   type SnapMeasurement,
   type SnapState,
   createPadderDescriptor,
@@ -26,6 +25,7 @@ import {
   mergeStyles,
   normalizeConfigSnapshot,
   queueNativeUpdate,
+  snapChanged,
   type NativeComponent,
   type NativeHostProps,
 } from './shared'
@@ -50,39 +50,31 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
   let initialPadding: Padding = parsePadding({})
   // Same snapping rules as Box (see nextSnap), always in height mode.
   let snap: SnapState | null = null
-  let settleOpenedAt = 0
   let renderedPadding: Padding = initialPadding
-  let lastMeasure: Omit<SnapMeasurement, 'settling'> | null = null
+  let lastMeasure: SnapMeasurement | null = null
 
-  const applySnap = (measure: Omit<SnapMeasurement, 'settling'>) => {
+  const applySnap = (measure: SnapMeasurement) => {
     const next = nextSnap(
       snap,
       { base, mode: 'height', snapEdge: 'bottom', initial: initialPadding },
-      {
-        ...measure,
-        settling: performance.now() - settleOpenedAt <= SNAP_SETTLE_MS,
-      }
+      measure
     )
-    if (next === snap) return false
-    if (!snap || next?.key !== snap.key) settleOpenedAt = performance.now()
+    const changed = snapChanged(snap, next)
     snap = next
-    return true
+    return changed
   }
 
-  const observer = createElementObserverBridge(
-    ({ height }, host) => {
-      if (handle.props.ssrMode || height === 0) return
-      lastMeasure = {
-        height,
-        rendered: renderedPadding,
-        scaled: isScaledLayout(host),
-      }
-      if (applySnap(lastMeasure)) queueNativeUpdate(handle)
-    },
-    () => {
-      settleOpenedAt = performance.now()
+  const observer = createElementObserverBridge(({ height }, host, rendered) => {
+    if (handle.props.ssrMode || height === 0) return
+    lastMeasure = {
+      height,
+      // The padding in the DOM at measurement time (mid-transition values
+      // included), else the last committed padding.
+      rendered: { ...renderedPadding, ...rendered },
+      scaled: isScaledLayout(host),
     }
-  )
+    if (applySnap(lastMeasure)) queueNativeUpdate(handle)
+  })
 
   return () => {
     const props = handle.props

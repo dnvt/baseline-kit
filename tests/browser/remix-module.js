@@ -6,4 +6,4 @@ export {
   Padder,
   Spacer,
 } from '@baseline-kit/remix'
-export { Forwarder, SnapModeProbe } from './remix-entries'
+export { Forwarder, LiveGridProbe, SnapModeProbe } from './remix-entries'

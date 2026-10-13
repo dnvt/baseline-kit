@@ -1,6 +1,6 @@
 import { Frame } from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
-import { Forwarder, SnapModeProbe } from './remix-entries'
+import { Forwarder, LiveGridProbe, SnapModeProbe } from './remix-entries'
 import {
   Baseline,
   Box,
@@ -538,7 +538,7 @@ export function createRemixApp() {
       }),
       jsx('section', {
         id: 'remix-snap-probes',
-        children: jsx(SnapModeProbe, {}),
+        children: [jsx(SnapModeProbe, {}), jsx(LiveGridProbe, {})],
       }),
       jsx('section', {
         id: 'remix-late-and-margins',
