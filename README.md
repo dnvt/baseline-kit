@@ -219,8 +219,9 @@ em, ex, ch, `%`, the viewport units, and the absolute units, alone or inside
 `calc()`, `min()`, `max()`, `clamp()` and `var()`. Anything else (`'auto'`,
 `'24'`, keywords, newer units such as `lh` or `cqw`, or malformed math such as
 `'calc(100%-23px)'`) falls back to the base. Browsers without CSS `round()`
-(before Chrome 125, Firefox 118 and Safari 15.4) keep a string height's value
-at a 16px root and a 1920x1080 viewport.
+(before Chrome 125, Firefox 118 and Safari 15.4) keep the px height the kit
+computes without a page: units against a 16px root and a 1920x1080 viewport,
+`%` as 0px, and `calc()` or `var()` as the base.
 
 A `Guide` `gap` such as `'1rem'` or `'2%'` resolves when the Guide renders
 (on mount, when its size changes, and for a rem `gap` or `columnWidth`, when

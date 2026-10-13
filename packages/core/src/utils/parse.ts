@@ -171,9 +171,11 @@ function readMathFunction(text: string): MathType | null {
  * Whether a string is a CSS length the browser can resolve as the page
  * changes: a number with a length unit or `%`, or `calc()`, `min()`, `max()`,
  * `clamp()` or `var()` that resolves to one. Conservative: anything else
- * (`'auto'`, `'24'`, keywords, malformed math such as `'calc(100%-23px)'`)
- * is left to the kit's own px resolution, because CSS would drop an invalid
- * value without a fallback.
+ * (`'auto'`, `'24'`, keywords, malformed math such as `'calc(100%-23px)'`,
+ * and units newer than CSS `round()` in some browsers: `lh`, `rlh`, `cap`,
+ * `ic`, `rex`, `rch` and container units) is left to the kit's own px
+ * resolution, because CSS would drop an invalid value without a fallback.
+ * It is not a general CSS validator.
  */
 export function isCSSLength(value: string): boolean {
   const text = value.replace(/^[ \t\n\r\f]+|[ \t\n\r\f]+$/g, '')
