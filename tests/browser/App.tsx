@@ -6,6 +6,7 @@ import {
   Padder,
   Spacer,
 } from '@baseline-kit/react'
+import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
 import {
   REM_GRID_BOXES,
   REM_GRID_CSS,
@@ -207,6 +208,42 @@ function RemGridFixture({ base }: { base: number | `${number}rem` }) {
         ))}
         {/* Rounds 20px to the base: 24px at 8px, 20px at 10px. */}
         <Spacer data-rem="spacer" height={20} />
+      </Config>
+    </section>
+  )
+}
+
+/** The `?cost=rem|px` hosts (see cost-grid.ts). */
+function CostFixture({ kind }: { kind: 'rem' | 'px' }) {
+  return (
+    <section data-cost-grid={kind} style={REM_GRID_SECTION}>
+      <style>{COST_CSS}</style>
+      <Config base={kind === 'rem' ? '0.5rem' : 8}>
+        {Array.from({ length: COST_BOX_COUNT }, (_, index) => {
+          const box = costBox(index)
+          return (
+            <Box
+              key={index}
+              data-cost="box"
+              block={[0, 0]}
+              snapping={box.snapping}
+              {...box.variant}
+            >
+              <span style={remGridText(box.size)}>
+                {COST_WORDS.map((word, wordIndex) => (
+                  <Fragment key={wordIndex}>
+                    {`${word} `}
+                    <span style={REM_GRID_MARK} />
+                  </Fragment>
+                ))}
+              </span>
+              <span style={{ display: 'block', height: box.trailer }} />
+            </Box>
+          )
+        })}
+        <Box data-cost="px-content" block={[0, 0]}>
+          <div style={{ height: 45 }} />
+        </Box>
       </Config>
     </section>
   )
@@ -446,9 +483,12 @@ function StatefulBoxDebugModeProbe({
 }
 
 export function App({ search = '' }: { search?: string }) {
-  const remGrid = new URLSearchParams(search).has('remgrid')
+  const params = new URLSearchParams(search)
+  const remGrid = params.has('remgrid')
+  const cost = params.get('cost')
   const content = (
     <main>
+      {(cost === 'rem' || cost === 'px') && <CostFixture kind={cost} />}
       {remGrid && (
         <>
           <RemGridFixture base="0.5rem" />

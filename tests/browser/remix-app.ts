@@ -1,6 +1,7 @@
 import { Frame } from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
 import { Forwarder, LiveGridProbe, SnapModeProbe } from './remix-entries'
+import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
 import {
   REM_GRID_BOXES,
   REM_GRID_CSS,
@@ -83,8 +84,56 @@ function remGrid(base: number | `${number}rem`) {
   })
 }
 
+/** The `?cost=rem|px` hosts (see cost-grid.ts). */
+function costGrid(kind: 'rem' | 'px') {
+  return jsx('section', {
+    'data-cost-grid': kind,
+    style: REM_GRID_SECTION,
+    children: [
+      jsx('style', { children: COST_CSS }),
+      jsx(Config, {
+        base: kind === 'rem' ? '0.5rem' : 8,
+        children: [
+          ...Array.from({ length: COST_BOX_COUNT }, (_, index) => {
+            const box = costBox(index)
+            return jsx(
+              Box,
+              {
+                'data-cost': 'box',
+                block: [0, 0],
+                snapping: box.snapping,
+                ...box.variant,
+                children: [
+                  jsx('span', {
+                    style: remGridText(box.size),
+                    children: COST_WORDS.flatMap((word) => [
+                      `${word} `,
+                      jsx('span', { style: REM_GRID_MARK }),
+                    ]),
+                  }),
+                  jsx('span', {
+                    style: { display: 'block', height: box.trailer },
+                  }),
+                ],
+              },
+              index
+            )
+          }),
+          jsx(Box, {
+            'data-cost': 'px-content',
+            block: [0, 0],
+            children: jsx('div', { style: { height: '45px' } }),
+          }),
+        ],
+      }),
+    ],
+  })
+}
+
 export function createRemixApp(search = '') {
-  const remGridOn = new URLSearchParams(search).has('remgrid')
+  const params = new URLSearchParams(search)
+  const remGridOn = params.has('remgrid')
+  const cost = params.get('cost')
   const GeneratedConsumer = () => () =>
     jsx(Spacer, { height: 16, debugging: 'visible' })
   const WrappedConsumers = () => () =>
@@ -120,6 +169,7 @@ export function createRemixApp(search = '') {
   const app = jsx('main', {
     children: [
       ...(remGridOn ? [remGrid('0.5rem'), remGrid(8)] : []),
+      ...(cost === 'rem' || cost === 'px' ? [costGrid(cost)] : []),
       jsx('section', {
         id: 'remix-frame-lifecycle',
         children: [

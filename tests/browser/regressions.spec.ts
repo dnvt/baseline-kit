@@ -3458,11 +3458,157 @@ function remGridTests(prefix: string, url: string) {
   })
 }
 
+/**
+ * A9: what a root font size change (16 -> 20px) costs on the `?cost` page.
+ * Counts, per Box, the frames in which its DOM changed (as liveGridStability
+ * does) and the frames until every Box is on its grid (the 0.5rem base, or
+ * 8px for the px control). The px-content Box only follows the base.
+ */
+async function rootChangeCost(page: Page, kind: 'rem' | 'px') {
+  return page.evaluate(async (kind) => {
+    const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
+    const section = document.querySelector(`[data-cost-grid="${kind}"]`)!
+    const hosts = Array.from(
+      section.querySelectorAll<HTMLElement>('[data-cost]')
+    )
+    const pxContent = section.querySelector<HTMLElement>(
+      '[data-cost="px-content"]'
+    )!
+    const owner = (node: Node) => {
+      let element: Element | null =
+        node instanceof Element ? node : node.parentElement
+      while (element && !hosts.includes(element as HTMLElement)) {
+        element = element.parentElement
+      }
+      return element as HTMLElement | null
+    }
+    let frameNumber = 0
+    const updates = new Map(hosts.map((host) => [host, new Set<number>()]))
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        if (
+          record.type === 'attributes' &&
+          record.oldValue === (record.target as Element).getAttribute('style')
+        ) {
+          continue
+        }
+        const host = owner(record.target)
+        if (host) updates.get(host)!.add(frameNumber)
+      }
+    })
+    observer.observe(section, {
+      attributes: true,
+      attributeFilter: ['style'],
+      attributeOldValue: true,
+      childList: true,
+      subtree: true,
+    })
+    const base = () =>
+      kind === 'rem'
+        ? parseFloat(getComputedStyle(document.documentElement).fontSize) / 2
+        : 8
+    const off = (host: Element) => {
+      const step = base()
+      const remainder =
+        ((host.getBoundingClientRect().height % step) + step) % step
+      return Math.min(remainder, step - remainder)
+    }
+    const onGrid = (host: Element) => off(host) <= 1 / 64
+    const total = () =>
+      [...updates.values()].reduce((sum, set) => sum + set.size, 0)
+    // Settle the first snaps.
+    for (let quiet = 0, count = 0; quiet < 5 && count < 120; count++) {
+      const before = total()
+      await frame()
+      quiet = total() === before && hosts.every(onGrid) ? quiet + 1 : 0
+    }
+    updates.forEach((set) => set.clear())
+    const heights = hosts.map((host) => host.getBoundingClientRect().height)
+    document.documentElement.style.fontSize = '20px'
+    let toGrid = -1
+    let pxContentToGrid = -1
+    let lastChange = 0
+    for (let count = 1; count <= 60; count++) {
+      frameNumber = count
+      const before = total()
+      await frame()
+      if (total() !== before) lastChange = count
+      const moved = hosts.some(
+        (host, index) =>
+          Math.abs(host.getBoundingClientRect().height - heights[index]) > 0.5
+      )
+      if (toGrid < 0 && moved && hosts.every(onGrid)) toGrid = count
+      if (pxContentToGrid < 0 && onGrid(pxContent)) pxContentToGrid = count
+    }
+    observer.disconnect()
+    const boxes = hosts.filter((host) => host !== pxContent)
+    const counts = boxes.map((host) => updates.get(host)!.size)
+    const histogram: Record<number, number> = {}
+    for (const count of counts) histogram[count] = (histogram[count] ?? 0) + 1
+    return {
+      kind,
+      boxes: boxes.length,
+      toGrid,
+      lastChange,
+      updatesPerBox: {
+        max: Math.max(...counts),
+        mean: +(counts.reduce((a, b) => a + b, 0) / counts.length).toFixed(2),
+        histogram,
+      },
+      pxContent: {
+        toGrid: pxContentToGrid,
+        updates: updates.get(pxContent)!.size,
+        height: pxContent.getBoundingClientRect().height,
+      },
+      allOnGrid: hosts.every(onGrid),
+    }
+  }, kind)
+}
+
+function costTests(prefix: string, url: string) {
+  test(`${prefix} records what a root font size change costs on 100 Boxes`, async ({
+    page,
+    browserName,
+  }, testInfo) => {
+    test.skip(browserName !== 'chromium', 'a recorded measurement, Chromium')
+    const results = []
+    for (const kind of ['rem', 'px'] as const) {
+      await page.goto(`${url}${url.includes('?') ? '&' : '?'}cost=${kind}`)
+      if (url.startsWith('/remix.html')) {
+        await page.evaluate(
+          () =>
+            (window as unknown as { __baselineRemixReady: Promise<void> })
+              .__baselineRemixReady
+        )
+      }
+      await expect(page.locator('[data-cost-grid] [data-cost]')).toHaveCount(
+        101
+      )
+      const result = await rootChangeCost(page, kind)
+      results.push(result)
+      expect(result.allOnGrid, JSON.stringify(result)).toBe(true)
+      expect(result.toGrid, JSON.stringify(result)).toBeGreaterThan(0)
+    }
+    const [rem] = results
+    // The px-content Box reaches the new 10px grid: 45 -> 50px.
+    expect(rem.pxContent.toGrid, JSON.stringify(rem)).toBeGreaterThan(0)
+    expect(rem.pxContent.toGrid, JSON.stringify(rem)).toBeLessThanOrEqual(10)
+    expect(rem.pxContent.height).toBe(50)
+    await testInfo.attach('root-change-cost.json', {
+      body: JSON.stringify(results, null, 2),
+      contentType: 'application/json',
+    })
+    console.log(`A9 ${prefix}: ${JSON.stringify(results)}`)
+  })
+}
+
 remGridTests('React', '/?remgrid')
+costTests('React', '/')
 
 liveGridTests('React', '/?live', '#live-grid')
 
 test.describe('native Remix adapter', () => {
   liveGridTests('native', '/remix.html?live', '#remix-live-grid')
   remGridTests('native', '/remix.html?remgrid')
+  costTests('native', '/remix.html')
 })
