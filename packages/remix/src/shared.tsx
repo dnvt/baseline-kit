@@ -272,13 +272,26 @@ export function createElementObserverBridge(
     // Remix may never abort the ref signal of an entry nested inside another
     // entry (or rendered into an element that never joins the document), so
     // every detach also releases bridges whose elements are out of the
-    // document. A live element that is only moved stays connected and keeps
-    // its observer.
+    // document. Check twice, half a second apart, so an element that is only
+    // detached briefly (moved by other code) keeps its observer.
     const releaseRemoved = () => {
-      for (const attached of [...attachedBridges]) {
+      const detached = [...attachedBridges].filter((attached) => {
         const nested = attached.element()
-        if (nested && !nested.isConnected) attached.release()
-      }
+        return nested !== null && !nested.isConnected
+      })
+      if (detached.length === 0) return
+      setTimeout(() => {
+        for (const attached of detached) {
+          const nested = attached.element()
+          if (
+            attachedBridges.has(attached) &&
+            nested !== null &&
+            !nested.isConnected
+          ) {
+            attached.release()
+          }
+        }
+      }, 500)
     }
     if (typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(releaseRemoved)

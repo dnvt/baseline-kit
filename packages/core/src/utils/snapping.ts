@@ -8,34 +8,43 @@ export type SnappingOptions = {
 
 type SnappingInput = SnappingMode | SnappingOptions
 
-/** Browsers lay out in whole units of 1/64 CSS px. */
-export const LAYOUT_UNIT = 1 / 64
+/**
+ * Remainders under this many CSS px count as on the grid. Zoom, display
+ * scaling, and floating-point bases leave residues that small (observed up to
+ * about 0.028px), and treating them as real would add almost a full base row.
+ * Real text heights differ by whole layout units (1/64px in Chromium and
+ * WebKit, 1/60px in Firefox); from two units up they are snapped exactly, and
+ * a one-unit remainder stays at most 1/32px off the grid.
+ */
+export const SNAP_TOLERANCE = 1 / 32
 
 /**
- * Largest distance from a grid line that still counts as on it, for distances
- * that are not whole layout units. Those only come from zoom or display
- * scaling (e.g. 120.028px for 120px at 110% zoom) and would otherwise add
- * almost a full base row.
+ * How long (ms) after its first snap a Remix Box or Padder may re-snap while
+ * nested client entries finish hydrating.
  */
-export const SNAP_TOLERANCE = 1 / 16
+export const SNAP_SETTLE_MS = 2000
 
-const isWholeLayoutUnits = (value: number) => {
-  const units = value / LAYOUT_UNIT
-  return Math.abs(units - Math.round(units)) < 1e-6
+/** Distance past the previous grid line, or 0 when within tolerance of one. */
+export function getBaselineRemainder(height: number, base: number): number {
+  const remainder = ((height % base) + base) % base
+  return remainder < SNAP_TOLERANCE || base - remainder < SNAP_TOLERANCE
+    ? 0
+    : remainder
 }
 
 /**
- * Distance past the previous grid line, or 0 when on one. A distance made of
- * whole layout units is real geometry (a trimmed text height such as
- * 8.046875px) and is snapped however small it is. Any other distance up to
- * SNAP_TOLERANCE is scaling noise and counts as on the grid.
+ * Height an element would have without the snap correction it currently
+ * renders. Snapping from this value is stable: applying the result does not
+ * change the input.
  */
-export function getBaselineRemainder(height: number, base: number): number {
-  const remainder = ((height % base) + base) % base
-  const distance = Math.min(remainder, base - remainder)
-  if (distance === 0) return 0
-  if (!isWholeLayoutUnits(distance) && distance <= SNAP_TOLERANCE) return 0
-  return remainder
+export function removeSnapCorrection(
+  height: number,
+  rendered: Padding,
+  initial: Padding
+): number {
+  return (
+    height - (rendered.top - initial.top) - (rendered.bottom - initial.bottom)
+  )
 }
 
 export function isOnBaseline(height: number, base: number): boolean {
@@ -56,7 +65,10 @@ export function calculateSnappedSpacing(
       ? 'bottom'
       : (snappingInput.snapEdge ?? 'bottom')
 
-  if (snapping === 'none') {
+  // A base of 1px or less is no grid to snap to. Box sets base 1 for its
+  // content, so a nested Box or Padder leaves the snapping to the outer Box
+  // instead of adding a sub-pixel correction after the outer one settled.
+  if (snapping === 'none' || !(base > 1)) {
     return pad
   }
 

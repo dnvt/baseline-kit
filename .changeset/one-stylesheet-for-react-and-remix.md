@@ -27,23 +27,25 @@ Breaking changes:
 
 Features:
 
-- React `Box` supports `as` and `htmlFor` for semantic hosts, like Remix.
+- React `Box` supports `as` and `htmlFor` for semantic hosts, like Remix. A semantic host drops the element's default block margins, which would sit outside the snapped height.
 - React `Box` paints the shaded padding bands in visible debug mode, like Remix.
 - `baseline-kit` and `baseline-kit/remix` export the same type names, including `BoxElement` and `ConfigProps`.
 - The CSS entry points declare types, so `import 'baseline-kit/styles'` type-checks with TypeScript's `noUncheckedSideEffectImports`, which TypeScript 6 and 7 turn on by default.
-- `baseline-kit/core` exports the shared component option types (`BaselineOptions`, `BoxOptions`, `GuideOptions`, `PadderOptions`, `SpacerOptions`, `BoxElement`), the server-fallback helpers `createBaselineFallbackStyle` and `createGuideFallbackStyle`, the style helpers `compactStyle` and `getDOMAttributes`, and `isOnBaseline`, `getBaselineRemainder`, and `SNAP_TOLERANCE`.
+- `baseline-kit/core` exports the shared component option types (`BaselineOptions`, `BoxOptions`, `GuideOptions`, `PadderOptions`, `SpacerOptions`, `BoxElement`), the server-fallback helpers `createBaselineFallbackStyle` and `createGuideFallbackStyle`, the style helpers `compactStyle` and `getDOMAttributes`, and the snapping helpers `isOnBaseline`, `getBaselineRemainder`, `removeSnapCorrection`, `SNAP_TOLERANCE`, and `SNAP_SETTLE_MS`.
 - The `remix` peer range is now `^3.0.0`.
 
 Fixes:
 
-- Snapping treats a remainder made of whole 1/64px layout units as real geometry and snaps it, and treats any other remainder up to 1/16px, which only zoom and display scaling produce, as on the grid. Browser zoom no longer adds an extra base row, and real text heights still land exactly. `Baseline rounds its measured height, so sub-pixel noise cannot drop its last row or its compact paint.
+- Snapping treats remainders under 1/32px, which zoom, display scaling, and floating-point bases leave behind, as on the grid instead of adding an extra base row. Real text heights two or more layout units off the grid are snapped exactly. `Baseline` rounds its measured height, so sub-pixel noise cannot drop its last row or its compact paint.
 - React and Remix measure heights with fractional precision, so trimmed text snaps exactly onto the grid instead of drifting by up to half a pixel per Box. A `Spacer` with a base of 1 keeps fractional sizes, and `Padder` draws its spacers at base 1, so a `Padder` (or a `Box` with a `className`) lands exactly on the grid with debugging `hidden` or `visible` too.
 - A semantic `Box` with a percentage `width` or `height` no longer applies it twice.
+- A `Box` or `Padder` inside a `Box` no longer snaps on its own (snapping with a base of 1px or less leaves the padding unchanged), so it can't push the outer `Box` off the grid after the outer one has snapped.
 - A semantic `Box` snaps its whole element, including its own border and padding.
 - `baseline-kit/remix/server` checks the code it patches, and that it sits inside the function it reads from, instead of the whole file's hash, so a patch release of `@remix-run/component` no longer stops it from loading.
 - `baseline-kit/theme/dark` includes the dark spacer and padder colors. `baseline-kit/theme` is now generated from the light and dark themes.
 - Remix `.bk-flat` no longer paints flat Baseline hosts with the Spacer color.
-- Remix components release the observers of client entries that leave the document when another entry detaches, since Remix does not always dispose nested entries. Elements that are only moved keep measuring.
+- Remix components release the observers of client entries that stay out of the document after another entry detaches, since Remix does not always dispose nested entries. Elements that are only moved or briefly detached keep measuring.
+- A Remix `Box` or `Padder` re-snaps for a short while after its first snap, so a nested client entry that hydrates later (such as a `Spacer` inside a `Box`) no longer leaves it off the grid.
 - Remix client entries no longer serialize the default config into their props.
 - Remix `Padder` measures fractional heights like `Box`.
 - Remix server HTML marks `Baseline`, `Guide`, and `Spacer` indicators `aria-hidden="true"`. Before, the attribute was written without a value until hydration.

@@ -4,6 +4,9 @@ import { type Handle, type RemixNode } from 'remix/component'
 import {
   DEFAULT_CONFIG,
   calculateSnappedSpacing,
+  removeSnapCorrection,
+  SNAP_SETTLE_MS,
+  SNAP_TOLERANCE,
   createPadderDescriptor,
   parsePadding,
   type ConfigSchema,
@@ -45,10 +48,28 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
   let base = DEFAULT_CONFIG.base
   let initialPadding: Padding = parsePadding({})
   let snappedPadding: Padding | null = null
+  // Re-snap from the natural height while nested entries hydrate (see Box).
+  let renderedPadding: Padding = initialPadding
+  let snappedNatural = 0
+  let snappedAt = 0
   const observer = createElementObserverBridge(({ height }) => {
-    if (handle.props.ssrMode || snappedPadding || height === 0) return
-    snappedPadding = calculateSnappedSpacing(
+    if (handle.props.ssrMode || height === 0) return
+    const natural = removeSnapCorrection(
       height,
+      renderedPadding,
+      initialPadding
+    )
+    if (
+      snappedPadding &&
+      (performance.now() - snappedAt > SNAP_SETTLE_MS ||
+        Math.abs(natural - snappedNatural) < SNAP_TOLERANCE)
+    ) {
+      return
+    }
+    if (!snappedPadding) snappedAt = performance.now()
+    snappedNatural = natural
+    snappedPadding = calculateSnappedSpacing(
+      natural,
       base,
       initialPadding,
       'height'
@@ -71,6 +92,7 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     const padding = props.ssrMode
       ? initialPadding
       : (snappedPadding ?? initialPadding)
+    renderedPadding = padding
     const mix =
       typeof window === 'undefined' || props.ssrMode
         ? undefined

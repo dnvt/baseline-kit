@@ -4,6 +4,9 @@ import { type Handle } from 'remix/component'
 import {
   DEFAULT_CONFIG,
   calculateSnappedSpacing,
+  removeSnapCorrection,
+  SNAP_SETTLE_MS,
+  SNAP_TOLERANCE,
   mergeConfig,
   createBoxDescriptor,
   requiresSeparatePadder,
@@ -51,7 +54,7 @@ const RuntimeConfig = Config as unknown as NativeComponent<
 let warnedLegacyFor = false
 
 function warnLegacyFor(props: object) {
-  if (warnedLegacyFor || !('for' in props)) return
+  if (warnedLegacyFor || (props as { for?: unknown }).for === undefined) return
   warnedLegacyFor = true
   console.warn(
     'baseline-kit: Box no longer reads `for`; pass `htmlFor` instead. The label is not associated with its control.'
@@ -64,6 +67,12 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   let currentSnapEdge: SnapEdge = 'bottom'
   let currentInitialPadding: Padding = parsePadding({})
   let snappedPadding: Padding | null = null
+  // Nested client entries can hydrate after this Box first measures (for
+  // example a Spacer that re-renders at the Box's base). Re-snap from the
+  // natural height while that settles, then keep the snap.
+  let renderedPadding: Padding = currentInitialPadding
+  let snappedNatural = 0
+  let snappedAt = 0
 
   const requestUpdate = () => {
     queueNativeUpdate(handle)
@@ -71,12 +80,24 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
 
   // Measure the host so its own border and padding count toward the snap.
   const observer = createElementObserverBridge((next) => {
-    if (currentSnapping === 'none' || snappedPadding || next.height === 0) {
+    if (currentSnapping === 'none' || next.height === 0) return
+    const natural = removeSnapCorrection(
+      next.height,
+      renderedPadding,
+      currentInitialPadding
+    )
+    if (
+      snappedPadding &&
+      (performance.now() - snappedAt > SNAP_SETTLE_MS ||
+        Math.abs(natural - snappedNatural) < SNAP_TOLERANCE)
+    ) {
       return
     }
 
+    if (!snappedPadding) snappedAt = performance.now()
+    snappedNatural = natural
     snappedPadding = calculateSnappedSpacing(
-      next.height,
+      natural,
       currentBase,
       currentInitialPadding,
       { mode: currentSnapping, snapEdge: currentSnapEdge }
@@ -107,6 +128,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     currentInitialPadding = initialPadding
     const padding =
       snapping === 'none' ? initialPadding : (snappedPadding ?? initialPadding)
+    renderedPadding = padding
     const separatePadder = semanticHost
       ? false
       : requiresSeparatePadder({

@@ -162,11 +162,13 @@ as in CSS. `block` and `inline` set start/end pairs as arrays or objects.
 In `height` mode the correction goes to the bottom by default;
 `snapEdge="top"` puts it above the content. `Box` measures its whole element,
 including its own border and padding, with fractional-pixel precision.
-Browsers lay out in whole 1/64px units, so a remainder made of those units is
-snapped however small it is. Zoom and display scaling leave other residues;
-those count as aligned up to 1/16px.
-Snapping runs once, after the first nonzero measurement, not on every resize.
-`Padder` uses height snapping with a bottom correction. Set `ssrMode` on
+Remainders under 1/32px count as on the grid: zoom and display scaling leave
+residues that small, and snapping them would add a whole base row.
+Snapping runs after the first nonzero measurement and doesn't follow later
+resizes. In Remix, a `Box` or `Padder` re-snaps for a short while after that
+first snap, while nested client entries finish hydrating.
+`Padder` uses height snapping with a bottom correction. A `Box` or `Padder`
+nested inside a `Box` doesn't snap on its own; the outer `Box` snaps the whole. Set `ssrMode` on
 either to keep the explicit padding without measuring.
 
 ### Semantic elements
@@ -174,7 +176,9 @@ either to keep the explicit padding without measuring.
 `as` renders `Box` as a heading, `p`, `label`, `legend`, `small`, `span`, or
 `strong` instead of a `div`. Your `className`, `style`, `width`, and `height`
 stay on that element and the snapped grid sits inside it. Pass `htmlFor` with
-`as="label"`.
+`as="label"`. A semantic host drops the element's default block margins so
+that they don't sit outside the snapped height; add your own as multiples of
+the base.
 
 ## Components
 

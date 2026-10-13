@@ -338,6 +338,17 @@ export function App() {
         </Padder>
       </section>
 
+      <section id="nested-snap" style={{ display: 'flow-root' }}>
+        <Box id="nested-snap-outer">
+          <Box>Sphinx of black quartz, judge my vow</Box>
+        </Box>
+        <Box as="p">Semantic paragraph one</Box>
+        <Box as="p">Semantic paragraph two</Box>
+        <Box>
+          <Spacer height={12} />
+        </Box>
+      </section>
+
       <section id="grid-exact">
         <Padder id="grid-padder" debugging="hidden" block={[8, 8]}>
           <div style={{ height: '8.296875px' }} />

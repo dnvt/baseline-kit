@@ -522,6 +522,21 @@ export function createRemixApp() {
         }),
       }),
       jsx('section', {
+        id: 'remix-nested-snap',
+        style: { display: 'flow-root' },
+        children: [
+          jsx(Box, {
+            id: 'remix-nested-snap-outer',
+            children: jsx(Box, {
+              children: 'Sphinx of black quartz, judge my vow',
+            }),
+          }),
+          jsx(Box, { as: 'p', children: 'Semantic paragraph one' }),
+          jsx(Box, { as: 'p', children: 'Semantic paragraph two' }),
+          jsx(Box, { children: jsx(Spacer, { height: 12 }) }),
+        ],
+      }),
+      jsx('section', {
         id: 'remix-grid-exact',
         children: [
           jsx(Padder, {

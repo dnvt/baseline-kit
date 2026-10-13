@@ -95,11 +95,12 @@ describe('calculateSnappedSpacing', () => {
   describe('measurement noise', () => {
     const initial = { top: 8, right: 0, bottom: 8, left: 0 }
 
-    it('treats zoom residues off the 1/64px lattice as aligned', () => {
-      // Sub-unit noise, and residues measured at 110%, 133% and 80% zoom.
+    it('treats residues under 1/32px as aligned', () => {
+      // Sub-unit noise, residues measured at 110%, 133% and 80% zoom, and
+      // one-unit remainders in Chromium (1/64px) and Firefox (1/60px).
       for (const height of [
         40.0000076, 39.99, 40.005, 40.0057, 120.028, 72.017, 96.023, 288.017,
-        96.0156,
+        96.0156, 40.015625, 40.0166667,
       ]) {
         expect(
           calculateSnappedSpacing(height, base, initial, {
@@ -114,9 +115,9 @@ describe('calculateSnappedSpacing', () => {
       }
     })
 
-    it('snaps whole layout units exactly onto the grid', () => {
-      // Real trimmed text heights, e.g. Times New Roman 18px is 8.046875.
-      for (const height of [8.046875, 40.015625, 39.984375, 24.0625]) {
+    it('snaps real heights two or more layout units off the grid', () => {
+      // Times New Roman 18px trims to 8.046875; Firefox lays out in 1/60px.
+      for (const height of [8.046875, 40.03125, 39.96875, 24.0625, 8.05]) {
         expect(isOnBaseline(height, base)).toBe(false)
         const { top } = calculateSnappedSpacing(
           height,
@@ -141,9 +142,43 @@ describe('calculateSnappedSpacing', () => {
   })
 
   describe('tolerance boundary', () => {
-    it('snaps off-lattice distances larger than 1/16px', () => {
-      expect(isOnBaseline(40.1, base)).toBe(false)
+    it('snaps remainders of 1/32px and more', () => {
+      expect(isOnBaseline(40.03125, base)).toBe(false)
       expect(isOnBaseline(40.07, base)).toBe(false)
+    })
+
+    it('ignores floating-point error with non-binary bases', () => {
+      // 46 % 9.2 is about 3.6e-15, not 0.
+      for (const [height, gridBase] of [
+        [46, 9.2],
+        [48, 9.6],
+        [43.8, 7.3],
+        [24, 4.8],
+      ] as const) {
+        expect(isOnBaseline(height, gridBase)).toBe(true)
+        expect(
+          calculateSnappedSpacing(
+            height,
+            gridBase,
+            { top: 0, right: 0, bottom: 0, left: 0 },
+            'height'
+          ).bottom
+        ).toBe(0)
+      }
+    })
+  })
+
+  describe('bases of 1px or less', () => {
+    it('leave the padding unchanged, so the outer Box does the snapping', () => {
+      const initial = { top: 2, right: 0, bottom: 3, left: 0 }
+      for (const mode of ['height', 'clamp'] as const) {
+        expect(calculateSnappedSpacing(8.297, 1, initial, mode)).toEqual(
+          initial
+        )
+        expect(calculateSnappedSpacing(8.297, 0.5, initial, mode)).toEqual(
+          initial
+        )
+      }
     })
   })
 })

@@ -111,6 +111,11 @@
   display: block;
 }
 
+/* Heading and paragraph margins would sit outside the snapped height. */
+.bk-box:where(.bk-box-semantic-host) {
+  margin-block: 0;
+}
+
 /* The host already applies --bkbx-w/--bkbx-h; the grid only fills it. */
 .bk-box__grid {
   display: grid;

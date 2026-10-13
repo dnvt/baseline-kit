@@ -1253,6 +1253,26 @@ test('React Padder spacers keep a snapped Padder on the base grid', async ({
   }
 })
 
+test('React nested and semantic Boxes stay on the grid', async ({ page }) => {
+  // Every top-level Box in the section starts and ends on the grid: a nested
+  // Box adds no late correction, and semantic hosts carry no default margins.
+  await expect
+    .poll(() =>
+      page.locator('#nested-snap').evaluate((section) => {
+        const origin = section.getBoundingClientRect().top
+        const off = (value: number) => {
+          const remainder = (((value - origin) % 8) + 8) % 8
+          return Math.min(remainder, 8 - remainder)
+        }
+        return Array.from(section.children).map((element) => {
+          const rect = element.getBoundingClientRect()
+          return Math.max(off(rect.top), off(rect.bottom)) < 1 / 64
+        })
+      })
+    )
+    .toEqual([true, true, true, true])
+})
+
 test('React Box keeps a fractional top snap on an 8px base', async ({
   page,
 }) => {
@@ -2041,6 +2061,81 @@ test.describe('native Remix adapter', () => {
     await expect.poll(columns).toBe('6')
   })
 
+  test('native nested and semantic Boxes stay on the grid', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    // Every top-level Box in the section starts and ends on the grid: a nested
+    // Box adds no late correction, and semantic hosts carry no default margins.
+    await expect
+      .poll(() =>
+        page.locator('#remix-nested-snap').evaluate((section) => {
+          const origin = section.getBoundingClientRect().top
+          const off = (value: number) => {
+            const remainder = (((value - origin) % 8) + 8) % 8
+            return Math.min(remainder, 8 - remainder)
+          }
+          return Array.from(section.children).map((element) => {
+            const rect = element.getBoundingClientRect()
+            return Math.max(off(rect.top), off(rect.bottom)) < 1 / 64
+          })
+        })
+      )
+      .toEqual([true, true, true, true])
+  })
+
+  test('native components keep measuring when detached during another unmount', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const guide = page.locator('#remix-detach-host [data-testid="guide"]')
+    const columns = () =>
+      guide.evaluate((element) =>
+        (element as HTMLElement).style.getPropertyValue('--bkgd-n')
+      )
+    await expect.poll(columns).toBe('4')
+    // Load a frame view whose measured entries the replacement will unmount.
+    await page.evaluate(() =>
+      (
+        window as unknown as {
+          __baselineRemixLifecycle: { reload: (src: string) => Promise<void> }
+        }
+      ).__baselineRemixLifecycle.reload('/remix-lifecycle-a')
+    )
+    await expect(
+      page.locator('#remix-frame-view-a [data-row-index]').first()
+    ).toBeVisible()
+
+    await page.evaluate(async () => {
+      const host = document.querySelector('#remix-detach-host')!
+      const parent = host.parentNode!
+      const next = host.nextSibling
+      host.remove()
+      // Unmounting the frame's entries runs the detach sweep meanwhile.
+      await (
+        window as unknown as {
+          __baselineRemixLifecycle: { replaceStatic: () => Promise<void> }
+        }
+      ).__baselineRemixLifecycle.replaceStatic()
+      for (let frame = 0; frame < 3; frame += 1) {
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+      }
+      parent.insertBefore(host, next)
+      ;(host as HTMLElement).style.width = '600px'
+    })
+    await expect.poll(columns).toBe('6')
+  })
+
   test('native Box keeps a fractional top snap on an 8px base', async ({
     page,
   }) => {
@@ -2295,12 +2390,19 @@ test.describe('native Remix adapter', () => {
       runtime.dispose()
       runtime.flush()
     })
-    await waitForAnimationFrames(page)
-    const afterDispose = await readNativeLifecycleProbe(page)
-    expect(afterDispose.resizeActive).toBe(0)
-    expect(afterDispose.intersectionActive).toBe(0)
-    expect(afterDispose.windowListeners).toBe(0)
-    expect(afterDispose.callbacksAfterDisconnect).toBe(0)
+    // Entries nested in a non-measuring entry are released by the detach
+    // sweep once they have stayed out of the document for half a second.
+    await expect
+      .poll(async () => {
+        const afterDispose = await readNativeLifecycleProbe(page)
+        return [
+          afterDispose.resizeActive,
+          afterDispose.intersectionActive,
+          afterDispose.windowListeners,
+          afterDispose.callbacksAfterDisconnect,
+        ]
+      })
+      .toEqual([0, 0, 0, 0])
   })
 
   test('preserves native frame state across enhanced navigation and history', async ({
@@ -2394,11 +2496,18 @@ test.describe('native Remix adapter', () => {
       runtime.dispose()
       runtime.flush()
     })
-    await waitForAnimationFrames(page)
-    const afterDispose = await readNativeLifecycleProbe(page)
-    expect(afterDispose.resizeActive).toBe(0)
-    expect(afterDispose.intersectionActive).toBe(0)
-    expect(afterDispose.windowListeners).toBe(0)
-    expect(afterDispose.callbacksAfterDisconnect).toBe(0)
+    // Entries nested in a non-measuring entry are released by the detach
+    // sweep once they have stayed out of the document for half a second.
+    await expect
+      .poll(async () => {
+        const afterDispose = await readNativeLifecycleProbe(page)
+        return [
+          afterDispose.resizeActive,
+          afterDispose.intersectionActive,
+          afterDispose.windowListeners,
+          afterDispose.callbacksAfterDisconnect,
+        ]
+      })
+      .toEqual([0, 0, 0, 0])
   })
 })
