@@ -25,10 +25,14 @@ export function formatValue(
   return value ?? ''
 }
 
+// Units every browser with CSS round() also supports. Newer ones (lh, rlh,
+// cap, ic, rex, rch, container units) are left out: where round() works but
+// the unit doesn't, the height would be dropped instead of falling back.
 const LENGTH_UNIT =
-  '(?:px|em|rem|ex|rex|ch|rch|cap|rcap|ic|ric|lh|rlh|vw|vh|vi|vb|vmin|vmax|' +
-  'svw|svh|svi|svb|svmin|svmax|lvw|lvh|lvi|lvb|lvmin|lvmax|dvw|dvh|dvi|dvb|' +
-  'dvmin|dvmax|cqw|cqh|cqi|cqb|cqmin|cqmax|cm|mm|q|in|pt|pc|%)'
+  '(?:px|em|rem|ex|ch|vw|vh|vi|vb|vmin|vmax|svw|svh|svi|svb|svmin|svmax|' +
+  'lvw|lvh|lvi|lvb|lvmin|lvmax|dvw|dvh|dvi|dvb|dvmin|dvmax|cm|mm|q|in|pt|pc|%)'
+// CSS whitespace: not every Unicode space.
+const CSS_SPACE = /[ \t\n\r\f]/
 // A CSS number: digits after a decimal point are required ('3.' is not one).
 const NUMBER = '[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:e[+-]?\\d+)?'
 const LENGTH = new RegExp(`^${NUMBER}${LENGTH_UNIT}$`, 'i')
@@ -42,6 +46,12 @@ type MathType = 'number' | 'length' | 'any'
 const sameType = (a: MathType, b: MathType): MathType | null =>
   a === 'any' ? b : b === 'any' || a === b ? a : null
 
+/** The type of a product; `var()` takes the other operand's type. */
+const productType = (a: MathType, b: MathType): MathType | null => {
+  if (a === 'number' || a === 'any') return b === 'number' ? a : b
+  return b === 'length' ? null : a
+}
+
 /**
  * Reads a `calc()`, `min()`, `max()`, `clamp()` or `var()` expression the way
  * CSS parses it, closely enough to know whether it is a valid length: `+` and
@@ -52,7 +62,7 @@ function readMathFunction(text: string): MathType | null {
   let at = 0
   const skipSpace = () => {
     const start = at
-    while (/\s/.test(text[at] ?? '')) at++
+    while (CSS_SPACE.test(text[at] ?? '')) at++
     return at > start
   }
   const match = (pattern: RegExp) => {
@@ -80,7 +90,7 @@ function readMathFunction(text: string): MathType | null {
     } else {
       type = sum()
       let count = 1
-      while (type !== null && text[at] === ',') {
+      while (type !== null && (skipSpace(), text[at] === ',')) {
         at++
         skipSpace()
         const next = sum()
@@ -126,19 +136,13 @@ function readMathFunction(text: string): MathType | null {
       skipSpace()
       const next = factor()
       if (next === null) return null
-      if (operator === '*') {
-        type =
-          type === 'number'
-            ? next
-            : next === 'number'
-              ? type
-              : sameType(type, next) === 'any'
-                ? 'any'
-                : null
-      } else {
-        // Dividing by a length isn't a length.
-        type = next === 'length' ? null : type
-      }
+      // Dividing by a length isn't a length.
+      type =
+        operator === '*'
+          ? productType(type, next)
+          : next === 'length'
+            ? null
+            : type
     }
     return type
   }
@@ -172,7 +176,7 @@ function readMathFunction(text: string): MathType | null {
  * value without a fallback.
  */
 export function isCSSLength(value: string): boolean {
-  const text = value.trim()
+  const text = value.replace(/^[ \t\n\r\f]+|[ \t\n\r\f]+$/g, '')
   if (LENGTH.test(text)) return true
   const type = readMathFunction(text)
   return type === 'length' || type === 'any'

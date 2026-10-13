@@ -3640,7 +3640,7 @@ async function openSpacers(page: Page, url: string) {
           .__baselineRemixReady
     )
   }
-  await expect(page.locator('[data-spacer]')).toHaveCount(13)
+  await expect(page.locator('[data-spacer]')).toHaveCount(14)
 }
 
 /** Rendered height (or width) of each `data-spacer` host, by id and grid. */
@@ -3831,6 +3831,17 @@ function spacerStringTests(prefix: string, url: string) {
     await expect(
       page.locator('[data-spacer="indicator"] .bk-indicator')
     ).toHaveText('40')
+  })
+
+  test(`${prefix} spacer indicator shows a measured 0px height, not the fallback`, async ({
+    page,
+  }) => {
+    // calc(100% - 100px) in a 100px parent is 0px: only the 320px width
+    // shows (7.0's fallback height would show 8).
+    await openSpacers(page, url)
+    await expect(
+      page.locator('[data-spacer="indicator-zero"] .bk-indicator')
+    ).toHaveText(['320'])
   })
 }
 

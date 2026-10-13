@@ -298,6 +298,16 @@ function SpacerStringsFixture() {
             debugging="visible"
             indicatorNode={(value) => String(value)}
           />
+          {/* 0px tall in a 100px parent (7.0's fallback: the 8px base). */}
+          <div style={SPACER_PARENT}>
+            <Spacer
+              data-spacer="indicator-zero"
+              width="100%"
+              height="calc(100% - 100px)"
+              debugging="visible"
+              indicatorNode={(value) => String(value)}
+            />
+          </div>
         </Config>
       </section>
       <section data-spacer-grid="rem" style={SPACER_SECTION}>

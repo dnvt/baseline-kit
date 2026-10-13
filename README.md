@@ -214,9 +214,11 @@ either to keep the explicit padding without measuring.
 A `Spacer` height such as `'3rem'`, `'10vh'`, `'50%'` or `'calc(100% - 24px)'`
 rounds to the base in CSS (with `round()`), so it follows the root font size,
 the viewport, and its container as they change; under a rem base it rounds to
-the rem value. A string width renders as written. Strings that aren't CSS
-lengths (`'auto'`, `'24'`, keywords, or malformed math such as
-`'calc(100%-23px)'`) fall back to the base. Browsers without CSS `round()`
+the rem value. A string width renders as written. Live strings use px, rem,
+em, ex, ch, `%`, the viewport units, and the absolute units, alone or inside
+`calc()`, `min()`, `max()`, `clamp()` and `var()`. Anything else (`'auto'`,
+`'24'`, keywords, newer units such as `lh` or `cqw`, or malformed math such as
+`'calc(100%-23px)'`) falls back to the base. Browsers without CSS `round()`
 (before Chrome 125, Firefox 118 and Safari 15.4) keep a string height's value
 at a 16px root and a 1920x1080 viewport.
 
@@ -224,9 +226,9 @@ A `Guide` `gap` such as `'1rem'` or `'2%'` resolves when the Guide renders
 (on mount, when its size changes, and for a rem `gap` or `columnWidth`, when
 the root font size changes) against the root font size, the viewport, and the
 Guide's own width, then rounds to the base. It reads px, rem, `%`, the
-viewport units (`vw`, `vh`, `vmin`, `vmax`, and their `s`, `l` and `d` forms),
-`in`, `cm`, `mm`, `pt` and `pc`; `em` resolves against 16px, and anything else,
-including `calc()`, falls back to the base.
+viewport units (`vw`, `vh`, `vi`, `vb`, `vmin`, `vmax`, and their `s`, `l` and
+`d` forms), `in`, `cm`, `mm`, `pt` and `pc`, in any letter case; `em` resolves
+against 16px, and anything else, including `calc()`, falls back to the base.
 
 ### Semantic elements
 

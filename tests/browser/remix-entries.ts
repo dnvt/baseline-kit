@@ -233,14 +233,36 @@ export const LiveGridProbe = clientEntry(
   }
 )
 
-/** A visible 2rem Spacer with an indicator, for `?spacers` (a function prop). */
+/**
+ * Visible Spacers with indicators, for `?spacers` (a function prop): 2rem, and
+ * one 0px tall in a 100px parent (7.0's fallback: the 8px base).
+ */
 export const SpacerIndicatorProbe = clientEntry(
   `${import.meta.url}#SpacerIndicatorProbe`,
-  () => () =>
-    jsx(Spacer, {
-      'data-spacer': 'indicator',
-      height: '2rem',
-      debugging: 'visible',
-      indicatorNode: (value: number) => String(value),
-    })
+  () => () => [
+    jsx(
+      Spacer,
+      {
+        'data-spacer': 'indicator',
+        height: '2rem',
+        debugging: 'visible',
+        indicatorNode: (value: number) => String(value),
+      },
+      'indicator'
+    ),
+    jsx(
+      'div',
+      {
+        style: { height: '100px' },
+        children: jsx(Spacer, {
+          'data-spacer': 'indicator-zero',
+          width: '100%',
+          height: 'calc(100% - 100px)',
+          debugging: 'visible',
+          indicatorNode: (value: number) => String(value),
+        }),
+      },
+      'indicator-zero'
+    ),
+  ]
 )

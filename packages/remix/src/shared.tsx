@@ -101,6 +101,8 @@ export function createConfigReader(
   } = {}
 ): () => ConfigSchema {
   let unsubscribe: (() => void) | null = null
+  // Whether the last render needed the root font size.
+  let following = false
   let rendered = false
   let renderedRoot = DEFAULT_ROOT_FONT_SIZE
 
@@ -115,7 +117,8 @@ export function createConfigReader(
     const first = !rendered
     rendered = true
     const follows = config.baseRem !== undefined || Boolean(followRoot?.())
-    if (!follows || typeof window === 'undefined') {
+    following = follows && typeof window !== 'undefined'
+    if (!following) {
       unsubscribe?.()
       unsubscribe = null
       return config
@@ -127,7 +130,8 @@ export function createConfigReader(
       // exists, so take it now: a removal before the task then aborts it.
       const signal = handle.signal
       handle.queueTask(() => {
-        if (unsubscribe || signal.aborted) return
+        // A render after this task was queued may no longer need the root.
+        if (unsubscribe || signal.aborted || !following) return
         unsubscribe = subscribeRootFontSize(follow)
         signal.addEventListener('abort', () => unsubscribe?.(), {
           once: true,

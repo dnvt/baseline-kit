@@ -140,6 +140,16 @@ describe('createConfigReader', () => {
     expect(probes()).toHaveLength(0)
   })
 
+  it('skips a queued subscription that a later render no longer needs', () => {
+    const { handle, runTasks } = fakeHandle()
+    const readConfig = read(handle)
+    readConfig()
+    handle.props.__baselineConfig = px
+    readConfig()
+    runTasks()
+    expect(probes()).toHaveLength(0)
+  })
+
   it('leaves px configs alone', () => {
     const { handle, runTasks } = fakeHandle(px)
     expect(read(handle)()).toBe(px)

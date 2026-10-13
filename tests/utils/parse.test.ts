@@ -81,6 +81,15 @@ describe('isCSSLength', () => {
       'calc(100% - -4px)',
       'min(calc(1rem + 2px), 50%)',
       '1REM',
+      '2vi',
+      '3svmin',
+      // A var() operand takes the other operand's type.
+      'calc(var(--n) * 1rem)',
+      'calc(1rem * var(--n))',
+      'calc(var(--a) * (1px + 2px))',
+      // Whitespace before a comma.
+      'min(1px , 2px)',
+      'clamp(1rem , 2vw , 3rem)',
     ]) {
       expect(isCSSLength(value), value).toBe(true)
     }
@@ -115,6 +124,15 @@ describe('isCSSLength', () => {
       'calc(1 + 1px)',
       'clamp(1px, 2px)',
       'var(x)',
+      'calc(2 * 3)',
+      // Not CSS whitespace.
+      'calc(1px\u00a0+ 2px)',
+      '\u00a02px',
+      // Units newer than round() in some browsers keep the base fallback.
+      '2lh',
+      '1rlh',
+      '2cap',
+      '5cqw',
     ]) {
       expect(isCSSLength(value), value).toBe(false)
     }

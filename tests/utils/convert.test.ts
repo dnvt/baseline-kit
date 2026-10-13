@@ -102,5 +102,10 @@ describe('convertValue unit forms', () => {
     expect(convertValue('1REM', { rootFontSize: 20 })).toBe(20)
     expect(convertValue('10dvh', { viewportHeight: 700 })).toBe(70)
     expect(convertValue('10svw', { viewportWidth: 1000 })).toBe(100)
+    const viewport = { viewportWidth: 1000, viewportHeight: 500 }
+    expect(convertValue('10vi', viewport)).toBe(100)
+    expect(convertValue('10vb', viewport)).toBe(50)
+    expect(convertValue('10svmin', viewport)).toBe(50)
+    expect(convertValue('10dvmax', viewport)).toBe(100)
   })
 })
