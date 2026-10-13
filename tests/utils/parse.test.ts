@@ -1,4 +1,9 @@
-import { parseUnit, formatValue, isCSSLength } from '@baseline-kit/core'
+import {
+  parseUnit,
+  formatValue,
+  isCSSLength,
+  isRootRelative,
+} from '@baseline-kit/core'
 
 describe('parseUnit', () => {
   it('parses a valid pixel value', () => {
@@ -93,5 +98,22 @@ describe('isCSSLength', () => {
     ]) {
       expect(isCSSLength(value), value).toBe(false)
     }
+  })
+})
+
+describe('isRootRelative', () => {
+  it('spots values that follow the root font size', () => {
+    for (const value of ['1rem', '0.5 rem', 'calc(1rem + 2px)', '2rlh', '1rch'])
+      expect(isRootRelative(value), value).toBe(true)
+    for (const value of [
+      16,
+      '16px',
+      '1em',
+      '10vh',
+      'auto',
+      'remainder',
+      undefined,
+    ])
+      expect(isRootRelative(value), String(value)).toBe(false)
   })
 })

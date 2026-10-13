@@ -7,6 +7,7 @@ import {
   Spacer,
 } from '@baseline-kit/react'
 import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
+import { GUIDE_BOX, GUIDE_CASES } from './guide-strings'
 import {
   SPACER_CH_PROBE,
   SPACER_HEIGHTS,
@@ -252,6 +253,21 @@ function CostFixture({ kind }: { kind: 'rem' | 'px' }) {
         <Box data-cost="px-content" block={[0, 0]}>
           <div style={{ height: 45 }} />
         </Box>
+      </Config>
+    </section>
+  )
+}
+
+/** The `?guides` hosts (see guide-strings.ts). */
+function GuideStringsFixture() {
+  return (
+    <section data-guide-grid>
+      <Config base={8}>
+        {GUIDE_CASES.map(({ id, props }) => (
+          <div key={id} data-guide-case={id} style={GUIDE_BOX as CSSProperties}>
+            <Guide {...props} gap="1rem" debugging="visible" />
+          </div>
+        ))}
       </Config>
     </section>
   )
@@ -534,6 +550,7 @@ export function App({ search = '' }: { search?: string }) {
     <main>
       {(cost === 'rem' || cost === 'px') && <CostFixture kind={cost} />}
       {params.has('spacers') && <SpacerStringsFixture />}
+      {params.has('guides') && <GuideStringsFixture />}
       {remGrid && (
         <>
           <RemGridFixture base="0.5rem" />

@@ -6,6 +6,7 @@ import {
   SnapModeProbe,
   SpacerIndicatorProbe,
 } from './remix-entries'
+import { GUIDE_BOX, GUIDE_CASES } from './guide-strings'
 import {
   SPACER_CH_PROBE,
   SPACER_HEIGHTS,
@@ -143,6 +144,31 @@ function costGrid(kind: 'rem' | 'px') {
   })
 }
 
+/** The `?guides` hosts (see guide-strings.ts). */
+function guideStrings() {
+  return jsx('section', {
+    'data-guide-grid': '',
+    children: jsx(Config, {
+      base: 8,
+      children: GUIDE_CASES.map(({ id, props }) =>
+        jsx(
+          'div',
+          {
+            'data-guide-case': id,
+            style: GUIDE_BOX,
+            children: jsx(Guide, {
+              ...props,
+              gap: '1rem',
+              debugging: 'visible',
+            }),
+          },
+          id
+        )
+      ),
+    }),
+  })
+}
+
 /** The `?spacers` hosts (see spacer-strings.ts). */
 function spacerStrings() {
   return [
@@ -231,6 +257,7 @@ export function createRemixApp(search = '') {
       ...(remGridOn ? [remGrid('0.5rem'), remGrid(8)] : []),
       ...(cost === 'rem' || cost === 'px' ? [costGrid(cost)] : []),
       ...(params.has('spacers') ? spacerStrings() : []),
+      ...(params.has('guides') ? [guideStrings()] : []),
       jsx('section', {
         id: 'remix-frame-lifecycle',
         children: [

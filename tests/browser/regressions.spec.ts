@@ -3805,9 +3805,66 @@ function spacerStringTests(prefix: string, url: string) {
   })
 }
 
+/** Rendered gap, line period and column counts of the `?guides` Guides. */
+async function guideState(page: Page) {
+  return page.evaluate(() => {
+    const cols = (id: string) =>
+      document.querySelector<HTMLElement>(`[data-guide-case="${id}"] .bk-cols`)!
+    const auto = cols('auto')
+    return {
+      fixedGap: parseFloat(getComputedStyle(cols('fixed')).columnGap),
+      linePeriod: parseFloat(
+        getComputedStyle(
+          document.querySelector('[data-guide-case="line"] .bk-gde')!
+        ).getPropertyValue('--bkgd-line-period')
+      ),
+      autoGap: parseFloat(getComputedStyle(auto).columnGap),
+      autoColumns: auto.querySelectorAll('.bk-col').length,
+      autoTracks: getComputedStyle(auto)
+        .gridTemplateColumns.split(' ')
+        .filter(Boolean).length,
+    }
+  })
+}
+
+function guideStringTests(prefix: string, url: string) {
+  test(`${prefix} guide string gap follows the root font size`, async ({
+    page,
+  }) => {
+    // A7d. 7.0: React drew no gap; Remix froze it at a 16px root.
+    await page.goto(url)
+    if (url.startsWith('/remix.html')) {
+      await page.evaluate(
+        () =>
+          (window as unknown as { __baselineRemixReady: Promise<void> })
+            .__baselineRemixReady
+      )
+    }
+    const expected = (gap: number, columns: number) => ({
+      fixedGap: gap,
+      linePeriod: gap,
+      autoGap: gap,
+      autoColumns: columns,
+      autoTracks: columns,
+    })
+    // floor((300 + gap) / (40 + gap)) auto columns.
+    await expect.poll(() => guideState(page)).toEqual(expected(16, 5))
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '32px'
+    })
+    await expect.poll(() => guideState(page)).toEqual(expected(32, 4))
+    // 20px rounds to the 8px base: 24.
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '20px'
+    })
+    await expect.poll(() => guideState(page)).toEqual(expected(24, 5))
+  })
+}
+
 remGridTests('React', '/?remgrid')
 costTests('React', '/')
 spacerStringTests('React', '/?spacers')
+guideStringTests('React', '/?guides')
 
 liveGridTests('React', '/?live', '#live-grid')
 
@@ -3816,4 +3873,5 @@ test.describe('native Remix adapter', () => {
   remGridTests('native', '/remix.html?remgrid')
   costTests('native', '/remix.html')
   spacerStringTests('native', '/remix.html?spacers')
+  guideStringTests('native', '/remix.html?guides')
 })

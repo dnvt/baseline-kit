@@ -8,3 +8,6 @@
 - Strings that aren't CSS lengths (`'auto'`, `'24'`, keywords) keep 7.0's fallback to the base. Browsers without CSS `round()` keep 7.0's px values for string heights.
 - An indicator for a string size shows the rendered size, measured after mount.
 - `SpacerDescriptor.style` carries a string height's live value in `--bksp-hl`; `--bksp-h` and `data-height` keep the px value. The core exports `isCSSLength`, and `SpacerDescriptorParams` gains an optional `baseRem`.
+- `Guide` accepts a string `gap` (`'1rem'`, `'2%'`), resolved against the live root font size, viewport and the Guide's own width, then rounded to the base. A Guide whose `gap` or `columnWidth` is in rem re-renders when the root font size changes, so its column elements keep matching the CSS columns. In 7.0 React drew no gap for a string and Remix resolved it against a fixed 16px root.
+- An `auto` Guide's `%` column width and gap resolve against the Guide's width (7.0: 0px, so one column element).
+- `GuideOptions.gap` widens to `number | string`; the core exports `isRootRelative`.

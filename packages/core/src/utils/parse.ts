@@ -66,3 +66,14 @@ export function isCSSLength(value: string): boolean {
   }
   return depth === 0 && hasLength
 }
+
+/**
+ * Whether a value depends on the root font size (`rem` and the other
+ * root-relative units), so whatever resolves it must follow root changes.
+ */
+export function isRootRelative(value: unknown): boolean {
+  return (
+    typeof value === 'string' &&
+    /\d\s*(?:rem|rlh|rex|rch|rcap|ric)(?![\w-])/i.test(value)
+  )
+}

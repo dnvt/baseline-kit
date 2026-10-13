@@ -91,7 +91,14 @@ export function normalizeConfigSnapshot(config: ConfigSchema): ConfigSchema {
  */
 export function createConfigReader(
   handle: Handle<{ __baselineConfig?: ConfigSchema }>,
-  { serverFirst = false } = {}
+  {
+    serverFirst = false,
+    followRoot,
+  }: {
+    serverFirst?: boolean
+    /** Also follow the root font size when this returns true (a rem prop). */
+    followRoot?: () => boolean
+  } = {}
 ): () => ConfigSchema {
   let unsubscribe: (() => void) | null = null
   let rendered = false
@@ -107,7 +114,8 @@ export function createConfigReader(
     )
     const first = !rendered
     rendered = true
-    if (config.baseRem === undefined || typeof window === 'undefined') {
+    const follows = config.baseRem !== undefined || Boolean(followRoot?.())
+    if (!follows || typeof window === 'undefined') {
       unsubscribe?.()
       unsubscribe = null
       return config

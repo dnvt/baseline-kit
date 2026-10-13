@@ -70,7 +70,7 @@ export function canCompactFixedGuide(params: {
   variant: GuideVariant
   columns?: number | readonly unknown[]
   columnWidth?: number | string
-  gap: number
+  gap: number | string
   align?: string
   domDiagnostics: boolean
   className?: string
@@ -104,7 +104,7 @@ export function canCompactFixedGuide(params: {
 export interface GuideConfigParams {
   variant: GuideVariant
   base: number
-  gap: number
+  gap: number | string
   columns?: number | readonly (string | number | undefined | 'auto')[]
   columnWidth?: number | string
 }

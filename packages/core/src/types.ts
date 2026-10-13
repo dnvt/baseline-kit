@@ -93,7 +93,8 @@ export type GuideOptions = SizeOptions & {
   columnWidth?: number | string
   maxWidth?: number | string
   color?: string
-  gap?: number
+  /** Column gap: px as a number, or a CSS length such as `'1rem'`. */
+  gap?: number | string
 }
 
 export type PadderOptions = SizeOptions & SpacingProps

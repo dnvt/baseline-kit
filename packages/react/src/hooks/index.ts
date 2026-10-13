@@ -12,6 +12,7 @@ export * from './useGuide'
 
 // Configuration
 export * from './useConfig'
+export * from './useRootFontSize'
 export * from './useDebug'
 
 // Lifecycle

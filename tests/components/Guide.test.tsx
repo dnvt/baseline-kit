@@ -33,6 +33,22 @@ describe('Guide component', () => {
     vi.clearAllMocks()
   })
 
+  it('renders a string gap, which 7.0 dropped to 0', () => {
+    render(
+      <Guide
+        variant="fixed"
+        columns={4}
+        gap="1.5rem"
+        debugging="visible"
+        data-testid="guide"
+      />
+    )
+    // 24px against the 16px test root, a whole number of 8px bases.
+    expect(screen.getByTestId('guide').style.getPropertyValue('--bkgd-g')).toBe(
+      '24px'
+    )
+  })
+
   it('renders a line variant with gradient metadata instead of column nodes', () => {
     render(
       <Guide variant="line" gap={10} debugging="visible" data-testid="guide" />

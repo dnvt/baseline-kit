@@ -11,8 +11,10 @@ import {
   type GuideOptions,
   cx,
   getDOMAttributes,
+  isRootRelative,
   resolveDebugState,
 } from '@baseline-kit/core'
+import { getViewportContext } from '@baseline-kit/dom'
 import { configuredClientEntry } from './shared'
 import {
   createElementObserverBridge,
@@ -33,8 +35,14 @@ type RuntimeGuideProps = GuideProps & {
 }
 
 function GuideImpl(handle: Handle<RuntimeGuideProps>) {
-  // Its rows or columns depend on the base: hydrate at the server's.
-  const readConfig = createConfigReader(handle, { serverFirst: true })
+  // Its rows or columns depend on the base: hydrate at the server's. A gap
+  // or column width in rem follows the root font size too.
+  const readConfig = createConfigReader(handle, {
+    serverFirst: true,
+    followRoot: () =>
+      isRootRelative(handle.props.gap) ||
+      isRootRelative(handle.props.columnWidth),
+  })
   let dimensions = { width: 0, height: 0 }
   const requestUpdate = () => {
     queueNativeUpdate(handle)
@@ -58,12 +66,11 @@ function GuideImpl(handle: Handle<RuntimeGuideProps>) {
       columns: props.columns,
       columnWidth: props.columnWidth,
     })
-    const result = calculateGuideTemplate(dimensions.width, guideConfig, {
-      viewportWidth:
-        typeof window === 'undefined' ? undefined : window.innerWidth,
-      viewportHeight:
-        typeof window === 'undefined' ? undefined : window.innerHeight,
-    })
+    const result = calculateGuideTemplate(
+      dimensions.width,
+      guideConfig,
+      getViewportContext()
+    )
     const descriptor = createGuideDescriptor({
       base: config.base,
       colors: config.guide.colors,

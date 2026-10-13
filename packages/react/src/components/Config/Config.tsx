@@ -6,11 +6,8 @@ import {
   mergeConfig,
   createCSSVariables,
 } from '@baseline-kit/core/config/merge'
-import {
-  DEFAULT_ROOT_FONT_SIZE,
-  parseRemBase,
-} from '@baseline-kit/core/config/base'
-import { getRootFontSize, subscribeRootFontSize } from '@baseline-kit/dom'
+import { parseRemBase } from '@baseline-kit/core/config/base'
+import { useRootFontSize } from '../../hooks/useRootFontSize'
 
 // Re-export types that consumers need
 export type { DebuggingMode } from '@baseline-kit/core/types'
@@ -32,21 +29,6 @@ export const useDefaultConfig = () => React.use(ConfigContext)
 
 export type ConfigProps = ConfigOverrides & {
   children: React.ReactNode
-}
-
-const subscribeNothing = () => () => {}
-const serverRootFontSize = () => DEFAULT_ROOT_FONT_SIZE
-
-/**
- * The live root font size while `enabled`. Server renders and hydration use
- * 16px, so a rem base hydrates without a mismatch and re-resolves after.
- */
-function useRootFontSize(enabled: boolean): number {
-  return React.useSyncExternalStore(
-    enabled ? subscribeRootFontSize : subscribeNothing,
-    enabled ? getRootFontSize : serverRootFontSize,
-    serverRootFontSize
-  )
 }
 
 /**
