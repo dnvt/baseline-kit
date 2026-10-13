@@ -182,14 +182,20 @@ export function nextSnap(
   const key = getSnapKey(input)
   const natural = removeSnapCorrection(height, rendered, input.initial)
   if (prev && prev.key === key) {
-    if (height === prev.height || !settling) return prev
+    // Float noise (Firefox reports 100.79999 for 100.8) is no change.
+    if (Math.abs(height - prev.height) < SNAP_EPSILON || !settling) return prev
     // On a page scaled by a fraction, layout rounds to device pixels, so the
     // natural height moves by a residue after each correction; only a larger
-    // change is new content. A height already on the grid needs no change.
+    // change is new content. A natural height that the current padding
+    // already puts on the grid needs no change.
     const threshold = scaled ? SNAP_TOLERANCE : SNAP_EPSILON
+    const withCurrent =
+      natural +
+      (prev.padding.top - input.initial.top) +
+      (prev.padding.bottom - input.initial.bottom)
     if (
       Math.abs(natural - prev.natural) < threshold ||
-      isOnBaseline(height, input.base, scaled)
+      isOnBaseline(withCurrent, input.base, scaled)
     ) {
       return { ...prev, height }
     }

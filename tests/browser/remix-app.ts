@@ -541,10 +541,10 @@ export function createRemixApp() {
         children: jsx(SnapModeProbe, {}),
       }),
       jsx('section', {
-        id: 'remix-late-and-layered',
+        id: 'remix-late-and-margins',
         children: [
           jsx('style', {
-            children: '@layer utilities { .layered-mt { margin-top: 16px; } }',
+            children: 'p { margin: 1em 0; } .caller-mt { margin-top: 16px; }',
           }),
           jsx(Box, {
             id: 'remix-late-box',
@@ -556,10 +556,15 @@ export function createRemixApp() {
             }),
           }),
           jsx(Box, {
-            id: 'remix-layered-p',
+            id: 'remix-reset-p',
             as: 'p',
-            className: 'layered-mt',
-            children: 'Layered margin',
+            children: 'Element margin',
+          }),
+          jsx(Box, {
+            id: 'remix-caller-p',
+            as: 'p',
+            className: 'caller-mt',
+            children: 'Caller margin',
           }),
         ],
       }),

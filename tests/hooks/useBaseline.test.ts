@@ -218,6 +218,36 @@ describe('useBaseline', () => {
     expect(result.current.padding.bottom).toBe(10)
   })
 
+  it('snaps afresh when snapping turns off and back on', () => {
+    vi.useFakeTimers()
+    try {
+      // 48 is on the grid: the snap keeps the explicit padding.
+      useMeasureSpy.mockReturnValue({ width: 100, height: 48 })
+      const ref = { current: document.createElement('div') }
+      const { result, rerender } = renderHook(
+        ({ snapping }: { snapping: 'height' | 'none' }) =>
+          useBaseline(ref, {
+            base: 8,
+            snapping,
+            spacing: { top: 10, bottom: 10, left: 0, right: 0 },
+          }),
+        { initialProps: { snapping: 'height' } }
+      )
+      expect(result.current.padding.bottom).toBe(10)
+      vi.advanceTimersByTime(2000)
+
+      // The content grows while snapping is off; switching back must not
+      // reuse the old snap.
+      rerender({ snapping: 'none' })
+      useMeasureSpy.mockReturnValue({ width: 100, height: 51 })
+      rerender({ snapping: 'none' })
+      rerender({ snapping: 'height' })
+      expect(result.current.padding.bottom).toBe(15)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('keeps the snap once the settle window has passed', () => {
     vi.useFakeTimers()
     try {

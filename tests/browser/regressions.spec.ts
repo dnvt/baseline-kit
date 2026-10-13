@@ -1293,7 +1293,7 @@ test('React Box snaps exactly under CSS zoom and at one layout unit', async ({
     .toEqual([16, 16])
 })
 
-test('React Box re-snaps late content and yields margins to layers', async ({
+test('React Box re-snaps late content and keeps caller margins', async ({
   page,
 }) => {
   const box = page.locator('#late-box')
@@ -1313,8 +1313,32 @@ test('React Box re-snaps late content and yields margins to layers', async ({
       box.evaluate((element) => element.getBoundingClientRect().height)
     )
     .toBe(24)
-  // A layered utility can still set a semantic host's margin.
-  await expect(page.locator('#layered-p')).toHaveCSS('margin-top', '16px')
+  // Element resets such as normalize.css don't add margins to a semantic
+  // host, but a caller's own class still sets one.
+  await expect(page.locator('#reset-p')).toHaveCSS('margin-top', '0px')
+  await expect(page.locator('#caller-p')).toHaveCSS('margin-top', '16px')
+})
+
+test('React Box re-snaps after a font load once the window closes', async ({
+  page,
+}) => {
+  const box = page.locator('#late-box')
+  const height = () =>
+    box.evaluate((element) => element.getBoundingClientRect().height)
+  await expect.poll(height).toBe(16)
+  // After the settle window, a size change alone keeps the snap.
+  await page.waitForTimeout(3000)
+  await page.evaluate(() => {
+    ;(document.querySelector('#late-content') as HTMLElement).style.height =
+      '17px'
+  })
+  await expect.poll(height).toBe(23)
+  await page.waitForTimeout(300)
+  expect(await height()).toBe(23)
+  // A font load reopens it. WebKit fires only `loading` for a late font, so
+  // that is the event dispatched here.
+  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  await expect.poll(height).toBe(24)
 })
 
 test('React Box re-snaps after snapping turns off and back on', async ({
@@ -1334,12 +1358,15 @@ test('React Box re-snaps after snapping turns off and back on', async ({
       next
     )
   await expect.poll(height).toBe(104)
-  // Let the settle window close, so only the mode change can re-snap.
-  await page.waitForTimeout(2500)
+  // Re-snap to an aligned height without correction inside a settle
+  // window (opened by a font load), then let the window close.
+  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  await set({ height: 88 })
+  await expect.poll(height).toBe(88)
+  await page.waitForTimeout(3000)
   await set({ mode: 'none' })
+  await set({ height: 100 })
   await expect.poll(height).toBe(100)
-  await set({ height: 98 })
-  await expect.poll(height).toBe(98)
   // Back to the same mode, base and padding: it must snap afresh.
   await set({ mode: 'clamp' })
   await expect.poll(height).toBe(104)
@@ -1355,6 +1382,18 @@ test('React Box re-snaps when props change right after a snap', async ({
         .evaluate((element) => element.getBoundingClientRect().height % 8)
     )
     .toBe(0)
+})
+
+test('React Box snaps a padding change made in a mount effect', async ({
+  page,
+}) => {
+  await expect
+    .poll(() =>
+      page
+        .locator('#mount-flip-probe')
+        .evaluate((element) => element.getBoundingClientRect().height)
+    )
+    .toBe(104)
 })
 
 test('React Box keeps a fractional top snap on an 8px base', async ({
@@ -2246,7 +2285,7 @@ test.describe('native Remix adapter', () => {
       .toEqual([16, 16])
   })
 
-  test('native Box re-snaps late content and yields margins to layers', async ({
+  test('native Box re-snaps late content and keeps caller margins', async ({
     page,
   }) => {
     await page.goto('/remix.html')
@@ -2273,11 +2312,44 @@ test.describe('native Remix adapter', () => {
         box.evaluate((element) => element.getBoundingClientRect().height)
       )
       .toBe(24)
-    // A layered utility can still set a semantic host's margin.
-    await expect(page.locator('#remix-layered-p')).toHaveCSS(
+    // Element resets such as normalize.css don't add margins to a semantic
+    // host, but a caller's own class still sets one.
+    await expect(page.locator('#remix-reset-p')).toHaveCSS('margin-top', '0px')
+    await expect(page.locator('#remix-caller-p')).toHaveCSS(
       'margin-top',
       '16px'
     )
+  })
+
+  test('native Box re-snaps after a font load once the window closes', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const box = page.locator('#remix-late-box')
+    const height = () =>
+      box.evaluate((element) => element.getBoundingClientRect().height)
+    await expect.poll(height).toBe(16)
+    // After the settle window, a size change alone keeps the snap.
+    await page.waitForTimeout(3000)
+    await page.evaluate(() => {
+      ;(
+        document.querySelector('#remix-late-content') as HTMLElement
+      ).style.height = '17px'
+    })
+    await expect.poll(height).toBe(23)
+    await page.waitForTimeout(300)
+    expect(await height()).toBe(23)
+    // A font load reopens it. WebKit fires only `loading` for a late font, so
+    // that is the event dispatched here.
+    await page.evaluate(() =>
+      document.fonts.dispatchEvent(new Event('loading'))
+    )
+    await expect.poll(height).toBe(24)
   })
 
   test('native Box re-snaps after snapping turns off and back on', async ({
@@ -2303,12 +2375,17 @@ test.describe('native Remix adapter', () => {
         next
       )
     await expect.poll(height).toBe(104)
-    // Let the settle window close, so only the mode change can re-snap.
-    await page.waitForTimeout(2500)
+    // Re-snap to an aligned height without correction inside a settle
+    // window (opened by a font load), then let the window close.
+    await page.evaluate(() =>
+      document.fonts.dispatchEvent(new Event('loading'))
+    )
+    await set({ height: 88 })
+    await expect.poll(height).toBe(88)
+    await page.waitForTimeout(3000)
     await set({ mode: 'none' })
+    await set({ height: 100 })
     await expect.poll(height).toBe(100)
-    await set({ height: 98 })
-    await expect.poll(height).toBe(98)
     // Back to the same mode, base and padding: it must snap afresh.
     await set({ mode: 'clamp' })
     await expect.poll(height).toBe(104)

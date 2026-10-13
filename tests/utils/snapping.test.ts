@@ -246,6 +246,34 @@ describe('nextSnap', () => {
     ).toBe(first)
   })
 
+  it('ignores float noise in a fixed height', () => {
+    // Firefox reports 100.79999 for a 100.8px height as the box moves.
+    expect(
+      nextSnap(first, input, {
+        height: 10.5 - 1e-5,
+        rendered: first.padding,
+        settling: true,
+      })
+    ).toBe(first)
+  })
+
+  it('re-snaps a grid height measured before its padding committed', () => {
+    const snap = nextSnap(null, input, {
+      height: 100,
+      rendered: zero,
+      settling: true,
+    })!
+    expect(snap.padding.top).toBe(4)
+    // Content grew to 104 while the 4px padding was still uncommitted: 104 is
+    // on the grid, but keeping that padding would render 108.
+    const next = nextSnap(snap, input, {
+      height: 104,
+      rendered: zero,
+      settling: true,
+    })!
+    expect(next.padding.top).toBe(0)
+  })
+
   it('keeps the snap once its own correction shows up in the height', () => {
     const next = nextSnap(first, input, {
       height: 16,

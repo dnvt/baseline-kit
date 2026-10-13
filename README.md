@@ -185,10 +185,23 @@ either to keep the explicit padding without measuring.
 stay on that element and the snapped grid sits inside it. Pass `htmlFor` with
 `as="label"`. A semantic host drops the element's default block margins so
 that they don't sit outside the snapped height; add your own as multiples of
-the base. The reset outweighs element resets such as normalize.css, and your
-own classes win over it. To let layered utilities such as Tailwind's override
-Baseline Kit, import it into a cascade layer declared before them:
-`@import 'baseline-kit/styles' layer(baseline-kit);`.
+the base. The reset outweighs element resets such as normalize.css, and a
+class of your own loaded after Baseline Kit's stylesheet wins over it.
+
+Utilities in a cascade layer, such as Tailwind's, lose to unlayered CSS. To let
+them override Baseline Kit, put it in a layer after your resets and before your
+utilities. With Tailwind v4:
+
+```css
+@layer theme, base, baseline-kit, components, utilities;
+@import 'tailwindcss';
+@import 'baseline-kit/styles' layer(baseline-kit);
+```
+
+A layer declared before `base` would let Tailwind's preflight reset Baseline
+Kit's own margins and borders. In a layer, Baseline Kit also loses to
+unlayered element rules such as normalize.css; put those in a layer before
+`baseline-kit` too.
 
 ## Components
 
@@ -220,8 +233,8 @@ it but keep the layout, or render no debug elements. `Baseline` and `Guide` are
 | `baseline-kit/theme/default`, `baseline-kit/theme/dark` | A fixed light or dark theme. |
 | `baseline-kit/reset` | Optional minimal CSS reset. |
 
-Components use global `bk-*` class names, so you can override them with plain
-CSS. For custom colors, use `Config` or copy the
+Components use global `bk-*` class names, and every rule weighs one class,
+so plain CSS loaded after `baseline-kit/styles` overrides them. For custom colors, use `Config` or copy the
 [theme token template](https://github.com/dnvt/baseline-kit/blob/main/packages/core/src/styles/theme/tokens.css).
 
 ## Remix 3 server rendering

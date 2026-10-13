@@ -47,7 +47,11 @@ export function useBaseline(
 
   const snapRef = React.useRef<SnapState | null>(null)
   // Padding committed to the DOM, and the padding each measurement included.
-  const renderedPaddingRef = React.useRef<Padding | null>(null)
+  // The first render commits the initial padding, and the first measurement
+  // runs before the effect below records it.
+  const renderedPaddingRef = React.useRef<Padding | null>(
+    parsePadding({ padding: spacing })
+  )
   const measuredRef = React.useRef<{
     height: number
     rendered: Padding | null
@@ -66,6 +70,8 @@ export function useBaseline(
     const scaled = isScaledLayout(ref.current)
     const isAligned = isOnBaseline(height, base, scaled)
     if (snapping === 'none') {
+      // Clear the snap, so switching back snaps afresh.
+      snapRef.current = null
       return { padding: initialPadding, isAligned, height, snapKey: null }
     }
 

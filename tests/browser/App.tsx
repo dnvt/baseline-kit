@@ -39,6 +39,17 @@ function SnapModeProbe() {
   )
 }
 
+/** Changes its padding in a mount effect, before a second measurement. */
+function MountFlipProbe() {
+  const [block, setBlock] = useState<[number, number]>([0, 0])
+  useEffect(() => setBlock([0, 4]), [])
+  return (
+    <Box id="mount-flip-probe" snapping="clamp" block={block}>
+      <div style={{ height: 100 }} />
+    </Box>
+  )
+}
+
 /** Switches Box props in the microtask after the first snap commits. */
 function PropsAfterSnapProbe() {
   const [edge, setEdge] = useState<'bottom' | 'top'>('bottom')
@@ -413,15 +424,19 @@ export function App() {
       <section id="snap-probes">
         <SnapModeProbe />
         <PropsAfterSnapProbe />
+        <MountFlipProbe />
       </section>
 
-      <section id="late-and-layered">
-        <style>{`@layer utilities { .layered-mt { margin-top: 16px; } }`}</style>
+      <section id="late-and-margins">
+        <style>{`p { margin: 1em 0; } .caller-mt { margin-top: 16px; }`}</style>
         <Box id="late-box" snapping="height" block={[0, 0]}>
           <div id="late-content" style={{ height: '10px' }} />
         </Box>
-        <Box id="layered-p" as="p" className="layered-mt">
-          Layered margin
+        <Box id="reset-p" as="p">
+          Element margin
+        </Box>
+        <Box id="caller-p" as="p" className="caller-mt">
+          Caller margin
         </Box>
       </section>
 
