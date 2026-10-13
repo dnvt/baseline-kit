@@ -15,6 +15,10 @@ export const SPACER_HEIGHTS = [
   { id: 'unitless', height: '24' },
   { id: 'keyword', height: 'min-content' },
   { id: 'oops', height: 'calc(oops)' },
+  // 7.1.1: var() products, stepped functions, and an unfit var() fallback.
+  { id: 'varn', height: 'calc(var(--bk-test-n) * 1rem)' },
+  { id: 'stepped', height: 'round(up, 1.3rem, 8px)' },
+  { id: 'varfallback', height: 'var(--bk-test-unset, 2)' },
 ] as const
 
 export const SPACER_IN_PARENT = [
@@ -22,7 +26,12 @@ export const SPACER_IN_PARENT = [
   { id: 'calc', height: 'calc(100% - 23px)' },
 ] as const
 
-export const SPACER_SECTION = { width: '320px', fontFamily: 'serif' }
+// --bk-test-n feeds the var() product case.
+export const SPACER_SECTION = {
+  width: '320px',
+  fontFamily: 'serif',
+  '--bk-test-n': '2',
+}
 export const SPACER_PARENT = { height: '100px' }
 export const SPACER_ROW = { display: 'flex', width: '300px' }
 export const SPACER_CH_PROBE = { display: 'inline-block', width: '2ch' }

@@ -37,8 +37,11 @@ const CSS_SPACE = /[ \t\n\r\f]/
 const NUMBER = '[+-]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:e[+-]?\\d+)?'
 const LENGTH = new RegExp(`^${NUMBER}${LENGTH_UNIT}$`, 'i')
 const VALUE = new RegExp(`${NUMBER}(${LENGTH_UNIT})?(?![\\w%.])`, 'iy')
-const MATH_FUNCTION = /(?:calc|min|max|clamp|var)\(/iy
-const CUSTOM_PROPERTY = /--[\w-]+/y
+// round(), mod() and rem() have the same browser floor as round() itself.
+const MATH_FUNCTION = /(?:calc|min|max|clamp|round|mod|rem|var)\(/iy
+// Custom property names may use any non-ASCII character.
+const CUSTOM_PROPERTY = /--[-\w\u0080-\u{10FFFF}]+/uy
+const ROUNDING_STRATEGY = /(?:nearest|up|down|to-zero)[ \t\n\r\f]*,/iy
 
 /** What a math expression resolves to; `var()` could be either. */
 type MathType = 'number' | 'length' | 'any'
@@ -81,13 +84,15 @@ function readMathFunction(text: string): MathType | null {
     if (name === 'var') {
       if (!match(CUSTOM_PROPERTY)) return null
       skipSpace()
+      // Unset, the fallback is used, so it must fit where the var() is.
+      type = 'any'
       if (text[at] === ',') {
         at++
         skipSpace()
-        if (sum() === null) return null
+        type = sum()
       }
-      type = 'any'
     } else {
+      if (name === 'round' && match(ROUNDING_STRATEGY)) skipSpace()
       type = sum()
       let count = 1
       while (type !== null && (skipSpace(), text[at] === ',')) {
@@ -97,8 +102,15 @@ function readMathFunction(text: string): MathType | null {
         type = next === null ? null : sameType(type, next)
         count++
       }
-      if ((name === 'calc' && count !== 1) || (name === 'clamp' && count !== 3))
-        return null
+      const counts: Record<string, (count: number) => boolean> = {
+        calc: (n) => n === 1,
+        clamp: (n) => n === 3,
+        mod: (n) => n === 2,
+        rem: (n) => n === 2,
+        // round(A) rounds to a whole number, so A must be one.
+        round: (n) => n === 2 || (n === 1 && type !== 'length'),
+      }
+      if (counts[name] && !counts[name](count)) return null
     }
     skipSpace()
     if (type === null || text[at] !== ')') return null
