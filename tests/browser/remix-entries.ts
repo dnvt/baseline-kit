@@ -1,6 +1,6 @@
 import { clientEntry, type Handle, type RemixNode } from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
-import { Box, Padder } from '@baseline-kit/remix'
+import { Box, Padder, Spacer } from '@baseline-kit/remix'
 
 export const Forwarder = clientEntry(
   `${import.meta.url}#Forwarder`,
@@ -231,4 +231,16 @@ export const LiveGridProbe = clientEntry(
           })
         : null
   }
+)
+
+/** A visible 2rem Spacer with an indicator, for `?spacers` (a function prop). */
+export const SpacerIndicatorProbe = clientEntry(
+  `${import.meta.url}#SpacerIndicatorProbe`,
+  () => () =>
+    jsx(Spacer, {
+      'data-spacer': 'indicator',
+      height: '2rem',
+      debugging: 'visible',
+      indicatorNode: (value: number) => String(value),
+    })
 )

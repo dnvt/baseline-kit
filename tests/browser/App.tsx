@@ -8,6 +8,14 @@ import {
 } from '@baseline-kit/react'
 import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
 import {
+  SPACER_CH_PROBE,
+  SPACER_HEIGHTS,
+  SPACER_IN_PARENT,
+  SPACER_PARENT,
+  SPACER_ROW,
+  SPACER_SECTION,
+} from './spacer-strings'
+import {
   REM_GRID_BOXES,
   REM_GRID_CSS,
   REM_GRID_MARK,
@@ -246,6 +254,42 @@ function CostFixture({ kind }: { kind: 'rem' | 'px' }) {
         </Box>
       </Config>
     </section>
+  )
+}
+
+/** The `?spacers` hosts (see spacer-strings.ts). */
+function SpacerStringsFixture() {
+  return (
+    <>
+      <section data-spacer-grid="px" style={SPACER_SECTION}>
+        <Config base={8}>
+          {SPACER_HEIGHTS.map(({ id, height }) => (
+            <Spacer key={id} data-spacer={id} height={height} />
+          ))}
+          {SPACER_IN_PARENT.map(({ id, height }) => (
+            <div key={id} style={SPACER_PARENT}>
+              <Spacer data-spacer={id} height={height} />
+            </div>
+          ))}
+          <div style={SPACER_ROW}>
+            <Spacer data-spacer="w100" width="100%" height={8} />
+          </div>
+          <Spacer data-spacer="w30" width={30} height={8} />
+          <span data-spacer-probe="ch2" style={SPACER_CH_PROBE} />
+          <Spacer
+            data-spacer="indicator"
+            height="2rem"
+            debugging="visible"
+            indicatorNode={(value) => String(value)}
+          />
+        </Config>
+      </section>
+      <section data-spacer-grid="rem" style={SPACER_SECTION}>
+        <Config base="0.5rem">
+          <Spacer data-spacer="rem13" height="1.3rem" />
+        </Config>
+      </section>
+    </>
   )
 }
 
@@ -489,6 +533,7 @@ export function App({ search = '' }: { search?: string }) {
   const content = (
     <main>
       {(cost === 'rem' || cost === 'px') && <CostFixture kind={cost} />}
+      {params.has('spacers') && <SpacerStringsFixture />}
       {remGrid && (
         <>
           <RemGridFixture base="0.5rem" />

@@ -1,9 +1,10 @@
 import * as React from 'react'
-import { useConfig, useDebug, useIsClient } from '../../hooks'
+import { useConfig, useDebug, useIsClient, useMeasure } from '../../hooks'
 import {
   cx,
   createSpacerDescriptor,
   getDOMAttributes,
+  isCSSLength,
   type SpacerOptions,
 } from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
@@ -40,6 +41,8 @@ export const Spacer = React.memo(function Spacer({
   const { isShown } = useDebug(debuggingProp, config.debugging)
   const variant = variantProp ?? config.variant
   const base = baseProp ?? config.base
+  // A base prop is in px; only the configured base can follow the root.
+  const baseRem = baseProp === undefined ? config.baseRem : undefined
 
   const isHydrated = useIsClient()
 
@@ -47,6 +50,7 @@ export const Spacer = React.memo(function Spacer({
     () =>
       createSpacerDescriptor({
         base,
+        baseRem,
         colors: config.colors,
         width: widthProp,
         height: heightProp,
@@ -54,7 +58,16 @@ export const Spacer = React.memo(function Spacer({
         variant,
         isVisible: isShown,
       }),
-    [base, config.colors, widthProp, heightProp, colorProp, variant, isShown]
+    [
+      base,
+      baseRem,
+      config.colors,
+      widthProp,
+      heightProp,
+      colorProp,
+      variant,
+      isShown,
+    ]
   )
 
   const shouldShowMeasurements = hydratedValue(
@@ -63,10 +76,25 @@ export const Spacer = React.memo(function Spacer({
     isShown && indicatorNode !== undefined
   )
 
+  // A CSS length string renders live, so its indicator shows the measured
+  // size; the observer runs only while such an indicator is shown.
+  const liveHeight = typeof heightProp === 'string' && isCSSLength(heightProp)
+  const liveWidth = typeof widthProp === 'string' && isCSSLength(widthProp)
+  const measureRef = React.useRef<HTMLDivElement | null>(null)
+  React.useLayoutEffect(() => {
+    measureRef.current =
+      shouldShowMeasurements && (liveHeight || liveWidth) ? ref.current : null
+  })
+  const rendered = useMeasure(measureRef)
+
   const measurements = React.useMemo(() => {
     if (!shouldShowMeasurements) return null
-    const w = descriptor.normWidth
-    const h = descriptor.normHeight
+    const w =
+      liveWidth && rendered.width > 0 ? rendered.width : descriptor.normWidth
+    const h =
+      liveHeight && rendered.height > 0
+        ? rendered.height
+        : descriptor.normHeight
     return (
       <>
         {h !== 0 && (
@@ -84,6 +112,10 @@ export const Spacer = React.memo(function Spacer({
   }, [
     shouldShowMeasurements,
     indicatorNode,
+    liveWidth,
+    liveHeight,
+    rendered.width,
+    rendered.height,
     descriptor.normWidth,
     descriptor.normHeight,
   ])

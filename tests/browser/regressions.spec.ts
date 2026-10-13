@@ -3602,8 +3602,212 @@ function costTests(prefix: string, url: string) {
   })
 }
 
+async function openSpacers(page: Page, url: string) {
+  await page.goto(url)
+  if (url.startsWith('/remix.html')) {
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+  }
+  await expect(page.locator('[data-spacer]')).toHaveCount(13)
+}
+
+/** Rendered height (or width) of each `data-spacer` host, by id and grid. */
+async function spacerSizes(page: Page, grid: 'px' | 'rem' = 'px') {
+  return page.evaluate(
+    (grid) =>
+      Object.fromEntries(
+        Array.from(
+          document.querySelectorAll<HTMLElement>(
+            `[data-spacer-grid="${grid}"] [data-spacer]`
+          ),
+          (spacer) => {
+            const rect = spacer.getBoundingClientRect()
+            return [
+              spacer.dataset.spacer!,
+              spacer.dataset.spacer!.startsWith('w') ? rect.width : rect.height,
+            ]
+          }
+        )
+      ),
+    grid
+  )
+}
+
+/** Each declaration of an inline style, whitespace-normalized. */
+const declarations = (style: string) =>
+  Object.fromEntries(
+    style
+      .split(';')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const colon = part.indexOf(':')
+        return [
+          part.slice(0, colon).trim(),
+          part
+            .slice(colon + 1)
+            .replace(/\s+/g, ' ')
+            .trim(),
+        ]
+      })
+  )
+
+function spacerStringTests(prefix: string, url: string) {
+  const roundTo = (value: number, step: number) =>
+    Math.round(value / step) * step
+
+  test(`${prefix} spacer rem height rounds to the base at every root, live`, async ({
+    page,
+  }) => {
+    // A7a: 1.3rem rounded to 8px (7.0: 24px at every root).
+    for (const [root, expected] of [
+      [16, 24],
+      [17, 24],
+      [20, 24],
+      [24, 32],
+    ]) {
+      await openSpacers(page, `${url}&root=${root}`)
+      await expect
+        .poll(async () => (await spacerSizes(page)).rem13)
+        .toBe(expected)
+    }
+    await openSpacers(page, `${url}&root=16`)
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '24px'
+    })
+    await expect.poll(async () => (await spacerSizes(page)).rem13).toBe(32)
+  })
+
+  test(`${prefix} spacer strings resolve as CSS does, rounded; others keep the base`, async ({
+    page,
+  }) => {
+    // A7b.
+    await openSpacers(page, url)
+    const sizes = await spacerSizes(page)
+    const { viewport, ch } = await page.evaluate(() => ({
+      viewport: innerHeight,
+      ch: document
+        .querySelector('[data-spacer-probe="ch2"]')!
+        .getBoundingClientRect().width,
+    }))
+    expect(sizes.pct50).toBe(48)
+    expect(sizes.calc).toBe(80)
+    expect(sizes.vh10).toBe(roundTo(viewport / 10, 8))
+    expect(sizes.ch2).toBe(roundTo(ch, 8))
+    for (const id of ['auto', 'unitless', 'keyword', 'oops']) {
+      expect(sizes[id], id).toBe(8)
+    }
+  })
+
+  test(`${prefix} spacer string height rounds to a rem base`, async ({
+    page,
+  }) => {
+    // A7c: 1.3rem at a 20px root on a 10px base (7.0: 20px).
+    await openSpacers(page, `${url}&root=20`)
+    await expect
+      .poll(async () => (await spacerSizes(page, 'rem')).rem13)
+      .toBe(30)
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '16px'
+    })
+    await expect
+      .poll(async () => (await spacerSizes(page, 'rem')).rem13)
+      .toBe(24)
+  })
+
+  test(`${prefix} spacer string sizes hydrate the server HTML as is`, async ({
+    page,
+  }) => {
+    // A7e, px base at a 20px root.
+    const html = await (await page.request.get(`${url}&root=20`)).text()
+    const serverStyle = (id: string) =>
+      new RegExp(
+        `<div[^>]*data-spacer="${id}"[^>]*style="([^"]*)"|<div[^>]*style="([^"]*)"[^>]*data-spacer="${id}"`
+      )
+        .exec(html)
+        ?.slice(1)
+        .find(Boolean)
+    const messages: string[] = []
+    page.on('console', (message) => {
+      if (message.type() === 'error' || message.type() === 'warning') {
+        messages.push(message.text())
+      }
+    })
+    await openSpacers(page, `${url}&root=20`)
+    for (const id of ['rem13', 'vh10', 'pct50', 'w100']) {
+      const server = serverStyle(id)
+      expect(server, id).toBeTruthy()
+      const client = await page
+        .locator(`[data-spacer-grid="px"] [data-spacer="${id}"]`)
+        .getAttribute('style')
+      expect(declarations(client ?? ''), id).toEqual(
+        declarations(server!.replace(/&quot;/g, '"'))
+      )
+    }
+    expect(
+      messages.filter((text) => /hydrat|did not match|mismatch/i.test(text))
+    ).toEqual([])
+  })
+
+  test(`${prefix} spacer string heights fall back to 7.0's px without round()`, async ({
+    page,
+  }) => {
+    // A7f: 10vh is 72px live at a 720px viewport, 112px in 7.0.
+    await openSpacers(page, url)
+    const live = (await spacerSizes(page)).vh10
+    const removed = await page.evaluate(() => {
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules: CSSRuleList
+        try {
+          rules = sheet.cssRules
+        } catch {
+          continue
+        }
+        for (let index = rules.length - 1; index >= 0; index--) {
+          const rule = rules[index]
+          if (
+            rule instanceof CSSSupportsRule &&
+            rule.conditionText.includes('round(')
+          ) {
+            sheet.deleteRule(index)
+            return true
+          }
+        }
+      }
+      return false
+    })
+    expect(removed).toBe(true)
+    expect(live).not.toBe(112)
+    expect((await spacerSizes(page)).vh10).toBe(112)
+  })
+
+  test(`${prefix} spacer widths render as written; numbers still round`, async ({
+    page,
+  }) => {
+    // A7g: 7.0 rendered width="100%" as 0px.
+    await openSpacers(page, url)
+    const sizes = await spacerSizes(page)
+    expect(sizes.w100).toBe(300)
+    expect(sizes.w30).toBe(32)
+  })
+
+  test(`${prefix} spacer indicator shows the rendered size of a string height`, async ({
+    page,
+  }) => {
+    // 2rem at a 20px root renders 40px (7.0's value: 32).
+    await openSpacers(page, `${url}&root=20`)
+    await expect(
+      page.locator('[data-spacer="indicator"] .bk-indicator')
+    ).toHaveText('40')
+  })
+}
+
 remGridTests('React', '/?remgrid')
 costTests('React', '/')
+spacerStringTests('React', '/?spacers')
 
 liveGridTests('React', '/?live', '#live-grid')
 
@@ -3611,4 +3815,5 @@ test.describe('native Remix adapter', () => {
   liveGridTests('native', '/remix.html?live', '#remix-live-grid')
   remGridTests('native', '/remix.html?remgrid')
   costTests('native', '/remix.html')
+  spacerStringTests('native', '/remix.html?spacers')
 })

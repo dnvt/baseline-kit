@@ -1,6 +1,19 @@
 import { Frame } from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
-import { Forwarder, LiveGridProbe, SnapModeProbe } from './remix-entries'
+import {
+  Forwarder,
+  LiveGridProbe,
+  SnapModeProbe,
+  SpacerIndicatorProbe,
+} from './remix-entries'
+import {
+  SPACER_CH_PROBE,
+  SPACER_HEIGHTS,
+  SPACER_IN_PARENT,
+  SPACER_PARENT,
+  SPACER_ROW,
+  SPACER_SECTION,
+} from './spacer-strings'
 import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
 import {
   REM_GRID_BOXES,
@@ -130,6 +143,53 @@ function costGrid(kind: 'rem' | 'px') {
   })
 }
 
+/** The `?spacers` hosts (see spacer-strings.ts). */
+function spacerStrings() {
+  return [
+    jsx('section', {
+      'data-spacer-grid': 'px',
+      style: SPACER_SECTION,
+      children: jsx(Config, {
+        base: 8,
+        children: [
+          ...SPACER_HEIGHTS.map(({ id, height }) =>
+            jsx(Spacer, { 'data-spacer': id, height }, id)
+          ),
+          ...SPACER_IN_PARENT.map(({ id, height }) =>
+            jsx(
+              'div',
+              {
+                style: SPACER_PARENT,
+                children: jsx(Spacer, { 'data-spacer': id, height }),
+              },
+              id
+            )
+          ),
+          jsx('div', {
+            style: SPACER_ROW,
+            children: jsx(Spacer, {
+              'data-spacer': 'w100',
+              width: '100%',
+              height: 8,
+            }),
+          }),
+          jsx(Spacer, { 'data-spacer': 'w30', width: 30, height: 8 }),
+          jsx('span', { 'data-spacer-probe': 'ch2', style: SPACER_CH_PROBE }),
+          jsx(SpacerIndicatorProbe, {}),
+        ],
+      }),
+    }),
+    jsx('section', {
+      'data-spacer-grid': 'rem',
+      style: SPACER_SECTION,
+      children: jsx(Config, {
+        base: '0.5rem',
+        children: jsx(Spacer, { 'data-spacer': 'rem13', height: '1.3rem' }),
+      }),
+    }),
+  ]
+}
+
 export function createRemixApp(search = '') {
   const params = new URLSearchParams(search)
   const remGridOn = params.has('remgrid')
@@ -170,6 +230,7 @@ export function createRemixApp(search = '') {
     children: [
       ...(remGridOn ? [remGrid('0.5rem'), remGrid(8)] : []),
       ...(cost === 'rem' || cost === 'px' ? [costGrid(cost)] : []),
+      ...(params.has('spacers') ? spacerStrings() : []),
       jsx('section', {
         id: 'remix-frame-lifecycle',
         children: [

@@ -66,11 +66,13 @@ describe('Spacer Component', () => {
       })
     })
 
-    it('retains explicit dimensions after the existing normalization', () => {
+    it('renders a CSS length width as written and keeps auto on the base', () => {
       render(<Spacer width="100%" height="auto" />)
       const spacer = screen.getByTestId('spacer')
-      expect(spacer.style.getPropertyValue('--bksp-w')).toBe('0px')
+      // 7.0 resolved '100%' against no container: 0px.
+      expect(spacer.style.getPropertyValue('--bksp-w')).toBe('100%')
       expect(spacer.style.getPropertyValue('--bksp-h')).toBe('8px')
+      expect(spacer.style.getPropertyValue('--bksp-hl')).toBe('')
     })
   })
 
@@ -128,6 +130,24 @@ describe('Spacer Component', () => {
 
       expect(screen.getByText('width: 104px')).toBeInTheDocument()
       expect(screen.getByText('height: 48px')).toBeInTheDocument()
+    })
+
+    it('shows the rendered size for a CSS length string', async () => {
+      // jsdom has no layout: report the 40px a 2rem Spacer has at a 20px root.
+      const rect = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockReturnValue({ width: 300, height: 40 } as DOMRect)
+      const indicatorNode = (value: number, dimension: string) =>
+        `${dimension}: ${value}px`
+      render(
+        <Spacer
+          height="2rem"
+          debugging="visible"
+          indicatorNode={indicatorNode}
+        />
+      )
+      expect(await screen.findByText('height: 40px')).toBeInTheDocument()
+      rect.mockRestore()
     })
 
     it('does not render indicators when debugging is hidden', () => {

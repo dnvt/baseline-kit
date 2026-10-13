@@ -31,7 +31,13 @@ const version =
 const ENTRIES = ['index', 'core', 'remix', 'remix-server']
 // Types consumers read from the API: also checked in the other direction, so
 // a field can't widen under code that reads it.
-const OUTPUT_TYPES = new Set(['ConfigSchema', 'Padding', 'SnapState'])
+const OUTPUT_TYPES = new Set([
+  'ConfigSchema',
+  'Padding',
+  'SnapState',
+  'SpacerDescriptor',
+  'GuideResult',
+])
 
 // Inside node_modules so the old declarations resolve react and remix from
 // this repository, like the new ones.
