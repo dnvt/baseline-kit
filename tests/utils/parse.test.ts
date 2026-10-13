@@ -90,6 +90,16 @@ describe('isCSSLength', () => {
       // Whitespace before a comma.
       'min(1px , 2px)',
       'clamp(1rem , 2vw , 3rem)',
+      // A var() fallback that fits; non-ASCII custom property names.
+      'var(--space, 8px)',
+      'calc(var(--a, 2) * 1px)',
+      'var(--größe)',
+      // Stepped functions, supported wherever round() is.
+      'round(1.3rem, 8px)',
+      'round(up, 1.3rem, 8px)',
+      'calc(round(2.5) * 1rem)',
+      'mod(10px, 3px)',
+      'calc(100% - rem(10px, 3px))',
     ]) {
       expect(isCSSLength(value), value).toBe(true)
     }
@@ -128,6 +138,16 @@ describe('isCSSLength', () => {
       // Not CSS whitespace.
       'calc(1px\u00a0+ 2px)',
       '\u00a02px',
+      // A fallback that doesn't fit (unset, the value would be invalid).
+      'var(--a, 2)',
+      'calc(var(--a, 1px) * 1rem)',
+      'var(--a,)',
+      // Stepped functions need their arguments; abs() is newer than round().
+      'round(1.3rem)',
+      'round(sideways, 1px, 2px)',
+      'mod(10px)',
+      'mod(10px, 3)',
+      'abs(-2px)',
       // Units newer than round() in some browsers keep the base fallback.
       '2lh',
       '1rlh',

@@ -108,4 +108,10 @@ describe('convertValue unit forms', () => {
     expect(convertValue('10svmin', viewport)).toBe(50)
     expect(convertValue('10dvmax', viewport)).toBe(100)
   })
+
+  it('reads only its own units, not object prototype names', () => {
+    expect(convertValue('10constructor')).toBeNull()
+    expect(convertValue('10CONSTRUCTOR')).toBeNull()
+    expect(convertValue('2toString')).toBeNull()
+  })
 })

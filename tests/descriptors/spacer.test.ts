@@ -128,7 +128,14 @@ describe('createSpacerDescriptor in plain pixels', () => {
     })
 
     it("keeps 7.0's base fallback for strings CSS could drop", () => {
-      for (const height of ['auto', '24', 'min-content', 'calc(oops)']) {
+      for (const height of [
+        'auto',
+        '24',
+        'min-content',
+        'calc(oops)',
+        // Unset, --a would substitute 2: no height.
+        'var(--a, 2)',
+      ]) {
         const style = styleOf({ height })
         expect(style['--bksp-h'], height).toBe('8px')
         expect(style['--bksp-hl'], height).toBeUndefined()

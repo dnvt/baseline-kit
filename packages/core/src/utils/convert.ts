@@ -50,6 +50,9 @@ const RELATIVE_UNIT_RESOLVERS: Record<string, UnitResolver> = {
   '%': (ctx) => ctx.parentSize / 100,
 }
 
+const hasOwn = (record: object, key: string) =>
+  Object.prototype.hasOwnProperty.call(record, key)
+
 export function convertValue(
   value: number | string | undefined,
   context?: ConversionContext
@@ -64,13 +67,16 @@ export function convertValue(
   const num = parsed.value
   const unit = parsed.unit.toLowerCase()
 
-  if (unit in ABSOLUTE_UNIT_CONVERSIONS) {
+  // Own properties only: 'constructor' is not a unit.
+  if (hasOwn(ABSOLUTE_UNIT_CONVERSIONS, unit)) {
     return num * ABSOLUTE_UNIT_CONVERSIONS[unit]
   }
 
   if (unit === 'auto') return null
 
-  const resolver = RELATIVE_UNIT_RESOLVERS[unit]
+  const resolver = hasOwn(RELATIVE_UNIT_RESOLVERS, unit)
+    ? RELATIVE_UNIT_RESOLVERS[unit]
+    : undefined
   if (resolver) {
     const ctx = { ...DEFAULT_CONTEXT, ...context }
     return num * resolver(ctx)
