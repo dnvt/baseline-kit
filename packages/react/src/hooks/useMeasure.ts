@@ -22,29 +22,42 @@ export function useMeasure(
   React.useLayoutEffect(() => {
     onMeasureRef.current = onMeasure
   })
-  const handleRef = React.useRef<ReturnType<
-    typeof createMeasureObserver
-  > | null>(null)
+  const observedRef = React.useRef<{
+    element: HTMLElement
+    handle: ReturnType<typeof createMeasureObserver>
+  } | null>(null)
 
+  // Runs after every commit, because the ref can point at a new element
+  // (a Box whose `as` changes).
   React.useLayoutEffect(() => {
-    if (typeof window === 'undefined' || !ref.current) return
+    const element = ref.current
+    if (observedRef.current?.element === element) return
+    observedRef.current?.handle.disconnect()
+    observedRef.current = element
+      ? {
+          element,
+          handle: createMeasureObserver(element, (rect) => {
+            onMeasureRef.current?.(rect)
+            setDimensions((prev) =>
+              prev.width === rect.width && prev.height === rect.height
+                ? prev
+                : rect
+            )
+          }),
+        }
+      : null
+  })
 
-    const handle = createMeasureObserver(ref.current, (rect) => {
-      onMeasureRef.current?.(rect)
-      setDimensions((prev) =>
-        prev.width === rect.width && prev.height === rect.height ? prev : rect
-      )
-    })
-    handleRef.current = handle
-
-    return () => {
-      handle.disconnect()
-      handleRef.current = null
-    }
-  }, [ref])
+  React.useLayoutEffect(
+    () => () => {
+      observedRef.current?.handle.disconnect()
+      observedRef.current = null
+    },
+    []
+  )
 
   const refresh = React.useCallback(() => {
-    handleRef.current?.refresh()
+    observedRef.current?.handle.refresh()
   }, [])
 
   return { ...dimensions, refresh }

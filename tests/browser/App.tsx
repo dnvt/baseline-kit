@@ -39,6 +39,27 @@ function SnapModeProbe() {
   )
 }
 
+/** A Box whose `as` changes at runtime, which renders a new host. */
+function AsSwitchProbe() {
+  const [as, setAs] = useState<'p' | 'h2'>('p')
+  const [height, setHeight] = useState(100)
+  useEffect(() => {
+    ;(
+      window as unknown as {
+        __setAsProbe: (next: { as?: 'p' | 'h2'; height?: number }) => void
+      }
+    ).__setAsProbe = (next) => {
+      if (next.as) setAs(next.as)
+      if (next.height !== undefined) setHeight(next.height)
+    }
+  }, [])
+  return (
+    <Box id="as-probe" as={as} snapping="height" block={[0, 0]}>
+      <span style={{ display: 'block', height }} />
+    </Box>
+  )
+}
+
 /** Changes its padding in a mount effect, before a second measurement. */
 function MountFlipProbe() {
   const [block, setBlock] = useState<[number, number]>([0, 0])
@@ -425,6 +446,7 @@ export function App() {
         <SnapModeProbe />
         <PropsAfterSnapProbe />
         <MountFlipProbe />
+        <AsSwitchProbe />
       </section>
 
       <section id="late-and-margins">

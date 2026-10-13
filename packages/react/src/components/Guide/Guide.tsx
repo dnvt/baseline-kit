@@ -2,7 +2,6 @@ import * as React from 'react'
 import type { HostProps } from '../types'
 import { useConfig } from '../../hooks/useConfig'
 import { useDebug } from '../../hooks/useDebug'
-import { useMeasure } from '../../hooks/useMeasure'
 import { useGuide } from '../../hooks/useGuide'
 import {
   cx,
@@ -123,7 +122,6 @@ const GuideImpl = React.memo(function GuideImpl({
   const config = useConfig('guide')
   const { isShown } = useDebug(debugging, config.debugging)
   const containerRef = React.useRef<HTMLDivElement | null>(null)
-  useMeasure(containerRef)
 
   const resolvedVariant = variant ?? config.variant
   const resolvedGap = typeof gap === 'number' ? gap : 0

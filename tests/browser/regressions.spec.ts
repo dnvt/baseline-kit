@@ -1396,6 +1396,29 @@ test('React Box snaps a padding change made in a mount effect', async ({
     .toBe(104)
 })
 
+test('React Box keeps snapping after its as prop changes', async ({ page }) => {
+  const probe = page.locator('#as-probe')
+  const height = () =>
+    probe.evaluate((element) => element.getBoundingClientRect().height)
+  const set = (next: { as?: 'p' | 'h2'; height?: number }) =>
+    page.evaluate(
+      (value) =>
+        (
+          window as unknown as {
+            __setAsProbe: (next: typeof value) => void
+          }
+        ).__setAsProbe(value),
+      next
+    )
+  await expect.poll(height).toBe(104)
+  await set({ as: 'h2' })
+  await expect(page.locator('h2#as-probe')).toHaveCount(1)
+  // The new host is measured: a font load re-snaps changed content.
+  await page.evaluate(() => document.fonts.dispatchEvent(new Event('loading')))
+  await set({ height: 88 })
+  await expect.poll(height).toBe(88)
+})
+
 test('React Box keeps a fractional top snap on an 8px base', async ({
   page,
 }) => {
