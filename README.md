@@ -1,7 +1,7 @@
 # Baseline Kit
 
 ![Build Status](https://img.shields.io/github/actions/workflow/status/dnvt/baseline-kit/test.yml)
-![npm version](https://img.shields.io/npm/v/baseline-kit)
+[![npm version](https://img.shields.io/npm/v/baseline-kit)](https://www.npmjs.com/package/baseline-kit)
 ![License](https://img.shields.io/github/license/dnvt/baseline-kit)
 
 Put text on a baseline grid, and keep it there.
