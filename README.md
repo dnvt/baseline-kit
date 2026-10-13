@@ -214,9 +214,12 @@ either to keep the explicit padding without measuring.
 A `Spacer` height such as `'3rem'`, `'10vh'`, `'50%'` or `'calc(100% - 24px)'`
 rounds to the base in CSS (with `round()`), so it follows the root font size,
 the viewport, and its container as they change; under a rem base it rounds to
-the rem value. A string width renders as written. Live strings use px, rem,
-em, ex, ch, `%`, the viewport units, and the absolute units, alone or inside
-`calc()`, `min()`, `max()`, `clamp()` and `var()`. Anything else (`'auto'`,
+the rem value. Live strings use px, rem, em, ex, ch, `%`, the viewport units,
+and the absolute units, alone or inside `calc()`, `min()`, `max()`, `clamp()`,
+`round()`, `mod()`, `rem()` and `var()` (a `var()` fallback must be a length
+too). A string width goes to CSS as written, without rounding: in a browser
+that lacks one of its units, the Spacer keeps its default width (its
+container's). Anything else (`'auto'`,
 `'24'`, keywords, newer units such as `lh` or `cqw`, or malformed math such as
 `'calc(100%-23px)'`) falls back to the base. Browsers without CSS `round()`
 (before Chrome 125, Firefox 118 and Safari 15.4) keep the px height the kit

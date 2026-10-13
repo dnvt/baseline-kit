@@ -3640,7 +3640,7 @@ async function openSpacers(page: Page, url: string) {
           .__baselineRemixReady
     )
   }
-  await expect(page.locator('[data-spacer]')).toHaveCount(14)
+  await expect(page.locator('[data-spacer]')).toHaveCount(17)
 }
 
 /** Rendered height (or width) of each `data-spacer` host, by id and grid. */
@@ -3726,9 +3726,12 @@ function spacerStringTests(prefix: string, url: string) {
     expect(sizes.calc).toBe(80)
     expect(sizes.vh10).toBe(roundTo(viewport / 10, 8))
     expect(sizes.ch2).toBe(roundTo(ch, 8))
-    for (const id of ['auto', 'unitless', 'keyword', 'oops']) {
+    for (const id of ['auto', 'unitless', 'keyword', 'oops', 'varfallback']) {
       expect(sizes[id], id).toBe(8)
     }
+    // var() products and stepped functions stay live (7.1.0: 8, the base).
+    expect(sizes.varn).toBe(32)
+    expect(sizes.stepped).toBe(24)
   })
 
   test(`${prefix} spacer string height rounds to a rem base`, async ({
