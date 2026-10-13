@@ -76,13 +76,13 @@ function SpacerImpl(handle: Handle<RuntimeSpacerProps>) {
       showIndicators &&
       (liveHeight || liveWidth) &&
       typeof window !== 'undefined'
-    // The server and the first client render show the px values.
+    // The server and the first client render show the px values; after a
+    // measurement, its size (0 included).
+    const hasMeasurement = rendered.width > 0 || rendered.height > 0
     const height =
-      liveHeight && rendered.height > 0
-        ? rendered.height
-        : descriptor.normHeight
+      liveHeight && hasMeasurement ? rendered.height : descriptor.normHeight
     const width =
-      liveWidth && rendered.width > 0 ? rendered.width : descriptor.normWidth
+      liveWidth && hasMeasurement ? rendered.width : descriptor.normWidth
     const measurements = showIndicators
       ? [
           height !== 0 ? (

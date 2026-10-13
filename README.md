@@ -159,9 +159,9 @@ Sizes you fix in px don't grow with the reader's text. A `Box` with a fixed
 `height` keeps it when the text gets larger, so the text overflows; let text
 Boxes size from their content, or give the height in rem.
 
-The stylesheet also sets `--bk-base: 8px` on `:root` for your own CSS. Baseline
-Kit doesn't read it, so changing it doesn't move the grid; set the base with
-`Config`.
+The stylesheet also sets `--bk-base: 8px` on `:root` for your own CSS. It
+stays 8px whatever the `Config` base, and Baseline Kit doesn't read it, so
+changing it doesn't move the grid; set the base with `Config`.
 
 Numeric spacing values are CSS pixels, not multiples of the base:
 
@@ -215,14 +215,18 @@ A `Spacer` height such as `'3rem'`, `'10vh'`, `'50%'` or `'calc(100% - 24px)'`
 rounds to the base in CSS (with `round()`), so it follows the root font size,
 the viewport, and its container as they change; under a rem base it rounds to
 the rem value. A string width renders as written. Strings that aren't CSS
-lengths (`'auto'`, `'24'`, keywords) fall back to the base, and browsers
-without CSS `round()` keep a string height's value at a 16px root and a
-1920x1080 viewport.
+lengths (`'auto'`, `'24'`, keywords, or malformed math such as
+`'calc(100%-23px)'`) fall back to the base. Browsers without CSS `round()`
+(before Chrome 125, Firefox 118 and Safari 15.4) keep a string height's value
+at a 16px root and a 1920x1080 viewport.
 
-A `Guide` `gap` such as `'1rem'` or `'2%'` resolves against the root font
-size, the viewport, and the Guide's own width, then rounds to the base. A Guide
-whose `gap` or `columnWidth` is in rem redraws when the root font size changes.
-An `em` gap resolves against 16px.
+A `Guide` `gap` such as `'1rem'` or `'2%'` resolves when the Guide renders
+(on mount, when its size changes, and for a rem `gap` or `columnWidth`, when
+the root font size changes) against the root font size, the viewport, and the
+Guide's own width, then rounds to the base. It reads px, rem, `%`, the
+viewport units (`vw`, `vh`, `vmin`, `vmax`, and their `s`, `l` and `d` forms),
+`in`, `cm`, `mm`, `pt` and `pc`; `em` resolves against 16px, and anything else,
+including `calc()`, falls back to the base.
 
 ### Semantic elements
 
@@ -257,7 +261,7 @@ unlayered element rules such as normalize.css; put those in a layer before
 | `Guide` | Responsive or fixed column-grid overlay. |
 | `Box` | Wraps text, trims it to its baseline, and snaps its height to the grid. |
 | `Padder` | Adds baseline-aware padding. |
-| `Spacer` | Adds space, rounded to the base. |
+| `Spacer` | Adds space; numbers and string heights round to the base. |
 | `Config` | Sets scoped base, colors, variants, and debugging defaults. |
 
 `debugging` can be `visible`, `hidden`, or `none`: show the debug paint, hide

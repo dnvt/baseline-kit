@@ -87,14 +87,14 @@ export const Spacer = React.memo(function Spacer({
   })
   const rendered = useMeasure(measureRef)
 
+  // A Spacer is never 0 by 0 once laid out (a string height still has a
+  // width), so any size means a measurement arrived, 0px heights included.
+  const measured = rendered.width > 0 || rendered.height > 0
+
   const measurements = React.useMemo(() => {
     if (!shouldShowMeasurements) return null
-    const w =
-      liveWidth && rendered.width > 0 ? rendered.width : descriptor.normWidth
-    const h =
-      liveHeight && rendered.height > 0
-        ? rendered.height
-        : descriptor.normHeight
+    const w = liveWidth && measured ? rendered.width : descriptor.normWidth
+    const h = liveHeight && measured ? rendered.height : descriptor.normHeight
     return (
       <>
         {h !== 0 && (
@@ -114,6 +114,7 @@ export const Spacer = React.memo(function Spacer({
     indicatorNode,
     liveWidth,
     liveHeight,
+    measured,
     rendered.width,
     rendered.height,
     descriptor.normWidth,

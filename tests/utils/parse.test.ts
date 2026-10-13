@@ -74,7 +74,13 @@ describe('isCSSLength', () => {
       'clamp(1rem, 2vw, 3rem)',
       'max(2rem,10%)',
       'var(--space)',
+      'var(--space, 8px)',
       'calc(var(--a) * 2)',
+      'calc((1px + 2px) * 2)',
+      'calc(10px / 2)',
+      'calc(100% - -4px)',
+      'min(calc(1rem + 2px), 50%)',
+      '1REM',
     ]) {
       expect(isCSSLength(value), value).toBe(true)
     }
@@ -95,6 +101,20 @@ describe('isCSSLength', () => {
       'fit-content(10px)',
       '10px 20px',
       'url(x)',
+      // CSS rejects these, so a Spacer would collapse instead of falling back.
+      'calc(100%-23px)',
+      'calc(1px+2px)',
+      '3.rem',
+      '1.e2px',
+      'calc(1px 2px)',
+      'calc(2 * --x)',
+      'calc(1px +)',
+      'min(1px), max(2px)',
+      'calc(1px * 2px)',
+      'calc(10px / 2px)',
+      'calc(1 + 1px)',
+      'clamp(1px, 2px)',
+      'var(x)',
     ]) {
       expect(isCSSLength(value), value).toBe(false)
     }
@@ -103,7 +123,7 @@ describe('isCSSLength', () => {
 
 describe('isRootRelative', () => {
   it('spots values that follow the root font size', () => {
-    for (const value of ['1rem', '0.5 rem', 'calc(1rem + 2px)', '2rlh', '1rch'])
+    for (const value of ['1rem', '0.5 rem', 'calc(1rem + 2px)', '1REM'])
       expect(isRootRelative(value), value).toBe(true)
     for (const value of [
       16,
@@ -111,6 +131,7 @@ describe('isRootRelative', () => {
       '1em',
       '10vh',
       'auto',
+      '2rlh',
       'remainder',
       undefined,
     ])

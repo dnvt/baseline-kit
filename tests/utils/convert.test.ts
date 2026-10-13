@@ -96,3 +96,11 @@ describe('convertValue', () => {
     })
   })
 })
+
+describe('convertValue unit forms', () => {
+  it('reads units case-insensitively and the dynamic viewport units', () => {
+    expect(convertValue('1REM', { rootFontSize: 20 })).toBe(20)
+    expect(convertValue('10dvh', { viewportHeight: 700 })).toBe(70)
+    expect(convertValue('10svw', { viewportWidth: 1000 })).toBe(100)
+  })
+})

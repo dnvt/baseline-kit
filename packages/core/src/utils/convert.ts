@@ -35,6 +35,13 @@ const RELATIVE_UNIT_RESOLVERS: Record<
   vw: (ctx) => ctx.viewportWidth / 100,
   vmin: (ctx) => Math.min(ctx.viewportWidth, ctx.viewportHeight) / 100,
   vmax: (ctx) => Math.max(ctx.viewportWidth, ctx.viewportHeight) / 100,
+  // Small, large and dynamic viewport units: the current viewport.
+  svh: (ctx) => ctx.viewportHeight / 100,
+  lvh: (ctx) => ctx.viewportHeight / 100,
+  dvh: (ctx) => ctx.viewportHeight / 100,
+  svw: (ctx) => ctx.viewportWidth / 100,
+  lvw: (ctx) => ctx.viewportWidth / 100,
+  dvw: (ctx) => ctx.viewportWidth / 100,
   '%': (ctx) => ctx.parentSize / 100,
 }
 
@@ -48,7 +55,9 @@ export function convertValue(
   const parsed = parseUnit(value)
   if (!parsed) return null
 
-  const { value: num, unit } = parsed
+  // CSS units are case-insensitive.
+  const num = parsed.value
+  const unit = parsed.unit.toLowerCase()
 
   if (unit in ABSOLUTE_UNIT_CONVERSIONS) {
     return num * ABSOLUTE_UNIT_CONVERSIONS[unit]

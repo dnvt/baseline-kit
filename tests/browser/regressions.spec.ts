@@ -3433,6 +3433,30 @@ function remGridTests(prefix: string, url: string) {
     }
   })
 
+  test(`${prefix} rem base that isn't whole layout units lands each Box within 1/32px`, async ({
+    page,
+  }) => {
+    // 0.5rem at a 15.3px root is 7.65px (README: approximated within 1/32px;
+    // the differences add up down a stack, so this checks each Box).
+    await openRemGrid(page, `${url}&root=15.3`)
+    const offsets = () =>
+      page.evaluate(() => {
+        const base =
+          parseFloat(getComputedStyle(document.documentElement).fontSize) / 2
+        return Array.from(
+          document.querySelectorAll('[data-rem-grid="rem"] [data-rem="box"]'),
+          (host) => {
+            const height = host.getBoundingClientRect().height
+            const remainder = ((height % base) + base) % base
+            return Math.min(remainder, base - remainder)
+          }
+        )
+      })
+    await expect
+      .poll(async () => Math.max(...(await offsets())))
+      .toBeLessThanOrEqual(1 / 32)
+  })
+
   test(`${prefix} rem base hydrates the 16px server HTML, then follows a 20px root`, async ({
     page,
   }) => {
@@ -3594,6 +3618,11 @@ function costTests(prefix: string, url: string) {
     expect(rem.pxContent.toGrid, JSON.stringify(rem)).toBeGreaterThan(0)
     expect(rem.pxContent.toGrid, JSON.stringify(rem)).toBeLessThanOrEqual(10)
     expect(rem.pxContent.height).toBe(50)
+    // The changeset's claim: no more frames than the px control (+1 slack).
+    const [, px] = results
+    expect(rem.toGrid, JSON.stringify(results)).toBeLessThanOrEqual(
+      px.toGrid + 1
+    )
     await testInfo.attach('root-change-cost.json', {
       body: JSON.stringify(results, null, 2),
       contentType: 'application/json',
@@ -3811,6 +3840,7 @@ async function guideState(page: Page) {
     const cols = (id: string) =>
       document.querySelector<HTMLElement>(`[data-guide-case="${id}"] .bk-cols`)!
     const auto = cols('auto')
+    const autoRem = cols('autorem')
     return {
       fixedGap: parseFloat(getComputedStyle(cols('fixed')).columnGap),
       linePeriod: parseFloat(
@@ -3821,6 +3851,10 @@ async function guideState(page: Page) {
       autoGap: parseFloat(getComputedStyle(auto).columnGap),
       autoColumns: auto.querySelectorAll('.bk-col').length,
       autoTracks: getComputedStyle(auto)
+        .gridTemplateColumns.split(' ')
+        .filter(Boolean).length,
+      autoRemColumns: autoRem.querySelectorAll('.bk-col').length,
+      autoRemTracks: getComputedStyle(autoRem)
         .gridTemplateColumns.split(' ')
         .filter(Boolean).length,
     }
@@ -3840,24 +3874,27 @@ function guideStringTests(prefix: string, url: string) {
             .__baselineRemixReady
       )
     }
-    const expected = (gap: number, columns: number) => ({
+    // auto: floor((300 + gap) / (40 + gap)) columns; autorem (2.5rem
+    // columns, 16px gap): floor(316 / (2.5 x root + 16)).
+    const expected = (gap: number, columns: number, remColumns: number) => ({
       fixedGap: gap,
       linePeriod: gap,
       autoGap: gap,
       autoColumns: columns,
       autoTracks: columns,
+      autoRemColumns: remColumns,
+      autoRemTracks: remColumns,
     })
-    // floor((300 + gap) / (40 + gap)) auto columns.
-    await expect.poll(() => guideState(page)).toEqual(expected(16, 5))
+    await expect.poll(() => guideState(page)).toEqual(expected(16, 5, 5))
     await page.evaluate(() => {
       document.documentElement.style.fontSize = '32px'
     })
-    await expect.poll(() => guideState(page)).toEqual(expected(32, 4))
+    await expect.poll(() => guideState(page)).toEqual(expected(32, 4, 3))
     // 20px rounds to the 8px base: 24.
     await page.evaluate(() => {
       document.documentElement.style.fontSize = '20px'
     })
-    await expect.poll(() => guideState(page)).toEqual(expected(24, 5))
+    await expect.poll(() => guideState(page)).toEqual(expected(24, 5, 4))
   })
 }
 

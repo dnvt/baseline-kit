@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from 'fs'
+import { createRequire } from 'module'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -164,6 +165,25 @@ const remixNames = exportedNames(remixDts).join(',')
 assert(
   reactNames === remixNames,
   `React and Remix entries must export the same names:\n  react: ${reactNames}\n  remix: ${remixNames}`
+)
+
+// String Spacer heights use round() behind @supports; a consumer's minifier
+// (Lightning CSS, as Vite uses) must keep that guard and the reset.
+const requireFromVite = createRequire(
+  createRequire(import.meta.url).resolve('vite')
+)
+const minifiedStyles = String(
+  requireFromVite('lightningcss').transform({
+    filename: 'styles.css',
+    code: Buffer.from(stylesCSS),
+    minify: true,
+  }).code
+)
+assert(
+  minifiedStyles.includes(
+    '@supports (height:round(nearest, 1rem, 1px)){.bk-spr{height:var(--bksp-hl,var(--bksp-h))}}'
+  ) && /\.bk-spr\{[^}]*--bksp-hl:initial/.test(minifiedStyles),
+  'minified styles.css must keep the round() @supports rule and the --bksp-hl reset'
 )
 
 console.log('✅ Artifact verification passed')

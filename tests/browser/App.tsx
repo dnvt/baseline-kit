@@ -265,7 +265,7 @@ function GuideStringsFixture() {
       <Config base={8}>
         {GUIDE_CASES.map(({ id, props }) => (
           <div key={id} data-guide-case={id} style={GUIDE_BOX as CSSProperties}>
-            <Guide {...props} gap="1rem" debugging="visible" />
+            <Guide {...props} debugging="visible" />
           </div>
         ))}
       </Config>

@@ -150,6 +150,27 @@ describe('Spacer Component', () => {
       rect.mockRestore()
     })
 
+    it('shows a measured 0px height rather than the px fallback', async () => {
+      // A string height that resolves to 0 (a % of an auto-height parent).
+      const rect = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockReturnValue({ width: 300, height: 0 } as DOMRect)
+      const indicatorNode = (value: number, dimension: string) =>
+        `${dimension}: ${value}px`
+      render(
+        <Spacer
+          width="100%"
+          height="calc(100% - 23px)"
+          debugging="visible"
+          indicatorNode={indicatorNode}
+        />
+      )
+      expect(await screen.findByText('width: 300px')).toBeInTheDocument()
+      // 7.0's px fallback for this string is the 8px base.
+      expect(screen.queryByText('height: 8px')).not.toBeInTheDocument()
+      rect.mockRestore()
+    })
+
     it('does not render indicators when debugging is hidden', () => {
       const indicatorNode = (value: number, dimension: string) =>
         `${dimension}: ${value}px`

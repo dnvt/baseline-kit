@@ -158,7 +158,6 @@ function guideStrings() {
             style: GUIDE_BOX,
             children: jsx(Guide, {
               ...props,
-              gap: '1rem',
               debugging: 'visible',
             }),
           },
