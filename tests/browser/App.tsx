@@ -118,7 +118,12 @@ function LiveGridFixture() {
         </Box>
       ))}
       {/* 96px of content under a 99px floor: padding moves it 99 -> 101. */}
-      <Box data-live="floor" style={{ minHeight: 99 }} block={[0, 0]}>
+      <Box
+        data-live="floor"
+        data-live-exact
+        style={{ minHeight: 99 }}
+        block={[0, 0]}
+      >
         <div style={{ height: 96 }} />
       </Box>
       <div style={{ display: 'flex', flexDirection: 'column', height: 203 }}>
@@ -142,6 +147,17 @@ function LiveGridFixture() {
             {text(index, LIVE_TEXTS[index + 1])}
           </Box>
         ))}
+      </div>
+      {/* Padding drawn as CSS padding, animating to zero. */}
+      <div className="live-transition">
+        <Box
+          data-live="transition-zero"
+          className="live-c"
+          debugging="none"
+          block={[0, 0]}
+        >
+          <div data-live-zero style={{ height: 13, transition: 'none' }} />
+        </Box>
       </div>
       <Box data-live="toggle-twin" block={[0, 0]}>
         <div style={{ height: 10 }} />

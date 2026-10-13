@@ -162,6 +162,7 @@ export const LiveGridProbe = clientEntry(
               // 96px of content under a 99px floor: padding moves it 99 -> 101.
               jsx(Box, {
                 'data-live': 'floor',
+                'data-live-exact': '',
                 style: { minHeight: '99px' },
                 block: [0, 0],
                 children: jsx('div', { style: { height: '96px' } }),
@@ -198,6 +199,20 @@ export const LiveGridProbe = clientEntry(
                     children: text(index, LIVE_TEXTS[index + 1]),
                   })
                 ),
+              }),
+              // Padding drawn as CSS padding, animating to zero.
+              jsx('div', {
+                className: 'live-transition',
+                children: jsx(Box, {
+                  'data-live': 'transition-zero',
+                  className: 'live-c',
+                  debugging: 'none',
+                  block: [0, 0],
+                  children: jsx('div', {
+                    'data-live-zero': '',
+                    style: { height: '13px', transition: 'none' },
+                  }),
+                }),
               }),
               jsx(Box, {
                 'data-live': 'toggle-twin',

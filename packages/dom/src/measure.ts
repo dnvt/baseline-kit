@@ -39,8 +39,9 @@ export function isScaledLayout(el: Element | null): boolean {
  * The padding sits on the host itself (a Padder, or a Box drawn on its own
  * grid), on a Box's inner Padder (`.bk-pad`), or on a semantic Box's inner
  * grid (`.bk-box__grid`). It is either the first and last grid track around
- * `.bk-pad-content`, or a Padder's inline `padding-block` when it draws no
- * spacers. A caller's own padding on the host is not counted.
+ * `.bk-pad-content`, or the CSS padding of a Padder that draws no spacers
+ * (`.bk-pad-plain`). A caller's own padding on a Box host, or on a Padder
+ * that draws spacers, is not counted.
  */
 export function getRenderedBlockPadding(
   host: Element
@@ -58,10 +59,7 @@ export function getRenderedBlockPadding(
     top += parseFloat(rows[0])
     bottom += parseFloat(rows[2])
   }
-  if (
-    target.classList.contains('bk-pad') &&
-    (target as HTMLElement).style.paddingBlock
-  ) {
+  if (target.classList.contains('bk-pad-plain')) {
     top += parseFloat(style.paddingTop)
     bottom += parseFloat(style.paddingBottom)
   }

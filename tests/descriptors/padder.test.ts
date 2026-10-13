@@ -70,7 +70,7 @@ describe('createPadderDescriptor', () => {
     expect(
       createPadderDescriptor({ ...baseParams, enableSpacers: false })
         .classTokens
-    ).toEqual(['pad'])
+    ).toEqual(['pad', 'pad-plain'])
     expect(
       createPadderDescriptor({
         ...baseParams,

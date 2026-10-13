@@ -256,9 +256,10 @@ export function createElementObserverBridge(
   onMeasure: (
     rect: MeasureRect,
     element: Element,
-    /** Block padding rendered when `rect` was measured, if a Box grid. */
+    /** With `readPadding`: block padding rendered when `rect` was measured. */
     rendered: { top: number; bottom: number } | null
-  ) => void
+  ) => void,
+  { readPadding = false }: { readPadding?: boolean } = {}
 ): ElementObserverBridge {
   let element: Element | null = null
   let measureHandle: ReturnType<typeof createMeasureObserver> | undefined
@@ -335,7 +336,7 @@ export function createElementObserverBridge(
         hasNonZeroMeasurement = rect.width > 0 || rect.height > 0
         // Read the padding with the size, not a frame later: mid-transition
         // it has moved on by the time the measurement is delivered.
-        const rendered = getRenderedBlockPadding(node)
+        const rendered = readPadding ? getRenderedBlockPadding(node) : null
         // The initial measurement can run from the ref insert callback before
         // Remix has committed the component. Deliver it on the next frame so
         // the consumer can safely request an update.

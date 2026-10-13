@@ -6,6 +6,7 @@
 
 - Snapping uses the padding the DOM actually renders, so a CSS transition on a Box's padding no longer sets off repeated snaps.
 - A Box whose height is held from outside (`min-height`, a stretched flex or grid item) settles within a few updates instead of alternating between two heights.
-- A content-driven Box updates at most once per change (a Padder around a Box once more, after it), ends where a fresh load would, and none update once sizes stop changing.
+- A content-driven Box updates at most once per change (a Padder around a Box once more, after it) and none update once sizes stop changing. It ends where a fresh load would, unless its content flickered in step with its corrections, which can leave it one base row taller (still on the grid) until its height next changes. Content that animates its height is followed frame by frame.
+- A Padder that draws no spacers (`debugging="none"`) carries a `bk-pad-plain` class, so its padding can be read back while it animates.
 - `SNAP_SETTLE_MS` is deprecated and no longer used.
 - `SnapMeasurement.settling` is optional and defaults to `true`; passing `false` still keeps the current snap. `SnapState` gains optional `measured` and `earlier` fields (type `SnapMeasured`).

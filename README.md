@@ -178,7 +178,8 @@ its own correction, or a CSS transition on that padding, doesn't set off
 another snap. When a height set from outside wins (a fixed `height`, a taller
 `min-height`, a stretched flex or grid item), padding can only bring the Box
 onto the grid by growing it past that height, which takes a few updates;
-otherwise the Box keeps the outside height.
+otherwise the Box keeps the outside height. Padding grown this way stays until
+the Box's height next changes.
 `Padder` uses height snapping with a bottom correction. A `Box` or `Padder`
 nested inside a `Box` doesn't snap on its own; the outer `Box` snaps the whole. Set `ssrMode` on
 either to keep the explicit padding without measuring.

@@ -2946,7 +2946,11 @@ async function liveGridStability(page: Page, root: string, tolerance: number) {
         }
         return -1
       }
+      const exact = () =>
+        container.querySelector('[data-live-exact]')!.getBoundingClientRect()
+          .height
       const initial = await settle()
+      const exactInitial = exact()
       const widths = [
         300, 420, 333, 387, 360, 311, 405, 360, 352, 368, 300, 420, 333, 387,
         360, 311, 405, 360, 352, 368,
@@ -2988,7 +2992,13 @@ async function liveGridStability(page: Page, root: string, tolerance: number) {
       }
       const idleUpdates = total()
       observer.disconnect()
-      return { initial, steps, idleUpdates, idleHeightChanges }
+      return {
+        initial,
+        steps,
+        idleUpdates,
+        idleHeightChanges,
+        exact: [exactInitial, exact()],
+      }
     },
     { selector: root, tolerance }
   )
@@ -3016,6 +3026,8 @@ function expectStable(
   }
   expect(result.idleUpdates, 'updates once sizes stop changing').toBe(0)
   expect(result.idleHeightChanges, 'height changes once idle').toBe(0)
+  // 96px of content under a 99px floor lands on the next grid line.
+  expect(result.exact, '96px under a 99px floor').toEqual([104, 104])
 }
 
 /** The resized layout matches a fresh load at the final width (368px). */
@@ -3090,7 +3102,7 @@ function liveGridTests(prefix: string, url: string, root: string) {
     await expectHistoryFree(page, url, root, 1 / 64)
   })
 
-  test(`${prefix} live grid ends where it started when content toggles`, async ({
+  test(`${prefix} live grid ends where it started when content toggles every few frames`, async ({
     page,
   }) => {
     await openLiveGrid(page, url, root)
@@ -3114,6 +3126,51 @@ function liveGridTests(prefix: string, url: string, root: string) {
       return [height('toggle'), height('toggle-twin')]
     }, root)
     expect(heights).toEqual([16, 16])
+  })
+
+  test(`${prefix} live grid settles a padding transition to zero`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const host = page.locator(`${root} [data-live="transition-zero"]`)
+    await expect
+      .poll(() =>
+        host.evaluate((element) => element.getBoundingClientRect().height)
+      )
+      .toBe(16)
+    const result = await page.evaluate(async (selector) => {
+      const frame = () =>
+        new Promise((resolve) => requestAnimationFrame(resolve))
+      const host = document.querySelector(
+        `${selector} [data-live="transition-zero"]`
+      )!
+      const content = host.querySelector<HTMLElement>('[data-live-zero]')!
+      let updates = 0
+      // Count padding changes only, not the content change below.
+      const observer = new MutationObserver((records) => {
+        updates += records.filter(
+          (record) =>
+            record.target !== content &&
+            (record.type === 'childList' ||
+              record.oldValue !==
+                (record.target as Element).getAttribute('style'))
+        ).length
+      })
+      observer.observe(host, {
+        attributes: true,
+        attributeFilter: ['style'],
+        attributeOldValue: true,
+        childList: true,
+        subtree: true,
+      })
+      // 16px of content needs no padding: the 3px eases out over 120ms.
+      content.style.height = '16px'
+      for (let count = 0; count < 40; count++) await frame()
+      observer.disconnect()
+      return { height: host.getBoundingClientRect().height, updates }
+    }, root)
+    // One padding update (3px -> none); the transition adds no more.
+    expect(result).toEqual({ height: 16, updates: 1 })
   })
 
   test(`${prefix} live grid stays still at a 1.25 display scale`, async ({

@@ -64,17 +64,20 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     return changed
   }
 
-  const observer = createElementObserverBridge(({ height }, host, rendered) => {
-    if (handle.props.ssrMode || height === 0) return
-    lastMeasure = {
-      height,
-      // The padding in the DOM at measurement time (mid-transition values
-      // included), else the last committed padding.
-      rendered: { ...renderedPadding, ...rendered },
-      scaled: isScaledLayout(host),
-    }
-    if (applySnap(lastMeasure)) queueNativeUpdate(handle)
-  })
+  const observer = createElementObserverBridge(
+    ({ height }, host, rendered) => {
+      if (handle.props.ssrMode || height === 0) return
+      lastMeasure = {
+        height,
+        // The padding in the DOM at measurement time (mid-transition values
+        // included), else the last committed padding.
+        rendered: { ...renderedPadding, ...rendered },
+        scaled: isScaledLayout(host),
+      }
+      if (applySnap(lastMeasure)) queueNativeUpdate(handle)
+    },
+    { readPadding: true }
+  )
 
   return () => {
     const props = handle.props

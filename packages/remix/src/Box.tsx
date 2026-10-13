@@ -94,17 +94,20 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   }
 
   // Measure the host so its own border and padding count toward the snap.
-  const observer = createElementObserverBridge((next, host, rendered) => {
-    if (next.height === 0) return
-    lastMeasure = {
-      height: next.height,
-      // The padding in the DOM at measurement time (mid-transition values
-      // included), else the last committed padding.
-      rendered: { ...renderedPadding, ...rendered },
-      scaled: isScaledLayout(host),
-    }
-    if (applySnap(lastMeasure)) requestUpdate()
-  })
+  const observer = createElementObserverBridge(
+    (next, host, rendered) => {
+      if (next.height === 0) return
+      lastMeasure = {
+        height: next.height,
+        // The padding in the DOM at measurement time (mid-transition values
+        // included), else the last committed padding.
+        rendered: { ...renderedPadding, ...rendered },
+        scaled: isScaledLayout(host),
+      }
+      if (applySnap(lastMeasure)) requestUpdate()
+    },
+    { readPadding: true }
+  )
 
   return () => {
     const props = handle.props
