@@ -1,38 +1,35 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline, useIsClient } from '../../hooks'
 import {
-  DEFAULT_CONFIG,
   cx,
   parsePadding,
   createBoxDescriptor,
   requiresSeparatePadder,
+  getDOMAttributes,
 } from '@baseline-kit/core'
-import type { SnapEdge, SnappingMode } from '@baseline-kit/core'
-import { hydratedValue } from '@baseline-kit/dom'
+import type {
+  BoxElement,
+  BoxOptions,
+  SnapEdge,
+  SnappingMode,
+} from '@baseline-kit/core'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
-import { getDOMAttributes } from '../../utils/dom'
-import { compactStyle } from '../../utils/dom'
 import { Config } from '../Config/Config'
 import { PadderForBox } from '../Padder/Padder'
-import padderStyles from '../Padder/styles.module.css'
-import { ComponentsProps } from '../types'
-import styles from './styles.module.css'
+import type { HostProps } from '../types'
 
-export type { SnapEdge, SnappingMode }
+export type { BoxElement, SnapEdge, SnappingMode }
 
-export type BoxProps = {
-  colSpan?: number
-  rowSpan?: number
-  span?: number
-  snapping?: SnappingMode
-  snapEdge?: SnapEdge
-  ssrMode?: boolean
-  children?: React.ReactNode
-} & ComponentsProps
+export type BoxProps = BoxOptions &
+  HostProps & {
+    children?: React.ReactNode
+  }
 
 export const Box = React.memo(
-  React.forwardRef<HTMLDivElement, BoxProps>(function Box(
+  React.forwardRef<HTMLElement, BoxProps>(function Box(
     {
+      as,
+      htmlFor,
       children,
       snapping = 'clamp',
       snapEdge = 'bottom',
@@ -54,126 +51,84 @@ export const Box = React.memo(
     const { isShown, debugging } = useDebug(debuggingProp, config.debugging)
 
     const isHydrated = useIsClient()
-    const internalRef = React.useRef<HTMLDivElement | null>(null)
+    const internalRef = React.useRef<HTMLElement | null>(null)
     const { top, bottom, left, right } = parsePadding(spacingProps)
 
-    const baselinePadding = useBaseline(internalRef, {
+    // Before hydration and in ssrMode the explicit padding is rendered, so
+    // the hook must not snap; it then knows exactly what is on screen.
+    const { padding } = useBaseline(internalRef, {
       base: config.base,
-      snapping,
+      snapping: isHydrated && !ssrMode ? snapping : 'none',
       snapEdge,
       spacing: { top, bottom, left, right },
     })
 
-    const stablePadding = {
-      padding: {
-        top: top || 0,
-        right: right || 0,
-        bottom: bottom || 0,
-        left: left || 0,
-      },
-    }
-    const { padding } = hydratedValue(
-      isHydrated && !ssrMode,
-      stablePadding,
-      baselinePadding
-    )
-
-    const descriptor = React.useMemo(
-      () =>
-        createBoxDescriptor({
-          base: config.base,
-          lineColor: config.colors.line,
-          width,
-          height,
-          span,
-          colSpan,
-          rowSpan,
-          isVisible: isShown,
-        }),
-      [
-        config.base,
-        config.colors.line,
-        width,
-        height,
-        span,
-        colSpan,
-        rowSpan,
-        isShown,
-      ]
-    )
-
-    const separatePadder = requiresSeparatePadder({
-      className,
-      style,
+    const descriptor = createBoxDescriptor({
+      base: config.base,
+      lineColor: config.colors.line,
+      flatColor: config.colors.flat,
       width,
+      height,
+      span,
+      colSpan,
+      rowSpan,
+      isVisible: isShown,
+      padding,
+      paddingColor: padderConfig.color,
     })
 
-    const boxStyles = React.useMemo(
-      () =>
-        mergeStyles(
-          compactStyle(descriptor.boxStyle, {
-            '--bkbx-w': 'fit-content',
-            '--bkbx-h': 'fit-content',
-            '--bkbx-cl': DEFAULT_CONFIG.box.colors.line,
-          }),
-          separatePadder
-            ? undefined
-            : mergeStyles(
-                compactStyle(
-                  {
-                    ...(padding.top > 0 || padding.bottom > 0
-                      ? {
-                          gridTemplateRows: `${padding.top}px 1fr ${padding.bottom}px`,
-                        }
-                      : {}),
-                    ...(padding.left > 0 || padding.right > 0
-                      ? {
-                          gridTemplateColumns: `${padding.left}px 1fr ${padding.right}px`,
-                        }
-                      : {}),
-                  },
-                  {
-                    gridTemplateRows: 'auto 1fr auto',
-                    gridTemplateColumns: 'auto 1fr auto',
-                  }
-                ),
-                isShown
-                  ? compactStyle(
-                      { '--bkpd-c': padderConfig.color },
-                      { '--bkpd-c': DEFAULT_CONFIG.padder.color }
-                    )
-                  : undefined
-              ),
-          style
-        ),
-      [
-        descriptor.boxStyle,
-        separatePadder,
-        style,
-        padderConfig.color,
-        isShown,
-        padding.top,
-        padding.right,
-        padding.bottom,
-        padding.left,
-      ]
+    // A semantic host keeps caller layout on the host and snaps an inner grid.
+    const semanticHost = as !== undefined
+    const Element = as ?? 'div'
+    const ContentElement = semanticHost && as !== 'div' ? 'span' : 'div'
+    const separatePadder =
+      !semanticHost && requiresSeparatePadder({ className, style, width })
+    const hostSpacingStyle = semanticHost
+      ? descriptor.paddingDebugStyle
+      : separatePadder
+        ? undefined
+        : mergeStyles(descriptor.spacingStyle, descriptor.paddingDebugStyle)
+
+    const content = (
+      <ContentElement
+        data-testid={config.domDiagnostics ? 'padder-content' : undefined}
+        className="bk-pad-content"
+      >
+        {children}
+      </ContentElement>
     )
 
     return (
-      <div
+      <Element
         ref={mergeRefs(ref, internalRef)}
         data-testid={config.domDiagnostics ? 'box' : undefined}
         className={cx(
-          ...descriptor.classTokens.map((t) => styles[t]),
-          separatePadder && styles.separatePadder,
-          isShown && !separatePadder && styles.padderVisible,
+          ...descriptor.classTokens.map((t) => `bk-${t}`),
+          semanticHost && 'bk-box-semantic-host',
+          separatePadder && 'bk-box-separate-padder',
+          isShown && !separatePadder && 'bk-box-pad-visible',
           className
         )}
-        style={mergeStyles(boxStyles, descriptor.gridSpanStyle)}
+        style={mergeStyles(
+          descriptor.boxStyle,
+          hostSpacingStyle,
+          descriptor.gridSpanStyle,
+          style
+        )}
+        htmlFor={as === 'label' ? htmlFor : undefined}
         {...getDOMAttributes(spacingProps)}
       >
+        {/* Box spacing is drawn in plain pixels, so content inside a Box
+            snaps to whole pixels rather than to the grid. */}
         <Config base={1} spacer={{ variant: 'flat' }}>
-          {separatePadder ? (
+          {semanticHost ? (
+            <ContentElement
+              className="bk-box__grid"
+              style={descriptor.spacingStyle}
+            >
+              {content}
+            </ContentElement>
+          ) : separatePadder ? (
             <PadderForBox
               block={[padding.top, padding.bottom]}
               inline={[padding.left, padding.right]}
@@ -186,15 +141,10 @@ export const Box = React.memo(
               {children}
             </PadderForBox>
           ) : (
-            <div
-              data-testid={config.domDiagnostics ? 'padder-content' : undefined}
-              className={padderStyles.content}
-            >
-              {children}
-            </div>
+            content
           )}
         </Config>
-      </div>
+      </Element>
     )
   })
 )

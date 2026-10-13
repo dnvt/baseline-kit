@@ -25,16 +25,6 @@ export const ABSOLUTE_UNIT_CONVERSIONS: Record<string, number> = {
   pc: 16,
 }
 
-export const RELATIVE_UNITS: string[] = [
-  'em',
-  'rem',
-  'vh',
-  'vw',
-  'vmin',
-  'vmax',
-  '%',
-]
-
 const RELATIVE_UNIT_RESOLVERS: Record<
   string,
   (ctx: Required<ConversionContext>) => number

@@ -1,25 +1,23 @@
 import * as React from 'react'
 import { useConfig, useDebug, useBaseline, useIsClient } from '../../hooks'
 import {
-  DEFAULT_CONFIG,
   cx,
   parsePadding,
   createPadderDescriptor,
+  getDOMAttributes,
+  type Variant,
+  type DebuggingMode,
+  type PadderOptions,
 } from '@baseline-kit/core'
-import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
-import { getDOMAttributes } from '../../utils/dom'
-import { compactStyle } from '../../utils/dom'
-import { ComponentsProps, Variant } from '../types'
+import type { HostProps } from '../types'
 import { Spacer, IndicatorNode } from '../Spacer'
-import type { DebuggingMode } from '../types'
-import styles from './styles.module.css'
 
-export type PadderProps = {
-  indicatorNode?: IndicatorNode
-  ssrMode?: boolean
-  children?: React.ReactNode
-} & ComponentsProps
+export type PadderProps = PadderOptions &
+  HostProps & {
+    children?: React.ReactNode
+    indicatorNode?: IndicatorNode
+  }
 
 type RuntimePadderProps = PadderProps & {
   preserveContentHost?: boolean
@@ -37,7 +35,9 @@ const createRenderSpacerFn = (
     widthVal: React.CSSProperties['width'],
     heightVal: React.CSSProperties['height']
   ) => (
+    // Base 1 keeps the snapped padding exact instead of rounding it to the grid.
     <Spacer
+      base={1}
       variant={safeVariant}
       debugging={heightVal === 0 || widthVal === 0 ? 'none' : safeDebugging}
       indicatorNode={indicatorNode}
@@ -80,63 +80,30 @@ const PadderComponent = React.memo(
     const isHydrated = useIsClient()
     const internalRef = React.useRef<HTMLDivElement | null>(null)
 
-    const baselinePadding = useBaseline(internalRef, {
+    // Before hydration and in ssrMode the explicit padding is rendered, so
+    // the hook must not snap; it then knows exactly what is on screen.
+    const { padding } = useBaseline(internalRef, {
       base: config.base,
-      snapping: 'height',
+      snapping: isHydrated && !ssrMode ? 'height' : 'none',
       spacing: initialPadding,
     })
-
-    const stablePadding = {
-      padding: {
-        top: initialPadding.top || 0,
-        right: initialPadding.right || 0,
-        bottom: initialPadding.bottom || 0,
-        left: initialPadding.left || 0,
-      },
-    }
-    const { padding } = hydratedValue(
-      isHydrated && !ssrMode,
-      stablePadding,
-      baselinePadding
-    )
 
     const setRefs = mergeRefs(ref, internalRef)
 
     const descriptor = React.useMemo(
       () =>
         createPadderDescriptor({
-          base: config.base,
           color: config.color,
-          width: width as number | string | undefined,
-          height: height as number | string | undefined,
+          width,
+          height,
           padding,
           enableSpacers,
           isVisible: isShown,
         }),
-      [
-        config.base,
-        config.color,
-        width,
-        height,
-        padding,
-        enableSpacers,
-        isShown,
-      ]
+      [config.color, width, height, padding, enableSpacers, isShown]
     )
 
-    const containerStyles = React.useMemo(
-      () =>
-        mergeStyles(
-          compactStyle(descriptor.containerStyle, {
-            '--bkpd-w': 'fit-content',
-            '--bkpd-h': 'fit-content',
-            '--bkpd-b': '8px',
-            '--bkpd-c': DEFAULT_CONFIG.padder.color,
-          }),
-          style
-        ),
-      [descriptor.containerStyle, style]
-    )
+    const containerStyles = mergeStyles(descriptor.containerStyle, style)
 
     const renderSpacer = React.useMemo(
       () => createRenderSpacerFn(variant, debugging, indicatorNode),
@@ -149,7 +116,7 @@ const PadderComponent = React.memo(
           ref={setRefs}
           data-testid={config.domDiagnostics ? 'padder' : undefined}
           className={cx(
-            ...descriptor.classTokens.map((t) => styles[t]),
+            ...descriptor.classTokens.map((t) => `bk-${t}`),
             className
           )}
           style={containerStyles}
@@ -159,7 +126,7 @@ const PadderComponent = React.memo(
             <div
               key="content"
               data-testid={config.domDiagnostics ? 'padder-content' : undefined}
-              className={styles.content}
+              className="bk-pad-content"
             >
               {children}
             </div>
@@ -175,7 +142,7 @@ const PadderComponent = React.memo(
         ref={setRefs}
         data-testid={config.domDiagnostics ? 'padder' : undefined}
         className={cx(
-          ...descriptor.classTokens.map((t) => styles[t]),
+          ...descriptor.classTokens.map((t) => `bk-${t}`),
           className
         )}
         style={containerStyles}
@@ -183,12 +150,12 @@ const PadderComponent = React.memo(
       >
         <>
           {padding.top > 0 && (
-            <div className={styles.topEdge}>
+            <div className="bk-pad-top">
               {renderSpacer('100%', padding.top)}
             </div>
           )}
           {padding.left > 0 && (
-            <div className={styles.leftEdge}>
+            <div className="bk-pad-left">
               {renderSpacer(padding.left, '100%')}
             </div>
           )}
@@ -196,18 +163,18 @@ const PadderComponent = React.memo(
         <div
           key="content"
           data-testid={config.domDiagnostics ? 'padder-content' : undefined}
-          className={styles.content}
+          className="bk-pad-content"
         >
           {children}
         </div>
         <>
           {padding.right > 0 && (
-            <div className={styles.rightEdge}>
+            <div className="bk-pad-right">
               {renderSpacer(padding.right, '100%')}
             </div>
           )}
           {padding.bottom > 0 && (
-            <div className={styles.bottomEdge}>
+            <div className="bk-pad-bottom">
               {renderSpacer('100%', padding.bottom)}
             </div>
           )}

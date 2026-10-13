@@ -1,27 +1,26 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import { alias } from './alias.config.ts'
 
+/** React-free Remix 3 client entry and its Node-only server entry. */
 export default defineConfig({
   resolve: { alias },
   build: {
     emptyOutDir: false,
-    cssCodeSplit: false,
-    cssMinify: true,
+    target: 'es2022',
     lib: {
-      entry: resolve(import.meta.dirname, 'packages/remix/src/index.ts'),
-      name: 'BaselineKitRemix',
+      entry: {
+        remix: resolve(import.meta.dirname, 'packages/remix/src/index.ts'),
+        'remix-server': resolve(
+          import.meta.dirname,
+          'packages/remix/src/server.ts'
+        ),
+      },
       formats: ['es'],
-      fileName: () => 'remix.mjs',
+      fileName: (_format, entryName) => `${entryName}.mjs`,
     },
     rolldownOptions: {
-      external: ['remix', /^remix\//, /^@remix-run\//],
-      output: {
-        assetFileNames: (assetInfo) =>
-          assetInfo.name?.endsWith('.css')
-            ? 'remix.css'
-            : '[name]-[hash][extname]',
-      },
+      external: [/^node:/, 'remix', /^remix\//, /^@remix-run\//],
     },
     sourcemap: true,
   },

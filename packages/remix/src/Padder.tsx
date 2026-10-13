@@ -3,43 +3,38 @@
 import { type Handle, type RemixNode } from 'remix/component'
 import {
   DEFAULT_CONFIG,
-  calculateSnappedSpacing,
+  nextSnap,
+  SNAP_SETTLE_MS,
+  type SnapMeasurement,
+  type SnapState,
   createPadderDescriptor,
   parsePadding,
   type ConfigSchema,
   type Padding,
-  type Spacing,
+  type PadderOptions,
+  cx,
+  getDOMAttributes,
+  resolveDebugState,
 } from '@baseline-kit/core'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
-import { Spacer, type SpacerProps } from './Spacer'
+import { isScaledLayout } from '@baseline-kit/dom/measure'
+import { Spacer, type IndicatorNode, type SpacerProps } from './Spacer'
 import {
-  classNames,
-  compactStyle,
-  getDOMAttributes,
   createElementObserverBridge,
   getConfig,
   mergeStyles,
   normalizeConfigSnapshot,
   queueNativeUpdate,
-  resolveDebugging,
   type NativeComponent,
-  type NativeDOMAttributes,
+  type NativeHostProps,
 } from './shared'
 
-export type PadderProps = NativeDOMAttributes & {
-  width?: number | string
-  height?: number | string
-  debugging?: 'none' | 'hidden' | 'visible'
-  className?: string
-  style?: Record<string, string | number | null | undefined>
-  block?: Spacing
-  inline?: Spacing
-  padding?: Parameters<typeof parsePadding>[0]['padding']
-  indicatorNode?: (value: number, type: 'width' | 'height') => RemixNode
-  children?: RemixNode
-  ssrMode?: boolean
-}
+export type PadderProps = PadderOptions &
+  NativeHostProps & {
+    children?: RemixNode
+    indicatorNode?: IndicatorNode
+  }
 
 type RuntimePadderProps = PadderProps & {
   __baselineConfig?: ConfigSchema
@@ -53,39 +48,69 @@ const RuntimeSpacer = Spacer as unknown as NativeComponent<
 function PadderImpl(handle: Handle<RuntimePadderProps>) {
   let base = DEFAULT_CONFIG.base
   let initialPadding: Padding = parsePadding({})
-  let snappedPadding: Padding | null = null
-  const observer = createElementObserverBridge(({ height }) => {
-    if (handle.props.ssrMode || snappedPadding || height === 0) return
-    snappedPadding = calculateSnappedSpacing(
-      height,
-      base,
-      initialPadding,
-      'height'
+  // Same snapping rules as Box (see nextSnap), always in height mode.
+  let snap: SnapState | null = null
+  let settleOpenedAt = 0
+  let renderedPadding: Padding = initialPadding
+  let lastMeasure: Omit<SnapMeasurement, 'settling'> | null = null
+
+  const applySnap = (measure: Omit<SnapMeasurement, 'settling'>) => {
+    const next = nextSnap(
+      snap,
+      { base, mode: 'height', snapEdge: 'bottom', initial: initialPadding },
+      {
+        ...measure,
+        settling: performance.now() - settleOpenedAt <= SNAP_SETTLE_MS,
+      }
     )
-    queueNativeUpdate(handle)
-  })
+    if (next === snap) return false
+    if (!snap || next?.key !== snap.key) settleOpenedAt = performance.now()
+    snap = next
+    return true
+  }
+
+  const observer = createElementObserverBridge(
+    ({ height }, host) => {
+      if (handle.props.ssrMode || height === 0) return
+      lastMeasure = {
+        height,
+        rendered: renderedPadding,
+        scaled: isScaledLayout(host),
+      }
+      if (applySnap(lastMeasure)) queueNativeUpdate(handle)
+    },
+    () => {
+      settleOpenedAt = performance.now()
+    }
+  )
 
   return () => {
     const props = handle.props
     const config = normalizeConfigSnapshot(
       props.__baselineConfig ?? getConfig(handle, Config, DEFAULT_CONFIG)
     )
-    const debug = resolveDebugging(props.debugging, config.padder.debugging)
+    const debug = resolveDebugState(props.debugging, config.padder.debugging)
     base = config.base
     initialPadding = parsePadding({
       padding: props.padding,
       block: props.block,
       inline: props.inline,
     })
+    if (props.ssrMode) {
+      snap = null
+      lastMeasure = null
+    } else if (lastMeasure) {
+      applySnap(lastMeasure)
+    }
     const padding = props.ssrMode
       ? initialPadding
-      : (snappedPadding ?? initialPadding)
+      : (snap?.padding ?? initialPadding)
+    renderedPadding = padding
     const mix =
       typeof window === 'undefined' || props.ssrMode
         ? undefined
         : observer.attach
     const descriptor = createPadderDescriptor({
-      base: config.base,
       color: config.padder.color,
       width: props.width,
       height: props.height,
@@ -97,21 +122,13 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     if (debug.isNone) {
       return (
         <div
-          className={classNames(
+          className={cx(
             ...descriptor.classTokens.map((token) => `bk-${token}`),
             props.className
           )}
           data-testid={config.domDiagnostics ? 'padder' : undefined}
           mix={mix}
-          style={mergeStyles(
-            compactStyle(descriptor.containerStyle, {
-              '--bkpd-w': 'auto',
-              '--bkpd-h': 'auto',
-              '--bkpd-b': '8px',
-              '--bkpd-c': DEFAULT_CONFIG.padder.color,
-            }),
-            props.style
-          )}
+          style={mergeStyles(descriptor.containerStyle, props.style)}
           {...getDOMAttributes(props)}
         >
           {props.preserveContentHost ? (
@@ -130,9 +147,11 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     }
 
     const spacerVariant = config.spacer.variant
+    // Base 1 keeps the snapped padding exact instead of rounding it to the grid.
     const renderSpacer = (width: number | string, height: number | string) => (
       <RuntimeSpacer
         __baselineConfig={config}
+        base={1}
         width={width === '100%' ? undefined : width}
         height={height === '100%' ? undefined : height}
         variant={spacerVariant}
@@ -173,21 +192,13 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
 
     return (
       <div
-        className={classNames(
+        className={cx(
           ...descriptor.classTokens.map((token) => `bk-${token}`),
           props.className
         )}
         data-testid={config.domDiagnostics ? 'padder' : undefined}
         mix={mix}
-        style={mergeStyles(
-          compactStyle(descriptor.containerStyle, {
-            '--bkpd-w': 'auto',
-            '--bkpd-h': 'auto',
-            '--bkpd-b': '8px',
-            '--bkpd-c': DEFAULT_CONFIG.padder.color,
-          }),
-          props.style
-        )}
+        style={mergeStyles(descriptor.containerStyle, props.style)}
         {...getDOMAttributes(props)}
       >
         {children}

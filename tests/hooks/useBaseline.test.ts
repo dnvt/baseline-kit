@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
-import * as measurementModule from '@/hooks/useMeasure'
-import { useBaseline } from '@hooks'
+import * as measurementModule from '@baseline-kit/react/hooks/useMeasure'
+import { useBaseline } from '@baseline-kit/react/hooks'
 
 describe('useBaseline', () => {
   let useMeasureSpy: any
@@ -177,10 +177,7 @@ describe('useBaseline', () => {
     expect(result.current.padding.bottom).toBe(12)
   })
 
-  it('reuses the snapped padding on resize after the first snap', () => {
-    // After the first snap the cached value should be returned even if
-    // useMeasure starts reporting different heights (avoids resize jitter
-    // and clamp-mode oscillation).
+  it('re-snaps from the natural height while the content settles', () => {
     useMeasureSpy.mockReturnValue({ width: 100, height: 46 })
     const ref = { current: document.createElement('div') }
     const { result, rerender } = renderHook(() =>
@@ -192,9 +189,85 @@ describe('useBaseline', () => {
     )
     expect(result.current.padding.bottom).toBe(12)
 
-    // Container resizes to a different unaligned height: snap stays.
-    useMeasureSpy.mockReturnValue({ width: 100, height: 50 })
+    // The DOM now includes the 2px correction: no change, no re-snap.
+    useMeasureSpy.mockReturnValue({ width: 100, height: 48 })
     rerender()
     expect(result.current.padding.bottom).toBe(12)
+
+    // A web font swap grows the content by 3px: the natural height becomes
+    // 49, so the correction becomes 7px.
+    useMeasureSpy.mockReturnValue({ width: 100, height: 51 })
+    rerender()
+    expect(result.current.padding.bottom).toBe(17)
+  })
+
+  it('returns the explicit padding again when snapping turns off', () => {
+    useMeasureSpy.mockReturnValue({ width: 100, height: 46 })
+    const ref = { current: document.createElement('div') }
+    const { result, rerender } = renderHook(
+      ({ snapping }: { snapping: 'height' | 'none' }) =>
+        useBaseline(ref, {
+          base: 8,
+          snapping,
+          spacing: { top: 10, bottom: 10, left: 0, right: 0 },
+        }),
+      { initialProps: { snapping: 'height' } }
+    )
+    expect(result.current.padding.bottom).toBe(12)
+    rerender({ snapping: 'none' })
+    expect(result.current.padding.bottom).toBe(10)
+  })
+
+  it('snaps afresh when snapping turns off and back on', () => {
+    vi.useFakeTimers()
+    try {
+      // 48 is on the grid: the snap keeps the explicit padding.
+      useMeasureSpy.mockReturnValue({ width: 100, height: 48 })
+      const ref = { current: document.createElement('div') }
+      const { result, rerender } = renderHook(
+        ({ snapping }: { snapping: 'height' | 'none' }) =>
+          useBaseline(ref, {
+            base: 8,
+            snapping,
+            spacing: { top: 10, bottom: 10, left: 0, right: 0 },
+          }),
+        { initialProps: { snapping: 'height' } }
+      )
+      expect(result.current.padding.bottom).toBe(10)
+      vi.advanceTimersByTime(2000)
+
+      // The content grows while snapping is off; switching back must not
+      // reuse the old snap.
+      rerender({ snapping: 'none' })
+      useMeasureSpy.mockReturnValue({ width: 100, height: 51 })
+      rerender({ snapping: 'none' })
+      rerender({ snapping: 'height' })
+      expect(result.current.padding.bottom).toBe(15)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('keeps the snap once the settle window has passed', () => {
+    vi.useFakeTimers()
+    try {
+      useMeasureSpy.mockReturnValue({ width: 100, height: 46 })
+      const ref = { current: document.createElement('div') }
+      const { result, rerender } = renderHook(() =>
+        useBaseline(ref, {
+          base: 8,
+          snapping: 'height',
+          spacing: { top: 10, bottom: 10, left: 0, right: 0 },
+        })
+      )
+      expect(result.current.padding.bottom).toBe(12)
+
+      vi.advanceTimersByTime(2000)
+      useMeasureSpy.mockReturnValue({ width: 100, height: 53 })
+      rerender()
+      expect(result.current.padding.bottom).toBe(12)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

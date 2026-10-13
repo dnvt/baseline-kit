@@ -1,5 +1,41 @@
+import { DEFAULT_CONFIG } from '../config/defaults'
 import type { GuideVariant, GuideConfig } from '../types'
-import { formatValue, createStyleOverride } from '../utils'
+import { compactStyle, formatValue } from '../utils'
+
+/** Values the stylesheet already sets on `.bk-gde`. */
+const GUIDE_STYLE_DEFAULTS: Record<string, string> = {
+  '--bkgd-w': '100%',
+  '--bkgd-h': '100%',
+  '--bkgd-mw': 'none',
+  '--bkgd-cw': '60px',
+  '--bkgd-n': '12',
+  '--bkgd-cl': DEFAULT_CONFIG.guide.colors.line,
+  '--bkgd-cp': DEFAULT_CONFIG.guide.colors.pattern,
+  '--bkgd-ca': DEFAULT_CONFIG.guide.colors.auto,
+  '--bkgd-cf': DEFAULT_CONFIG.guide.colors.fixed,
+  '--bkgd-g': '0px',
+  '--bkgd-j': 'center',
+  '--bkgd-t': 'none',
+}
+
+/**
+ * Size-only style for the hidden server fallback rendered before the
+ * browser can measure the overlay.
+ */
+export function createGuideFallbackStyle(
+  width?: number | string,
+  height?: number | string,
+  maxWidth?: number | string
+): Record<string, string> {
+  return compactStyle(
+    {
+      ...(width !== undefined ? { '--bkgd-w': formatValue(width) } : {}),
+      ...(height !== undefined ? { '--bkgd-h': formatValue(height) } : {}),
+      ...(maxWidth !== undefined ? { '--bkgd-mw': formatValue(maxWidth) } : {}),
+    },
+    GUIDE_STYLE_DEFAULTS
+  )
+}
 
 export interface GuideDescriptorParams {
   base: number
@@ -19,6 +55,7 @@ export interface GuideDescriptorParams {
 }
 
 export interface GuideDescriptor {
+  /** Host style with stylesheet defaults omitted. */
   containerStyle: Record<string, string>
   columnColor: string
   columnsCount: number
@@ -113,21 +150,6 @@ export function createGuideConfig({
   return { variant: 'auto', columnWidth: columnWidth || '1fr', gap, base }
 }
 
-const GUIDE_DEFAULTS = (
-  base: number,
-  lineColor: string
-): Record<string, string> => ({
-  '--bkgd-w': '100%',
-  '--bkgd-h': '100%',
-  '--bkgd-mw': 'none',
-  '--bkgd-cw': '60px',
-  '--bkgd-gw': '24px',
-  '--bkgd-n': '12',
-  '--bkgd-b': `${base}px`,
-  '--bkgd-cl': lineColor,
-  '--bkgd-g': '0',
-})
-
 /**
  * Computes all styles and data needed to render a Guide component.
  * Pure function — framework-agnostic.
@@ -136,7 +158,6 @@ export function createGuideDescriptor(
   params: GuideDescriptorParams
 ): GuideDescriptor {
   const {
-    base,
     colors,
     variant,
     align,
@@ -151,53 +172,31 @@ export function createGuideDescriptor(
     isVisible,
   } = params
 
-  const defaultStyles = GUIDE_DEFAULTS(base, colors.line)
-  const containerStyle: Record<string, string> = {
-    // Config is wrapperless, so every guide color channel must travel with
-    // the consuming guide rather than relying on root CSS variables.
-    '--bkgd-cl': color ?? colors.line,
-    '--bkgd-cp': color ?? colors.pattern,
-    '--bkgd-ca': color ?? colors.auto,
-    '--bkgd-cf': color ?? colors.fixed,
-    // Always declare the containing-block default and preserve explicit CSS
-    // dimensions. A viewport size is not equivalent to 100% of the parent.
-    '--bkgd-w': formatValue(width ?? '100%'),
-    '--bkgd-h': formatValue(height ?? '100%'),
-    ...createStyleOverride({
-      key: '--bkgd-mw',
-      value: formatValue(maxWidth || 'none'),
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bkgd-cw',
-      value: formatValue(columnWidth || '60px'),
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bkgd-n',
-      value: `${columnsCount}`,
-      defaultStyles,
-    }),
-    ...createStyleOverride({ key: '--bkgd-b', value: '0', defaultStyles }),
-    ...createStyleOverride({
-      key: '--bkgd-cl',
-      value: color ?? colors.line,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bkgd-g',
-      value: `${calculatedGap}px`,
-      defaultStyles,
-    }),
-    ...createStyleOverride({
-      key: '--bkgd-j',
-      value: align || 'center',
-      defaultStyles,
-    }),
-    // CSS module resolves grid-template-columns from --bkgd-t, so the inline
-    // gridTemplateColumns property would be redundant.
-    ...(template && template !== 'none' ? { '--bkgd-t': template } : {}),
-  }
+  const isLineVariant = variant === 'line'
+
+  // Config is context, not a DOM wrapper, so resolved colors travel with the
+  // consuming element. The stylesheet resolves grid-template-columns from
+  // --bkgd-t.
+  const containerStyle = compactStyle(
+    {
+      '--bkgd-cl': color ?? colors.line,
+      '--bkgd-cp': color ?? colors.pattern,
+      '--bkgd-ca': color ?? colors.auto,
+      '--bkgd-cf': color ?? colors.fixed,
+      '--bkgd-w': formatValue(width ?? '100%'),
+      '--bkgd-h': formatValue(height ?? '100%'),
+      '--bkgd-mw': formatValue(maxWidth || 'none'),
+      '--bkgd-cw': formatValue(columnWidth || '60px'),
+      '--bkgd-n': `${columnsCount}`,
+      '--bkgd-g': `${calculatedGap}px`,
+      '--bkgd-j': align || 'center',
+      ...(template ? { '--bkgd-t': template } : {}),
+      ...(isLineVariant
+        ? { '--bkgd-line-period': `${calculatedGap + 1}px` }
+        : {}),
+    },
+    GUIDE_STYLE_DEFAULTS
+  )
 
   const columnColor =
     color ??
@@ -206,14 +205,7 @@ export function createGuideDescriptor(
       : undefined) ??
     colors.line
 
-  const isLineVariant = variant === 'line'
-  const classTokens = ['gde', isVisible ? 'v' : 'h']
-  if (isLineVariant) classTokens.push('line')
-
-  if (isLineVariant) {
-    containerStyle['--bkgd-line-color'] = 'var(--bkgd-cl)'
-    containerStyle['--bkgd-line-period'] = `${calculatedGap + 1}px`
-  }
+  const classTokens = ['gde', isVisible ? 'v' : 'h', variant]
 
   return {
     containerStyle,

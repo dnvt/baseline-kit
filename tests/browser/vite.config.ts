@@ -15,38 +15,12 @@ export default defineConfig({
       configureServer(server) {
         server.middlewares.use(async (request, response, next) => {
           const pathname = request.url?.split('?')[0]
-          if (pathname === '/__baseline-react.css') {
-            const css = packageRoot
-              ? await readFile(resolve(packageRoot, 'dist/styles.css'), 'utf8')
-              : (
-                  await Promise.all(
-                    [
-                      '../../packages/react/src/components/Baseline/styles.module.css',
-                      '../../packages/react/src/components/Box/styles.module.css',
-                      '../../packages/react/src/components/Guide/styles.module.css',
-                      '../../packages/react/src/components/Padder/styles.module.css',
-                      '../../packages/react/src/components/Spacer/styles.module.css',
-                    ].map(async (path) => {
-                      const file = resolve(server.config.root, path)
-                      const moduleUrl = `/@fs/${file.startsWith('/') ? file.slice(1) : file}?direct`
-                      const transformed =
-                        await server.transformRequest(moduleUrl)
-                      return transformed?.code ?? ''
-                    })
-                  )
-                ).join('\n')
-            response.statusCode = 200
-            response.setHeader('Content-Type', 'text/css')
-            response.end(css)
-            return
-          }
-
-          if (pathname === '/__baseline-remix.css') {
+          if (pathname === '/__baseline.css') {
             const cssPath = packageRoot
-              ? resolve(packageRoot, 'dist/remix.css')
+              ? resolve(packageRoot, 'dist/styles.css')
               : resolve(
                   server.config.root,
-                  '../../packages/remix/src/styles.css'
+                  '../../packages/core/src/styles/baseline-kit.css'
                 )
             response.statusCode = 200
             response.setHeader('Content-Type', 'text/css')
@@ -158,13 +132,6 @@ export default defineConfig({
         replacement,
       })),
     ],
-  },
-  css: {
-    modules: {
-      localsConvention: 'camelCase',
-      generateScopedName: '[local]_[hash:base64:5]',
-    },
-    transformer: 'postcss',
   },
   server: {
     fs: {

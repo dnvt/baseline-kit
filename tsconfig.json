@@ -16,13 +16,9 @@
       "@baseline-kit/react": ["./packages/react/src/index.ts"],
       "@baseline-kit/react/*": ["./packages/react/src/*"],
       "@baseline-kit/remix": ["./packages/remix/src/index.ts"],
-      "@baseline-kit/remix/*": ["./packages/remix/src/*"],
-      "@/*": ["./packages/react/src/*"],
-      "@components": ["./packages/react/src/components/index.ts"],
-      "@hooks": ["./packages/react/src/hooks/index.ts"],
-      "@utils": ["./packages/react/src/utils/index.ts"]
+      "@baseline-kit/remix/*": ["./packages/remix/src/*"]
     }
   },
-  "include": ["packages/**/*", "tests/vitest.d.ts"],
-  "exclude": ["node_modules", "dist", "demo"]
+  "include": ["packages/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

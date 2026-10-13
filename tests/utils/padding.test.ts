@@ -1,4 +1,4 @@
-import { parsePadding } from '@utils'
+import { parsePadding } from '@baseline-kit/core'
 
 describe('Padding Utils - parsePadding', () => {
   it('returns zero padding when no spacing props are provided', () => {
@@ -38,7 +38,9 @@ describe('Padding Utils - parsePadding', () => {
   })
 
   it('handles object format for padding with explicit keys', () => {
-    expect(parsePadding({ padding: { top: 5, right: 15, bottom: 25, left: 35 } })).toEqual({
+    expect(
+      parsePadding({ padding: { top: 5, right: 15, bottom: 25, left: 35 } })
+    ).toEqual({
       top: 5,
       right: 15,
       bottom: 25,
@@ -47,10 +49,12 @@ describe('Padding Utils - parsePadding', () => {
   })
 
   it('processes block/inline props when provided as arrays', () => {
-    expect(parsePadding({
-      block: [10, 20],
-      inline: [30, 40],
-    })).toEqual({
+    expect(
+      parsePadding({
+        block: [10, 20],
+        inline: [30, 40],
+      })
+    ).toEqual({
       top: 10,
       bottom: 20,
       left: 30,
@@ -59,10 +63,12 @@ describe('Padding Utils - parsePadding', () => {
   })
 
   it('processes block/inline props when provided as numbers', () => {
-    expect(parsePadding({
-      block: 15,
-      inline: 25,
-    })).toEqual({
+    expect(
+      parsePadding({
+        block: 15,
+        inline: 25,
+      })
+    ).toEqual({
       top: 15,
       bottom: 15,
       left: 25,
@@ -71,10 +77,12 @@ describe('Padding Utils - parsePadding', () => {
   })
 
   it('processes block/inline props when provided as objects with start/end keys', () => {
-    expect(parsePadding({
-      block: { start: 5, end: 10 },
-      inline: { start: 20, end: 25 },
-    })).toEqual({
+    expect(
+      parsePadding({
+        block: { start: 5, end: 10 },
+        inline: { start: 20, end: 25 },
+      })
+    ).toEqual({
       top: 5,
       bottom: 10,
       left: 20,
@@ -83,11 +91,13 @@ describe('Padding Utils - parsePadding', () => {
   })
 
   it('prefers padding over block/inline when both are provided', () => {
-    expect(parsePadding({
-      padding: [1, 2, 3, 4],
-      block: [10, 20],
-      inline: 15,
-    })).toEqual({
+    expect(
+      parsePadding({
+        padding: [1, 2, 3, 4],
+        block: [10, 20],
+        inline: 15,
+      })
+    ).toEqual({
       top: 1,
       right: 2,
       bottom: 3,

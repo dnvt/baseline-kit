@@ -8,15 +8,13 @@ global.ResizeObserver = class {
   observe(target: Element) {
     this.callback(
       [{ target, contentRect: target.getBoundingClientRect() }],
-      this as unknown as ResizeObserver,
+      this as unknown as ResizeObserver
     )
   }
 
-  unobserve() {
-  }
+  unobserve() {}
 
-  disconnect() {
-  }
+  disconnect() {}
 }
 
 // IntersectionObserver mock
@@ -40,15 +38,13 @@ global.IntersectionObserver = class {
           time: Date.now(),
         },
       ],
-      this as unknown as IntersectionObserver,
+      this as unknown as IntersectionObserver
     )
   }
 
-  unobserve() {
-  }
+  unobserve() {}
 
-  disconnect() {
-  }
+  disconnect() {}
 
   takeRecords(): IntersectionObserverEntry[] {
     return []

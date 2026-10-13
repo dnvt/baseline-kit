@@ -8,9 +8,12 @@ const baseParams = {
 }
 
 describe('createSpacerDescriptor', () => {
-  it('always emits --bksp-b', () => {
-    const { style } = createSpacerDescriptor(baseParams)
-    expect(style['--bksp-b']).toBe('8px')
+  it('rounds sizes to the base', () => {
+    expect(
+      createSpacerDescriptor({ ...baseParams, base: 4, height: 13 }).style[
+        '--bksp-h'
+      ]
+    ).toBe('12px')
   })
 
   it('normalizes numeric width/height against base', () => {
@@ -88,5 +91,17 @@ describe('createSpacerDescriptor', () => {
       '--bksp-cf': '#0f0',
       '--bksp-ct': '#00f',
     })
+  })
+})
+
+describe('createSpacerDescriptor in plain pixels', () => {
+  it('keeps fractional sizes when the base is 1', () => {
+    const { style, normHeight } = createSpacerDescriptor({
+      ...baseParams,
+      base: 1,
+      height: 3.6,
+    })
+    expect(normHeight).toBe(3.6)
+    expect(style['--bksp-h']).toBe('3.6px')
   })
 })

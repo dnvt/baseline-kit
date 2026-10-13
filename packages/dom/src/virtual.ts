@@ -73,10 +73,12 @@ export function createVirtualTracker(
   window.addEventListener('scroll', throttledUpdate, listenerOptions)
   window.addEventListener('resize', throttledUpdate, listenerOptions)
 
-  const intersectionObserver = new IntersectionObserver(throttledUpdate, {
-    threshold: 0,
-  })
-  intersectionObserver.observe(el)
+  // Scroll and resize listeners still update the range without it.
+  const intersectionObserver =
+    typeof IntersectionObserver === 'undefined'
+      ? undefined
+      : new IntersectionObserver(throttledUpdate, { threshold: 0 })
+  intersectionObserver?.observe(el)
 
   throttledUpdate()
 
@@ -85,7 +87,7 @@ export function createVirtualTracker(
     disconnect() {
       window.removeEventListener('scroll', throttledUpdate, listenerOptions)
       window.removeEventListener('resize', throttledUpdate, listenerOptions)
-      intersectionObserver.disconnect()
+      intersectionObserver?.disconnect()
       cancelUpdate()
     },
   }

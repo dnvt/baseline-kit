@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
-import * as measurementModule from '@/hooks/useMeasure'
-import { useGuide } from '@hooks'
+import * as measurementModule from '@baseline-kit/react/hooks/useMeasure'
+import { useGuide } from '@baseline-kit/react/hooks'
 
 describe('useGuide', () => {
   let useMeasureSpy: any

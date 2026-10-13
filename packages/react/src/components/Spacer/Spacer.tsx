@@ -1,27 +1,25 @@
 import * as React from 'react'
 import { useConfig, useDebug, useIsClient } from '../../hooks'
-import { DEFAULT_CONFIG, cx, createSpacerDescriptor } from '@baseline-kit/core'
+import {
+  cx,
+  createSpacerDescriptor,
+  getDOMAttributes,
+  type SpacerOptions,
+} from '@baseline-kit/core'
 import { hydratedValue } from '@baseline-kit/dom'
-import { ComponentsProps, Variant } from '../types'
+import type { HostProps } from '../types'
 import { mergeStyles } from '../../utils/merge'
-import { compactStyle } from '../../utils/dom'
-import styles from './styles.module.css'
 
 export type IndicatorNode = (
   value: number,
   type: 'width' | 'height'
 ) => React.ReactNode
 
-export type SpacerProps = {
-  width?: React.CSSProperties['width']
-  height?: React.CSSProperties['height']
-  variant?: Variant
-  color?: string
-  base?: number
-  children?: React.ReactNode
-  indicatorNode?: IndicatorNode
-  ssrMode?: boolean
-} & ComponentsProps
+export type SpacerProps = SpacerOptions &
+  HostProps & {
+    children?: React.ReactNode
+    indicatorNode?: IndicatorNode
+  }
 
 export const Spacer = React.memo(function Spacer({
   height: heightProp,
@@ -50,8 +48,8 @@ export const Spacer = React.memo(function Spacer({
       createSpacerDescriptor({
         base,
         colors: config.colors,
-        width: widthProp as number | string | undefined,
-        height: heightProp as number | string | undefined,
+        width: widthProp,
+        height: heightProp,
         color: colorProp,
         variant,
         isVisible: isShown,
@@ -72,12 +70,12 @@ export const Spacer = React.memo(function Spacer({
     return (
       <>
         {h !== 0 && (
-          <span key="height" className={styles.indicator} aria-hidden="true">
+          <span key="height" className="bk-indicator" aria-hidden="true">
             {indicatorNode!(h, 'height')}
           </span>
         )}
         {w !== 0 && (
-          <span key="width" className={styles.indicator} aria-hidden="true">
+          <span key="width" className="bk-indicator" aria-hidden="true">
             {indicatorNode!(w, 'width')}
           </span>
         )}
@@ -90,37 +88,17 @@ export const Spacer = React.memo(function Spacer({
     descriptor.normHeight,
   ])
 
-  const baseStyles = React.useMemo(
-    () =>
-      mergeStyles(
-        compactStyle(descriptor.style, {
-          '--bksp-w': 'var(--bk-wf, 100%)',
-          '--bksp-h': 'var(--bk-hf, auto)',
-          '--bksp-b': '8px',
-          '--bksp-cl': DEFAULT_CONFIG.spacer.colors.line,
-          '--bksp-cf': DEFAULT_CONFIG.spacer.colors.flat,
-          '--bksp-ct': DEFAULT_CONFIG.spacer.colors.text,
-        }),
-        style
-      ),
-    [descriptor.style, style]
-  )
-
   return (
     <div
       ref={ref}
       data-testid={config.domDiagnostics ? 'spacer' : undefined}
-      className={cx(...descriptor.classTokens.map((t) => styles[t]), className)}
+      className={cx(...descriptor.classTokens.map((t) => `bk-${t}`), className)}
       data-variant={config.domDiagnostics ? variant : undefined}
       data-height={
-        config.domDiagnostics
-          ? typeof descriptor.normHeight === 'number'
-            ? `${descriptor.normHeight}px`
-            : descriptor.normHeight
-          : undefined
+        config.domDiagnostics ? `${descriptor.normHeight}px` : undefined
       }
-      style={baseStyles}
-      {...props}
+      style={mergeStyles(descriptor.style, style)}
+      {...getDOMAttributes(props)}
     >
       {measurements}
       {children}

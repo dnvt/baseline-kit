@@ -1,37 +1,13 @@
 import * as React from 'react'
-import type { DebuggingMode, SpacingProps } from '@baseline-kit/core'
-
-// Re-export pure types from core for backwards compatibility
-// Note: BaselineVariant, SnappingMode, and GuideConfig are exported
-// from their respective component modules (Baseline, Box, Guide)
-export type {
-  Spacing,
-  PaddingValue,
-  Padding,
-  SpacingProps,
-  GuideVariant,
-  GuideColumnValue,
-  GuideColumnsPattern,
-  GridAlignment,
-  PaddedVariant,
-  Variant,
-  DebuggingMode,
-  ConfigSchema,
-} from '@baseline-kit/core'
-
-export { GRID_ALIGNMENTS, PADD_VARIANTS } from '@baseline-kit/core'
 
 /**
- * Common props shared across library components.
+ * Host element props every React component accepts on top of its core
+ * options. Only global attributes are forwarded to the DOM.
  */
-export type ComponentsProps = {
-  debugging?: DebuggingMode
+export type HostProps = {
   className?: string
   style?: React.CSSProperties
-  height?: React.CSSProperties['height']
-  width?: React.CSSProperties['width']
-} & SpacingProps &
-  React.AriaAttributes & {
+} & React.AriaAttributes & {
     id?: string
     title?: string
     role?: React.AriaRole
@@ -41,22 +17,3 @@ export type ComponentsProps = {
     hidden?: boolean
     [key: `data-${string}`]: string | number | boolean | undefined
   }
-
-/** Base configuration for components that support padding. */
-export type PaddedBaseConfig = {
-  base?: number
-  color?: React.CSSProperties['color'] | React.CSSProperties['backgroundColor']
-  zIndex?: React.CSSProperties['zIndex']
-}
-
-export type Gaps =
-  | {
-      gap?: React.CSSProperties['gap']
-      rowGap?: never
-      columnGap?: never
-    }
-  | {
-      gap?: never
-      rowGap?: React.CSSProperties['rowGap']
-      columnGap?: React.CSSProperties['columnGap']
-    }

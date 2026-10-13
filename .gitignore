@@ -1,51 +1,21 @@
 # Dependencies
 node_modules/
-.pnp/
-.pnp.js
 package-lock.json
-yarn.lock
 
-# Package managers
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.yarn-integrity
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-
-# Bun
-bun.lockb
-bun.lock
-!bun.lock
-.bun/
-
-# Build and distribution files
+# Build output
 dist/
-build/
-lib/
-stats.html
-*.mjs.map
-*.cjs.map
 *.tgz
 
-# Cache and temp files
+# Caches and test output
 .cache/
-.temp/
-.rollup.cache/
 .vite/
-.vitest/
-*.tsbuildinfo
-tsup.config.tsbuildinfo
-
-# Testing
+.eslintcache
+.prettiercache
 coverage/
-.nyc_output/
 test-results/
 playwright-report/
 
-# Editor directories and files
+# Editors and OS
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
@@ -58,24 +28,17 @@ playwright-report/
 .DS_Store
 Thumbs.db
 
-# Environment variables and secrets
+# Environment
 .env
 .env.*
 !.env.example
 .npmrc
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-# Static analysis tools
-.eslintcache
-.stylelintcache
-.prettiercache
-
-# Demo and examples (explicitly excluded)
-demo/
-examples/
+# Local scratch
+.temp/
+*.log
+*.tmp
+*.bak
 
 # Maestro workflow (local-only)
 /.claude/
@@ -90,12 +53,3 @@ examples/
 /AGENTS.md
 /CLAUDE.md
 /MEMORY.md
-
-# Misc
-.DS_Store
-*.log
-*.tmp
-*.temp
-.temp/
-*.bak
-logs/

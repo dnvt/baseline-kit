@@ -2,7 +2,7 @@ import {
   normalizeValue,
   normalizeValuePair,
   convertValue,
-} from '@utils'
+} from '@baseline-kit/core'
 
 describe('Normalization Utils', () => {
   describe('normalizeValue', () => {
@@ -53,7 +53,9 @@ describe('Normalization Utils', () => {
 
     it('normalizes each value in the pair', () => {
       // Both 14 and "14px" should normalize to 16 when base is 8.
-      expect(normalizeValuePair([14, '14px'], [0, 0], { base: 8 })).toEqual([16, 16])
+      expect(normalizeValuePair([14, '14px'], [0, 0], { base: 8 })).toEqual([
+        16, 16,
+      ])
     })
   })
 

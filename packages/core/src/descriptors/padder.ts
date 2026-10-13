@@ -1,8 +1,15 @@
-import { formatValue } from '../utils'
+import { DEFAULT_CONFIG } from '../config/defaults'
+import { compactStyle, formatValue } from '../utils'
 import type { Padding } from '../types'
 
+/** Values the stylesheet already sets on `.bk-pad`. */
+const PADDER_STYLE_DEFAULTS: Record<string, string> = {
+  '--bkpd-w': 'fit-content',
+  '--bkpd-h': 'fit-content',
+  '--bkpd-c': DEFAULT_CONFIG.padder.color,
+}
+
 export interface PadderDescriptorParams {
-  base: number
   color: string
   width?: number | string
   height?: number | string
@@ -12,6 +19,7 @@ export interface PadderDescriptorParams {
 }
 
 export interface PadderDescriptor {
+  /** Host style with stylesheet defaults omitted. */
   containerStyle: Record<string, string>
   classTokens: string[]
 }
@@ -23,20 +31,13 @@ export interface PadderDescriptor {
 export function createPadderDescriptor(
   params: PadderDescriptorParams
 ): PadderDescriptor {
-  const { base, color, width, height, padding, enableSpacers, isVisible } =
-    params
+  const { color, width, height, padding, enableSpacers, isVisible } = params
 
-  const containerStyle: Record<string, string> = {}
-
-  if (width !== undefined && width !== 'fit-content') {
-    containerStyle['--bkpd-w'] = formatValue(width)
+  const containerStyle: Record<string, string> = {
+    ...(width !== undefined ? { '--bkpd-w': formatValue(width) } : {}),
+    ...(height !== undefined ? { '--bkpd-h': formatValue(height) } : {}),
+    '--bkpd-c': color,
   }
-  if (height !== undefined && height !== 'fit-content') {
-    containerStyle['--bkpd-h'] = formatValue(height)
-  }
-
-  containerStyle['--bkpd-b'] = `${base}px`
-  containerStyle['--bkpd-c'] = color
 
   if (!enableSpacers) {
     const { top, right, bottom, left } = padding
@@ -51,5 +52,8 @@ export function createPadderDescriptor(
   const classTokens = ['pad']
   if (isVisible && enableSpacers) classTokens.push('v')
 
-  return { containerStyle, classTokens }
+  return {
+    containerStyle: compactStyle(containerStyle, PADDER_STYLE_DEFAULTS),
+    classTokens,
+  }
 }

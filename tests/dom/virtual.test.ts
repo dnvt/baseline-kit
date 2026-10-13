@@ -71,3 +71,22 @@ describe('createVirtualTracker', () => {
     )
   })
 })
+
+describe('createVirtualTracker without IntersectionObserver', () => {
+  it('tracks with scroll listeners only', () => {
+    const original = globalThis.IntersectionObserver
+    // @ts-expect-error simulate an environment without IntersectionObserver
+    delete globalThis.IntersectionObserver
+    try {
+      const onChange = vi.fn()
+      const handle = createVirtualTracker(
+        createElement(),
+        { totalItems: 10, itemHeight: 10 },
+        onChange
+      )
+      expect(() => handle.disconnect()).not.toThrow()
+    } finally {
+      globalThis.IntersectionObserver = original
+    }
+  })
+})

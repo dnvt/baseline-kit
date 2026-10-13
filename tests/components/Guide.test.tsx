@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 import { render } from '../render'
 import '@testing-library/jest-dom'
 import { CSSProperties } from 'react'
-import { Config, Guide } from '@components'
+import { Config, Guide } from '@baseline-kit/react'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
@@ -189,15 +189,12 @@ describe('Guide component', () => {
 
   it('consumes sizing variables in the Guide stylesheet', () => {
     const css = readFileSync(
-      resolve(
-        process.cwd(),
-        'packages/react/src/components/Guide/styles.module.css'
-      ),
+      resolve(process.cwd(), 'packages/core/src/styles/baseline-kit.css'),
       'utf8'
     )
-    expect(css).toContain('width: var(--bkgd-w, 100%)')
-    expect(css).toContain('height: var(--bkgd-h, 100%)')
-    expect(css).toContain('max-width: var(--bkgd-mw, none)')
+    expect(css).toContain('width: var(--bkgd-w)')
+    expect(css).toContain('height: var(--bkgd-h)')
+    expect(css).toContain('max-width: var(--bkgd-mw)')
   })
 
   it('keeps the simplified fallback when ssrMode is enabled', () => {
@@ -221,9 +218,9 @@ describe('Guide component', () => {
     )
     const guide = screen.getByTestId('numeric-guide')
     const style = guide.getAttribute('style') || ''
-    expect(style).toContain('width: 120px')
-    expect(style).toContain('height: 80px')
-    expect(style).toContain('max-width: 240px')
+    expect(style).toContain('--bkgd-w: 120px')
+    expect(style).toContain('--bkgd-h: 80px')
+    expect(style).toContain('--bkgd-mw: 240px')
   })
 
   it('preserves caller attributes in the SSR fallback', () => {

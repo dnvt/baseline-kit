@@ -1,4 +1,4 @@
-import { parseUnit, formatValue } from '@utils'
+import { parseUnit, formatValue } from '@baseline-kit/core'
 
 describe('parseUnit', () => {
   it('parses a valid pixel value', () => {
