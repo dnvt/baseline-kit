@@ -13,7 +13,6 @@ import type {
   SnapEdge,
   SnappingMode,
 } from '@baseline-kit/core'
-import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
 import { Config } from '../Config/Config'
 import { PadderForBox } from '../Padder/Padder'
@@ -55,26 +54,14 @@ export const Box = React.memo(
     const internalRef = React.useRef<HTMLElement | null>(null)
     const { top, bottom, left, right } = parsePadding(spacingProps)
 
-    const baselinePadding = useBaseline(internalRef, {
+    // Before hydration and in ssrMode the explicit padding is rendered, so
+    // the hook must not snap; it then knows exactly what is on screen.
+    const { padding } = useBaseline(internalRef, {
       base: config.base,
-      snapping,
+      snapping: isHydrated && !ssrMode ? snapping : 'none',
       snapEdge,
       spacing: { top, bottom, left, right },
     })
-
-    const stablePadding = {
-      padding: {
-        top: top || 0,
-        right: right || 0,
-        bottom: bottom || 0,
-        left: left || 0,
-      },
-    }
-    const { padding } = hydratedValue(
-      isHydrated && !ssrMode,
-      stablePadding,
-      baselinePadding
-    )
 
     const descriptor = createBoxDescriptor({
       base: config.base,

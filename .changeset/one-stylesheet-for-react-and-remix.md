@@ -27,7 +27,7 @@ Breaking changes:
 
 Features:
 
-- React `Box` supports `as` and `htmlFor` for semantic hosts, like Remix. A semantic host drops the element's default block margins, which would sit outside the snapped height. The reset sits in the `baseline-kit` cascade layer, so your own CSS, including later layered utilities, can set margins again.
+- React `Box` supports `as` and `htmlFor` for semantic hosts, like Remix. A semantic host drops the element's default block margins, which would sit outside the snapped height. The reset outweighs element resets such as normalize.css; your own classes win over it.
 - React `Box` paints the shaded padding bands in visible debug mode, like Remix.
 - `baseline-kit` and `baseline-kit/remix` export the same type names, including `BoxElement` and `ConfigProps`.
 - The CSS entry points declare types, so `import 'baseline-kit/styles'` type-checks with TypeScript's `noUncheckedSideEffectImports`, which TypeScript 6 and 7 turn on by default.

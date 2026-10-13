@@ -45,10 +45,19 @@ export function useBaseline(
     throw new Error('Base must be >= 1 for baseline alignment.')
   }
 
-  const { height } = useMeasure(ref)
   const snapRef = React.useRef<SnapState | null>(null)
-  // Padding committed to the DOM, which the latest measurement includes.
+  // Padding committed to the DOM, and the padding each measurement included.
   const renderedPaddingRef = React.useRef<Padding | null>(null)
+  const measuredRef = React.useRef<{
+    height: number
+    rendered: Padding | null
+  }>({ height: 0, rendered: null })
+  const { height } = useMeasure(ref, (rect) => {
+    measuredRef.current = {
+      height: rect.height,
+      rendered: renderedPaddingRef.current,
+    }
+  })
   const settlingRef = React.useRef(true)
   const [settleTick, reopenSettle] = React.useReducer((tick) => tick + 1, 0)
 
@@ -65,7 +74,12 @@ export function useBaseline(
       { base, mode: snapping, snapEdge, initial: initialPadding },
       {
         height,
-        rendered: renderedPaddingRef.current ?? initialPadding,
+        // Pair the height with the padding it was measured with; a prop
+        // change can commit new padding before the next measurement.
+        rendered:
+          (measuredRef.current.height === height
+            ? measuredRef.current.rendered
+            : renderedPaddingRef.current) ?? initialPadding,
         settling: settlingRef.current,
         scaled,
       }

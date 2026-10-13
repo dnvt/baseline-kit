@@ -13,6 +13,7 @@ import { Config } from './Config'
 import {
   createMeasureObserver,
   getCSSZoom,
+  onSnapSettleEvent,
   createVirtualTracker,
   type MeasureRect,
   type VirtualRange,
@@ -235,10 +236,16 @@ const attachedBridges = new Set<AttachedBridge>()
  * effect or client-only bridge is needed.
  */
 export function createElementObserverBridge(
-  onMeasure: (rect: MeasureRect, element: Element) => void
+  onMeasure: (rect: MeasureRect, element: Element) => void,
+  /**
+   * Called while attached when layout may have settled without an observed
+   * size change (see onSnapSettleEvent); the element is then re-measured.
+   */
+  onSettle?: () => void
 ): ElementObserverBridge {
   let element: Element | null = null
   let measureHandle: ReturnType<typeof createMeasureObserver> | undefined
+  let unsubscribeSettle: (() => void) | undefined
   let hasNonZeroMeasurement = false
   let initialRefreshAttempts = 0
 
@@ -260,6 +267,8 @@ export function createElementObserverBridge(
     element: () => element,
     release: () => {
       attachedBridges.delete(bridge)
+      unsubscribeSettle?.()
+      unsubscribeSettle = undefined
       measureHandle?.disconnect()
       measureHandle = undefined
       hasNonZeroMeasurement = false
@@ -306,6 +315,12 @@ export function createElementObserverBridge(
   const attach = ref((node, signal) => {
     element = node
     attachedBridges.add(bridge)
+    if (onSettle && !unsubscribeSettle) {
+      unsubscribeSettle = onSnapSettleEvent(() => {
+        onSettle()
+        requestAnimationFrame(remeasure)
+      })
+    }
 
     if (typeof ResizeObserver !== 'undefined') {
       measureHandle = createMeasureObserver(node, (rect) => {

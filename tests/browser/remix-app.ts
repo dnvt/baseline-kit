@@ -1,6 +1,6 @@
 import { Frame } from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
-import { Forwarder } from './remix-entries'
+import { Forwarder, SnapModeProbe } from './remix-entries'
 import {
   Baseline,
   Box,
@@ -535,6 +535,10 @@ export function createRemixApp() {
           jsx(Box, { as: 'p', children: 'Semantic paragraph two' }),
           jsx(Box, { children: jsx(Spacer, { height: 12 }) }),
         ],
+      }),
+      jsx('section', {
+        id: 'remix-snap-probes',
+        children: jsx(SnapModeProbe, {}),
       }),
       jsx('section', {
         id: 'remix-late-and-layered',

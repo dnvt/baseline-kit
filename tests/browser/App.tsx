@@ -6,7 +6,68 @@ import {
   Padder,
   Spacer,
 } from '@baseline-kit/react'
-import { Fragment, useState, type CSSProperties } from 'react'
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
+
+/** Lets tests switch a Box's snapping mode and content height. */
+function SnapModeProbe() {
+  const [mode, setMode] = useState<'clamp' | 'none'>('clamp')
+  const [height, setHeight] = useState(100)
+  useEffect(() => {
+    ;(
+      window as unknown as {
+        __setSnapProbe: (next: {
+          mode?: 'clamp' | 'none'
+          height?: number
+        }) => void
+      }
+    ).__setSnapProbe = (next) => {
+      if (next.mode) setMode(next.mode)
+      if (next.height !== undefined) setHeight(next.height)
+    }
+  }, [])
+  return (
+    <Box id="mode-probe" snapping={mode} block={[0, 0]}>
+      <div style={{ height }} />
+    </Box>
+  )
+}
+
+/** Switches Box props in the microtask after the first snap commits. */
+function PropsAfterSnapProbe() {
+  const [edge, setEdge] = useState<'bottom' | 'top'>('bottom')
+  const ref = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const observer = new MutationObserver(() => {
+      observer.disconnect()
+      setEdge('top')
+    })
+    observer.observe(ref.current!, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style'],
+    })
+    return () => observer.disconnect()
+  }, [])
+  return (
+    <div ref={ref} style={{ display: 'flow-root' }}>
+      <Box
+        id="props-after-snap"
+        snapping="height"
+        snapEdge={edge}
+        block={[0, 0]}
+      >
+        <div style={{ height: 100 }} />
+      </Box>
+    </div>
+  )
+}
 
 const dimensionCases = [
   { id: 'width-omitted', axis: 'width', value: undefined },
@@ -347,6 +408,11 @@ export function App() {
         <Box>
           <Spacer height={12} />
         </Box>
+      </section>
+
+      <section id="snap-probes">
+        <SnapModeProbe />
+        <PropsAfterSnapProbe />
       </section>
 
       <section id="late-and-layered">

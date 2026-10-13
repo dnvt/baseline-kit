@@ -185,9 +185,10 @@ either to keep the explicit padding without measuring.
 stay on that element and the snapped grid sits inside it. Pass `htmlFor` with
 `as="label"`. A semantic host drops the element's default block margins so
 that they don't sit outside the snapped height; add your own as multiples of
-the base. The reset sits in the `baseline-kit` cascade layer, so any of your
-own CSS can set margins again; with layered utilities, such as Tailwind's,
-load `baseline-kit/styles` before them.
+the base. The reset outweighs element resets such as normalize.css, and your
+own classes win over it. To let layered utilities such as Tailwind's override
+Baseline Kit, import it into a cascade layer declared before them:
+`@import 'baseline-kit/styles' layer(baseline-kit);`.
 
 ## Components
 

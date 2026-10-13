@@ -13,9 +13,15 @@ const ZERO: MeasureRect = { width: 0, height: 0 }
  * Thin wrapper around the imperative createMeasureObserver from @baseline-kit/dom.
  */
 export function useMeasure(
-  ref: React.RefObject<HTMLElement | null>
+  ref: React.RefObject<HTMLElement | null>,
+  /** Called with each new measurement, before it is stored in state. */
+  onMeasure?: (rect: MeasureRect) => void
 ): MeasureResult {
   const [dimensions, setDimensions] = React.useState<MeasureRect>(ZERO)
+  const onMeasureRef = React.useRef(onMeasure)
+  React.useLayoutEffect(() => {
+    onMeasureRef.current = onMeasure
+  })
   const handleRef = React.useRef<ReturnType<
     typeof createMeasureObserver
   > | null>(null)
@@ -24,6 +30,7 @@ export function useMeasure(
     if (typeof window === 'undefined' || !ref.current) return
 
     const handle = createMeasureObserver(ref.current, (rect) => {
+      onMeasureRef.current?.(rect)
       setDimensions((prev) =>
         prev.width === rect.width && prev.height === rect.height ? prev : rect
       )

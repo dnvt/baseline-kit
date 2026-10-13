@@ -112,14 +112,12 @@
 }
 
 /*
- * Heading and paragraph margins would sit outside the snapped height. The
- * reset sits in a cascade layer so that any of your own CSS, including
- * layered utilities declared after it, can set margins again.
+ * Heading and paragraph margins would sit outside the snapped height. One
+ * class of weight: it beats element resets such as normalize.css, and your own
+ * classes loaded later win.
  */
-@layer baseline-kit {
-  .bk-box:where(.bk-box-semantic-host) {
-    margin-block: 0;
-  }
+.bk-box:where(.bk-box-semantic-host) {
+  margin-block: 0;
 }
 
 /* The host already applies --bkbx-w/--bkbx-h; the grid only fills it. */

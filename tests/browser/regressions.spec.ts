@@ -1317,6 +1317,46 @@ test('React Box re-snaps late content and yields margins to layers', async ({
   await expect(page.locator('#layered-p')).toHaveCSS('margin-top', '16px')
 })
 
+test('React Box re-snaps after snapping turns off and back on', async ({
+  page,
+}) => {
+  const probe = page.locator('#mode-probe')
+  const height = () =>
+    probe.evaluate((element) => element.getBoundingClientRect().height)
+  const set = (next: { mode?: 'clamp' | 'none'; height?: number }) =>
+    page.evaluate(
+      (value) =>
+        (
+          window as unknown as {
+            __setSnapProbe: (next: typeof value) => void
+          }
+        ).__setSnapProbe(value),
+      next
+    )
+  await expect.poll(height).toBe(104)
+  // Let the settle window close, so only the mode change can re-snap.
+  await page.waitForTimeout(2500)
+  await set({ mode: 'none' })
+  await expect.poll(height).toBe(100)
+  await set({ height: 98 })
+  await expect.poll(height).toBe(98)
+  // Back to the same mode, base and padding: it must snap afresh.
+  await set({ mode: 'clamp' })
+  await expect.poll(height).toBe(104)
+})
+
+test('React Box re-snaps when props change right after a snap', async ({
+  page,
+}) => {
+  await expect
+    .poll(() =>
+      page
+        .locator('#props-after-snap')
+        .evaluate((element) => element.getBoundingClientRect().height % 8)
+    )
+    .toBe(0)
+})
+
 test('React Box keeps a fractional top snap on an 8px base', async ({
   page,
 }) => {
@@ -2238,6 +2278,40 @@ test.describe('native Remix adapter', () => {
       'margin-top',
       '16px'
     )
+  })
+
+  test('native Box re-snaps after snapping turns off and back on', async ({
+    page,
+  }) => {
+    await page.goto('/remix.html')
+    await page.evaluate(
+      () =>
+        (window as unknown as { __baselineRemixReady: Promise<void> })
+          .__baselineRemixReady
+    )
+    const probe = page.locator('#remix-mode-probe')
+    const height = () =>
+      probe.evaluate((element) => element.getBoundingClientRect().height)
+    const set = (next: { mode?: 'clamp' | 'none'; height?: number }) =>
+      page.evaluate(
+        (value) =>
+          (
+            window as unknown as {
+              __setRemixSnapProbe: (next: typeof value) => void
+            }
+          ).__setRemixSnapProbe(value),
+        next
+      )
+    await expect.poll(height).toBe(104)
+    // Let the settle window close, so only the mode change can re-snap.
+    await page.waitForTimeout(2500)
+    await set({ mode: 'none' })
+    await expect.poll(height).toBe(100)
+    await set({ height: 98 })
+    await expect.poll(height).toBe(98)
+    // Back to the same mode, base and padding: it must snap afresh.
+    await set({ mode: 'clamp' })
+    await expect.poll(height).toBe(104)
   })
 
   test('native Box keeps a fractional top snap on an 8px base', async ({

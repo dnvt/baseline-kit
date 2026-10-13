@@ -9,7 +9,6 @@ import {
   type DebuggingMode,
   type PadderOptions,
 } from '@baseline-kit/core'
-import { hydratedValue } from '@baseline-kit/dom'
 import { mergeStyles, mergeRefs } from '../../utils/merge'
 import type { HostProps } from '../types'
 import { Spacer, IndicatorNode } from '../Spacer'
@@ -81,25 +80,13 @@ const PadderComponent = React.memo(
     const isHydrated = useIsClient()
     const internalRef = React.useRef<HTMLDivElement | null>(null)
 
-    const baselinePadding = useBaseline(internalRef, {
+    // Before hydration and in ssrMode the explicit padding is rendered, so
+    // the hook must not snap; it then knows exactly what is on screen.
+    const { padding } = useBaseline(internalRef, {
       base: config.base,
-      snapping: 'height',
+      snapping: isHydrated && !ssrMode ? 'height' : 'none',
       spacing: initialPadding,
     })
-
-    const stablePadding = {
-      padding: {
-        top: initialPadding.top || 0,
-        right: initialPadding.right || 0,
-        bottom: initialPadding.bottom || 0,
-        left: initialPadding.left || 0,
-      },
-    }
-    const { padding } = hydratedValue(
-      isHydrated && !ssrMode,
-      stablePadding,
-      baselinePadding
-    )
 
     const setRefs = mergeRefs(ref, internalRef)
 

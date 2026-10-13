@@ -272,13 +272,37 @@ describe('nextSnap', () => {
     expect(moved.padding.top).toBe(13.5)
   })
 
-  it('does nothing when snapping is none', () => {
+  it('clears the snap when snapping is none, so switching back snaps afresh', () => {
     expect(
       nextSnap(
         first,
         { ...input, mode: 'none' },
         { height: 30, rendered: zero, settling: true }
       )
-    ).toBe(first)
+    ).toBeNull()
+  })
+
+  it('settles instead of flapping when layout rounds at a fractional scale', () => {
+    // At 1.25x Chromium lays out in 1/80px and floors the padding tracks
+    // (48.0375 + 7.9625 measured 55.9875), so each correction shifts the
+    // measured natural height a little. Near the 1/32px boundary that used to
+    // alternate between "aligned" and "add a row" for the whole window.
+    const floor = (value: number) => Math.floor(value * 80) / 80
+    for (const content of [48.0375, 48.0375 + 1 / 80, 40.0375, 39.9625]) {
+      let snap = null as ReturnType<typeof nextSnap>
+      const paddings = new Set<string>()
+      for (let step = 0; step < 12; step += 1) {
+        const rendered = snap?.padding ?? zero
+        const height = content + floor(rendered.top) + floor(rendered.bottom)
+        snap = nextSnap(snap, input, {
+          height,
+          rendered,
+          settling: true,
+          scaled: true,
+        })
+        if (step > 2) paddings.add(JSON.stringify(snap!.padding))
+      }
+      expect(paddings.size).toBe(1)
+    }
   })
 })

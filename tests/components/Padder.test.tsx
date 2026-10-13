@@ -34,17 +34,24 @@ describe('Padder', () => {
       }
     )
 
-    // Mock useBaseline to return consistent adjusted padding values
-    vi.spyOn(HooksModule, 'useBaseline').mockReturnValue({
-      padding: {
-        top: 8, // Adjusted from original 10
-        right: 16, // Adjusted from original 15
-        bottom: 24, // Adjusted from original 20
-        left: 8, // Adjusted from original 5
-      },
-      isAligned: true,
-      height: 0,
-    })
+    // Mock useBaseline: snapping returns adjusted padding values; `none`
+    // (used before hydration and in ssrMode) returns the explicit padding.
+    vi.spyOn(HooksModule, 'useBaseline').mockImplementation(
+      (_ref, options) => ({
+        padding:
+          options?.snapping === 'none'
+            ? {
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0,
+                ...(options.spacing as object),
+              }
+            : { top: 8, right: 16, bottom: 24, left: 8 },
+        isAligned: true,
+        height: 0,
+      })
+    )
   })
 
   afterEach(() => {

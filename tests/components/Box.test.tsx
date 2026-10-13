@@ -105,11 +105,6 @@ vi.mock('@baseline-kit/react/hooks', () => ({
         finalBottom = 6
         finalLeft = 10
         finalRight = 10
-      } else if (snapping === 'none') {
-        finalTop = 16
-        finalBottom = 24
-        finalLeft = 8
-        finalRight = 8
       } else if (snapping === 'height') {
         if (top === 6) finalTop = 8
         if (bottom === 10) finalBottom = 16
@@ -262,19 +257,19 @@ describe('<Box /> component', () => {
       s.getAttribute('style')?.includes('--bk-spacer-height: 100%')
     )
 
-    // Based on our mock for "none" mode, we expect:
+    // `none` keeps the explicit block and inline spacing.
     expect(verticalSpacers[0]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 16')
+      expect.stringContaining('--bk-spacer-height: 14')
     )
     expect(verticalSpacers[1]).toHaveAttribute(
       'style',
-      expect.stringContaining('--bk-spacer-height: 24')
+      expect.stringContaining('--bk-spacer-height: 22')
     )
     horizontalSpacers.forEach((spacer) => {
       expect(spacer).toHaveAttribute(
         'style',
-        expect.stringContaining('--bk-spacer-width: 8')
+        expect.stringContaining('--bk-spacer-width: 10')
       )
     })
   })

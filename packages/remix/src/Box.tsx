@@ -23,7 +23,7 @@ import {
 } from '@baseline-kit/core'
 import { Config, type ConfigProps } from './Config'
 import { configuredClientEntry } from './shared'
-import { isScaledLayout, onSnapSettleEvent } from '@baseline-kit/dom/measure'
+import { isScaledLayout } from '@baseline-kit/dom/measure'
 import { PadderForBox } from './Padder'
 import {
   createElementObserverBridge,
@@ -100,23 +100,20 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
   }
 
   // Measure the host so its own border and padding count toward the snap.
-  const observer = createElementObserverBridge((next, host) => {
-    if (next.height === 0) return
-    lastMeasure = {
-      height: next.height,
-      rendered: renderedPadding,
-      scaled: isScaledLayout(host),
-    }
-    if (applySnap(lastMeasure)) requestUpdate()
-  })
-
-  if (typeof window !== 'undefined') {
-    const unsubscribe = onSnapSettleEvent(() => {
+  const observer = createElementObserverBridge(
+    (next, host) => {
+      if (next.height === 0) return
+      lastMeasure = {
+        height: next.height,
+        rendered: renderedPadding,
+        scaled: isScaledLayout(host),
+      }
+      if (applySnap(lastMeasure)) requestUpdate()
+    },
+    () => {
       settleOpenedAt = performance.now()
-      requestAnimationFrame(() => observer.remeasure())
-    })
-    handle.signal.addEventListener('abort', unsubscribe, { once: true })
-  }
+    }
+  )
 
   return () => {
     const props = handle.props
@@ -140,7 +137,13 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
     currentSnapEdge = snapEdge
     currentInitialPadding = initialPadding
     // New inputs re-snap from the last measurement right away.
-    if (snap && lastMeasure) applySnap(lastMeasure)
+    if (snapping === 'none' || props.ssrMode) {
+      // Not measured in these modes: forget the old snap and measurement.
+      snap = null
+      lastMeasure = null
+    } else if (lastMeasure) {
+      applySnap(lastMeasure)
+    }
     const padding =
       snapping === 'none' ? initialPadding : (snap?.padding ?? initialPadding)
     renderedPadding = padding

@@ -163,24 +163,34 @@ export interface SnapMeasurement {
 
 /**
  * Snap state after a measurement, shared by the React and Remix entries.
- * It snaps on the first measurement and whenever the inputs change. While
- * settling, it also re-snaps when the natural height (the measured height
- * without the rendered correction) changes; snapping from the natural height
- * is stable, because applying the correction does not change it. A
- * measurement with an unchanged height (a fixed-height Box, a width-only
- * change) never re-snaps. Returns `prev` itself when nothing changes.
+ * It snaps on the first measurement and whenever the inputs change, and
+ * returns null for `none`. While settling, it also re-snaps when the natural
+ * height (the measured height without the rendered correction) changes and
+ * the Box is off the grid; snapping from the natural height is stable,
+ * because applying the correction does not change it. A measurement with an
+ * unchanged height (a fixed-height Box, a width-only change) never re-snaps.
+ * Returns `prev` itself when nothing changes.
  */
 export function nextSnap(
   prev: SnapState | null,
   input: SnapInput,
   { height, rendered, settling, scaled }: SnapMeasurement
 ): SnapState | null {
-  if (input.mode === 'none' || height === 0) return prev
+  // `none` clears the snap, so switching back snaps afresh.
+  if (input.mode === 'none') return null
+  if (height === 0) return prev
   const key = getSnapKey(input)
   const natural = removeSnapCorrection(height, rendered, input.initial)
   if (prev && prev.key === key) {
     if (height === prev.height || !settling) return prev
-    if (Math.abs(natural - prev.natural) < SNAP_EPSILON) {
+    // On a page scaled by a fraction, layout rounds to device pixels, so the
+    // natural height moves by a residue after each correction; only a larger
+    // change is new content. A height already on the grid needs no change.
+    const threshold = scaled ? SNAP_TOLERANCE : SNAP_EPSILON
+    if (
+      Math.abs(natural - prev.natural) < threshold ||
+      isOnBaseline(height, input.base, scaled)
+    ) {
       return { ...prev, height }
     }
   }

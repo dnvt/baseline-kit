@@ -18,7 +18,7 @@ import {
 } from '@baseline-kit/core'
 import { Config } from './Config'
 import { configuredClientEntry } from './shared'
-import { isScaledLayout, onSnapSettleEvent } from '@baseline-kit/dom/measure'
+import { isScaledLayout } from '@baseline-kit/dom/measure'
 import { Spacer, type IndicatorNode, type SpacerProps } from './Spacer'
 import {
   createElementObserverBridge,
@@ -69,23 +69,20 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
     return true
   }
 
-  const observer = createElementObserverBridge(({ height }, host) => {
-    if (handle.props.ssrMode || height === 0) return
-    lastMeasure = {
-      height,
-      rendered: renderedPadding,
-      scaled: isScaledLayout(host),
-    }
-    if (applySnap(lastMeasure)) queueNativeUpdate(handle)
-  })
-
-  if (typeof window !== 'undefined') {
-    const unsubscribe = onSnapSettleEvent(() => {
+  const observer = createElementObserverBridge(
+    ({ height }, host) => {
+      if (handle.props.ssrMode || height === 0) return
+      lastMeasure = {
+        height,
+        rendered: renderedPadding,
+        scaled: isScaledLayout(host),
+      }
+      if (applySnap(lastMeasure)) queueNativeUpdate(handle)
+    },
+    () => {
       settleOpenedAt = performance.now()
-      requestAnimationFrame(() => observer.remeasure())
-    })
-    handle.signal.addEventListener('abort', unsubscribe, { once: true })
-  }
+    }
+  )
 
   return () => {
     const props = handle.props
@@ -99,7 +96,10 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
       block: props.block,
       inline: props.inline,
     })
-    if (!props.ssrMode && snap && lastMeasure) {
+    if (props.ssrMode) {
+      snap = null
+      lastMeasure = null
+    } else if (lastMeasure) {
       applySnap(lastMeasure)
     }
     const padding = props.ssrMode
