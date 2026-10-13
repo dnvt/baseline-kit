@@ -1273,11 +1273,12 @@ test('React nested and semantic Boxes stay on the grid', async ({ page }) => {
     .toEqual([true, true, true, true])
 })
 
-test('React Box snaps exactly under CSS zoom and at one layout unit', async ({
+test('React Box stays on the grid under CSS zoom and snaps one layout unit', async ({
   page,
 }) => {
-  // Under CSS zoom the Box snaps in unzoomed px; at 1x a one-layout-unit
-  // remainder is snapped exactly instead of left as drift.
+  // Under CSS zoom the Box snaps in unzoomed px, within the 1/32px residue
+  // a scaled layout can leave (WebKit on Linux leaves 1/64px) and without
+  // an extra row; at 1x a one-layout-unit remainder is snapped exactly.
   await expect
     .poll(() =>
       page.evaluate(() => {
@@ -1287,10 +1288,13 @@ test('React Box snaps exactly under CSS zoom and at one layout unit', async ({
           zoomed.getBoundingClientRect().height /
           ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
             1)
-        return [cssHeight, unit.getBoundingClientRect().height]
+        return [
+          Math.abs(cssHeight - 16) <= 1 / 32,
+          unit.getBoundingClientRect().height,
+        ]
       })
     )
-    .toEqual([16, 16])
+    .toEqual([true, 16])
 })
 
 test('React Box re-snaps late content and keeps caller margins', async ({
@@ -2282,7 +2286,7 @@ test.describe('native Remix adapter', () => {
     await expect.poll(columns).toBe('6')
   })
 
-  test('native Box snaps exactly under CSS zoom and at one layout unit', async ({
+  test('native Box stays on the grid under CSS zoom and snaps one layout unit', async ({
     page,
   }) => {
     await page.goto('/remix.html')
@@ -2291,8 +2295,9 @@ test.describe('native Remix adapter', () => {
         (window as unknown as { __baselineRemixReady: Promise<void> })
           .__baselineRemixReady
     )
-    // Under CSS zoom the Box snaps in unzoomed px; at 1x a one-layout-unit
-    // remainder is snapped exactly instead of left as drift.
+    // Under CSS zoom the Box snaps in unzoomed px, within the 1/32px residue
+    // a scaled layout can leave (WebKit on Linux leaves 1/64px) and without
+    // an extra row; at 1x a one-layout-unit remainder is snapped exactly.
     await expect
       .poll(() =>
         page.evaluate(() => {
@@ -2302,10 +2307,13 @@ test.describe('native Remix adapter', () => {
             zoomed.getBoundingClientRect().height /
             ((zoomed as Element & { currentCSSZoom?: number }).currentCSSZoom ??
               1)
-          return [cssHeight, unit.getBoundingClientRect().height]
+          return [
+            Math.abs(cssHeight - 16) <= 1 / 32,
+            unit.getBoundingClientRect().height,
+          ]
         })
       )
-      .toEqual([16, 16])
+      .toEqual([true, 16])
   })
 
   test('native Box re-snaps late content and keeps caller margins', async ({
