@@ -23,6 +23,9 @@ React.
 
 ![Demo visual](https://raw.githubusercontent.com/dnvt/baseline-kit/main/kit.png)
 
+Try it live at [dnvt.me/baseline-kit](https://dnvt.me/baseline-kit): change the
+font, the trim or the size, and watch each block land back on the grid.
+
 ## Install
 
 ```shell
