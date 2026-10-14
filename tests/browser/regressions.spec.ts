@@ -3228,6 +3228,100 @@ function liveGridTests(prefix: string, url: string, root: string) {
     expect(result).toEqual({ height: 16, updates: 1 })
   })
 
+  test(`${prefix} live grid snaps once per content change under every transition scope`, async ({
+    page,
+  }) => {
+    await openLiveGrid(page, url, root)
+    const result = await page.evaluate(async (selector) => {
+      const frame = () =>
+        new Promise((resolve) => requestAnimationFrame(resolve))
+      const hosts = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          `${selector} [data-live="scope"]`
+        )
+      )
+      const contents = hosts.map((host) =>
+        host.querySelector<HTMLElement>('[data-scope-content]')!
+      )
+      let frameNumber = 0
+      const updates = new Map(hosts.map((host) => [host, new Set<number>()]))
+      // Frames in which a host's padding changed, not its content.
+      const observer = new MutationObserver((records) => {
+        for (const record of records) {
+          if (contents.includes(record.target as HTMLElement)) continue
+          if (
+            record.type === 'attributes' &&
+            record.oldValue === (record.target as Element).getAttribute('style')
+          ) {
+            continue
+          }
+          const host = hosts.find((candidate) =>
+            candidate.contains(record.target)
+          )
+          if (host) updates.get(host)!.add(frameNumber)
+        }
+      })
+      observer.observe(document.querySelector(selector)!, {
+        attributes: true,
+        attributeFilter: ['style'],
+        attributeOldValue: true,
+        childList: true,
+        subtree: true,
+      })
+      const frames = async (count: number) => {
+        for (let index = 0; index < count; index++) {
+          frameNumber++
+          await frame()
+        }
+      }
+      // These hosts may still be making their first snap: wait for 10 quiet
+      // frames before changing their content.
+      const total = () =>
+        [...updates.values()].reduce((sum, set) => sum + set.size, 0)
+      for (let quiet = 0, count = 0; quiet < 10 && count < 120; count++) {
+        const before = total()
+        await frames(1)
+        quiet = total() === before ? quiet + 1 : 0
+      }
+      const changes = []
+      for (const height of ['22px', '9px', '13px']) {
+        updates.forEach((set) => set.clear())
+        for (const content of contents) content.style.height = height
+        await frames(40)
+        changes.push(hosts.map((host) => updates.get(host)!.size))
+      }
+      updates.forEach((set) => set.clear())
+      await frames(60)
+      observer.disconnect()
+      const off = (host: Element) => {
+        const height = host.getBoundingClientRect().height
+        const remainder = ((height % 8) + 8) % 8
+        return Math.min(remainder, 8 - remainder)
+      }
+      return {
+        labels: hosts.map(
+          (host) =>
+            `${host.closest<HTMLElement>('[data-live-scope]')!.dataset.liveScope} ${host.className}`
+        ),
+        changes,
+        quiet: hosts.map((host) => updates.get(host)!.size),
+        off: hosts.map(off),
+      }
+    }, root)
+    const over = (counts: number[], most: number) =>
+      result.labels.filter((_, index) => counts[index] > most)
+    result.changes.forEach((counts, change) => {
+      expect(over(counts, 1), `change ${change}: more than one update`).toEqual(
+        []
+      )
+    })
+    expect(over(result.quiet, 0), 'updates once content stops').toEqual([])
+    expect(
+      result.labels.filter((_, index) => result.off[index] > 1 / 64),
+      'hosts off the grid'
+    ).toEqual([])
+  })
+
   test(`${prefix} live grid stays still at a 1.25 display scale`, async ({
     browserName,
     playwright,

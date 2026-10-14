@@ -17,6 +17,15 @@ import {
 } from './spacer-strings'
 import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
 import {
+  GEO_CASES,
+  ROW_CASES,
+  ROWS_CSS,
+  rowClass,
+  rowSubject,
+  rowWords,
+  type RowNode,
+} from './baseline-rows'
+import {
   REM_GRID_BOXES,
   REM_GRID_CSS,
   REM_GRID_MARK,
@@ -215,6 +224,59 @@ function spacerStrings() {
   ]
 }
 
+const ROW_TYPES = { Box, Padder, div: 'div', span: 'span', i: 'i' } as const
+
+function rowElement(node: RowNode): unknown {
+  if (typeof node === 'string') return node
+  const children = (node.children ?? []).map(rowElement)
+  return jsx(ROW_TYPES[node.type] as 'div', {
+    ...node.props,
+    ...(children.length ? { children } : {}),
+  })
+}
+
+/** The `?rows` baseline rows and geometry cases (see baseline-rows.ts). */
+function rows() {
+  return [
+    jsx('style', { children: ROWS_CSS }),
+    jsx('section', {
+      id: 'rows',
+      className: 'rows',
+      children: ROW_CASES.map((row) =>
+        jsx('div', {
+          'data-row': row.id,
+          className: rowClass(row),
+          style: { alignItems: row.align },
+          children: [
+            jsx('span', {
+              className: 'rows-ref',
+              children: rowElement(rowWords(['Ref'])[0]),
+            }),
+            rowElement(rowSubject(row)),
+          ],
+        })
+      ),
+    }),
+    jsx('section', {
+      id: 'geo',
+      className: 'geo',
+      children: GEO_CASES.map((geo) =>
+        jsx('div', {
+          className: 'geo-row',
+          children: [
+            jsx('div', {
+              'data-geo': geo.id,
+              className: geo.className,
+              children: rowElement(geo.node),
+            }),
+            jsx('div', { 'data-geo-twin': geo.id, className: geo.className }),
+          ],
+        })
+      ),
+    }),
+  ]
+}
+
 export function createRemixApp(search = '') {
   const params = new URLSearchParams(search)
   const remGridOn = params.has('remgrid')
@@ -257,6 +319,7 @@ export function createRemixApp(search = '') {
       ...(cost === 'rem' || cost === 'px' ? [costGrid(cost)] : []),
       ...(params.has('spacers') ? spacerStrings() : []),
       ...(params.has('guides') ? [guideStrings()] : []),
+      ...(params.has('rows') ? rows() : []),
       jsx('section', {
         id: 'remix-frame-lifecycle',
         children: [

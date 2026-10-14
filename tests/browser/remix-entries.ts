@@ -1,6 +1,7 @@
 import { clientEntry, type Handle, type RemixNode } from 'remix/component'
 import { jsx } from 'remix/component/jsx-runtime'
 import { Box, Padder, Spacer } from '@baseline-kit/remix'
+import { LIVE_SCOPE_CSS, LIVE_SCOPES } from './baseline-rows'
 
 export const Forwarder = clientEntry(
   `${import.meta.url}#Forwarder`,
@@ -227,6 +228,34 @@ export const LiveGridProbe = clientEntry(
                   style: { height: '10px' },
                 }),
               }),
+              // Each DOM variant under a transition that reaches one place only.
+              jsx('style', { children: LIVE_SCOPE_CSS }),
+              ...LIVE_SCOPES.map((scope) =>
+                jsx('div', {
+                  'data-live-scope': scope,
+                  children: [
+                    ...LIVE_VARIANTS.map((variant) =>
+                      jsx(Box, {
+                        'data-live': 'scope',
+                        block: [0, 0],
+                        ...variant,
+                        children: jsx('div', {
+                          'data-scope-content': '',
+                          style: { height: '13px', transition: 'none' },
+                        }),
+                      })
+                    ),
+                    jsx(Padder, {
+                      'data-live': 'scope',
+                      block: [0, 0],
+                      children: jsx('div', {
+                        'data-scope-content': '',
+                        style: { height: '13px', transition: 'none' },
+                      }),
+                    }),
+                  ],
+                })
+              ),
             ],
           })
         : null
