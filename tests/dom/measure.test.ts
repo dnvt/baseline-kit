@@ -52,6 +52,10 @@ describe('getRenderedBlockPadding', () => {
           gridTemplateRows: 'none',
           paddingTop: '0px',
           paddingBottom: '0px',
+          borderTopWidth: '0px',
+          borderBottomWidth: '0px',
+          marginTop: '0px',
+          marginBottom: '0px',
           ...resolved.get(element),
         }) as CSSStyleDeclaration
     )
@@ -64,21 +68,46 @@ describe('getRenderedBlockPadding', () => {
     return root.firstElementChild as HTMLElement
   }
 
-  it('reads the tracks of a Box drawn on its own grid', () => {
+  const place = (element: Element, top: number, bottom: number) =>
+    vi
+      .spyOn(element, 'getBoundingClientRect')
+      .mockReturnValue({ top, bottom, height: bottom - top } as DOMRect)
+
+  it('reads the content margins of a Box drawn on its own grid', () => {
     const host = build(
       '<div class="bk-box"><div class="bk-pad-content"></div></div>'
     )
-    resolved.set(host, { gridTemplateRows: '5px 13px 3px', paddingTop: '9px' })
-    // The host's own padding (a caller's) is not snap padding.
+    const content = host.firstElementChild!
+    resolved.set(host, { paddingTop: '9px' })
+    resolved.set(content, { marginTop: '5.3px', marginBottom: '3px' })
+    // Layout rounds the margin to its own units: the offsets are what it
+    // used. The host's own padding (a caller's) is not snap padding.
+    place(host, 100, 133)
+    place(content, 114.296875, 130)
+    expect(getRenderedBlockPadding(host)).toEqual({
+      top: 5.296875,
+      bottom: 3,
+    })
+  })
+
+  it('keeps the computed margins of content that overflows its Box', () => {
+    const host = build(
+      '<div class="bk-box"><div class="bk-pad-content"></div></div>'
+    )
+    const content = host.firstElementChild!
+    resolved.set(content, { marginTop: '5px', marginBottom: '3px' })
+    place(host, 0, 40)
+    place(content, 5, 60)
     expect(getRenderedBlockPadding(host)).toEqual({ top: 5, bottom: 3 })
   })
 
-  it('reads the inner grid of a semantic Box', () => {
+  it('reads the content margins in the inner grid of a semantic Box', () => {
     const host = build(
       '<h3 class="bk-box"><span class="bk-box__grid"><span class="bk-pad-content"></span></span></h3>'
     )
-    resolved.set(host.firstElementChild!, {
-      gridTemplateRows: '2.5px 20px 0px',
+    resolved.set(host.firstElementChild!.firstElementChild!, {
+      marginTop: '2.5px',
+      marginBottom: '0px',
     })
     expect(getRenderedBlockPadding(host)).toEqual({ top: 2.5, bottom: 0 })
   })

@@ -122,12 +122,21 @@ describe('requiresSeparatePadder', () => {
 describe('createBoxDescriptor shared spacing', () => {
   const padding = { top: 6, right: 0, bottom: 8, left: 4 }
 
-  it('places resolved padding as grid tracks', () => {
-    const { spacingStyle } = createBoxDescriptor({ ...baseParams, padding })
-    expect(spacingStyle).toEqual({
-      gridTemplateRows: '6px 1fr 8px',
-      gridTemplateColumns: '4px 1fr 0px',
+  it('places inline padding as grid columns and block padding as content margins', () => {
+    const { spacingStyle, contentStyle } = createBoxDescriptor({
+      ...baseParams,
+      padding,
     })
+    expect(spacingStyle).toEqual({ gridTemplateColumns: '4px 1fr 0px' })
+    // The content is the grid's only row, so every engine reads its baseline.
+    expect(contentStyle).toEqual({ marginBlock: '6px 8px' })
+  })
+
+  it('emits no spacing styles for zero padding', () => {
+    const zero = { top: 0, right: 0, bottom: 0, left: 0 }
+    const descriptor = createBoxDescriptor({ ...baseParams, padding: zero })
+    expect(descriptor.spacingStyle).toEqual({})
+    expect(descriptor.contentStyle).toEqual({})
   })
 
   it('emits padding debug paint only when visible', () => {

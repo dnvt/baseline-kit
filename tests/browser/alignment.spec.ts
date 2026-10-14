@@ -14,7 +14,14 @@ import {
  * baseline. The matrix reports every variant's offset from the row baseline;
  * a variant is asserted once a change makes it land in every engine.
  */
-const ASSERTED_VARIANTS: RowVariant[] = []
+const ASSERTED_VARIANTS: RowVariant[] = [
+  'merged',
+  'merged-visible',
+  'semantic-h3',
+  'semantic-p',
+  'nested',
+  'empty',
+]
 
 test.beforeEach(({ page }) => {
   page.on('pageerror', (error) => {

@@ -100,7 +100,7 @@
   position: relative;
   display: grid;
   grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr;
   width: var(--bkbx-w);
   height: var(--bkbx-h);
   text-box-trim: trim-both;
@@ -124,7 +124,7 @@
 .bk-box__grid {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr;
   height: 100%;
   text-box-trim: trim-both;
   text-box-edge: ex alphabetic;
@@ -194,6 +194,15 @@
   --bkbx-cf: initial;
   --bkpd-is: initial;
   --bkpd-ie: initial;
+}
+
+/*
+ * A Box's content is its grid's only row, and its block padding is the
+ * content's margin: WebKit and Firefox take a grid's baseline from its first
+ * and last track, so an empty padding track would hide the text's baseline.
+ */
+:where(.bk-box, .bk-box__grid) > .bk-pad-content {
+  grid-row: 1 / 2;
 }
 
 /*

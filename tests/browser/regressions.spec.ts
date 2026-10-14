@@ -848,9 +848,12 @@ test('Box keeps its stateful child mounted when snapped padding appears', async 
   const host = page.locator('#box-snap-stateful-host')
   const spacers = page.locator('#box-snap-stateful-host [data-testid="spacer"]')
   await expect(spacers).toHaveCount(0)
-  const initialRows = await host.evaluate(
-    (element) => getComputedStyle(element).gridTemplateRows
-  )
+  const initialRows = await host.evaluate((element) => {
+    const content = getComputedStyle(
+      element.querySelector(':scope > .bk-pad-content')!
+    )
+    return `${content.marginTop} ${content.marginBottom}`
+  })
   await child.focus()
   expect(
     await child.evaluate((element) => element === document.activeElement)
@@ -875,10 +878,17 @@ test('Box keeps its stateful child mounted when snapped padding appears', async 
       element.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     )
   await expect(spacers).toHaveCount(0)
-  const snappedRows = await host.evaluate(
-    (element) => getComputedStyle(element).gridTemplateRows
-  )
-  expect(snappedRows).not.toBe(initialRows)
+  // The snapped padding lands a frame or more after the content grows.
+  await expect
+    .poll(() =>
+      host.evaluate((element) => {
+        const content = getComputedStyle(
+          element.querySelector(':scope > .bk-pad-content')!
+        )
+        return `${content.marginTop} ${content.marginBottom}`
+      })
+    )
+    .not.toBe(initialRows)
   expect(await childHandle?.evaluate((element) => element.isConnected)).toBe(
     true
   )
@@ -1208,7 +1218,9 @@ test('React Box applies top-edge snapping on its merged grid host', async ({
   await expect
     .poll(() =>
       box.evaluate(
-        (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+        (element) =>
+          getComputedStyle(element.querySelector(':scope > .bk-pad-content')!)
+            .marginTop
       )
     )
     .toBe('6px')
@@ -1435,7 +1447,9 @@ test('React Box keeps a fractional top snap on an 8px base', async ({
   await expect
     .poll(() =>
       box.evaluate(
-        (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+        (element) =>
+          getComputedStyle(element.querySelector(':scope > .bk-pad-content')!)
+            .marginTop
       )
     )
     .toBe('5.5px')
@@ -2068,7 +2082,12 @@ test.describe('native Remix adapter', () => {
       .poll(() =>
         page
           .locator('#remix-snap-box [data-testid="box"]')
-          .evaluate((element) => getComputedStyle(element).gridTemplateRows)
+          .evaluate((element) => {
+            const content = getComputedStyle(
+              element.querySelector(':scope > .bk-pad-content')!
+            )
+            return `${content.marginTop} ${content.marginBottom}`
+          })
       )
       .toContain('6px')
   })
@@ -2087,7 +2106,9 @@ test.describe('native Remix adapter', () => {
     await expect
       .poll(() =>
         box.evaluate(
-          (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+          (element) =>
+            getComputedStyle(element.querySelector(':scope > .bk-pad-content')!)
+              .marginTop
         )
       )
       .toBe('6px')
@@ -2113,7 +2134,8 @@ test.describe('native Remix adapter', () => {
       .poll(() =>
         semanticGrid.evaluate((element) =>
           Number.parseFloat(
-            getComputedStyle(element).gridTemplateRows.split(' ')[0]
+            getComputedStyle(element.querySelector(':scope > .bk-pad-content')!)
+              .marginTop
           )
         )
       )
@@ -2122,7 +2144,8 @@ test.describe('native Remix adapter', () => {
       .poll(() =>
         semanticGrid.evaluate((element) =>
           Number.parseFloat(
-            getComputedStyle(element).gridTemplateRows.split(' ')[0]
+            getComputedStyle(element.querySelector(':scope > .bk-pad-content')!)
+              .marginTop
           )
         )
       )
@@ -2444,7 +2467,9 @@ test.describe('native Remix adapter', () => {
     await expect
       .poll(() =>
         box.evaluate(
-          (element) => getComputedStyle(element).gridTemplateRows.split(' ')[0]
+          (element) =>
+            getComputedStyle(element.querySelector(':scope > .bk-pad-content')!)
+              .marginTop
         )
       )
       .toBe('5.5px')
