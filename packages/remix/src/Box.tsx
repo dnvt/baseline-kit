@@ -210,6 +210,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
             >
               <ContentElement
                 className="bk-pad-content"
+                style={descriptor.contentStyle}
                 data-testid={
                   config.domDiagnostics ? 'padder-content' : undefined
                 }
@@ -237,6 +238,7 @@ function BoxImpl(handle: Handle<RuntimeBoxProps>) {
           ) : (
             <ContentElement
               className="bk-pad-content"
+              style={descriptor.contentStyle}
               data-testid={config.domDiagnostics ? 'padder-content' : undefined}
             >
               {props.children}

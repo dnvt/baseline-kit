@@ -99,8 +99,17 @@ const PadderComponent = React.memo(
           padding,
           enableSpacers,
           isVisible: isShown,
+          contentHost: preserveContentHost,
         }),
-      [config.color, width, height, padding, enableSpacers, isShown]
+      [
+        config.color,
+        width,
+        height,
+        padding,
+        enableSpacers,
+        isShown,
+        preserveContentHost,
+      ]
     )
 
     const containerStyles = mergeStyles(descriptor.containerStyle, style)
@@ -127,6 +136,7 @@ const PadderComponent = React.memo(
               key="content"
               data-testid={config.domDiagnostics ? 'padder-content' : undefined}
               className="bk-pad-content"
+              style={descriptor.contentStyle}
             >
               {children}
             </div>
@@ -155,7 +165,7 @@ const PadderComponent = React.memo(
             </div>
           )}
           {padding.left > 0 && (
-            <div className="bk-pad-left">
+            <div className="bk-pad-left" style={descriptor.sideStyle}>
               {renderSpacer(padding.left, '100%')}
             </div>
           )}
@@ -164,12 +174,13 @@ const PadderComponent = React.memo(
           key="content"
           data-testid={config.domDiagnostics ? 'padder-content' : undefined}
           className="bk-pad-content"
+          style={descriptor.contentStyle}
         >
           {children}
         </div>
         <>
           {padding.right > 0 && (
-            <div className="bk-pad-right">
+            <div className="bk-pad-right" style={descriptor.sideStyle}>
               {renderSpacer(padding.right, '100%')}
             </div>
           )}

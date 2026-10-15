@@ -14,7 +14,10 @@ export interface BoxDescriptorParams {
   colSpan?: number
   rowSpan?: number
   isVisible: boolean
-  /** Resolved (initial or snapped) padding, placed as grid tracks. */
+  /**
+   * Resolved (initial or snapped) padding: inline as grid columns, block as
+   * the content's margins.
+   */
   padding: Padding
   /** Outline color for visible padding. */
   paddingColor: string
@@ -23,8 +26,13 @@ export interface BoxDescriptorParams {
 export interface BoxDescriptor {
   /** Size and color variables for the host; stylesheet defaults omitted. */
   boxStyle: Record<string, string>
-  /** Grid tracks that place the padding around the content. */
+  /** Grid columns that place the inline padding around the content. */
   spacingStyle: Record<string, string>
+  /**
+   * Margins that place the block padding around the content, which is its
+   * grid's only row so every engine reads the text's baseline (issue #36).
+   */
+  contentStyle?: Record<string, string>
   /** Padding outline color and shaded band sizes, when debug paint is on. */
   paddingDebugStyle: Record<string, string>
   gridSpanStyle: Record<string, string>
@@ -106,14 +114,15 @@ export function createBoxDescriptor(
     }
   )
 
-  const spacingStyle: Record<string, string> = {
-    ...(padding.top > 0 || padding.bottom > 0
-      ? { gridTemplateRows: `${padding.top}px 1fr ${padding.bottom}px` }
-      : {}),
-    ...(padding.left > 0 || padding.right > 0
+  const spacingStyle: Record<string, string> =
+    padding.left > 0 || padding.right > 0
       ? { gridTemplateColumns: `${padding.left}px 1fr ${padding.right}px` }
-      : {}),
-  }
+      : {}
+
+  const contentStyle: Record<string, string> =
+    padding.top > 0 || padding.bottom > 0
+      ? { marginBlock: `${padding.top}px ${padding.bottom}px` }
+      : {}
 
   const paddingDebugStyle = isVisible
     ? compactStyle(
@@ -138,6 +147,7 @@ export function createBoxDescriptor(
   return {
     boxStyle,
     spacingStyle,
+    contentStyle,
     paddingDebugStyle,
     gridSpanStyle,
     classTokens,

@@ -99,7 +99,9 @@ describe('Remix adapter', () => {
     expect(html).toMatch(/<h2[^>]*style="[^"]*display: flex/u)
     expect(html).toContain('data-bk-snap-state="pending"')
     expect(html).toContain('class="bk-box__grid"')
-    expect(html).toContain('grid-template-rows: 8px 1fr 8px')
+    expect(html).toMatch(
+      /<span class="bk-pad-content"[^>]*style="[^"]*margin-block: 8px 8px/u
+    )
     expect(html).toContain('Semantic heading')
 
     const label = await renderToString(

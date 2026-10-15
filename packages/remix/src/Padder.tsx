@@ -110,6 +110,7 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
       padding,
       enableSpacers: !debug.isNone,
       isVisible: debug.isShown,
+      contentHost: props.preserveContentHost,
     })
 
     if (debug.isNone) {
@@ -128,6 +129,7 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
             <div
               key="content"
               className="bk-pad-content"
+              style={descriptor.contentStyle}
               data-testid={config.domDiagnostics ? 'padder-content' : undefined}
             >
               {props.children}
@@ -165,19 +167,20 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
         </div>
       ) : null,
       padding.left > 0 ? (
-        <div key="left" className="bk-pad-left">
+        <div key="left" className="bk-pad-left" style={descriptor.sideStyle}>
           {renderSpacer(padding.left, '100%')}
         </div>
       ) : null,
       <div
         key="content"
         className="bk-pad-content"
+        style={descriptor.contentStyle}
         data-testid={config.domDiagnostics ? 'padder-content' : undefined}
       >
         {props.children}
       </div>,
       padding.right > 0 ? (
-        <div key="right" className="bk-pad-right">
+        <div key="right" className="bk-pad-right" style={descriptor.sideStyle}>
           {renderSpacer(padding.right, '100%')}
         </div>
       ) : null,

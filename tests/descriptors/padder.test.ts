@@ -66,7 +66,7 @@ describe('createPadderDescriptor', () => {
   it('includes "v" class token only when visible AND spacers enabled', () => {
     expect(
       createPadderDescriptor({ ...baseParams, enableSpacers: true }).classTokens
-    ).toEqual(['pad', 'v'])
+    ).toEqual(['pad', 'v', 'pad-hosted'])
     expect(
       createPadderDescriptor({ ...baseParams, enableSpacers: false })
         .classTokens
@@ -77,6 +77,36 @@ describe('createPadderDescriptor', () => {
         enableSpacers: true,
         isVisible: false,
       }).classTokens
-    ).toEqual(['pad'])
+    ).toEqual(['pad', 'pad-hosted'])
+  })
+
+  it('gives a plain Padder with a content host its block padding as margins', () => {
+    const plain = {
+      ...baseParams,
+      enableSpacers: false,
+      padding: { top: 8, right: 10, bottom: 6, left: 4 },
+    }
+    const hosted = createPadderDescriptor({ ...plain, contentHost: true })
+    expect(hosted.classTokens).toEqual(['pad', 'pad-plain', 'pad-hosted'])
+    expect(hosted.containerStyle.paddingBlock).toBeUndefined()
+    expect(hosted.containerStyle.paddingInline).toBe('4px 10px')
+    expect(hosted.contentStyle).toEqual({ marginBlock: '8px 6px' })
+
+    const bare = createPadderDescriptor(plain)
+    expect(bare.classTokens).toEqual(['pad', 'pad-plain'])
+    expect(bare.containerStyle.paddingBlock).toBe('8px 6px')
+    expect(bare.contentStyle).toEqual({})
+  })
+
+  it('places spacer padding as columns, content margins and side insets', () => {
+    const descriptor = createPadderDescriptor({
+      ...baseParams,
+      enableSpacers: true,
+      padding: { top: 8, right: 10, bottom: 6, left: 4 },
+    })
+    expect(descriptor.containerStyle.gridTemplateColumns).toBe('4px 1fr 10px')
+    // The content is the grid's only row, so every engine reads its baseline.
+    expect(descriptor.contentStyle).toEqual({ marginBlock: '8px 6px' })
+    expect(descriptor.sideStyle).toEqual({ insetBlock: '8px 6px' })
   })
 })

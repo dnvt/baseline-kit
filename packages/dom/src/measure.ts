@@ -2,6 +2,7 @@
  * Element measurement observer.
  */
 
+import { SNAP_TOLERANCE } from '@baseline-kit/core'
 import { rafThrottle } from './timing'
 
 export interface MeasureRect {
@@ -49,10 +50,11 @@ export function isScaledLayout(el: Element | null): boolean {
  *
  * The padding sits on the host itself (a Padder, or a Box drawn on its own
  * grid), on a Box's inner Padder (`.bk-pad`), or on a semantic Box's inner
- * grid (`.bk-box__grid`). It is either the first and last grid track around
- * `.bk-pad-content`, or the CSS padding of a Padder that draws no spacers
- * (`.bk-pad-plain`). A caller's own padding on a Box host, or on a Padder
- * that draws spacers, is not counted.
+ * grid (`.bk-box__grid`). It is the margin of the content host,
+ * `.bk-pad-content`, which is the grid's only row, or the CSS padding of a
+ * Padder that draws no spacers and has no content host (`.bk-pad-plain`).
+ * A caller's own padding on a Box host, or on a Padder with a content host,
+ * is not counted.
  */
 export function getRenderedBlockPadding(
   host: Element
@@ -61,22 +63,56 @@ export function getRenderedBlockPadding(
   const target = host.classList.contains('bk-pad')
     ? host
     : (host.querySelector(':scope > .bk-pad, :scope > .bk-box__grid') ?? host)
-  const style = getComputedStyle(target)
   let top = 0
   let bottom = 0
-  if (target.querySelector(':scope > .bk-pad-content')) {
-    const rows = style.gridTemplateRows.split(' ')
-    if (rows.length !== 3) return null
-    top += parseFloat(rows[0])
-    bottom += parseFloat(rows[2])
-  }
-  if (target.classList.contains('bk-pad-plain')) {
-    top += parseFloat(style.paddingTop)
-    bottom += parseFloat(style.paddingBottom)
+  if (
+    target.classList.contains('bk-pad-plain') &&
+    !target.classList.contains('bk-pad-hosted')
+  ) {
+    const style = getComputedStyle(target)
+    top = parseFloat(style.paddingTop)
+    bottom = parseFloat(style.paddingBottom)
+  } else {
+    const content = target.querySelector(':scope > .bk-pad-content')
+    if (content) ({ top, bottom } = readContentMargins(target, content))
   }
   return Number.isFinite(top) && Number.isFinite(bottom)
     ? { top, bottom }
     : null
+}
+
+/**
+ * The block margins of a grid's content host as layout used them: its
+ * offsets from the grid's content box, since layout rounds margins to its
+ * own units and the computed values can be 1/40px off in Chromium. Where an
+ * offset is further than SNAP_TOLERANCE from the computed margin (the
+ * content overflows a fixed height, or the caller aligns it off the edges),
+ * the computed margin stands.
+ */
+function readContentMargins(grid: Element, content: Element) {
+  const zoom = getCSSZoom(grid)
+  const outer = grid.getBoundingClientRect()
+  const inner = content.getBoundingClientRect()
+  const gridStyle = getComputedStyle(grid)
+  const contentStyle = getComputedStyle(content)
+  const used = (offset: number, margin: string) => {
+    const computed = parseFloat(margin)
+    return Math.abs(offset - computed) <= SNAP_TOLERANCE ? offset : computed
+  }
+  return {
+    top: used(
+      (inner.top - outer.top) / zoom -
+        parseFloat(gridStyle.borderTopWidth) -
+        parseFloat(gridStyle.paddingTop),
+      contentStyle.marginTop
+    ),
+    bottom: used(
+      (outer.bottom - inner.bottom) / zoom -
+        parseFloat(gridStyle.borderBottomWidth) -
+        parseFloat(gridStyle.paddingBottom),
+      contentStyle.marginBottom
+    ),
+  }
 }
 
 /**

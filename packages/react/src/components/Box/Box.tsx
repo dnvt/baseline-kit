@@ -93,6 +93,7 @@ export const Box = React.memo(
       <ContentElement
         data-testid={config.domDiagnostics ? 'padder-content' : undefined}
         className="bk-pad-content"
+        style={descriptor.contentStyle}
       >
         {children}
       </ContentElement>

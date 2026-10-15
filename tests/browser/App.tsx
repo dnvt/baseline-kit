@@ -25,12 +25,26 @@ import {
   remGridText,
 } from './rem-grid'
 import {
+  GEO_CASES,
+  HIT_NODE,
+  LIVE_SCOPE_CSS,
+  LIVE_SCOPES,
+  ROW_CASES,
+  ROWS_CSS,
+  rowClass,
+  rowSubject,
+  rowWords,
+  type RowNode,
+} from './baseline-rows'
+import {
+  createElement,
   Fragment,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
+  type ReactNode,
 } from 'react'
 
 const LIVE_TEXTS = [
@@ -183,7 +197,95 @@ function LiveGridFixture() {
       <Box data-live="toggle" block={[0, 0]}>
         <div data-live-toggle style={{ height: 10 }} />
       </Box>
+      {/* Each DOM variant under a transition that reaches one place only. */}
+      <style>{LIVE_SCOPE_CSS}</style>
+      {LIVE_SCOPES.map((scope) => (
+        <div key={scope} data-live-scope={scope}>
+          {LIVE_VARIANTS.map((variant, index) => (
+            <Box key={index} data-live="scope" block={[0, 0]} {...variant}>
+              <div
+                data-scope-content
+                style={{ height: 13, transition: 'none' }}
+              />
+            </Box>
+          ))}
+          <Padder data-live="scope" block={[0, 0]}>
+            <div
+              data-scope-content
+              style={{ height: 13, transition: 'none' }}
+            />
+          </Padder>
+        </div>
+      ))}
     </section>
+  )
+}
+
+const ROW_TYPES = {
+  Box,
+  Padder,
+  div: 'div',
+  span: 'span',
+  i: 'i',
+  button: 'button',
+} as const
+
+function rowElement(node: RowNode, key?: number): ReactNode {
+  if (typeof node === 'string') return node
+  return createElement(
+    ROW_TYPES[node.type] as 'div',
+    { key, ...node.props },
+    ...(node.children ?? []).map((child, index) => rowElement(child, index))
+  )
+}
+
+/** The `?rows` baseline rows and geometry cases (see baseline-rows.ts). */
+function RowsFixture() {
+  return (
+    <>
+      <style>{ROWS_CSS}</style>
+      <section id="rows" className="rows">
+        {ROW_CASES.map((row) => (
+          <div
+            key={row.id}
+            data-row={row.id}
+            className={rowClass(row)}
+            style={{ alignItems: row.align }}
+          >
+            <span className="rows-ref">{rowElement(rowWords(['Ref'])[0])}</span>
+            {rowElement(rowSubject(row))}
+          </div>
+        ))}
+      </section>
+      <section id="hit" className="geo">
+        {rowElement(HIT_NODE)}
+      </section>
+      {/* Spacer indicators must not change a Padder's layout. */}
+      <section id="indicators" className="geo">
+        {(['visible', 'hidden'] as const).map((debugging) => (
+          <Padder
+            key={debugging}
+            data-ind={debugging}
+            debugging={debugging}
+            indicatorNode={(value) => String(value)}
+            block={[8, 8]}
+            inline={[8, 8]}
+          >
+            <div style={{ width: 4, height: 10 }} />
+          </Padder>
+        ))}
+      </section>
+      <section id="geo" className="geo">
+        {GEO_CASES.map((geo) => (
+          <div key={geo.id} className="geo-row">
+            <div data-geo={geo.id} className={geo.className}>
+              {rowElement(geo.node)}
+            </div>
+            <div data-geo-twin={geo.id} className={geo.className} />
+          </div>
+        ))}
+      </section>
+    </>
   )
 }
 
@@ -561,6 +663,7 @@ export function App({ search = '' }: { search?: string }) {
       {(cost === 'rem' || cost === 'px') && <CostFixture kind={cost} />}
       {params.has('spacers') && <SpacerStringsFixture />}
       {params.has('guides') && <GuideStringsFixture />}
+      {params.has('rows') && <RowsFixture />}
       {remGrid && (
         <>
           <RemGridFixture base="0.5rem" />
