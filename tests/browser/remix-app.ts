@@ -20,6 +20,7 @@ import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
 import {
   GEO_CASES,
   HIT_NODE,
+  PLAIN_ROWS_NODE,
   ROW_CASES,
   ROWS_CSS,
   rowClass,
@@ -270,6 +271,11 @@ function rows() {
       id: 'hit',
       className: 'geo',
       children: rowElement(HIT_NODE),
+    }),
+    jsx('section', {
+      id: 'plain-rows',
+      className: 'geo',
+      children: rowElement(PLAIN_ROWS_NODE),
     }),
     jsx('section', {
       id: 'indicators',

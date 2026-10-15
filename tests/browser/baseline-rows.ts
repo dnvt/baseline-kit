@@ -364,6 +364,26 @@ export const HIT_NODE: RowNode = subject({
 })
 
 /**
+ * A taller Padder drawing no spacers, without a content host: its four
+ * children fill two of its rows, which keep their content height.
+ */
+export const PLAIN_ROWS_NODE: RowNode = {
+  type: 'Padder',
+  props: {
+    'data-plain-rows': '',
+    debugging: 'none',
+    height: 120,
+    block: [8, 8],
+    inline: [8, 8],
+  },
+  children: ['A', 'B', 'C', 'D'].map((letter) => ({
+    type: 'div' as const,
+    props: { 'data-plain-item': '' },
+    children: [letter],
+  })),
+}
+
+/**
  * What 7.1.2 rendered for each `GEO_CASES` entry (react-dom/server, classes
  * renamed to `lg-*`); `__TEXT__` stands for `rowWordsHtml(ROW_WORDS_MANY)`.
  */

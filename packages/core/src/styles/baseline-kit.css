@@ -198,12 +198,24 @@
 
 /*
  * The content host of a Box or Padder is its grid's only row, with the block
- * padding as its margin, or as the Padder's own padding when it draws no
- * spacers: WebKit and Firefox take a grid's baseline from its first and last
- * track, so an empty padding track would hide the text's baseline.
+ * padding as its margin: WebKit and Firefox take a grid's baseline from its
+ * first and last track, so an empty padding track would hide the text's
+ * baseline.
  */
 .bk-pad:where(.bk-pad-hosted) {
   grid-template-rows: 1fr;
+}
+
+/*
+ * A Padder that draws no spacers and has no content host lays out its
+ * children directly, in rows made only as they fill, so with auto-placed
+ * children its first and last tracks always hold one. Start-aligned, the rows
+ * keep their content height in a taller Padder, as when an empty second track
+ * took the rest.
+ */
+.bk-pad:where(.bk-pad-plain:not(.bk-pad-hosted)) {
+  grid-template-rows: none;
+  align-content: start;
 }
 
 :where(.bk-box, .bk-box__grid, .bk-pad-hosted) > .bk-pad-content {
