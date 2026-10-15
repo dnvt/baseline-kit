@@ -3972,19 +3972,24 @@ function spacerStringTests(prefix: string, url: string) {
   })
 }
 
-/** Rendered gap, line period and column counts of the `?guides` Guides. */
+/**
+ * Rendered gap, line period and column counts of the `?guides` Guides, or
+ * null until all of them are in the page, so a poll waits for them rather
+ * than failing on a missing element.
+ */
 async function guideState(page: Page) {
   return page.evaluate(() => {
     const cols = (id: string) =>
-      document.querySelector<HTMLElement>(`[data-guide-case="${id}"] .bk-cols`)!
+      document.querySelector<HTMLElement>(`[data-guide-case="${id}"] .bk-cols`)
+    const fixed = cols('fixed')
     const auto = cols('auto')
     const autoRem = cols('autorem')
+    const line = document.querySelector('[data-guide-case="line"] .bk-gde')
+    if (!fixed || !auto || !autoRem || !line) return null
     return {
-      fixedGap: parseFloat(getComputedStyle(cols('fixed')).columnGap),
+      fixedGap: parseFloat(getComputedStyle(fixed).columnGap),
       linePeriod: parseFloat(
-        getComputedStyle(
-          document.querySelector('[data-guide-case="line"] .bk-gde')!
-        ).getPropertyValue('--bkgd-line-period')
+        getComputedStyle(line).getPropertyValue('--bkgd-line-period')
       ),
       autoGap: parseFloat(getComputedStyle(auto).columnGap),
       autoColumns: auto.querySelectorAll('.bk-col').length,
