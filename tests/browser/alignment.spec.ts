@@ -221,6 +221,42 @@ function alignmentTests(prefix: string, url: string) {
     expect(await size('visible')).toEqual(await size('hidden'))
   })
 
+  test(`${prefix} --bk-text-box-edge sets the trim edge of every rule that trims`, async ({
+    page,
+  }) => {
+    await openRows(page, url)
+    const edges = await page.evaluate(() => {
+      const edge = (element: Element | null) =>
+        element
+          ? getComputedStyle(element).getPropertyValue('text-box-edge')
+          : 'missing'
+      const read = (id: string) => {
+        const host = document.querySelector(
+          `[data-row="${id}"] [data-subject]`
+        )!
+        const grid = host.querySelector(
+          ':scope > .bk-box__grid, :scope > .bk-pad'
+        )
+        const content = host.querySelector('.bk-pad-content')!
+        return [
+          edge(host),
+          edge(grid),
+          edge(content),
+          edge(content.firstElementChild),
+        ]
+      }
+      return {
+        semanticCap: read('semantic-h3|flex|baseline|1|top|cap'),
+        separateCap: read('separate|flex|baseline|1|top|cap'),
+        semanticEx: read('semantic-h3|flex|baseline|1|top|ex'),
+      }
+    })
+    // The cap rows set the property on an ancestor; the others keep the default.
+    expect(edges.semanticCap).toEqual(Array(4).fill('cap alphabetic'))
+    expect(edges.separateCap).toEqual(Array(4).fill('cap alphabetic'))
+    expect(edges.semanticEx).toEqual(Array(4).fill('ex alphabetic'))
+  })
+
   test(`${prefix} a taller plain Padder keeps its rows at their content height`, async ({
     page,
   }) => {

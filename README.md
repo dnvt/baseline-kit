@@ -85,8 +85,10 @@ the [server example](https://github.com/dnvt/baseline-kit/blob/main/tests/browse
   correction goes above the text, so its baseline lands on a grid line when
   the Box starts on one and its bottom padding is a multiple of the base.
 - **Keep the text a direct child of the Box.** `text-box-trim` doesn't
-  inherit, so text nested deeper needs `text-box-trim: trim-both` and
-  `text-box-edge: ex alphabetic` itself.
+  inherit, so text nested deeper needs `text-box-trim: trim-both` itself; its
+  edge (`text-box-edge`) inherits.
+- **Trim to cap height** with `--bk-text-box-edge: cap alphabetic` on a Box
+  or an ancestor; the default is `ex alphabetic`.
 - **Give `line-height` in multiples of the base** (`24px` on an 8px base) so
   every line of a paragraph stays on the grid, and space stacked Boxes with
   margins that are multiples of the base.

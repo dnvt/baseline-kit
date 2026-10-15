@@ -247,7 +247,7 @@ export const ROWS_CSS = `
 }
 .rows-ref { white-space: nowrap; }
 .rows-narrow [data-subject] { width: 220px; }
-.rows-cap .bk-pad-content { text-box-edge: cap alphabetic; }
+.rows-cap { --bk-text-box-edge: cap alphabetic; }
 .geo-row { display: flex; gap: 16px; align-items: start; margin: 16px 0; }
 .geo-narrow [data-subject] { width: 220px; }
 .geo-overflow [data-subject] { overflow: auto; }
