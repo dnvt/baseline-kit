@@ -27,6 +27,7 @@ import {
 import {
   GEO_CASES,
   HIT_NODE,
+  PLAIN_ROWS_NODE,
   LIVE_SCOPE_CSS,
   LIVE_SCOPES,
   ROW_CASES,
@@ -259,6 +260,9 @@ function RowsFixture() {
       </section>
       <section id="hit" className="geo">
         {rowElement(HIT_NODE)}
+      </section>
+      <section id="plain-rows" className="geo">
+        {rowElement(PLAIN_ROWS_NODE)}
       </section>
       {/* Spacer indicators must not change a Padder's layout. */}
       <section id="indicators" className="geo">

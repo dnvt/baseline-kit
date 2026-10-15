@@ -247,7 +247,7 @@ export const ROWS_CSS = `
 }
 .rows-ref { white-space: nowrap; }
 .rows-narrow [data-subject] { width: 220px; }
-.rows-cap .bk-pad-content { text-box-edge: cap alphabetic; }
+.rows-cap { --bk-text-box-edge: cap alphabetic; }
 .geo-row { display: flex; gap: 16px; align-items: start; margin: 16px 0; }
 .geo-narrow [data-subject] { width: 220px; }
 .geo-overflow [data-subject] { overflow: auto; }
@@ -362,6 +362,26 @@ export const HIT_NODE: RowNode = subject({
   },
   children: [{ type: 'button', props: { 'data-hit': '' }, children: ['Save'] }],
 })
+
+/**
+ * A taller Padder drawing no spacers, without a content host: its four
+ * children fill two of its rows, which keep their content height.
+ */
+export const PLAIN_ROWS_NODE: RowNode = {
+  type: 'Padder',
+  props: {
+    'data-plain-rows': '',
+    debugging: 'none',
+    height: 120,
+    block: [8, 8],
+    inline: [8, 8],
+  },
+  children: ['A', 'B', 'C', 'D'].map((letter) => ({
+    type: 'div' as const,
+    props: { 'data-plain-item': '' },
+    children: [letter],
+  })),
+}
 
 /**
  * What 7.1.2 rendered for each `GEO_CASES` entry (react-dom/server, classes

@@ -25,6 +25,7 @@ const ASSERTED_VARIANTS: RowVariant[] = [
   'separate-visible',
   'separate-plain',
   'padder',
+  'padder-plain',
 ]
 
 test.beforeEach(({ page }) => {
@@ -218,6 +219,73 @@ function alignmentTests(prefix: string, url: string) {
         return [box.width, box.height]
       })
     expect(await size('visible')).toEqual(await size('hidden'))
+  })
+
+  test(`${prefix} --bk-text-box-edge sets the trim edge of every rule that trims`, async ({
+    page,
+  }) => {
+    await openRows(page, url)
+    const edges = await page.evaluate(() => {
+      const edge = (element: Element | null) =>
+        element
+          ? getComputedStyle(element).getPropertyValue('text-box-edge')
+          : 'missing'
+      const read = (id: string) => {
+        const host = document.querySelector(
+          `[data-row="${id}"] [data-subject]`
+        )!
+        const grid = host.querySelector(
+          ':scope > .bk-box__grid, :scope > .bk-pad'
+        )
+        const content = host.querySelector('.bk-pad-content')!
+        return [
+          edge(host),
+          edge(grid),
+          edge(content),
+          edge(content.firstElementChild),
+        ]
+      }
+      return {
+        semanticCap: read('semantic-h3|flex|baseline|1|top|cap'),
+        separateCap: read('separate|flex|baseline|1|top|cap'),
+        semanticEx: read('semantic-h3|flex|baseline|1|top|ex'),
+      }
+    })
+    // The cap rows set the property on an ancestor; the others keep the default.
+    expect(edges.semanticCap).toEqual(Array(4).fill('cap alphabetic'))
+    expect(edges.separateCap).toEqual(Array(4).fill('cap alphabetic'))
+    expect(edges.semanticEx).toEqual(Array(4).fill('ex alphabetic'))
+  })
+
+  test(`${prefix} a taller plain Padder keeps its rows at their content height`, async ({
+    page,
+  }) => {
+    await openRows(page, url)
+    const layout = await page.locator('[data-plain-rows]').evaluate((host) => {
+      const origin = host.getBoundingClientRect()
+      return {
+        height: origin.height,
+        items: Array.from(
+          host.querySelectorAll('[data-plain-item]'),
+          (item) => {
+            const box = item.getBoundingClientRect()
+            return { top: box.top - origin.top, height: box.height }
+          }
+        ),
+      }
+    })
+    // A height of 120px, plus the 8px block padding outside it.
+    expect(layout.height).toBe(136)
+    // Three children fill the first row and the fourth starts the second:
+    // both rows keep their content height, as the first did before 7.2.1.
+    const [first, , , fourth] = layout.items
+    expect(layout.items).toHaveLength(4)
+    // Start-aligned: the first row sits on the 8px padding at its 24px line,
+    // and the second follows it, rather than either row taking the rest.
+    expect(first.top).toBeCloseTo(8, 2)
+    expect(first.height).toBeCloseTo(24, 2)
+    expect(fourth.height).toBeCloseTo(first.height, 2)
+    expect(fourth.top).toBeCloseTo(first.top + first.height, 2)
   })
 
   test(`${prefix} Box and Padder geometry matches the 7.1.2 markup`, async ({
