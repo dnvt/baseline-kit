@@ -52,8 +52,9 @@ export function isScaledLayout(el: Element | null): boolean {
  * grid), on a Box's inner Padder (`.bk-pad`), or on a semantic Box's inner
  * grid (`.bk-box__grid`). It is the margin of the content host,
  * `.bk-pad-content`, which is the grid's only row, or the CSS padding of a
- * Padder that draws no spacers (`.bk-pad-plain`). A caller's own padding on
- * a Box host, or on a Padder that draws spacers, is not counted.
+ * Padder that draws no spacers and has no content host (`.bk-pad-plain`).
+ * A caller's own padding on a Box host, or on a Padder with a content host,
+ * is not counted.
  */
 export function getRenderedBlockPadding(
   host: Element
@@ -64,7 +65,10 @@ export function getRenderedBlockPadding(
     : (host.querySelector(':scope > .bk-pad, :scope > .bk-box__grid') ?? host)
   let top = 0
   let bottom = 0
-  if (target.classList.contains('bk-pad-plain')) {
+  if (
+    target.classList.contains('bk-pad-plain') &&
+    !target.classList.contains('bk-pad-hosted')
+  ) {
     const style = getComputedStyle(target)
     top = parseFloat(style.paddingTop)
     bottom = parseFloat(style.paddingBottom)

@@ -197,10 +197,10 @@
 }
 
 /*
- * The content of a Box, or of a Padder that draws spacers, is its grid's only
- * row, and the block padding is the content's margin: WebKit and Firefox take
- * a grid's baseline from its first and last track, so an empty padding track
- * would hide the text's baseline.
+ * The content host of a Box or Padder is its grid's only row, with the block
+ * padding as its margin, or as the Padder's own padding when it draws no
+ * spacers: WebKit and Firefox take a grid's baseline from its first and last
+ * track, so an empty padding track would hide the text's baseline.
  */
 .bk-pad:where(.bk-pad-hosted) {
   grid-template-rows: 1fr;

@@ -99,8 +99,17 @@ const PadderComponent = React.memo(
           padding,
           enableSpacers,
           isVisible: isShown,
+          contentHost: preserveContentHost,
         }),
-      [config.color, width, height, padding, enableSpacers, isShown]
+      [
+        config.color,
+        width,
+        height,
+        padding,
+        enableSpacers,
+        isShown,
+        preserveContentHost,
+      ]
     )
 
     const containerStyles = mergeStyles(descriptor.containerStyle, style)
@@ -127,6 +136,7 @@ const PadderComponent = React.memo(
               key="content"
               data-testid={config.domDiagnostics ? 'padder-content' : undefined}
               className="bk-pad-content"
+              style={descriptor.contentStyle}
             >
               {children}
             </div>

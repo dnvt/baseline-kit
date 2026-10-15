@@ -23,6 +23,7 @@ const ASSERTED_VARIANTS: RowVariant[] = [
   'empty',
   'separate',
   'separate-visible',
+  'separate-plain',
   'padder',
 ]
 

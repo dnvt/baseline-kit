@@ -16,14 +16,19 @@ export interface PadderDescriptorParams {
   padding: Padding
   enableSpacers: boolean
   isVisible: boolean
+  /**
+   * Whether the children sit in a content host (`.bk-pad-content`), as they
+   * always do with spacers.
+   */
+  contentHost?: boolean
 }
 
 export interface PadderDescriptor {
   /** Host style with stylesheet defaults omitted. */
   containerStyle: Record<string, string>
   /**
-   * With spacers: margins that place the block padding around the content,
-   * which is the grid's only row so every engine reads its baseline.
+   * With a content host: margins that place the block padding around the
+   * content, which is the grid's only row so every engine reads its baseline.
    */
   contentStyle?: Record<string, string>
   /** With spacers: keeps the left and right spacers between the top and bottom ones. */
@@ -39,6 +44,7 @@ export function createPadderDescriptor(
   params: PadderDescriptorParams
 ): PadderDescriptor {
   const { color, width, height, padding, enableSpacers, isVisible } = params
+  const contentHost = enableSpacers || params.contentHost === true
 
   const containerStyle: Record<string, string> = {
     ...(width !== undefined ? { '--bkpd-w': formatValue(width) } : {}),
@@ -51,7 +57,11 @@ export function createPadderDescriptor(
   const sideStyle: Record<string, string> = {}
   if (!enableSpacers) {
     if (top > 0 || bottom > 0) {
-      containerStyle.paddingBlock = `${top}px ${bottom}px`
+      // A content host takes the block padding as its margin, as with
+      // spacers: WebKit misreads the baseline of a Box's inner grid with
+      // bottom padding.
+      if (contentHost) contentStyle.marginBlock = `${top}px ${bottom}px`
+      else containerStyle.paddingBlock = `${top}px ${bottom}px`
     }
     if (left > 0 || right > 0) {
       containerStyle.paddingInline = `${left}px ${right}px`
@@ -73,7 +83,7 @@ export function createPadderDescriptor(
   // animates (see getRenderedBlockPadding in the dom package).
   if (!enableSpacers) classTokens.push('pad-plain')
   // Marks a content host that is the grid's only row (see the stylesheet).
-  if (enableSpacers) classTokens.push('pad-hosted')
+  if (contentHost) classTokens.push('pad-hosted')
 
   return {
     containerStyle: compactStyle(containerStyle, PADDER_STYLE_DEFAULTS),

@@ -110,6 +110,7 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
       padding,
       enableSpacers: !debug.isNone,
       isVisible: debug.isShown,
+      contentHost: props.preserveContentHost,
     })
 
     if (debug.isNone) {
@@ -128,6 +129,7 @@ function PadderImpl(handle: Handle<RuntimePadderProps>) {
             <div
               key="content"
               className="bk-pad-content"
+              style={descriptor.contentStyle}
               data-testid={config.domDiagnostics ? 'padder-content' : undefined}
             >
               {props.children}

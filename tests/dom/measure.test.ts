@@ -153,6 +153,17 @@ describe('getRenderedBlockPadding', () => {
     expect(getRenderedBlockPadding(host)).toEqual({ top: 6, bottom: 3 })
   })
 
+  it("reads the content margins of a plain Padder's content host", () => {
+    const host = build(
+      '<div class="bk-box"><div class="bk-pad bk-pad-plain bk-pad-hosted" style="padding-inline: 4px"><div class="bk-pad-content"></div></div></div>'
+    )
+    resolved.set(host.querySelector('.bk-pad-content')!, {
+      marginTop: '1.5px',
+      marginBottom: '6px',
+    })
+    expect(getRenderedBlockPadding(host)).toEqual({ top: 1.5, bottom: 6 })
+  })
+
   it("reads a separate-Padder Box's inner spacer Padder", () => {
     const host = build(
       '<div class="bk-box"><div class="bk-pad bk-pad-hosted"><div class="bk-pad-content"></div></div></div>'
