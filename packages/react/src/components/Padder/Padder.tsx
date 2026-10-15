@@ -155,7 +155,7 @@ const PadderComponent = React.memo(
             </div>
           )}
           {padding.left > 0 && (
-            <div className="bk-pad-left">
+            <div className="bk-pad-left" style={descriptor.sideStyle}>
               {renderSpacer(padding.left, '100%')}
             </div>
           )}
@@ -164,12 +164,13 @@ const PadderComponent = React.memo(
           key="content"
           data-testid={config.domDiagnostics ? 'padder-content' : undefined}
           className="bk-pad-content"
+          style={descriptor.contentStyle}
         >
           {children}
         </div>
         <>
           {padding.right > 0 && (
-            <div className="bk-pad-right">
+            <div className="bk-pad-right" style={descriptor.sideStyle}>
               {renderSpacer(padding.right, '100%')}
             </div>
           )}

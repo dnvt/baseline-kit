@@ -21,6 +21,9 @@ const ASSERTED_VARIANTS: RowVariant[] = [
   'semantic-p',
   'nested',
   'empty',
+  'separate',
+  'separate-visible',
+  'padder',
 ]
 
 test.beforeEach(({ page }) => {

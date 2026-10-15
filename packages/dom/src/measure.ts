@@ -50,11 +50,10 @@ export function isScaledLayout(el: Element | null): boolean {
  *
  * The padding sits on the host itself (a Padder, or a Box drawn on its own
  * grid), on a Box's inner Padder (`.bk-pad`), or on a semantic Box's inner
- * grid (`.bk-box__grid`). A Box grid places it as the margin of its content
- * host, `.bk-pad-content`; a Padder as the first and last grid track around
- * it, or as its own CSS padding when it draws no spacers (`.bk-pad-plain`).
- * A caller's own padding on a Box host, or on a Padder that draws spacers,
- * is not counted.
+ * grid (`.bk-box__grid`). It is the margin of the content host,
+ * `.bk-pad-content`, which is the grid's only row, or the CSS padding of a
+ * Padder that draws no spacers (`.bk-pad-plain`). A caller's own padding on
+ * a Box host, or on a Padder that draws spacers, is not counted.
  */
 export function getRenderedBlockPadding(
   host: Element
@@ -63,23 +62,15 @@ export function getRenderedBlockPadding(
   const target = host.classList.contains('bk-pad')
     ? host
     : (host.querySelector(':scope > .bk-pad, :scope > .bk-box__grid') ?? host)
-  const content = target.querySelector(':scope > .bk-pad-content')
   let top = 0
   let bottom = 0
-  if (content && !target.classList.contains('bk-pad')) {
-    ;({ top, bottom } = readContentMargins(target, content))
-  } else {
+  if (target.classList.contains('bk-pad-plain')) {
     const style = getComputedStyle(target)
-    if (content) {
-      const rows = style.gridTemplateRows.split(' ')
-      if (rows.length !== 3) return null
-      top += parseFloat(rows[0])
-      bottom += parseFloat(rows[2])
-    }
-    if (target.classList.contains('bk-pad-plain')) {
-      top += parseFloat(style.paddingTop)
-      bottom += parseFloat(style.paddingBottom)
-    }
+    top = parseFloat(style.paddingTop)
+    bottom = parseFloat(style.paddingBottom)
+  } else {
+    const content = target.querySelector(':scope > .bk-pad-content')
+    if (content) ({ top, bottom } = readContentMargins(target, content))
   }
   return Number.isFinite(top) && Number.isFinite(bottom)
     ? { top, bottom }

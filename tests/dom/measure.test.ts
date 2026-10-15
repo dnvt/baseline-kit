@@ -141,27 +141,27 @@ describe('getRenderedBlockPadding', () => {
     expect(getRenderedBlockPadding(host)).toEqual({ top: 0, bottom: 2.5 })
   })
 
-  it("ignores a caller's inline padding on a Padder that draws spacers", () => {
+  it("reads a spacer Padder's content margins, not a caller's padding", () => {
     const host = build(
-      '<div class="bk-pad" style="padding-block: 4px"><div class="bk-pad-content"></div></div>'
+      '<div class="bk-pad bk-pad-hosted" style="padding-block: 4px"><div class="bk-pad-top"></div><div class="bk-pad-content"></div></div>'
     )
-    resolved.set(host, {
-      gridTemplateRows: '0px 12px 3px',
-      paddingTop: '4px',
-      paddingBottom: '4px',
-    })
-    expect(getRenderedBlockPadding(host)).toEqual({ top: 0, bottom: 3 })
+    const content = host.querySelector('.bk-pad-content')!
+    resolved.set(host, { paddingTop: '4px', paddingBottom: '4px' })
+    resolved.set(content, { marginTop: '6px', marginBottom: '3px' })
+    place(host, 0, 29)
+    place(content, 10, 22)
+    expect(getRenderedBlockPadding(host)).toEqual({ top: 6, bottom: 3 })
   })
 
-  it('ignores padding on a Padder that draws spacers', () => {
+  it("reads a separate-Padder Box's inner spacer Padder", () => {
     const host = build(
-      '<div class="bk-pad"><div class="bk-pad-top"></div><div class="bk-pad-content"></div></div>'
+      '<div class="bk-box"><div class="bk-pad bk-pad-hosted"><div class="bk-pad-content"></div></div></div>'
     )
-    resolved.set(host, {
-      gridTemplateRows: '6px 12px 0px',
-      paddingTop: '10px',
+    resolved.set(host.querySelector('.bk-pad-content')!, {
+      marginTop: '0px',
+      marginBottom: '2.5px',
     })
-    expect(getRenderedBlockPadding(host)).toEqual({ top: 6, bottom: 0 })
+    expect(getRenderedBlockPadding(host)).toEqual({ top: 0, bottom: 2.5 })
   })
 })
 
