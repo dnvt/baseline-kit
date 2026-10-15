@@ -14,7 +14,10 @@ export interface BoxDescriptorParams {
   colSpan?: number
   rowSpan?: number
   isVisible: boolean
-  /** Resolved (initial or snapped) padding, placed as grid tracks. */
+  /**
+   * Resolved (initial or snapped) padding: inline as grid columns, block as
+   * the content's margins.
+   */
   padding: Padding
   /** Outline color for visible padding. */
   paddingColor: string

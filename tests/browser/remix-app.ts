@@ -3,6 +3,7 @@ import { jsx } from 'remix/component/jsx-runtime'
 import {
   Forwarder,
   LiveGridProbe,
+  PadderIndicatorProbe,
   SnapModeProbe,
   SpacerIndicatorProbe,
 } from './remix-entries'
@@ -18,6 +19,7 @@ import {
 import { COST_BOX_COUNT, COST_CSS, COST_WORDS, costBox } from './cost-grid'
 import {
   GEO_CASES,
+  HIT_NODE,
   ROW_CASES,
   ROWS_CSS,
   rowClass,
@@ -224,7 +226,14 @@ function spacerStrings() {
   ]
 }
 
-const ROW_TYPES = { Box, Padder, div: 'div', span: 'span', i: 'i' } as const
+const ROW_TYPES = {
+  Box,
+  Padder,
+  div: 'div',
+  span: 'span',
+  i: 'i',
+  button: 'button',
+} as const
 
 function rowElement(node: RowNode): unknown {
   if (typeof node === 'string') return node
@@ -256,6 +265,16 @@ function rows() {
           ],
         })
       ),
+    }),
+    jsx('section', {
+      id: 'hit',
+      className: 'geo',
+      children: rowElement(HIT_NODE),
+    }),
+    jsx('section', {
+      id: 'indicators',
+      className: 'geo',
+      children: jsx(PadderIndicatorProbe, {}),
     }),
     jsx('section', {
       id: 'geo',

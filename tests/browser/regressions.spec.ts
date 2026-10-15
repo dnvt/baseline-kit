@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
+import { LIVE_SCOPES } from './baseline-rows'
 
 const dimensionCases = [
   { id: 'width-omitted', axis: 'width' },
@@ -3333,12 +3334,16 @@ function liveGridTests(prefix: string, url: string, root: string) {
         off: hosts.map(off),
       }
     }, root)
+    // One host per DOM variant (four Box variants and a Padder) per scope.
+    expect(result.labels).toHaveLength(LIVE_SCOPES.length * 5)
     const over = (counts: number[], most: number) =>
       result.labels.filter((_, index) => counts[index] > most)
     result.changes.forEach((counts, change) => {
-      expect(over(counts, 1), `change ${change}: more than one update`).toEqual(
-        []
-      )
+      // Each height needs new padding on an 8px grid: exactly one update.
+      expect(
+        result.labels.filter((_, index) => counts[index] !== 1),
+        `change ${change}: not exactly one update`
+      ).toEqual([])
     })
     expect(over(result.quiet, 0), 'updates once content stops').toEqual([])
     expect(

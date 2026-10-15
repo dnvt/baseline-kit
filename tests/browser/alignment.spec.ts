@@ -85,7 +85,7 @@ function measureRows() {
       return {
         id: row.dataset.row!,
         variant: row.dataset.row!.split('|')[0],
-        delta: Math.round((target - reference) * 100) / 100,
+        delta: target - reference,
       }
     }
   )
@@ -110,7 +110,6 @@ function measureGeometry({
     slot.innerHTML = twins[slot.dataset.geoTwin!].replace('__TEXT__', text)
     slot.firstElementChild!.setAttribute('data-subject', '')
   }
-  const round = (value: number) => Math.round(value * 100) / 100
   const measure = (host: Element) => {
     const origin = host.getBoundingClientRect()
     const rect = (element: Element) => {
@@ -120,11 +119,11 @@ function measureGeometry({
         box.top - origin.top,
         box.width,
         box.height,
-      ].map(round)
+      ]
     }
     const computed = getComputedStyle(host)
     return {
-      host: [origin.width, origin.height].map(round),
+      host: [origin.width, origin.height],
       scroll: [host.scrollWidth, host.scrollHeight],
       content: Array.from(
         host.querySelectorAll('.bk-pad-content, .lg-pad-content'),
@@ -169,6 +168,56 @@ function alignmentTests(prefix: string, url: string) {
         Math.abs(cell.delta) > 0.01
     )
     expect(off, 'asserted variants off the row baseline').toEqual([])
+  })
+
+  test(`${prefix} content reaching into spacer padding takes the pointer`, async ({
+    page,
+  }) => {
+    await openRows(page, url)
+    const hit = await page.evaluate(() => {
+      const button = document.querySelector<HTMLElement>('[data-hit]')!
+      button.scrollIntoView({ block: 'center' })
+      const padder = button.closest('.bk-pad')!
+      const content = button.closest('.bk-pad-content')!.getBoundingClientRect()
+      const box = button.getBoundingClientRect()
+      const x = box.left + box.width / 2
+      const takes = (y: number) => {
+        const element = document.elementFromPoint(x, y)
+        return element !== null && button.contains(element)
+      }
+      return {
+        bands: padder.querySelectorAll(
+          ':scope > :is(.bk-pad-top, .bk-pad-bottom)'
+        ).length,
+        above: content.top - box.top,
+        below: box.bottom - content.bottom,
+        top: takes((box.top + content.top) / 2),
+        bottom: takes((box.bottom + content.bottom) / 2),
+      }
+    })
+    // The trimmed first line leaves the button reaching into both bands.
+    expect(hit.bands, 'top and bottom spacers').toBe(2)
+    expect(hit.above).toBeGreaterThan(1)
+    expect(hit.below).toBeGreaterThan(1)
+    expect(hit, 'the button takes the pointer over the padding').toMatchObject({
+      top: true,
+      bottom: true,
+    })
+  })
+
+  test(`${prefix} spacer indicators keep the Padder's size`, async ({
+    page,
+  }) => {
+    await openRows(page, url)
+    await expect(
+      page.locator('[data-ind="visible"] .bk-indicator').first()
+    ).toBeVisible()
+    const size = (debugging: string) =>
+      page.locator(`[data-ind="${debugging}"]`).evaluate((host) => {
+        const box = host.getBoundingClientRect()
+        return [box.width, box.height]
+      })
+    expect(await size('visible')).toEqual(await size('hidden'))
   })
 
   test(`${prefix} Box and Padder geometry matches the 7.1.2 markup`, async ({

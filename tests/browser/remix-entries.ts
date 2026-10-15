@@ -295,3 +295,23 @@ export const SpacerIndicatorProbe = clientEntry(
     ),
   ]
 )
+
+/** Padders with and without visible indicators (a function prop), for `?rows`. */
+export const PadderIndicatorProbe = clientEntry(
+  `${import.meta.url}#PadderIndicatorProbe`,
+  () => () =>
+    (['visible', 'hidden'] as const).map((debugging) =>
+      jsx(
+        Padder,
+        {
+          'data-ind': debugging,
+          debugging,
+          indicatorNode: (value: number) => String(value),
+          block: [8, 8],
+          inline: [8, 8],
+          children: jsx('div', { style: { width: '4px', height: '10px' } }),
+        },
+        debugging
+      )
+    )
+)

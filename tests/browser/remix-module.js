@@ -9,6 +9,7 @@ export {
 export {
   Forwarder,
   LiveGridProbe,
+  PadderIndicatorProbe,
   SnapModeProbe,
   SpacerIndicatorProbe,
 } from './remix-entries'

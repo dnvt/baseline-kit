@@ -26,6 +26,7 @@ import {
 } from './rem-grid'
 import {
   GEO_CASES,
+  HIT_NODE,
   LIVE_SCOPE_CSS,
   LIVE_SCOPES,
   ROW_CASES,
@@ -220,7 +221,14 @@ function LiveGridFixture() {
   )
 }
 
-const ROW_TYPES = { Box, Padder, div: 'div', span: 'span', i: 'i' } as const
+const ROW_TYPES = {
+  Box,
+  Padder,
+  div: 'div',
+  span: 'span',
+  i: 'i',
+  button: 'button',
+} as const
 
 function rowElement(node: RowNode, key?: number): ReactNode {
   if (typeof node === 'string') return node
@@ -247,6 +255,24 @@ function RowsFixture() {
             <span className="rows-ref">{rowElement(rowWords(['Ref'])[0])}</span>
             {rowElement(rowSubject(row))}
           </div>
+        ))}
+      </section>
+      <section id="hit" className="geo">
+        {rowElement(HIT_NODE)}
+      </section>
+      {/* Spacer indicators must not change a Padder's layout. */}
+      <section id="indicators" className="geo">
+        {(['visible', 'hidden'] as const).map((debugging) => (
+          <Padder
+            key={debugging}
+            data-ind={debugging}
+            debugging={debugging}
+            indicatorNode={(value) => String(value)}
+            block={[8, 8]}
+            inline={[8, 8]}
+          >
+            <div style={{ width: 4, height: 10 }} />
+          </Padder>
         ))}
       </section>
       <section id="geo" className="geo">

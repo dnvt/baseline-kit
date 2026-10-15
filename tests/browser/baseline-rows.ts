@@ -16,7 +16,7 @@
 export type RowNode =
   | string
   | {
-      type: 'Box' | 'Padder' | 'div' | 'span' | 'i'
+      type: 'Box' | 'Padder' | 'div' | 'span' | 'i' | 'button'
       props?: Record<string, unknown>
       children?: RowNode[]
     }
@@ -251,6 +251,7 @@ export const ROWS_CSS = `
 .geo-row { display: flex; gap: 16px; align-items: start; margin: 16px 0; }
 .geo-narrow [data-subject] { width: 220px; }
 .geo-overflow [data-subject] { overflow: auto; }
+.geo [data-hit] { font: 16px/16px serif; padding: 6px 12px; border: 1px solid; }
 `
 
 /**
@@ -345,6 +346,22 @@ export const GEO_CASES: { id: string; className: string; node: RowNode }[] =
       },
     ]
   })()
+
+/**
+ * A Box drawing spacers whose first-line button reaches past the trimmed
+ * content into the top and bottom padding: the button, not a spacer, must
+ * take the pointer there.
+ */
+export const HIT_NODE: RowNode = subject({
+  type: 'Box',
+  props: {
+    className: 'geo-c',
+    snapping: 'none',
+    block: [16, 16],
+    inline: [16, 16],
+  },
+  children: [{ type: 'button', props: { 'data-hit': '' }, children: ['Save'] }],
+})
 
 /**
  * What 7.1.2 rendered for each `GEO_CASES` entry (react-dom/server, classes
